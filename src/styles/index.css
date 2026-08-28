@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --header-h: 64px;
+    --sidebar-w: 264px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-white text-ink-800 font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Tipografía del producto: títulos oscuros, cuerpo gris medio */
+  h1, h2, h3, h4 {
+    @apply text-ink-900 font-semibold tracking-[-0.011em];
+  }
+
+  ::selection {
+    @apply bg-brand-100 text-brand-800;
+  }
+
+  /* Scrollbars discretas */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #E2E1E8 transparent;
+  }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb {
+    background-color: #E2E1E8;
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover { background-color: #C0BECA; }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-400/60 ring-offset-2 ring-offset-white rounded-lg;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white border border-ink-200/70 rounded-2xl shadow-card;
+  }
+
+  .card-hover {
+    @apply transition-[box-shadow,transform,border-color] duration-200 hover:shadow-pop hover:border-brand-200 hover:-translate-y-[1px];
+  }
+
+  .label {
+    @apply block text-[13px] font-medium text-ink-700 mb-1.5;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-[14px] text-ink-900
+           placeholder:text-ink-400 transition-colors
+           focus:border-brand-400 focus:ring-4 focus:ring-brand-100 focus:outline-none;
+  }
+
+  .section-title {
+    @apply text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-400;
+  }
+
+  .divider {
+    @apply h-px bg-ink-200/70;
+  }
+
+  /* Skeletons */
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg bg-ink-100;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+    animation: sheen 1.4s infinite;
+  }
+  @keyframes sheen {
+    100% { transform: translateX(100%); }
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
