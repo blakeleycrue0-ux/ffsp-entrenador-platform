@@ -27,7 +27,7 @@ export const NAV: NavGroup[] = [
     label: 'Gestión',
     items: [
       { to: '/app/equipos', label: 'Mis equipos', icon: Shield },
-      { to: '/app/jugadores', label: 'Jugadores', icon: Users },
+      { to: '/app/jugadoras', label: 'Jugadoras', icon: Users },
       { to: '/app/calendario', label: 'Calendario', icon: CalendarDays },
       { to: '/app/partidos', label: 'Partidos', icon: Swords },
       { to: '/app/asistencia', label: 'Asistencia', icon: ClipboardList },

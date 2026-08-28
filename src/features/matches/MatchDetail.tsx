@@ -2,7 +2,7 @@
  * Detalle de partido + gestor de convocatoria.
  * ---------------------------------------------------------------------------
  * Flujo objetivo (menos clics): Partido → Crear convocatoria → Seleccionar
- * jugadores → Vista previa → WhatsApp. Todo ocurre en esta pantalla.
+ * jugadoras → Vista previa → WhatsApp. Todo ocurre en esta pantalla.
  */
 
 import { useMemo, useState } from 'react';
@@ -12,7 +12,7 @@ import {
   Sparkles, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, squadOf, playerAttendance, visibleTeams } from '@/store/selectors';
+import { squadOf, playerAttendance, visibleTeams } from '@/store/selectors';
 import { buildCallupMessage } from '@/services/whatsapp';
 import {
   Avatar, Badge, Button, Card, Field, Input, LinkButton, PageHeader, Stat, Tabs, Textarea,
@@ -20,34 +20,33 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { AVAILABILITY, AvailabilityDot, CALLUP_RESPONSE } from '@/components/domain/StatusBits';
 import { WhatsAppPreviewModal, WhatsAppStatusChip } from '@/features/messages/WhatsAppPreview';
-import { cn, longDate, relativeDay, relativeTime, uid } from '@/lib/utils';
+import { CLUB_NAME, cn, longDate, relativeDay, relativeTime } from '@/lib/utils';
+import { humanError } from '@/services/supabase';
 import type { Callup } from '@/types';
 
 export default function MatchDetail() {
   const { matchId = '' } = useParams();
-  const { data, session: auth, dispatch, log } = useClub();
+  const { data, actions } = useClub();
   const toast = useToast();
-  const staff = currentStaff(data, auth?.staffId);
 
   const [tab, setTab] = useState('convocatoria');
   const [preview, setPreview] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const match = data.matches.find((m) => m.id === matchId);
-  const allowed = match && visibleTeams(data, staff).some((t) => t.id === match.teamId);
+  const allowed = match && visibleTeams(data).some((t) => t.id === match.teamId);
 
   const squad = useMemo(() => (match ? squadOf(data, match.teamId) : []), [data, match]);
   const attendance = useMemo(() => (match ? playerAttendance(data, match.teamId) : []), [data, match]);
-  const existing = data.callups.find((c) => c.matchId === matchId);
-
-  const [callup, setCallup] = useState<Callup | null>(existing ?? null);
+  const callup = data.callups.find((c) => c.matchId === matchId) ?? null;
 
   if (!match || !allowed) return <Navigate to="/app/partidos" replace />;
 
   const team = data.teams.find((t) => t.id === match.teamId)!;
-  const fixture = match.home ? `Santa Ponsa CF vs ${match.opponent}` : `${match.opponent} vs Santa Ponsa CF`;
+  const fixture = match.home ? `${CLUB_NAME} vs ${match.opponent}` : `${match.opponent} vs ${CLUB_NAME}`;
 
-  /* ── Crear convocatoria: propone jugadores por disponibilidad y asistencia ── */
-  const createCallup = (withAI = false) => {
+  /* ── Crear convocatoria: propone jugadoras por disponibilidad y asistencia ── */
+  const createCallup = async (withAI = false) => {
     const eligible = squad.filter((p) => ['disponible', 'duda'].includes(p.availability.status));
     const scored = [...eligible].sort((a, b) => {
       const ra = attendance.find((x) => x.player.id === a.id)?.rate ?? 0;
@@ -57,7 +56,7 @@ export default function MatchDetail() {
     const chosen = new Set((withAI ? scored : eligible).slice(0, 16).map((p) => p.id));
 
     const fresh: Callup = {
-      id: uid('cal'),
+      id: '',
       matchId: match.id,
       teamId: match.teamId,
       slots: 16,
@@ -68,21 +67,27 @@ export default function MatchDetail() {
       entries: squad.map((p) => ({ playerId: p.id, selected: chosen.has(p.id), response: 'pendiente' })),
       status: 'borrador',
     };
-    setCallup(fresh);
-    dispatch({ type: 'callup/upsert', callup: fresh });
-    toast.success(
-      withAI ? 'Borrador propuesto por el asistente ✓' : 'Convocatoria creada ✓',
-      withAI
-        ? 'Criterio: disponibilidad, líneas cubiertas y asistencia reciente. Revísala antes de enviar.'
-        : 'Selecciona a los jugadores y envíala cuando quieras.',
-    );
+    setBusy(true);
+    try {
+      await actions.saveCallup(fresh);
+      toast.success(
+        withAI ? 'Borrador propuesto por el asistente ✓' : 'Convocatoria creada ✓',
+        withAI
+          ? 'Criterio: disponibilidad, líneas cubiertas y asistencia reciente. Revísala antes de enviar.'
+          : 'Selecciona a las jugadoras y envíala cuando quieras.',
+      );
+    } catch (e) {
+      toast.error('No hemos podido crear la convocatoria', humanError(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const patchCallup = (patch: Partial<Callup>) => {
     if (!callup) return;
-    const next = { ...callup, ...patch };
-    setCallup(next);
-    dispatch({ type: 'callup/upsert', callup: next });
+    actions
+      .saveCallup({ ...callup, ...patch })
+      .catch((e) => toast.error('No hemos podido guardar el cambio', humanError(e)));
   };
 
   const toggle = (playerId: string) => {
@@ -93,9 +98,9 @@ export default function MatchDetail() {
   };
 
   const selected = callup?.entries.filter((e) => e.selected) ?? [];
-  const confirmed = selected.filter((e) => e.response === 'confirmado').length;
+  const confirmed = selected.filter((e) => e.response === 'confirmada').length;
   const pending = selected.filter((e) => e.response === 'pendiente').length;
-  const declined = selected.filter((e) => e.response === 'rechazado').length;
+  const declined = selected.filter((e) => e.response === 'rechazada').length;
   const unavailable = squad.filter((p) => !['disponible', 'duda'].includes(p.availability.status));
 
   const messageBody = callup ? buildCallupMessage(callup, match, team, squad) : '';
@@ -140,7 +145,7 @@ export default function MatchDetail() {
           [<CalendarClock key="a" size={16} />, 'Fecha', relativeDay(match.date), longDate(match.date)],
           [<Clock key="b" size={16} />, 'Hora', match.start, `citación ${callup?.meetingTime ?? '—'}`],
           [<MapPin key="c" size={16} />, 'Campo', match.venue, match.home ? 'Jugamos en casa' : 'Desplazamiento'],
-          [<Users key="d" size={16} />, 'Convocados', `${selected.length}`, callup ? `${confirmed} confirmados` : 'sin convocatoria'],
+          [<Users key="d" size={16} />, 'Convocadas', `${selected.length}`, callup ? `${confirmed} confirmadas` : 'sin convocatoria'],
         ].map(([icon, label, value, hint], i) => (
           <Card key={i} className="flex items-start gap-3.5 p-4">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
@@ -175,12 +180,12 @@ export default function MatchDetail() {
                 </span>
                 <h3 className="text-[16px] font-semibold text-ink-800">Todavía no hay convocatoria</h3>
                 <p className="mt-2 max-w-md text-[13.5px] leading-relaxed text-ink-500">
-                  Crea la lista con los jugadores disponibles y envíala por WhatsApp. Las respuestas se registrarán
-                  automáticamente en la plataforma.
+                  Crea la lista con las jugadoras disponibles y envíala por WhatsApp. Cuando WhatsApp esté conectado,
+                  las respuestas se registrarán automáticamente.
                 </p>
                 <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  <Button onClick={() => createCallup(false)}>Crear convocatoria</Button>
-                  <Button variant="outline" icon={<Sparkles size={15} />} onClick={() => createCallup(true)}>
+                  <Button loading={busy} onClick={() => createCallup(false)}>Crear convocatoria</Button>
+                  <Button variant="outline" icon={<Sparkles size={15} />} disabled={busy} onClick={() => createCallup(true)}>
                     Proponer con IA
                   </Button>
                 </div>
@@ -188,11 +193,11 @@ export default function MatchDetail() {
             </Card>
           ) : (
             <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
-              {/* Lista de jugadores */}
+              {/* Lista de jugadoras */}
               <Card className="overflow-hidden">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
                   <div>
-                    <h2 className="text-[15px] font-semibold">Selección de jugadores</h2>
+                    <h2 className="text-[15px] font-semibold">Selección de jugadoras</h2>
                     <p className="mt-0.5 text-[12.5px] text-ink-500">
                       {selected.length} de {callup.slots} plazas · {unavailable.length} no disponibles
                     </p>
@@ -263,7 +268,7 @@ export default function MatchDetail() {
                                 {CALLUP_RESPONSE[entry.response].icon} {CALLUP_RESPONSE[entry.response].label}
                               </Badge>
                             ) : (
-                              <span className="text-[12.5px] text-ink-400">No convocado</span>
+                              <span className="text-[12.5px] text-ink-400">No convocada</span>
                             )}
                           </span>
                         </button>
@@ -282,12 +287,12 @@ export default function MatchDetail() {
                   </div>
 
                   <div className="mt-4">
-                    <Stat label="Convocados" value={`${selected.length} / ${callup.slots}`} />
+                    <Stat label="Convocadas" value={`${selected.length} / ${callup.slots}`} />
                   </div>
 
                   <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                     {[
-                      [confirmed, 'Confirmados', 'text-[#1F6B44]'],
+                      [confirmed, 'Confirmadas', 'text-[#1F6B44]'],
                       [pending, 'Pendientes', 'text-[#9A6412]'],
                       [declined, 'No pueden', 'text-danger'],
                     ].map(([n, l, c]) => (
@@ -381,7 +386,7 @@ export default function MatchDetail() {
             </Card>
 
             <Card className="p-5">
-              <h2 className="text-[15px] font-semibold">Notas del entrenador</h2>
+              <h2 className="text-[15px] font-semibold">Notas de la entrenadora</h2>
               {match.notes ? (
                 <p className="mt-3 whitespace-pre-line text-[13.5px] leading-relaxed text-ink-600">{match.notes}</p>
               ) : (
@@ -405,31 +410,33 @@ export default function MatchDetail() {
           recipients={recipients}
           teamId={team.id}
           subject={`Convocatoria — ${fixture}`}
-          onSent={({ simulated }) => {
-            patchCallup({ status: 'enviada', sentAt: new Date().toISOString() });
-            dispatch({
-              type: 'message/upsert',
-              message: {
-                id: uid('msg'),
+          onSent={async ({ simulated }) => {
+            try {
+              await actions.saveCallup({ ...callup, status: 'enviada', sentAt: new Date().toISOString() });
+              await actions.saveMessage({
+                id: '',
                 channel: 'whatsapp',
                 kind: 'convocatoria',
                 scope: 'equipo',
                 teamId: team.id,
                 subject: `Convocatoria — ${fixture}`,
                 body: messageBody,
-                status: simulated ? 'enviado' : 'entregado',
+                status: 'enviado',
                 createdAt: new Date().toISOString(),
                 sentAt: new Date().toISOString(),
                 recipients: recipients.length,
                 responses: { confirmed, declined, unknown: pending },
-                demo: simulated,
-              },
-            });
-            log({
-              kind: 'convocatoria',
-              text: `Has enviado la convocatoria de ${fixture} a ${recipients.length} destinatarios.`,
-              link: `/app/partidos/${match.id}`,
-            });
+                simulated,
+              });
+              await actions.log({
+                kind: 'convocatoria',
+                teamId: team.id,
+                text: `Has preparado la convocatoria de ${fixture} para ${recipients.length} destinatarios.`,
+                link: `/app/partidos/${match.id}`,
+              });
+            } catch (e) {
+              toast.error('No hemos podido registrar el envío', humanError(e));
+            }
           }}
         />
       )}

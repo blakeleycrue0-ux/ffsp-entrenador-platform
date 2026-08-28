@@ -204,8 +204,8 @@ function callupDraft(ctx: AIContext) {
 
   const excludedIds = new Set(excluded.map((e) => e.playerId));
   const orderByLine: Player['position'][] = [
-    'Portero', 'Lateral derecho', 'Central', 'Lateral izquierdo', 'Pivote',
-    'Interior', 'Mediapunta', 'Extremo derecho', 'Extremo izquierdo', 'Delantero',
+    'Portera', 'Lateral derecha', 'Central', 'Lateral izquierda', 'Pivote',
+    'Interior', 'Mediapunta', 'Extremo derecha', 'Extremo izquierda', 'Delantera',
   ];
 
   // Se cubre cada línea antes de completar plazas: criterio de convocatoria real.
@@ -218,8 +218,8 @@ function callupDraft(ctx: AIContext) {
   const scoreOf = (p: Player) => report.rows.find((r) => r.player === p.shortName)?.pct ?? 100;
   const suggested: string[] = [];
   const quota: Record<string, number> = {
-    Portero: 2, 'Lateral derecho': 2, Central: 3, 'Lateral izquierdo': 2, Pivote: 2,
-    Interior: 2, Mediapunta: 1, 'Extremo derecho': 1, 'Extremo izquierdo': 1, Delantero: 2,
+    Portera: 2, 'Lateral derecha': 2, Central: 3, 'Lateral izquierda': 2, Pivote: 2,
+    Interior: 2, Mediapunta: 1, 'Extremo derecha': 1, 'Extremo izquierda': 1, Delantera: 2,
   };
   orderByLine.forEach((pos) => {
     const group = (byPosition.get(pos) ?? []).sort((a, b) => scoreOf(b) - scoreOf(a));
@@ -232,14 +232,17 @@ function callupDraft(ctx: AIContext) {
 }
 
 const labelStatus = (s: Player['availability']['status']) =>
-  ({ disponible: 'Disponible', lesionado: 'Lesionado', enfermo: 'Enfermo', ausente: 'Ausente', sancionado: 'Sancionado', duda: 'Duda' }[s]);
+  ({
+    disponible: 'Disponible', lesionada: 'Lesionada', enferma: 'Enferma',
+    ausente: 'Ausente', sancionada: 'Sancionada', duda: 'Duda',
+  }[s]);
 
 /* ────────────────────────── Detección de intención ───────────────────────── */
 
 export function detectIntent(input: string): AssistantIntent {
   const t = input.toLowerCase();
   if (/convocat/.test(t)) return 'convocatoria';
-  if (/whatsapp|mensaje|escribe|avisa|comunica|padres|familias/.test(t)) return 'mensaje';
+  if (/whatsapp|mensaje|escribe|avisa|comunica|padres|madres|familias/.test(t)) return 'mensaje';
   if (/falta|asisten|ausen|quien viene|quién viene|no ha venido/.test(t)) return 'consulta-asistencia';
   if (/evolucion|evolución|progres|rendimiento|c[oó]mo est[aá]/.test(t)) return 'evolucion';
   if (/resum|semana|qu[eé] tengo/.test(t)) return 'resumen';
@@ -295,7 +298,7 @@ function localProvider(input: string, ctx: AIContext): AssistantMessage {
       return {
         id: uid('m'), role: 'assistant', intent, at: now(),
         text: problem.length
-          ? `En los últimos ${sessions} entrenamientos del ${teamName}, ${problem.length} jugadores han faltado alguna vez. ` +
+          ? `En los últimos ${sessions} entrenamientos del ${teamName}, ${problem.length} jugadoras han faltado alguna vez. ` +
             `${problem[0].player} es quien más ausencias acumula (${problem[0].missed}). Estos son los datos registrados:`
           : `En los últimos ${sessions} entrenamientos del ${teamName} no hay ausencias sin justificar. Asistencia impecable.`,
         card: { type: 'attendance', rows: (problem.length ? problem : rows.slice(0, 6)) },
@@ -319,7 +322,7 @@ function localProvider(input: string, ctx: AIContext): AssistantMessage {
         id: uid('m'), role: 'assistant', intent, at: now(),
         text:
           `Borrador de convocatoria para ${match.home ? `Santa Ponsa CF vs ${match.opponent}` : `${match.opponent} vs Santa Ponsa CF`} ` +
-          `(${longDate(match.date)}, ${match.start}). He propuesto ${suggested.length} jugadores cubriendo todas las líneas y ` +
+          `(${longDate(match.date)}, ${match.start}). He propuesto ${suggested.length} jugadoras cubriendo todas las líneas y ` +
           `he dejado fuera a ${excluded.length} por disponibilidad. Nada se envía hasta que lo confirmes.`,
         card: { type: 'callup', matchId: match.id, suggested, excluded },
         actions: [
@@ -364,7 +367,7 @@ function localProvider(input: string, ctx: AIContext): AssistantMessage {
       const squad = ctx.data.players.filter((p) => p.teamId === ctx.teamId);
       const { rows, sessions } = attendanceReport(ctx, 5);
       const avg = Math.round(rows.reduce((a, r) => a + r.pct, 0) / (rows.length || 1));
-      const injured = squad.filter((p) => p.availability.status === 'lesionado');
+      const injured = squad.filter((p) => p.availability.status === 'lesionada');
       const nextSession = ctx.data.sessions
         .filter((s) => s.teamId === ctx.teamId && s.date >= toISODate(today()))
         .sort((a, b) => a.date.localeCompare(b.date))[0];
@@ -384,9 +387,9 @@ function localProvider(input: string, ctx: AIContext): AssistantMessage {
           : 'No hay partido programado.',
         pending ? `Quedan ${pending} confirmaciones pendientes en la convocatoria.` : 'La convocatoria está completa.',
         injured.length
-          ? `${injured.length} jugador(es) en la enfermería: ${injured.map((p) => p.shortName).join(', ')}.`
-          : 'Plantilla sin lesionados.',
-        `Los tres jugadores con mejor asistencia: ${[...rows].sort((a, b) => b.pct - a.pct).slice(0, 3).map((r) => r.player).join(', ')}.`,
+          ? `${injured.length} en la enfermería: ${injured.map((p) => p.shortName).join(', ')}.`
+          : 'Plantilla sin lesionadas.',
+        `Las tres jugadoras con mejor asistencia: ${[...rows].sort((a, b) => b.pct - a.pct).slice(0, 3).map((r) => r.player).join(', ')}.`,
       ];
       return {
         id: uid('m'), role: 'assistant', intent, at: now(),

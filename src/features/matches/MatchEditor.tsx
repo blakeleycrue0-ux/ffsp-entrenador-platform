@@ -2,14 +2,15 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, visibleTeams } from '@/store/selectors';
+import { visibleTeams } from '@/store/selectors';
 import { Button, Card, Field, Input, PageHeader, Select, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { cn, toISODate, today, uid } from '@/lib/utils';
+import { CLUB_NAME, cn, toISODate, today } from '@/lib/utils';
+import { humanError } from '@/services/supabase';
 import type { Match } from '@/types';
 
 const empty = (teamId: string, competition: string, venue: string): Match => ({
-  id: uid('mat'),
+  id: '',
   teamId,
   opponent: '',
   competition,
@@ -24,9 +25,9 @@ export default function MatchEditor() {
   const { matchId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const { data, session: auth, teamId, dispatch, log } = useClub();
-  const staff = currentStaff(data, auth?.staffId);
-  const teams = visibleTeams(data, staff);
+  const { data, teamId, actions } = useClub();
+  const teams = visibleTeams(data);
+  const [busy, setBusy] = useState(false);
   const activeTeam = teams.find((t) => t.id === teamId) ?? teams[0];
 
   const existing = matchId ? data.matches.find((m) => m.id === matchId) : undefined;
@@ -36,21 +37,33 @@ export default function MatchEditor() {
 
   const patch = (p: Partial<Match>) => setForm((f) => ({ ...f, ...p }));
 
-  const save = () => {
+  const save = async () => {
+    if (!form.teamId) {
+      toast.error('Falta el equipo', 'Selecciona el equipo que juega este partido.');
+      return;
+    }
     if (!form.opponent.trim()) {
       toast.error('Falta el rival', 'Indica contra quién jugáis para poder preparar la convocatoria.');
       return;
     }
-    dispatch({ type: 'match/upsert', match: form });
-    log({
-      kind: 'convocatoria',
-      text: existing
-        ? `Has actualizado el partido contra ${form.opponent}.`
-        : `Has creado el partido contra ${form.opponent}.`,
-      link: `/app/partidos/${form.id}`,
-    });
-    toast.success(existing ? 'Partido actualizado ✓' : 'Partido creado ✓', 'Ya aparece en el calendario del equipo.');
-    navigate(`/app/partidos/${form.id}`);
+    setBusy(true);
+    try {
+      const saved = await actions.saveMatch(form);
+      await actions.log({
+        kind: 'convocatoria',
+        teamId: saved.teamId,
+        text: existing
+          ? `Has actualizado el partido contra ${saved.opponent}.`
+          : `Has creado el partido contra ${saved.opponent}.`,
+        link: `/app/partidos/${saved.id}`,
+      });
+      toast.success(existing ? 'Partido actualizado ✓' : 'Partido creado ✓', 'Ya aparece en el calendario del equipo.');
+      navigate(`/app/partidos/${saved.id}`);
+    } catch (e) {
+      toast.error('No hemos podido guardar el partido', humanError(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -70,7 +83,7 @@ export default function MatchEditor() {
             <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
               Cancelar
             </Button>
-            <Button size="sm" icon={<Save size={15} />} onClick={save}>
+            <Button size="sm" icon={<Save size={15} />} loading={busy} onClick={save}>
               Guardar partido
             </Button>
           </>
@@ -168,13 +181,13 @@ export default function MatchEditor() {
               </p>
               <div className="mt-2.5 flex items-center gap-3">
                 <span className="flex-1 text-right text-[14px] font-semibold text-ink-900">
-                  {form.home ? 'Santa Ponsa CF' : form.opponent || 'Rival'}
+                  {form.home ? CLUB_NAME : form.opponent || 'Rival'}
                 </span>
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-50 text-[10.5px] font-semibold text-brand-700">
                   vs
                 </span>
                 <span className="flex-1 text-[14px] font-semibold text-ink-900">
-                  {form.home ? form.opponent || 'Rival' : 'Santa Ponsa CF'}
+                  {form.home ? form.opponent || 'Rival' : CLUB_NAME}
                 </span>
               </div>
               <p className="mt-3 text-center text-[12.5px] text-ink-500">

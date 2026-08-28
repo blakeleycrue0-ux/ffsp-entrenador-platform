@@ -12,7 +12,7 @@
  */
 
 import type { Callup, Match, MessageTemplate, MessageTemplateKind, Player, Team } from '@/types';
-import { longDate } from '@/lib/utils';
+import { CLUB_NAME, longDate } from '@/lib/utils';
 
 export interface WhatsAppRecipient {
   name: string;
@@ -71,7 +71,7 @@ export const whatsapp = {
     throw new Error('Transporte real de WhatsApp no implementado en esta versión.');
   },
 
-  /** Enlace wa.me — permite al entrenador enviar hoy mismo desde su propio WhatsApp. */
+  /** Enlace wa.me — permite enviarlo hoy mismo desde el WhatsApp de la entrenadora. */
   deepLink(phone: string, body: string): string {
     return `https://wa.me/${phone.replace(/[^\d]/g, '')}?text=${encodeURIComponent(body)}`;
   },
@@ -100,12 +100,12 @@ export function buildCallupMessage(
     .join('\n');
 
   const fixture = match.home
-    ? `Santa Ponsa CF vs ${match.opponent}`
-    : `${match.opponent} vs Santa Ponsa CF`;
+    ? `${CLUB_NAME} vs ${match.opponent}`
+    : `${match.opponent} vs ${CLUB_NAME}`;
 
   return [
     '*CONVOCATORIA*',
-    `Santa Ponsa CF — ${team.name}`,
+    `${CLUB_NAME} — ${team.name}`,
     '',
     `⚽ ${fixture}`,
     `📅 ${longDate(match.date)}`,
@@ -116,7 +116,7 @@ export function buildCallupMessage(
     `👕 ${callup.kit}`,
     ...(callup.notes ? ['', `📝 ${callup.notes}`] : []),
     '',
-    `*Convocados (${called.length}):*`,
+    `*Convocadas (${called.length}):*`,
     list,
     '',
     'Confirmad asistencia respondiendo a este mensaje:',

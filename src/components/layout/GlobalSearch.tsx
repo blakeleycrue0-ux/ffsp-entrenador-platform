@@ -1,6 +1,6 @@
 /**
  * Búsqueda global (⌘K / Ctrl+K).
- * Busca jugadores, equipos, entrenamientos, ejercicios, partidos y mensajes,
+ * Busca jugadoras, equipos, entrenamientos, ejercicios, partidos y mensajes,
  * y muestra contexto útil en el propio resultado (asistencia, dorsal, fecha).
  */
 
@@ -8,11 +8,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CornerDownLeft, Dumbbell, MessageSquare, Search, Shield, Swords, User, UserSquare2 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, globalSearch, playerAttendance, visibleTeams, type SearchHit } from '@/store/selectors';
+import { globalSearch, playerAttendance, type SearchHit } from '@/store/selectors';
 import { cn } from '@/lib/utils';
 
 const ICONS: Record<SearchHit['kind'], typeof User> = {
-  jugador: User,
+  jugadora: User,
   equipo: Shield,
   entrenamiento: UserSquare2,
   ejercicio: Dumbbell,
@@ -21,7 +21,7 @@ const ICONS: Record<SearchHit['kind'], typeof User> = {
 };
 
 const KIND_LABEL: Record<SearchHit['kind'], string> = {
-  jugador: 'Jugador',
+  jugadora: 'Jugadora',
   equipo: 'Equipo',
   entrenamiento: 'Entrenamiento',
   ejercicio: 'Ejercicio',
@@ -30,15 +30,13 @@ const KIND_LABEL: Record<SearchHit['kind'], string> = {
 };
 
 export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { data, session } = useClub();
+  const { data } = useClub();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const staff = currentStaff(data, session?.staffId);
-  const teamIds = useMemo(() => visibleTeams(data, staff).map((t) => t.id), [data, staff]);
-  const hits = useMemo(() => globalSearch(data, teamIds, query), [data, teamIds, query]);
+  const hits = useMemo(() => globalSearch(data, query), [data, query]);
 
   useEffect(() => {
     if (open) {
@@ -71,7 +69,7 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
     }
   };
 
-  /** Contexto extra para jugadores: el entrenador quiere ver asistencia al buscar. */
+  /** Contexto extra: al buscar una jugadora interesa su asistencia. */
   const playerMeta = (id: string) => {
     const player = data.players.find((p) => p.id === id);
     if (!player) return null;
@@ -90,7 +88,7 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Buscar jugador, equipo, entrenamiento, ejercicio, partido…"
+            placeholder="Buscar jugadora, equipo, entrenamiento, ejercicio, partido…"
             className="h-14 flex-1 bg-transparent text-[15px] text-ink-900 outline-none placeholder:text-ink-400"
           />
           <kbd className="hidden rounded-md border border-ink-200 px-1.5 py-0.5 text-[11px] font-medium text-ink-400 sm:block">
@@ -103,7 +101,7 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
             <div className="px-3 py-6">
               <p className="text-[12.5px] font-medium uppercase tracking-wide text-ink-400">Sugerencias</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {['Sergi', 'Sub-17', 'Presión', 'Rondo', 'Atlético Palma'].map((s) => (
+                {['Sub-17', 'Presión', 'Rondo', 'Posesión'].map((s) => (
                   <button
                     key={s}
                     onClick={() => setQuery(s)}
@@ -117,12 +115,12 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
           ) : hits.length === 0 ? (
             <div className="px-4 py-10 text-center">
               <p className="text-[14px] font-medium text-ink-700">Sin resultados para «{query}»</p>
-              <p className="mt-1 text-[13px] text-ink-500">Prueba con el nombre de un jugador, un rival o una etiqueta.</p>
+              <p className="mt-1 text-[13px] text-ink-500">Prueba con el nombre de una jugadora, un rival o una etiqueta.</p>
             </div>
           ) : (
             hits.map((hit, i) => {
               const Icon = ICONS[hit.kind];
-              const meta = hit.kind === 'jugador' ? playerMeta(hit.id) : hit.meta;
+              const meta = hit.kind === 'jugadora' ? playerMeta(hit.id) : hit.meta;
               return (
                 <button
                   key={`${hit.kind}-${hit.id}`}

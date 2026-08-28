@@ -1,5 +1,5 @@
 /**
- * Sistema de componentes — FFSP VLE
+ * Sistema de componentes — FFSP
  * ---------------------------------------------------------------------------
  * Piezas neutras y reutilizables. Ninguna conoce el dominio: reciben props.
  * Paleta: blanco + grises + lila del escudo del Santa Ponsa CF.

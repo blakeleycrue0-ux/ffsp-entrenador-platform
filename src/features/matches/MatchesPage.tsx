@@ -2,14 +2,13 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarClock, ChevronRight, Clock, MapPin, Plus, Swords, Users } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, visibleTeams } from '@/store/selectors';
+import { visibleTeams } from '@/store/selectors';
 import { Badge, Card, EmptyState, LinkButton, PageHeader, Select, Tabs } from '@/components/ui';
-import { cn, longDate, relativeDay, toISODate, today } from '@/lib/utils';
+import { CLUB_NAME, cn, longDate, relativeDay, toISODate, today } from '@/lib/utils';
 
 export default function MatchesPage() {
-  const { data, session, teamId, setTeamId } = useClub();
-  const staff = currentStaff(data, session?.staffId);
-  const teams = visibleTeams(data, staff);
+  const { data, teamId, setTeamId } = useClub();
+  const teams = visibleTeams(data);
   const [tab, setTab] = useState('proximos');
 
   const matches = useMemo(() => {
@@ -86,7 +85,7 @@ export default function MatchesPage() {
           {matches.map((m) => {
             const callup = data.callups.find((c) => c.matchId === m.id);
             const selected = callup?.entries.filter((e) => e.selected) ?? [];
-            const confirmed = selected.filter((e) => e.response === 'confirmado').length;
+            const confirmed = selected.filter((e) => e.response === 'confirmada').length;
             const pending = selected.filter((e) => e.response === 'pendiente').length;
 
             return (
@@ -107,7 +106,7 @@ export default function MatchesPage() {
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     <div className="min-w-0 flex-1 text-right">
                       <p className="truncate text-[15px] font-semibold text-ink-900">
-                        {m.home ? 'Santa Ponsa CF' : m.opponent}
+                        {m.home ? CLUB_NAME : m.opponent}
                       </p>
                     </div>
                     {m.result ? (
@@ -121,7 +120,7 @@ export default function MatchesPage() {
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[15px] font-semibold text-ink-900">
-                        {m.home ? m.opponent : 'Santa Ponsa CF'}
+                        {m.home ? m.opponent : CLUB_NAME}
                       </p>
                     </div>
                   </div>
@@ -132,7 +131,7 @@ export default function MatchesPage() {
                       callup ? (
                         <div className="text-right">
                           <p className="text-[13.5px] font-medium text-ink-800 tabular-nums">
-                            {confirmed} / {selected.length} confirmados
+                            {confirmed} / {selected.length} confirmadas
                           </p>
                           <p className={cn('text-[12px]', pending > 0 ? 'text-[#9A6412]' : 'text-ink-400')}>
                             {pending > 0 ? `${pending} pendientes` : 'Convocatoria completa'}

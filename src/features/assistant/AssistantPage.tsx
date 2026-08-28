@@ -1,13 +1,12 @@
 import { Info, Sparkles } from 'lucide-react';
 import { AssistantPanel } from './AssistantPanel';
 import { useClub } from '@/store/store';
-import { currentStaff, teamById, visibleTeams } from '@/store/selectors';
+import { teamById, visibleTeams } from '@/store/selectors';
 import { Card, PageHeader, Select } from '@/components/ui';
 
 export default function AssistantPage() {
-  const { data, session, teamId, setTeamId } = useClub();
-  const staff = currentStaff(data, session?.staffId);
-  const teams = visibleTeams(data, staff);
+  const { data, teamId, setTeamId } = useClub();
+  const teams = visibleTeams(data);
   const team = teamById(data, teamId);
   const integration = data.integrations.find((i) => i.id === 'ia');
 
@@ -22,7 +21,7 @@ export default function AssistantPage() {
             FFSP Assistant
           </span>
         }
-        title="Asistente del entrenador"
+        title="Asistente de la entrenadora"
         description={`Conoce a tu ${team?.name ?? 'equipo'}: asistencias, lesiones, posiciones, calendario y convocatorias.`}
         actions={
           <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-auto min-w-[180px]">
@@ -44,7 +43,7 @@ export default function AssistantPage() {
           <h3 className="text-[14.5px] font-semibold">Cómo funciona</h3>
           <ol className="mt-3 space-y-2.5">
             {[
-              'Tú preguntas en lenguaje natural, como se lo dirías a tu segundo entrenador.',
+              'Tú preguntas en lenguaje natural, como se lo dirías a tu segunda entrenadora.',
               'El asistente consulta los datos reales del club: asistencias registradas, partes médicos, posiciones y calendario.',
               'Responde con una tarjeta accionable: una sesión completa, una tabla, un borrador de convocatoria o un mensaje.',
               'Tú decides. Guardar, editar o descartar. Nada sale del club sin tu confirmación explícita.',

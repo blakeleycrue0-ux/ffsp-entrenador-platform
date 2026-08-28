@@ -1,18 +1,18 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronsUpDown, LogOut, Plus, Settings, UserRound } from 'lucide-react';
+import { Building2, ChevronsUpDown, LogOut, Plus, Settings, UserRound } from 'lucide-react';
 import { Wordmark } from '@/components/ui/Brand';
 import { Avatar, Dropdown, MenuItem } from '@/components/ui';
 import { NAV, isActive } from './navigation';
 import { useClub } from '@/store/store';
 import { currentStaff, visibleTeams } from '@/store/selectors';
-import { ROLE_LABEL } from '@/services/auth';
+import { ROLE_LABEL, isCoordinator } from '@/services/auth';
 import { cn } from '@/lib/utils';
 
 export function Sidebar({ onCreate }: { onCreate: () => void }) {
-  const { data, session, teamId, setTeamId, signOut } = useClub();
+  const { data, teamId, setTeamId, signOut } = useClub();
   const { pathname } = useLocation();
-  const staff = currentStaff(data, session?.staffId);
-  const teams = visibleTeams(data, staff);
+  const staff = currentStaff(data);
+  const teams = visibleTeams(data);
   const activeTeam = teams.find((t) => t.id === teamId) ?? teams[0];
 
   return (
@@ -37,7 +37,9 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
                 <span className="block truncate text-[13.5px] font-semibold text-ink-900">
                   {activeTeam?.name ?? 'Sin equipo'}
                 </span>
-                <span className="block truncate text-[11.5px] text-ink-400">{activeTeam?.season}</span>
+                <span className="block truncate text-[11.5px] text-ink-400">
+                  {activeTeam?.season || 'Pendiente de asignación'}
+                </span>
               </span>
               <ChevronsUpDown size={15} className="shrink-0 text-ink-400" />
             </button>
@@ -46,8 +48,13 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
           {(close) => (
             <>
               <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
-                Equipos asignados
+                {isCoordinator(staff) ? 'Equipos del club' : 'Equipos asignados'}
               </p>
+              {teams.length === 0 && (
+                <p className="px-3 py-2 text-[13px] leading-relaxed text-ink-500">
+                  Todavía no tienes ningún equipo asignado.
+                </p>
+              )}
               {teams.map((t) => (
                 <button
                   key={t.id}
@@ -118,7 +125,7 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
         ))}
       </nav>
 
-      {/* Perfil del entrenador */}
+      {/* Perfil de la usuaria */}
       <div className="border-t border-ink-200/80 p-3">
         <Dropdown
           align="left"
@@ -144,6 +151,11 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
               <MenuItem icon={<Settings size={16} />} to="/app/configuracion" onClick={close}>
                 Configuración
               </MenuItem>
+              {isCoordinator(staff) && (
+                <MenuItem icon={<Building2 size={16} />} to="/app/club" onClick={close}>
+                  Gestión del club
+                </MenuItem>
+              )}
               <div className="my-1 h-px bg-ink-100" />
               <MenuItem icon={<LogOut size={16} />} tone="danger" onClick={signOut}>
                 Cerrar sesión

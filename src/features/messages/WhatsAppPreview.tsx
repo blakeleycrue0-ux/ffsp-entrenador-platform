@@ -56,7 +56,7 @@ export function WhatsAppPreviewModal({
     if (result.simulated) {
       toast.success(
         'Mensaje registrado en la plataforma ✓',
-        `Preparado para ${result.deliveredTo} destinatarios. WhatsApp no está conectado: el mensaje NO ha salido del VLE.`,
+        `Preparado para ${result.deliveredTo} destinatarios. WhatsApp no está conectado: el mensaje NO ha salido de la plataforma.`,
       );
     } else {
       toast.success('Convocatoria enviada ✓', `Entregada a ${result.deliveredTo} destinatarios.`);

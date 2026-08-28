@@ -12,7 +12,7 @@ const TAGS: DrillTag[] = [
 ];
 
 export default function DrillsPage() {
-  const { data, dispatch } = useClub();
+  const { data, actions } = useClub();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState<DrillTag[]>([]);
   const [onlyFav, setOnlyFav] = useState(false);
@@ -123,7 +123,7 @@ export default function DrillsPage() {
                   </h3>
                 </Link>
                 <button
-                  onClick={() => dispatch({ type: 'drill/favorite', id: d.id })}
+                  onClick={() => void actions.toggleFavorite(d)}
                   className={cn(
                     'shrink-0 rounded-lg p-1.5 transition-colors',
                     d.favorite ? 'text-sun' : 'text-ink-300 hover:text-sun',

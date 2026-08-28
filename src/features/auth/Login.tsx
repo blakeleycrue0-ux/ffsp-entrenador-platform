@@ -1,47 +1,106 @@
 /**
- * Acceso a la plataforma.
- * En la demostración se entra eligiendo un perfil del cuerpo técnico: así se
- * puede comprobar cómo cambian los permisos y los equipos visibles según el rol.
+ * Acceso a la plataforma — Supabase Auth (correo y contraseña).
+ * Tres modos en la misma pantalla: entrar, crear cuenta y recuperar contraseña.
  */
 
 import { useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Lock, ShieldCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Mail, ShieldCheck, User } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { ROLE_LABEL } from '@/services/auth';
-import { Avatar, Button, Badge } from '@/components/ui';
+import { auth } from '@/services/auth';
+import { humanError } from '@/services/supabase';
+import { Button, Field, Input } from '@/components/ui';
 import { Crest, Wordmark } from '@/components/ui/Brand';
-import { cn } from '@/lib/utils';
+
+type Mode = 'entrar' | 'registro' | 'recuperar';
 
 export default function Login() {
-  const { data, session, signIn, loading } = useClub();
-  const navigate = useNavigate();
+  const { userId, loading } = useClub();
   const location = useLocation() as { state?: { from?: string } };
-  const [selected, setSelected] = useState('st_1');
+
+  const [mode, setMode] = useState<Mode>('entrar');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  if (session) return <Navigate to={location.state?.from ?? '/app'} replace />;
+  if (userId && !loading) return <Navigate to={location.state?.from ?? '/app'} replace />;
 
-  const enter = async () => {
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setNotice(null);
+
+    if (!email.trim()) return setError('Escribe tu correo electrónico.');
+    if (mode !== 'recuperar' && password.length < 6) {
+      return setError('La contraseña debe tener al menos 6 caracteres.');
+    }
+    if (mode === 'registro' && !fullName.trim()) return setError('Escribe tu nombre y apellidos.');
+
     setBusy(true);
-    await signIn(selected);
-    navigate(location.state?.from ?? '/app', { replace: true });
+    try {
+      if (mode === 'entrar') {
+        await auth.signIn(email, password);
+        // El cambio de sesión lo detecta el store y redirige solo.
+      } else if (mode === 'registro') {
+        const result = await auth.signUp(email, password, fullName);
+        if (result.session) {
+          setNotice('Cuenta creada. Entrando…');
+        } else {
+          setNotice(
+            'Cuenta creada. Te hemos enviado un correo de confirmación: ábrelo y después vuelve a entrar aquí.',
+          );
+          setMode('entrar');
+        }
+      } else {
+        await auth.resetPassword(email);
+        setNotice('Si ese correo tiene cuenta, recibirás un enlace para cambiar la contraseña.');
+        setMode('entrar');
+      }
+    } catch (err) {
+      setError(humanError(err));
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const titles: Record<Mode, { title: string; sub: string; cta: string }> = {
+    entrar: {
+      title: 'Entrar',
+      sub: 'Accede con el correo con el que te dio de alta la coordinadora del club.',
+      cta: 'Entrar',
+    },
+    registro: {
+      title: 'Crear cuenta',
+      sub: 'Crea tu acceso. La coordinadora te asignará después tu equipo.',
+      cta: 'Crear cuenta',
+    },
+    recuperar: {
+      title: 'Recuperar contraseña',
+      sub: 'Te enviaremos un enlace para que puedas elegir una contraseña nueva.',
+      cta: 'Enviar enlace',
+    },
+  };
+  const t = titles[mode];
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Panel de marca */}
+      {/* Marca */}
       <div className="relative hidden flex-col justify-between overflow-hidden bg-brand-50/50 p-12 lg:flex">
         <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand-100/50 blur-3xl" />
-        <Link to="/" className="relative inline-flex items-center gap-2 text-[14px] font-medium text-ink-600 transition-colors hover:text-brand-800">
+        <Link
+          to="/"
+          className="relative inline-flex items-center gap-1.5 text-[14px] font-medium text-ink-600 transition-colors hover:text-brand-800"
+        >
           <ArrowLeft size={16} /> Volver
         </Link>
 
         <div className="relative">
           <Crest size={110} />
           <h1 className="mt-9 max-w-md text-[38px] font-semibold leading-[1.12] tracking-[-0.02em] text-ink-900">
-            El centro de operaciones del entrenador.
+            El centro de operaciones de la entrenadora.
           </h1>
           <p className="mt-5 max-w-sm text-[16px] leading-relaxed text-ink-500">
             Planifica, gestiona, comunica y mejora desde un único lugar.
@@ -50,14 +109,12 @@ export default function Login() {
           <div className="mt-10 flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3">
             <ShieldCheck size={18} className="shrink-0 text-brand-600" />
             <p className="text-[13px] leading-relaxed text-ink-600">
-              Los datos de los jugadores son privados. Cada perfil sólo ve los equipos que tiene asignados.
+              Cada entrenadora ve únicamente los equipos que tiene asignados. Los datos de las jugadoras son privados.
             </p>
           </div>
         </div>
 
-        <p className="relative text-[13px] text-ink-400">
-          FFSP VLE · Santa Ponsa CF · Temporada 2025/26
-        </p>
+        <p className="relative text-[13px] text-ink-400">FFSP · Santa Ponsa CF</p>
       </div>
 
       {/* Formulario */}
@@ -71,66 +128,104 @@ export default function Login() {
           </div>
 
           <div className="mt-8 lg:mt-0">
-            <h2 className="text-[24px] font-semibold leading-tight">Entrar en el VLE</h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-ink-500">
-              Elige el perfil con el que quieres recorrer la plataforma. Cada rol tiene permisos y equipos distintos.
-            </p>
+            <h2 className="text-[24px] font-semibold leading-tight">{t.title}</h2>
+            <p className="mt-2 text-[14px] leading-relaxed text-ink-500">{t.sub}</p>
           </div>
 
-          <div className="mt-7 space-y-2">
-            {data.staff.map((s) => {
-              const active = s.id === selected;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setSelected(s.id)}
-                  className={cn(
-                    'flex w-full items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all duration-150',
-                    active
-                      ? 'border-brand-400 bg-brand-50/60 ring-4 ring-brand-100'
-                      : 'border-ink-200 bg-white hover:border-brand-200 hover:bg-brand-50/30',
-                  )}
-                >
-                  <Avatar name={s.name} size={42} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14.5px] font-medium text-ink-900">{s.name}</span>
-                    <span className="block truncate text-[12.5px] text-ink-500">
-                      {ROLE_LABEL[s.role]} · {s.teamIds.length} equipo{s.teamIds.length === 1 ? '' : 's'}
-                    </span>
-                  </span>
-                  {s.role === 'entrenador' && (
-                    <Badge tone="brand" size="sm" className="shrink-0">
-                      Recomendado
-                    </Badge>
-                  )}
-                  <span
-                    className={cn(
-                      'grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors',
-                      active ? 'border-brand-700 bg-brand-700' : 'border-ink-300',
-                    )}
-                  >
-                    {active && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-                  </span>
-                </button>
-              );
-            })}
+          <form onSubmit={submit} className="mt-7 space-y-4">
+            {mode === 'registro' && (
+              <Field label="Nombre y apellidos">
+                <div className="relative">
+                  <User size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+                  <Input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Nombre y apellidos"
+                    autoComplete="name"
+                    className="pl-10"
+                  />
+                </div>
+              </Field>
+            )}
+
+            <Field label="Correo electrónico">
+              <div className="relative">
+                <Mail size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="nombre@correo.com"
+                  autoComplete="email"
+                  className="pl-10"
+                />
+              </div>
+            </Field>
+
+            {mode !== 'recuperar' && (
+              <Field
+                label="Contraseña"
+                hint={mode === 'registro' ? 'Mínimo 6 caracteres.' : undefined}
+              >
+                <div className="relative">
+                  <Lock size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
+                    className="pl-10"
+                  />
+                </div>
+              </Field>
+            )}
+
+            {error && (
+              <p className="rounded-xl border border-danger/25 bg-danger/5 px-3.5 py-2.5 text-[13px] leading-relaxed text-[#A63B34]">
+                {error}
+              </p>
+            )}
+            {notice && (
+              <p className="flex items-start gap-2 rounded-xl border border-pitch/25 bg-pitch/5 px-3.5 py-2.5 text-[13px] leading-relaxed text-[#1F6B44]">
+                <CheckCircle2 size={15} className="mt-0.5 shrink-0" />
+                {notice}
+              </p>
+            )}
+
+            <Button type="submit" block size="lg" loading={busy} icon={!busy ? <ArrowRight size={18} /> : undefined}>
+              {t.cta}
+            </Button>
+          </form>
+
+          <div className="mt-6 space-y-2 text-[13.5px]">
+            {mode === 'entrar' && (
+              <>
+                <p className="text-ink-500">
+                  ¿Has olvidado la contraseña?{' '}
+                  <button onClick={() => { setMode('recuperar'); setError(null); }} className="font-medium text-brand-700 hover:text-brand-800">
+                    Recupérala
+                  </button>
+                </p>
+                <p className="text-ink-500">
+                  ¿Aún no tienes cuenta?{' '}
+                  <button onClick={() => { setMode('registro'); setError(null); }} className="font-medium text-brand-700 hover:text-brand-800">
+                    Crear cuenta
+                  </button>
+                </p>
+              </>
+            )}
+            {mode !== 'entrar' && (
+              <button onClick={() => { setMode('entrar'); setError(null); }} className="font-medium text-brand-700 hover:text-brand-800">
+                ← Volver a entrar
+              </button>
+            )}
           </div>
 
-          <Button
-            block
-            size="lg"
-            className="mt-7"
-            loading={busy || loading}
-            onClick={enter}
-            icon={!busy ? <ArrowRight size={18} /> : undefined}
-          >
-            {busy ? 'Entrando…' : 'Entrar'}
-          </Button>
-
-          <p className="mt-5 flex items-start gap-2 text-[12.5px] leading-relaxed text-ink-400">
+          <p className="mt-8 flex items-start gap-2 text-[12.5px] leading-relaxed text-ink-400">
             <Lock size={14} className="mt-0.5 shrink-0" />
-            Demostración con datos ficticios. En producción el acceso se hará con las credenciales del club y
-            autenticación por roles.
+            La primera persona que cree una cuenta queda como coordinadora del club y podrá crear los equipos y asignar
+            al resto del cuerpo técnico.
           </p>
         </div>
       </div>

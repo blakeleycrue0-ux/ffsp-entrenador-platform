@@ -1,16 +1,17 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarClock, ChevronRight, Shield, Swords, Users } from 'lucide-react';
+import { CalendarClock, ChevronRight, Plus, Shield, Swords, Users } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, teamOverview, visibleTeams } from '@/store/selectors';
-import { Badge, EmptyState, PageHeader, SkeletonCard } from '@/components/ui';
+import { teamOverview, visibleTeams } from '@/store/selectors';
+import { isCoordinator } from '@/services/auth';
+import { Badge, EmptyState, LinkButton, PageHeader, SkeletonCard } from '@/components/ui';
 import { Ring } from '@/components/domain/Charts';
 import { relativeDay } from '@/lib/utils';
 
 export default function TeamsPage() {
-  const { data, session, loading } = useClub();
-  const staff = currentStaff(data, session?.staffId);
-  const teams = useMemo(() => visibleTeams(data, staff), [data, staff]);
+  const { data, loading } = useClub();
+  const staff = data.profile;
+  const teams = useMemo(() => visibleTeams(data), [data]);
   const overviews = useMemo(() => teams.map((t) => teamOverview(data, t)), [data, teams]);
 
   if (loading) {
@@ -26,15 +27,39 @@ export default function TeamsPage() {
     <>
       <PageHeader
         title="Mis equipos"
-        description={`${teams.length} equipos asignados · temporada ${teams[0]?.season ?? '—'}`}
+        description={
+          teams.length === 0
+            ? 'Aquí aparecerán los equipos que tengas asignados.'
+            : `${teams.length} ${teams.length === 1 ? 'equipo' : 'equipos'}${
+                teams[0]?.season ? ` · temporada ${teams[0].season}` : ''
+              }`
+        }
+        actions={
+          isCoordinator(staff) ? (
+            <LinkButton to="/app/equipos/nuevo" size="sm" icon={<Plus size={16} />}>
+              Crear equipo
+            </LinkButton>
+          ) : undefined
+        }
       />
 
       {teams.length === 0 ? (
         <div className="card">
           <EmptyState
             icon={<Shield size={26} />}
-            title="No tienes equipos asignados"
-            description="Pide al coordinador del club que te asigne un equipo para empezar a trabajar."
+            title={isCoordinator(staff) ? 'Todavía no hay equipos en el club' : 'No tienes equipos asignados'}
+            description={
+              isCoordinator(staff)
+                ? 'Crea el primer equipo de la temporada y asígnale su cuerpo técnico.'
+                : 'Pídele a la coordinadora del club que te asigne un equipo para empezar a trabajar.'
+            }
+            action={
+              isCoordinator(staff) ? (
+                <LinkButton to="/app/equipos/nuevo" size="sm">
+                  Crear equipo
+                </LinkButton>
+              ) : undefined
+            }
           />
         </div>
       ) : (
@@ -51,7 +76,7 @@ export default function TeamsPage() {
                     <p className="mt-1 text-[13px] text-ink-500">{o.team.competition}</p>
                     <div className="mt-2.5 flex flex-wrap gap-1.5">
                       <Badge tone="neutral" size="sm">
-                        <Users size={11} /> {o.squadSize} jugadores
+                        <Users size={11} /> {o.squadSize} jugadoras
                       </Badge>
                       {o.unavailable > 0 && (
                         <Badge tone="warning" size="sm">

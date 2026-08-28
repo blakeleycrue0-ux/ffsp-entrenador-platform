@@ -4,20 +4,20 @@ import {
   ArrowLeft, ClipboardList, Clock, Copy, MapPin, Package, PencilLine, Share2, Sparkles, Target, Trash2, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, visibleTeams } from '@/store/selectors';
+import { visibleTeams } from '@/store/selectors';
 import { Badge, Button, Card, LinkButton, PageHeader } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { addMinutes, cn, longDate, minutesToLabel, relativeDay, uid } from '@/lib/utils';
+import { addMinutes, cn, longDate, minutesToLabel, relativeDay } from '@/lib/utils';
+import { humanError } from '@/services/supabase';
 
 export default function SessionDetail() {
   const { sessionId = '' } = useParams();
-  const { data, session: auth, dispatch, log } = useClub();
+  const { data, actions } = useClub();
   const toast = useToast();
   const navigate = useNavigate();
-  const staff = currentStaff(data, auth?.staffId);
 
   const s = data.sessions.find((x) => x.id === sessionId);
-  const allowed = s && visibleTeams(data, staff).some((t) => t.id === s.teamId);
+  const allowed = s && visibleTeams(data).some((t) => t.id === s.teamId);
 
   const timeline = useMemo(() => {
     if (!s) return [];
@@ -33,20 +33,37 @@ export default function SessionDetail() {
 
   const team = data.teams.find((t) => t.id === s.teamId);
 
-  const duplicate = () => {
-    const copy = { ...s, id: uid('ses'), title: `${s.title} (copia)`, status: 'borrador' as const };
-    dispatch({ type: 'session/upsert', session: copy });
-    log({ kind: 'sesion', text: `Has duplicado «${s.title}».`, link: `/app/planificaciones/${copy.id}` });
-    toast.success('Entrenamiento duplicado', 'La copia se ha guardado como borrador.', {
-      label: 'Abrir copia',
-      onClick: () => navigate(`/app/planificaciones/${copy.id}`),
-    });
+  const duplicate = async () => {
+    try {
+      const copy = await actions.saveSession({
+        ...s,
+        id: '',
+        title: `${s.title} (copia)`,
+        status: 'borrador' as const,
+      });
+      await actions.log({
+        kind: 'sesion',
+        teamId: s.teamId,
+        text: `Has duplicado «${s.title}».`,
+        link: `/app/planificaciones/${copy.id}`,
+      });
+      toast.success('Entrenamiento duplicado', 'La copia se ha guardado como borrador.', {
+        label: 'Abrir copia',
+        onClick: () => navigate(`/app/planificaciones/${copy.id}`),
+      });
+    } catch (e) {
+      toast.error('No hemos podido duplicarlo', humanError(e));
+    }
   };
 
-  const remove = () => {
-    dispatch({ type: 'session/delete', id: s.id });
-    toast.success('Entrenamiento eliminado');
-    navigate('/app/planificaciones');
+  const remove = async () => {
+    try {
+      await actions.deleteSession(s.id);
+      toast.success('Entrenamiento eliminado');
+      navigate('/app/planificaciones');
+    } catch (e) {
+      toast.error('No hemos podido eliminarlo', humanError(e));
+    }
   };
 
   return (
@@ -101,7 +118,7 @@ export default function SessionDetail() {
         {[
           [<Clock key="1" size={16} />, 'Horario', `${s.start} – ${addMinutes(s.start, s.duration)}`, minutesToLabel(s.duration)],
           [<MapPin key="2" size={16} />, 'Campo', s.venue, team?.name ?? ''],
-          [<Users key="3" size={16} />, 'Jugadores', `${s.expectedPlayers}`, 'convocados a la sesión'],
+          [<Users key="3" size={16} />, 'Jugadoras', `${s.expectedPlayers}`, 'convocadas a la sesión'],
           [<Target key="4" size={16} />, 'Bloques', `${s.blocks.length}`, `${s.material.length} materiales`],
         ].map(([icon, label, value, hint], i) => (
           <Card key={i} className="flex items-start gap-3.5 p-4">

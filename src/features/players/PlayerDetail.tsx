@@ -1,35 +1,23 @@
 import { useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, Cake, Footprints, MessageSquare, Phone, Save, Shield, Target, TrendingUp, User,
+  ArrowLeft, Cake, Footprints, MessageSquare, PencilLine, Phone, Shield, Target, TrendingUp, User,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, playerAttendance, visibleTeams } from '@/store/selectors';
-import { can } from '@/services/auth';
-import {
-  Avatar, Badge, Button, Card, Field, Input, Modal, Select, Stat, Tabs, Textarea,
-} from '@/components/ui';
-import { useToast } from '@/components/ui/Toast';
+import { playerAttendance, visibleTeams } from '@/store/selectors';
+import { canSeePersonalData } from '@/services/auth';
+import { Avatar, Badge, Card, LinkButton, Stat, Tabs } from '@/components/ui';
 import { ATTENDANCE, AVAILABILITY } from '@/components/domain/StatusBits';
 import { BarTrend, Ring } from '@/components/domain/Charts';
 import { age, cn, dayShort, longDate, shortDate } from '@/lib/utils';
-import type { AvailabilityStatus, PlayerPosition } from '@/types';
-
-const POSITIONS: PlayerPosition[] = [
-  'Portero', 'Central', 'Lateral derecho', 'Lateral izquierdo', 'Pivote', 'Interior',
-  'Mediapunta', 'Extremo derecho', 'Extremo izquierdo', 'Delantero',
-];
 
 export default function PlayerDetail() {
   const { playerId = '' } = useParams();
-  const { data, session, dispatch, log } = useClub();
-  const toast = useToast();
-  const staff = currentStaff(data, session?.staffId);
+  const { data } = useClub();
   const [tab, setTab] = useState('asistencia');
-  const [editing, setEditing] = useState(false);
 
   const player = data.players.find((p) => p.id === playerId);
-  const allowed = player && visibleTeams(data, staff).some((t) => t.id === player.teamId);
+  const allowed = player && visibleTeams(data).some((t) => t.id === player.teamId);
 
   const records = useMemo(
     () =>
@@ -47,19 +35,18 @@ export default function PlayerDetail() {
     [data, player],
   );
 
-  if (!player || !allowed) return <Navigate to="/app/jugadores" replace />;
+  if (!player || !allowed) return <Navigate to="/app/jugadoras" replace />;
 
   const team = data.teams.find((t) => t.id === player.teamId);
-  const canEdit = can(staff, 'players.write');
-  const canSeeContact = can(staff, 'players.read.sensitive');
+  const canSeeContact = canSeePersonalData(data.profile);
 
   return (
     <>
       <Link
-        to="/app/jugadores"
+        to="/app/jugadoras"
         className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-500 transition-colors hover:text-brand-800"
       >
-        <ArrowLeft size={15} /> Jugadores
+        <ArrowLeft size={15} /> Jugadoras
       </Link>
 
       {/* Encabezado de ficha */}
@@ -84,7 +71,7 @@ export default function PlayerDetail() {
                 {player.secondaryPosition && <span className="text-ink-400">· {player.secondaryPosition}</span>}
               </span>
               <span className="flex items-center gap-1.5">
-                <Cake size={14} className="text-ink-400" /> {age(player.birthDate)} años
+                <Cake size={14} className="text-ink-400" /> {player.birthDate ? `${age(player.birthDate)} años` : 'Edad sin registrar'}
               </span>
               <span className="flex items-center gap-1.5">
                 <Footprints size={14} className="text-ink-400" /> {player.foot}
@@ -107,11 +94,14 @@ export default function PlayerDetail() {
             )}
 
             <div className="mt-5 flex flex-wrap gap-2">
-              {canEdit && (
-                <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-                  Editar ficha
-                </Button>
-              )}
+              <LinkButton
+                to={`/app/jugadoras/${player.id}/editar`}
+                size="sm"
+                variant="outline"
+                icon={<PencilLine size={15} />}
+              >
+                Editar ficha
+              </LinkButton>
               <Link
                 to="/app/mensajes/nuevo"
                 state={{ playerId: player.id, teamId: player.teamId }}
@@ -164,7 +154,7 @@ export default function PlayerDetail() {
               <div className="mt-4 space-y-2.5">
                 {[
                   ['Presente', row?.present ?? 0, 'bg-pitch'],
-                  ['Justificado', row?.justified ?? 0, 'bg-sun'],
+                  ['Justificada', row?.justified ?? 0, 'bg-sun'],
                   ['Ausente', row?.absent ?? 0, 'bg-danger'],
                 ].map(([label, n, color]) => (
                   <div key={label as string} className="flex items-center gap-2.5">
@@ -176,7 +166,8 @@ export default function PlayerDetail() {
               </div>
               {(row?.streak ?? 0) >= 2 && (
                 <p className="mt-4 rounded-xl border border-sun/30 bg-sun/5 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[#8A5A10]">
-                  Acumula {row!.streak} ausencias consecutivas. Puede ser buen momento para hablar con él o su familia.
+                  Acumula {row!.streak} ausencias consecutivas. Puede ser buen momento para hablar con ella o con su
+                  familia.
                 </p>
               )}
             </Card>
@@ -211,14 +202,14 @@ export default function PlayerDetail() {
               <h3 className="flex items-center gap-2 text-[15px] font-semibold">
                 <TrendingUp size={16} className="text-brand-600" /> Asistencia por sesión
               </h3>
-              <p className="mt-1 text-[13px] text-ink-500">100 % = presente, 50 % = justificado, 0 % = ausente.</p>
+              <p className="mt-1 text-[13px] text-ink-500">100 % = presente, 50 % = justificada, 0 % = ausente.</p>
               <BarTrend
                 className="mt-5"
                 data={[...records].reverse().map((r) => {
                   const mark = r.marks[player.id]?.mark ?? 'pendiente';
                   return {
                     label: shortDate(r.date).split(' ')[0],
-                    value: mark === 'presente' ? 100 : mark === 'justificado' ? 50 : 0,
+                    value: mark === 'presente' ? 100 : mark === 'justificada' ? 50 : 0,
                   };
                 })}
               />
@@ -259,11 +250,11 @@ export default function PlayerDetail() {
             {canSeeContact ? (
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <p className="section-title">Datos del jugador</p>
+                  <p className="section-title">Datos de la jugadora</p>
                   <dl className="mt-3 space-y-2.5 text-[13.5px]">
                     <div className="flex justify-between gap-4">
                       <dt className="text-ink-500">Fecha de nacimiento</dt>
-                      <dd className="font-medium text-ink-800">{longDate(player.birthDate)}</dd>
+                      <dd className="font-medium text-ink-800">{player.birthDate ? longDate(player.birthDate) : '—'}</dd>
                     </div>
                     <div className="flex justify-between gap-4">
                       <dt className="text-ink-500">Dorsal</dt>
@@ -271,7 +262,7 @@ export default function PlayerDetail() {
                     </div>
                     <div className="flex justify-between gap-4">
                       <dt className="text-ink-500">Alta en el club</dt>
-                      <dd className="font-medium text-ink-800">{shortDate(player.joinedAt)}</dd>
+                      <dd className="font-medium text-ink-800">{player.joinedAt ? shortDate(player.joinedAt) : '—'}</dd>
                     </div>
                     {player.phone && (
                       <div className="flex justify-between gap-4">
@@ -286,7 +277,7 @@ export default function PlayerDetail() {
                   <p className="section-title">Familia / tutores</p>
                   {player.guardians.length === 0 ? (
                     <p className="mt-3 text-[13.5px] text-ink-500">
-                      Jugador mayor de edad: la comunicación se hace directamente con él.
+                      Jugadora mayor de edad: la comunicación se hace directamente con ella.
                     </p>
                   ) : (
                     <ul className="mt-3 space-y-3">
@@ -304,8 +295,8 @@ export default function PlayerDetail() {
                 </div>
 
                 <p className="text-[12.5px] leading-relaxed text-ink-400 sm:col-span-2">
-                  Estos datos son personales y están sujetos a la política de protección de datos del club. Se muestran
-                  únicamente a los perfiles con permiso explícito.
+                  Estos datos son personales y están sujetos a la política de protección de datos del club. Sólo los ven los
+                  perfiles con permiso explícito y nunca aparecen en listados ni exportaciones.
                 </p>
               </div>
             ) : (
@@ -313,7 +304,7 @@ export default function PlayerDetail() {
                 <User size={26} className="mx-auto text-ink-300" />
                 <p className="mt-3 text-[14px] font-medium text-ink-700">Datos de contacto restringidos</p>
                 <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-relaxed text-ink-500">
-                  Tu rol no tiene permiso para ver la información personal de los jugadores ni la de sus familias.
+                  Tu rol no tiene permiso para ver la información personal de las jugadoras ni la de sus familias.
                 </p>
               </div>
             )}
@@ -321,125 +312,6 @@ export default function PlayerDetail() {
         )}
       </div>
 
-      {/* Edición de ficha */}
-      <EditPlayerModal
-        open={editing}
-        onClose={() => setEditing(false)}
-        player={player}
-        onSave={(updated) => {
-          dispatch({ type: 'player/update', player: updated });
-          log({ kind: 'jugador', text: `Has actualizado la ficha de ${updated.shortName}.`, link: `/app/jugadores/${updated.id}` });
-          toast.success('Ficha actualizada correctamente');
-          setEditing(false);
-        }}
-      />
     </>
-  );
-}
-
-function EditPlayerModal({
-  open, onClose, player, onSave,
-}: {
-  open: boolean;
-  onClose: () => void;
-  player: NonNullable<ReturnType<typeof useClub>['data']['players'][number]>;
-  onSave: (p: typeof player) => void;
-}) {
-  const [form, setForm] = useState(player);
-
-  return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={`Editar ficha · ${player.shortName}`}
-      subtitle="Los cambios afectan a convocatorias, asistencia y a lo que ve el asistente."
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button icon={<Save size={16} />} onClick={() => onSave(form)}>
-            Guardar cambios
-          </Button>
-        </>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Dorsal">
-          <Input
-            type="number"
-            value={form.number}
-            onChange={(e) => setForm({ ...form, number: Number(e.target.value) })}
-          />
-        </Field>
-        <Field label="Pie dominante">
-          <Select value={form.foot} onChange={(e) => setForm({ ...form, foot: e.target.value as typeof form.foot })}>
-            <option>Diestro</option>
-            <option>Zurdo</option>
-            <option>Ambidiestro</option>
-          </Select>
-        </Field>
-        <Field label="Posición principal">
-          <Select
-            value={form.position}
-            onChange={(e) => setForm({ ...form, position: e.target.value as PlayerPosition })}
-          >
-            {POSITIONS.map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Posición secundaria">
-          <Select
-            value={form.secondaryPosition ?? ''}
-            onChange={(e) =>
-              setForm({ ...form, secondaryPosition: (e.target.value || undefined) as PlayerPosition | undefined })
-            }
-          >
-            <option value="">Sin posición secundaria</option>
-            {POSITIONS.map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </Select>
-        </Field>
-
-        <Field label="Disponibilidad" className="sm:col-span-2">
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(AVAILABILITY) as AvailabilityStatus[]).map((s) => (
-              <button
-                key={s}
-                onClick={() => setForm({ ...form, availability: { ...form.availability, status: s } })}
-                className={cn(
-                  'flex items-center gap-2 rounded-xl border px-3 py-2 text-[13.5px] font-medium transition-all',
-                  form.availability.status === s
-                    ? 'border-brand-400 bg-brand-50 text-brand-800 ring-2 ring-brand-100'
-                    : 'border-ink-200 text-ink-600 hover:border-brand-200',
-                )}
-              >
-                <span className={cn('h-2 w-2 rounded-full', AVAILABILITY[s].dot)} />
-                {AVAILABILITY[s].label}
-              </button>
-            ))}
-          </div>
-        </Field>
-
-        <Field label="Motivo / observaciones" className="sm:col-span-2" hint="Se muestra en la convocatoria y en la ficha.">
-          <Textarea
-            value={form.availability.note ?? ''}
-            onChange={(e) => setForm({ ...form, availability: { ...form.availability, note: e.target.value } })}
-            placeholder="Ej.: esguince de tobillo grado I, retorno estimado en dos semanas."
-            className="min-h-[80px]"
-          />
-        </Field>
-
-        <Field label="Retorno estimado" className="sm:col-span-2">
-          <Input
-            type="date"
-            value={form.availability.until ?? ''}
-            onChange={(e) => setForm({ ...form, availability: { ...form.availability, until: e.target.value } })}
-          />
-        </Field>
-      </div>
-    </Modal>
   );
 }

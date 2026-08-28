@@ -31,7 +31,7 @@ export function Wordmark({
       <Crest size={crest} />
       <span className="flex flex-col leading-none">
         <span className={cn('font-semibold tracking-[-0.02em] text-ink-900', title)}>
-          FFSP <span className="text-brand-700">VLE</span>
+          <span className="text-brand-700">FFSP</span>
         </span>
         {showSubtitle && (
           <span className="mt-1 whitespace-nowrap text-[9.5px] font-medium uppercase tracking-[0.1em] text-ink-400">

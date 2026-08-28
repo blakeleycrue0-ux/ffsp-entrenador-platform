@@ -7,28 +7,32 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight, CalendarClock, CheckCircle2, ChevronRight, ClipboardList, Clock, MapPin,
-  Plus, Send, Sparkles, Swords, Users,
+  Plus, Send, Shield, Sparkles, Swords, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import {
   callupOfMatch, currentStaff, nextMatch, nextSession, squadOf, teamOverview, visibleTeams,
 } from '@/store/selectors';
+import { isCoordinator } from '@/services/auth';
+import { humanError } from '@/services/supabase';
+import { useToast } from '@/components/ui/Toast';
 import {
   Badge, Button, Card, Checkbox, EmptyState, LinkButton, ProgressBar, SkeletonCard,
 } from '@/components/ui';
 import { CrestWatermark } from '@/components/ui/Brand';
 import { Ring, SplitBar } from '@/components/domain/Charts';
-import { cn, daysFromToday, longDate, minutesToLabel, relativeDay, relativeTime, toISODate, today } from '@/lib/utils';
+import { CLUB_NAME, cn, daysFromToday, longDate, minutesToLabel, relativeDay, relativeTime, toISODate, today } from '@/lib/utils';
 import { CreateMenu } from '@/components/layout/CreateMenu';
 import type { CoachTask } from '@/types';
 
 export default function Dashboard() {
-  const { data, session, loading, teamId, dispatch } = useClub();
+  const { data, loading, loadError, teamId, actions } = useClub();
   const navigate = useNavigate();
+  const toast = useToast();
   const [createOpen, setCreateOpen] = useState(false);
 
-  const staff = currentStaff(data, session?.staffId);
-  const teams = useMemo(() => visibleTeams(data, staff), [data, staff]);
+  const staff = currentStaff(data);
+  const teams = useMemo(() => visibleTeams(data), [data]);
   const teamIds = teams.map((t) => t.id);
 
   const overviews = useMemo(() => teams.map((t) => teamOverview(data, t)), [data, teams]);
@@ -53,18 +57,18 @@ export default function Dashboard() {
     const marks = Object.values(lastAttendance?.marks ?? {});
     return {
       present: marks.filter((m) => m.mark === 'presente').length,
-      justified: marks.filter((m) => m.mark === 'justificado').length,
+      justified: marks.filter((m) => m.mark === 'justificada').length,
       absent: marks.filter((m) => m.mark === 'ausente').length,
     };
   }, [lastAttendance]);
 
   const selected = callup?.entries.filter((e) => e.selected) ?? [];
-  const confirmed = selected.filter((e) => e.response === 'confirmado').length;
+  const confirmed = selected.filter((e) => e.response === 'confirmada').length;
   const pendingCallup = selected.filter((e) => e.response === 'pendiente').length;
-  const declined = selected.filter((e) => e.response === 'rechazado').length;
+  const declined = selected.filter((e) => e.response === 'rechazada').length;
 
   const openTasks = data.tasks.filter((t) => !t.done);
-  const firstName = staff?.name.split(' ')[0] ?? 'entrenador';
+  const firstName = staff?.name.split(' ')[0] ?? '';
 
   if (loading) {
     return (
@@ -83,13 +87,59 @@ export default function Dashboard() {
     );
   }
 
+  // Error de carga: la base de datos todavía no está preparada o no hay red.
+  if (loadError) {
+    return (
+      <Card className="border-danger/25 bg-danger/5 p-6">
+        <h2 className="text-[16px] font-semibold text-[#A63B34]">No hemos podido cargar tus datos</h2>
+        <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-[#A63B34]/90">{loadError}</p>
+        <Button variant="outline" size="sm" className="mt-4" onClick={() => void actions.refresh()}>
+          Reintentar
+        </Button>
+      </Card>
+    );
+  }
+
+  // Estado inicial del club: todavía no hay equipos asignados.
+  if (teams.length === 0) {
+    return (
+      <div className="space-y-7">
+        <div>
+          <h1 className="text-[26px] font-semibold leading-tight sm:text-[30px]">
+            Hola{firstName ? `, ${firstName}` : ''} 👋
+          </h1>
+          <p className="mt-1.5 text-[14.5px] text-ink-500">{longDate(toISODate(today()))}</p>
+        </div>
+
+        <Card>
+          <EmptyState
+            icon={<Shield size={26} />}
+            title={isCoordinator(staff) ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
+            description={
+              isCoordinator(staff)
+                ? 'Crea los equipos de la temporada y asigna a cada entrenadora el suyo. A partir de ahí, cada una monta su plantilla, sus entrenamientos y sus convocatorias.'
+                : 'La coordinadora del club tiene que asignarte tu equipo. En cuanto lo haga, aquí verás tu día completo: entrenamiento, partido, asistencia y convocatoria.'
+            }
+            action={
+              isCoordinator(staff) ? (
+                <LinkButton to="/app/equipos/nuevo" size="sm">
+                  Crear equipo
+                </LinkButton>
+              ) : undefined
+            }
+          />
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-7">
       {/* Saludo */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-[26px] font-semibold leading-tight sm:text-[30px]">
-            Hola, {firstName} 👋
+            Hola{firstName ? `, ${firstName}` : ''} 👋
           </h1>
           <p className="mt-1.5 text-[14.5px] text-ink-500">
             Esto es lo que tienes preparado para hoy · {longDate(toISODate(today()))}
@@ -136,7 +186,7 @@ export default function Dashboard() {
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Users size={15} className="text-ink-400" />
-                  {session0.expectedPlayers} jugadores
+                  {session0.expectedPlayers} jugadoras
                 </span>
               </div>
 
@@ -193,7 +243,7 @@ export default function Dashboard() {
               <div className="mt-3 flex items-center gap-4">
                 <div className="flex-1 text-right">
                   <p className="text-[16px] font-semibold leading-tight text-ink-900">
-                    {match0.home ? 'Santa Ponsa CF' : match0.opponent}
+                    {match0.home ? CLUB_NAME : match0.opponent}
                   </p>
                   <p className="mt-0.5 text-[11.5px] text-ink-400">{match0.home ? 'Local' : 'Visitante'}</p>
                 </div>
@@ -202,7 +252,7 @@ export default function Dashboard() {
                 </span>
                 <div className="flex-1">
                   <p className="text-[16px] font-semibold leading-tight text-ink-900">
-                    {match0.home ? match0.opponent : 'Santa Ponsa CF'}
+                    {match0.home ? match0.opponent : CLUB_NAME}
                   </p>
                   <p className="mt-0.5 text-[11.5px] text-ink-400">{match0.home ? 'Visitante' : 'Local'}</p>
                 </div>
@@ -262,7 +312,7 @@ export default function Dashboard() {
           <div className="mt-4 flex items-center gap-5">
             <Ring value={overviews.find((o) => o.team.id === activeTeam?.id)?.attendanceRate ?? 0} size={80} label="media" />
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold text-ink-900">{squad.length} jugadores</p>
+              <p className="text-[15px] font-semibold text-ink-900">{squad.length} jugadoras</p>
               <p className="mt-0.5 text-[12.5px] text-ink-500">
                 {activeTeam?.name} ·{' '}
                 {lastAttendance ? `último registro ${relativeDay(lastAttendance.date).toLowerCase()}` : 'sin registros'}
@@ -281,7 +331,7 @@ export default function Dashboard() {
                     <span className="h-2 w-2 rounded-full bg-pitch" /> {attCounts.present} presentes
                   </span>
                   <span className="flex items-center gap-1.5 text-ink-600">
-                    <span className="h-2 w-2 rounded-full bg-sun" /> {attCounts.justified} justificados
+                    <span className="h-2 w-2 rounded-full bg-sun" /> {attCounts.justified} justificadas
                   </span>
                   <span className="flex items-center gap-1.5 text-ink-600">
                     <span className="h-2 w-2 rounded-full bg-danger" /> {attCounts.absent} ausentes
@@ -307,7 +357,7 @@ export default function Dashboard() {
             <>
               <div className="mt-3 flex items-baseline gap-2">
                 <span className="text-[30px] font-semibold leading-none text-ink-900 tabular-nums">{confirmed}</span>
-                <span className="text-[16px] text-ink-400">/ {selected.length} confirmados</span>
+                <span className="text-[16px] text-ink-400">/ {selected.length} confirmadas</span>
               </div>
               <p className="mt-1 text-[12.5px] text-ink-500">
                 {match0?.opponent} · {relativeDay(match0!.date).toLowerCase()} {match0?.start}
@@ -317,7 +367,7 @@ export default function Dashboard() {
 
               <div className="mt-3.5 grid grid-cols-3 gap-2 text-center">
                 {[
-                  { n: confirmed, l: 'Confirmados', c: 'text-[#1F6B44]' },
+                  { n: confirmed, l: 'Confirmadas', c: 'text-[#1F6B44]' },
                   { n: pendingCallup, l: 'Pendientes', c: 'text-[#9A6412]' },
                   { n: declined, l: 'No pueden', c: 'text-danger' },
                 ].map((x) => (
@@ -346,7 +396,7 @@ export default function Dashboard() {
               compact
               icon={<Users size={22} />}
               title="Sin convocatoria todavía"
-              description="Selecciona los jugadores y envíala por WhatsApp en dos pasos."
+              description="Selecciona a las jugadoras y envíala por WhatsApp en dos pasos."
               action={
                 match0 && (
                   <LinkButton to={`/app/partidos/${match0.id}`} size="sm">
@@ -372,7 +422,13 @@ export default function Dashboard() {
           ) : (
             <ul className="mt-3 -mx-1.5 space-y-0.5">
               {[...data.tasks].sort((a, b) => Number(a.done) - Number(b.done)).slice(0, 7).map((t) => (
-                <TaskRow key={t.id} task={t} onToggle={() => dispatch({ type: 'task/toggle', id: t.id })} />
+                <TaskRow
+                  key={t.id}
+                  task={t}
+                  onToggle={() =>
+                    actions.toggleTask(t).catch((e) => toast.error('No hemos podido guardar la tarea', humanError(e)))
+                  }
+                />
               ))}
             </ul>
           )}
@@ -417,7 +473,7 @@ export default function Dashboard() {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate text-[15px] font-semibold text-ink-900">{o.team.name}</p>
-                  <p className="mt-0.5 text-[12px] text-ink-400">{o.squadSize} jugadores</p>
+                  <p className="mt-0.5 text-[12px] text-ink-400">{o.squadSize} jugadoras</p>
                 </div>
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-[11px] font-bold text-brand-700">
                   {o.attendanceRate}%

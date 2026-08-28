@@ -1,5 +1,5 @@
 /**
- * FFSP Assistant — el asistente personal del entrenador.
+ * FFSP Assistant — el asistente personal de la entrenadora.
  * ---------------------------------------------------------------------------
  * No es un chat genérico: cada respuesta llega con una tarjeta accionable
  * (sesión, tabla de asistencia, convocatoria, borrador de mensaje) y con
@@ -18,7 +18,8 @@ import {
 import type { AssistantAction, AssistantMessage } from '@/types';
 import { ai } from '@/services/ai';
 import { useClub } from '@/store/store';
-import { currentStaff, teamById } from '@/store/selectors';
+import { teamById } from '@/store/selectors';
+import { humanError } from '@/services/supabase';
 import { useToast } from '@/components/ui/Toast';
 import { Badge, Button } from '@/components/ui';
 import { Crest } from '@/components/ui/Brand';
@@ -33,10 +34,10 @@ const SUGGESTIONS = [
 ];
 
 export function AssistantPanel({ variant = 'drawer' }: { variant?: 'drawer' | 'page' }) {
-  const { data, session, teamId, dispatch, log } = useClub();
+  const { data, teamId, actions } = useClub();
   const toast = useToast();
   const navigate = useNavigate();
-  const staff = currentStaff(data, session?.staffId);
+  const staff = data.profile;
   const team = teamById(data, teamId);
 
   const [messages, setMessages] = useState<AssistantMessage[]>([]);
@@ -60,23 +61,35 @@ export function AssistantPanel({ variant = 'drawer' }: { variant?: 'drawer' | 'p
     setBusy(false);
   };
 
-  const runAction = (action: AssistantAction, msg: AssistantMessage) => {
+  const runAction = async (action: AssistantAction, msg: AssistantMessage) => {
     switch (action.kind) {
       case 'guardar-sesion': {
         if (msg.card?.type !== 'session') return;
-        const s = { ...msg.card.session, status: 'planificado' as const };
-        dispatch({ type: 'session/upsert', session: s });
-        log({ kind: 'sesion', text: `Has guardado «${s.title}» generado por el asistente.`, link: `/app/planificaciones/${s.id}` });
-        toast.success('Entrenamiento guardado correctamente', 'Ya aparece en tus planificaciones.', {
-          label: 'Abrir entrenamiento',
-          onClick: () => navigate(`/app/planificaciones/${s.id}`),
-        });
+        try {
+          const s = await actions.saveSession({ ...msg.card.session, id: '', status: 'planificado' as const });
+          await actions.log({
+            kind: 'sesion',
+            teamId: s.teamId,
+            text: `Has guardado «${s.title}», generado por el asistente.`,
+            link: `/app/planificaciones/${s.id}`,
+          });
+          toast.success('Entrenamiento guardado correctamente', 'Ya aparece en tus planificaciones.', {
+            label: 'Abrir entrenamiento',
+            onClick: () => navigate(`/app/planificaciones/${s.id}`),
+          });
+        } catch (e) {
+          toast.error('No hemos podido guardar el entrenamiento', humanError(e));
+        }
         break;
       }
       case 'editar': {
         if (msg.card?.type === 'session') {
-          dispatch({ type: 'session/upsert', session: msg.card.session });
-          navigate(`/app/planificaciones/${msg.card.session.id}/editar`);
+          try {
+            const s = await actions.saveSession({ ...msg.card.session, id: '', status: 'borrador' as const });
+            navigate(`/app/planificaciones/${s.id}/editar`);
+          } catch (e) {
+            toast.error('No hemos podido abrir el constructor', humanError(e));
+          }
         } else if (msg.card?.type === 'message') {
           navigate('/app/mensajes/nuevo', { state: { draft: msg.card.draft, teamId: msg.card.teamId } });
         } else {
@@ -151,7 +164,7 @@ export function AssistantPanel({ variant = 'drawer' }: { variant?: 'drawer' | 'p
         ) : (
           <div className="mx-auto max-w-2xl space-y-5">
             {messages.map((m) => (
-              <MessageBubble key={m.id} message={m} onAction={(a) => runAction(a, m)} />
+              <MessageBubble key={m.id} message={m} onAction={(a) => void runAction(a, m)} />
             ))}
             {busy && <Thinking />}
             <div ref={endRef} />
@@ -302,7 +315,7 @@ function AssistantCard({ card }: { card: NonNullable<AssistantMessage['card']> }
         <table className="w-full text-[13.5px]">
           <thead>
             <tr className="border-b border-ink-100 bg-ink-50/60 text-[11.5px] uppercase tracking-wide text-ink-400">
-              <th className="px-4 py-2 text-left font-medium">Jugador</th>
+              <th className="px-4 py-2 text-left font-medium">Jugadora</th>
               <th className="px-3 py-2 text-right font-medium">Faltas</th>
               <th className="px-4 py-2 text-right font-medium">Asistencia</th>
             </tr>
@@ -329,7 +342,7 @@ function AssistantCard({ card }: { card: NonNullable<AssistantMessage['card']> }
     return (
       <div className="rounded-xl border border-ink-200 bg-white p-4">
         <div className="flex items-center gap-2">
-          <Badge tone="success" size="sm">{card.suggested.length} propuestos</Badge>
+          <Badge tone="success" size="sm">{card.suggested.length} propuestas</Badge>
           <Badge tone="danger" size="sm">{card.excluded.length} no disponibles</Badge>
         </div>
         {card.excluded.length > 0 && (

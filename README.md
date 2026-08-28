@@ -1,148 +1,146 @@
-# FFSP VLE — Sistema inteligente para entrenadores
+# FFSP — Sistema para entrenadores
 
 > **Menos gestión. Más tiempo para entrenar.**
 
-Centro de operaciones del entrenador de la FFSP / Santa Ponsa CF. Un único producto donde
-planificar, gestionar el equipo, pasar asistencia, convocar, comunicar y analizar — en lugar de
-repartir el mismo trabajo entre WhatsApp, el calendario del móvil, un Excel y un puñado de PDFs.
+Plataforma de gestión para el cuerpo técnico del Santa Ponsa CF. Cada entrenadora entra con su
+cuenta, ve **únicamente los equipos que tiene asignados** y monta ahí su trabajo: plantilla,
+entrenamientos, partidos, convocatorias, asistencia y comunicación.
+
+**No hay datos de ejemplo.** La plataforma arranca vacía y se llena con el trabajo real del club.
 
 ---
 
-## 1. Qué resuelve
+## 1. Puesta en marcha (una sola vez)
 
-El entrenador abre la plataforma a las 18:00, antes del entrenamiento, y responde de un vistazo:
+### Paso 1 — Crear las tablas en Supabase
 
-| Pregunta | Dónde se responde |
-|---|---|
-| ¿Qué tengo hoy y mañana? | Dashboard · Calendario |
-| ¿Quién viene y quién falta? | Asistencia · Ficha de jugador |
-| ¿Qué entrenamiento tengo preparado? | Planificaciones · detalle de sesión |
-| ¿Cuándo es el próximo partido y quién está convocado? | Partidos · Convocatoria |
-| ¿Quién no ha confirmado? | Dashboard · Convocatoria |
-| ¿Tengo mensajes o tareas pendientes? | Notificaciones · Tareas |
-| ¿Cómo evoluciona mi equipo? | Estadísticas |
-| ¿Y si no quiero hacerlo a mano? | **FFSP Assistant** |
+Abre el panel de Supabase del proyecto → **SQL Editor** → **New query**, pega el contenido
+completo de `supabase/migrations/0001_esquema_inicial.sql` y pulsa **Run**.
 
----
+Eso crea las tablas, los tipos, los índices, las políticas de seguridad y las plantillas de
+mensaje por defecto. Es idempotente: puede ejecutarse más de una vez sin romper nada.
 
-## 2. Módulos
+### Paso 2 — Ajustar la autenticación
 
-**Gestión** · Equipos · Jugadores (fichas, posiciones, disponibilidad, lesiones) · Calendario
-(día/semana/mes + exportación `.ics`) · Partidos · Convocatorias · Asistencia
+En **Authentication → Providers → Email**:
 
-**Formación** · Planificaciones con constructor visual arrastrable · Biblioteca de ejercicios ·
-Editor táctico sobre campo · Generador de sesiones con IA
+- Deja activado **Email**.
+- Decide si quieres **Confirm email**. Con la confirmación activada, cada persona recibe un correo
+  antes de poder entrar; sin ella, entra directamente. Para un club pequeño suele ser más cómodo
+  desactivarla.
 
-**Comunicación** · Mensajes y plantillas · Vista previa exacta e integración WhatsApp · Asistente IA
+Cuando ya estén todas las cuentas creadas, en **Authentication → Sign In / Providers** conviene
+**desactivar los registros nuevos** para que nadie ajeno al club pueda crearse una cuenta.
 
-**Análisis** · Estadísticas de asistencia, evolución y jugadores en riesgo
+### Paso 3 — La primera cuenta es la coordinadora
 
----
+La primera persona que se registre queda automáticamente como **coordinadora** (lo hace un trigger
+de la base de datos). Es quien podrá crear equipos y asignar al resto del cuerpo técnico.
 
-## 3. Arquitectura
-
-```
-src/
-├─ types/           Modelo de dominio (contrato único de datos)
-├─ data/            Datos de demostración deterministas, anclados a la fecha actual
-├─ services/        Integraciones aisladas de la UI
-│   ├─ repository   Persistencia   (hoy localStorage → mañana API REST)
-│   ├─ auth         Sesión, roles y permisos
-│   ├─ whatsapp     Composición y envío de mensajes
-│   ├─ ai           FFSP Assistant: intención → contexto del club → respuesta
-│   └─ calendar     Agenda unificada y exportación iCalendar
-├─ store/           Estado global (reducer tipado) + selectores derivados
-├─ components/
-│   ├─ ui/          Sistema de componentes neutro y reutilizable
-│   ├─ layout/      Sidebar, topbar, navegación móvil, búsqueda global
-│   └─ domain/      Estados, badges y micrográficos del dominio
-└─ features/        Una carpeta por módulo de producto
-```
-
-Regla de separación: **la UI no conoce la persistencia y los servicios no conocen la UI.** Toda
-la lógica derivada (asistencia media, próximos eventos, propuestas de convocatoria, búsqueda) vive
-en `store/selectors.ts`, no en los componentes.
-
-### Sustituir la capa de datos por un backend real
-
-`services/repository.ts` es el único punto que toca el almacenamiento:
-
-```ts
-load()  → GET   /api/club
-save()  → PATCH /api/club
-reset() → restaurar datos de demostración
-```
-
-Cambiar esas tres funciones por llamadas HTTP no requiere tocar ni un componente.
-
----
-
-## 4. Integraciones — qué está conectado y qué no
-
-Este punto es deliberado: **la plataforma nunca finge que algo ha ocurrido.**
-
-| Integración | Estado | Qué hay hecho | Qué falta |
-|---|---|---|---|
-| WhatsApp Business | **Sin conectar** | Interfaz completa, plantillas, vista previa exacta, estados de entrega y capa de transporte aislada | Credenciales del club (WhatsApp Cloud API: número verificado, token permanente y plantillas aprobadas por Meta) |
-| Asistente IA | **Motor local** | Detección de intención, contexto real del club y respuestas accionables | Clave de API de un modelo para sustituir `localProvider` por `remoteProvider` |
-| Calendario externo | **Exportación** | Agenda unificada y descarga `.ics` | Autorización OAuth para sincronización bidireccional |
-
-Mientras WhatsApp no esté conectado, todo envío se registra dentro del VLE y se marca
-explícitamente como simulación (`demo: true`), tanto en la interfaz como en el resultado del
-servicio. El asistente indica siempre que usa el motor local.
-
-**Regla de seguridad del asistente:** nunca envía comunicación externa por su cuenta. Prepara el
-borrador; el envío es siempre una acción explícita del entrenador desde la vista previa.
-
----
-
-## 5. Permisos y privacidad
-
-- Un técnico sólo ve y edita los **equipos que tiene asignados** (`visibleTeams`); las rutas de
-  detalle redirigen si el recurso no le pertenece.
-- Los datos personales de jugadores y familias requieren el permiso `players.read.sensitive` y sólo
-  aparecen dentro de la ficha individual: nunca en listados, búsquedas ni exportaciones.
-- La arquitectura de roles (`entrenador`, `segundo entrenador`, `preparador físico`, `coordinador`,
-  `director deportivo`, `administrador`) está definida en `types` y aplicada en `services/auth.ts`.
-
-En la pantalla de acceso se puede entrar con distintos perfiles para comprobar cómo cambian los
-permisos y los equipos visibles.
-
----
-
-## 6. Diseño
-
-- **Color:** lila `#653F8A`, extraído del escudo del Santa Ponsa CF, en escala completa de 50 a 900.
-  Se reserva para acciones principales, estados activos, indicadores y progreso. El resto es blanco
-  y grises.
-- **Base:** blanco, mucho aire, sombras muy suaves, bordes finos, tarjetas de 14–18 px de radio.
-- **Escudo:** se usa entero, con aire y sin recolorear. Marca de agua al 4,5 % en cabeceras.
-- **Movimiento:** transiciones de 150–280 ms, sin animaciones decorativas; se respeta
-  `prefers-reduced-motion`.
-- **Móvil:** navegación inferior de cinco destinos, botón flotante de creación al alcance del pulgar
-  y hoja «Más» con todas las secciones — en móvil no se esconde ninguna función.
-
----
-
-## 7. Puesta en marcha
+### Paso 4 — Arrancar
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # compilación de producción
-npm run preview    # servir la compilación
 ```
-
-**Atajos:** `⌘K` / `Ctrl+K` búsqueda global · `⌘J` / `Ctrl+J` asistente · `⌘I` / `Ctrl+I` menú Crear.
 
 ---
 
-## 8. Datos de demostración
+## 2. Cómo se pone en marcha el club
 
-Todo el contenido es ficticio y se genera de forma determinista y **relativa a la fecha actual**,
-de modo que siempre hay entrenamiento hoy, partido el fin de semana y convocatorias a medio
-confirmar: 4 equipos, 89 jugadores, 12 ejercicios con esquemas tácticos, sesiones, partidos,
-convocatorias, mensajes y 10 registros de asistencia.
+1. **La coordinadora crea su cuenta** → queda como coordinadora del club.
+2. **Crea los equipos** de la temporada en *Gestión del club → Crear equipo*.
+3. **Cada entrenadora crea su cuenta** desde la pantalla de acceso. Al entrar todavía no ve nada.
+4. **La coordinadora le asigna su equipo** en *Gestión del club → Equipos → Asignar*.
+5. A partir de ahí, cada entrenadora **sólo ve su equipo** y empieza a trabajar: añade jugadoras,
+   planifica entrenamientos, crea partidos, convoca y pasa asistencia.
 
-Los cambios que se hagan se guardan en el navegador. **Configuración → Datos → Restaurar** devuelve
-la plataforma a su estado inicial, útil antes de una demostración.
+---
+
+## 3. Seguridad y privacidad
+
+La protección **no está en la interfaz, está en la base de datos**. Todas las tablas tienen
+seguridad por filas (RLS) activada:
+
+| Regla | Cómo se aplica |
+|---|---|
+| Sin sesión no se lee ni una fila | Todas las políticas exigen `authenticated` |
+| Una entrenadora sólo ve sus equipos | `has_team_access(team_id)` comprueba `team_staff` |
+| Sólo coordinación crea equipos y asigna | `is_coordinator()` en las políticas de `teams` y `team_staff` |
+| Tareas y avisos son estrictamente personales | `profile_id = auth.uid()` |
+| La biblioteca de ejercicios es del club | Lectura común; edición sólo de quien lo creó o coordinación |
+
+Esto significa que, aunque alguien manipule la aplicación en su navegador, **el servidor sigue sin
+devolverle datos de equipos que no le corresponden**.
+
+**Sobre la clave `anon`:** está en el código a propósito. Es una clave *publicable*, pensada para
+ir en el navegador, y por sí sola no da acceso a nada — quien decide es RLS. Puede sustituirse por
+variables de entorno (`.env`, ver `.env.example`) para apuntar a otro proyecto.
+
+---
+
+## 4. Módulos
+
+**Gestión** · Equipos · Jugadoras (fichas, posiciones, disponibilidad, lesiones, familias) ·
+Calendario día/semana/mes con exportación `.ics` · Partidos · Convocatorias · Asistencia
+
+**Formación** · Planificaciones con constructor visual arrastrable · Biblioteca de ejercicios ·
+Editor táctico sobre campo · Generador de sesiones con IA
+
+**Comunicación** · Mensajes con plantillas del club · Vista previa exacta de WhatsApp · Asistente IA
+
+**Análisis** · Asistencia media, evolución y jugadoras a las que prestar atención
+
+**Club** (sólo coordinación) · Crear equipos · Asignar cuerpo técnico · Gestionar roles
+
+---
+
+## 5. Arquitectura
+
+```
+src/
+├─ types/           Modelo de dominio (espejo exacto del esquema SQL)
+├─ services/
+│   ├─ supabase     Cliente y traducción de errores a lenguaje comprensible
+│   ├─ db           Único punto que habla con la base de datos (camelCase ↔ snake_case)
+│   ├─ auth         Sesión de Supabase Auth y comprobaciones de rol
+│   ├─ whatsapp     Composición de mensajes y capa de envío
+│   ├─ ai           FFSP Assistant: intención → contexto del club → respuesta
+│   └─ calendar     Agenda unificada y exportación iCalendar
+├─ store/           Estado (reducer) + selectores derivados
+├─ components/      ui · layout · domain
+└─ features/        Una carpeta por módulo de producto
+```
+
+Regla: **ningún componente importa `supabase` directamente.** Escriben con `useClub().actions`,
+que primero guarda en el servidor y sólo después actualiza el estado local — así la interfaz nunca
+muestra como guardado algo que la base de datos ha rechazado.
+
+---
+
+## 6. Integraciones — qué está conectado y qué no
+
+| Integración | Estado | Qué falta |
+|---|---|---|
+| **Supabase** (datos y acceso) | **Conectado** | Nada: ejecutar la migración |
+| WhatsApp Business | Sin conectar | Credenciales del club: WhatsApp Cloud API con número verificado, token permanente y plantillas aprobadas por Meta |
+| Asistente IA | Motor local | Clave de API de un modelo, para sustituir `localProvider` por `remoteProvider` en `services/ai.ts` |
+| Calendario externo | Exportación `.ics` | Autorización OAuth para sincronización bidireccional |
+
+Mientras WhatsApp no esté conectado, cada mensaje se guarda en la plataforma marcado como **no
+enviado** y así se muestra en la interfaz. **Nunca se afirma que un mensaje ha salido si no lo ha
+hecho.**
+
+El asistente tampoco envía comunicación externa por su cuenta: prepara el borrador y el envío es
+siempre una acción explícita desde la vista previa.
+
+---
+
+## 7. Diseño
+
+- **Color:** lila `#653F8A`, extraído del escudo del Santa Ponsa CF, en escala de 50 a 900.
+  Reservado para acciones principales, estados activos y progreso; el resto es blanco y grises.
+- **Escudo:** se usa entero, con aire y sin recolorear.
+- **Móvil:** navegación inferior, botón flotante de creación y hoja «Más» con todas las secciones.
+- **Atajos:** `⌘K` búsqueda global · `⌘J` asistente · `⌘I` menú Crear.

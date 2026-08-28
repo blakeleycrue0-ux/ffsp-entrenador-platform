@@ -10,23 +10,24 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCheck, ClipboardList, Save, Undo2 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, squadOf, teamAttendanceRate, visibleTeams } from '@/store/selectors';
+import { squadOf, teamAttendanceRate, visibleTeams } from '@/store/selectors';
 import {
   Avatar, Badge, Button, Card, EmptyState, PageHeader, Select, Stat,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { ATTENDANCE, AVAILABILITY, AvailabilityDot } from '@/components/domain/StatusBits';
 import { SplitBar } from '@/components/domain/Charts';
-import { cn, longDate, relativeDay, toISODate, today, uid } from '@/lib/utils';
+import { cn, longDate, relativeDay, toISODate, today } from '@/lib/utils';
+import { humanError } from '@/services/supabase';
 import type { AttendanceMark } from '@/types';
 
-const MARKS: AttendanceMark[] = ['presente', 'justificado', 'ausente', 'pendiente'];
+const MARKS: AttendanceMark[] = ['presente', 'justificada', 'ausente', 'pendiente'];
 
 export default function AttendancePage() {
-  const { data, session: auth, teamId, setTeamId, dispatch, log } = useClub();
+  const { data, teamId, setTeamId, actions } = useClub();
   const toast = useToast();
-  const staff = currentStaff(data, auth?.staffId);
-  const teams = visibleTeams(data, staff);
+  const teams = visibleTeams(data);
+  const [saving, setSaving] = useState(false);
 
   const squad = useMemo(() => squadOf(data, teamId), [data, teamId]);
 
@@ -53,9 +54,9 @@ export default function AttendancePage() {
     const base: Record<string, { mark: AttendanceMark; reason?: string }> = {};
     squad.forEach((p) => {
       base[p.id] = existing?.marks[p.id] ?? {
-        // Un jugador con parte médico abierto entra ya como justificado.
-        mark: ['lesionado', 'enfermo', 'sancionado'].includes(p.availability.status) ? 'justificado' : 'pendiente',
-        reason: ['lesionado', 'enfermo', 'sancionado'].includes(p.availability.status)
+        // Una jugadora con parte médico abierto entra ya como justificada.
+        mark: ['lesionada', 'enferma', 'sancionada'].includes(p.availability.status) ? 'justificada' : 'pendiente',
+        reason: ['lesionada', 'enferma', 'sancionada'].includes(p.availability.status)
           ? AVAILABILITY[p.availability.status].label
           : undefined,
       };
@@ -73,7 +74,7 @@ export default function AttendancePage() {
     const list = Object.values(marks);
     return {
       presente: list.filter((m) => m.mark === 'presente').length,
-      justificado: list.filter((m) => m.mark === 'justificado').length,
+      justificada: list.filter((m) => m.mark === 'justificada').length,
       ausente: list.filter((m) => m.mark === 'ausente').length,
       pendiente: list.filter((m) => m.mark === 'pendiente').length,
     };
@@ -89,33 +90,38 @@ export default function AttendancePage() {
       const next = { ...m };
       squad.forEach((p) => {
         // No se pisa a quien ya tiene parte médico.
-        if (next[p.id]?.mark !== 'justificado') next[p.id] = { mark: 'presente' };
+        if (next[p.id]?.mark !== 'justificada') next[p.id] = { mark: 'presente' };
       });
       return next;
     });
     setDirty(true);
   };
 
-  const save = () => {
+  const save = async () => {
     if (!session) return;
-    dispatch({
-      type: 'attendance/upsert',
-      record: {
-        id: existing?.id ?? uid('att'),
+    setSaving(true);
+    try {
+      await actions.saveAttendance({
+        id: existing?.id ?? '',
         sessionId: session.id,
         teamId,
         date: session.date,
         marks,
         savedAt: new Date().toISOString(),
-      },
-    });
-    log({
-      kind: 'asistencia',
-      text: `Has registrado la asistencia del ${relativeDay(session.date).toLowerCase()} (${counts.presente} presentes).`,
-      link: '/app/asistencia',
-    });
-    toast.success('Asistencia registrada ✓', `${counts.presente} presentes · ${counts.ausente} ausentes`);
-    setDirty(false);
+      });
+      await actions.log({
+        kind: 'asistencia',
+        teamId,
+        text: `Has registrado la asistencia del ${relativeDay(session.date).toLowerCase()} (${counts.presente} presentes).`,
+        link: '/app/asistencia',
+      });
+      toast.success('Asistencia registrada ✓', `${counts.presente} presentes · ${counts.ausente} ausentes`);
+      setDirty(false);
+    } catch (e) {
+      toast.error('No hemos podido guardar la asistencia', humanError(e));
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (sessions.length === 0) {
@@ -151,7 +157,7 @@ export default function AttendancePage() {
             <Button variant="outline" size="sm" icon={<CheckCheck size={15} />} onClick={markAllPresent}>
               Marcar todos como presentes
             </Button>
-            <Button size="sm" icon={<Save size={15} />} onClick={save} disabled={!dirty && !!existing}>
+            <Button size="sm" icon={<Save size={15} />} loading={saving} onClick={save} disabled={!dirty && !!existing}>
               Guardar asistencia
             </Button>
           </div>
@@ -200,7 +206,7 @@ export default function AttendancePage() {
           <Stat label="Presentes" value={counts.presente} tone="success" hint="en esta sesión" />
         </Card>
         <Card className="p-5">
-          <Stat label="Justificados" value={counts.justificado} tone="warning" hint="con motivo" />
+          <Stat label="Justificadas" value={counts.justificada} tone="warning" hint="con motivo" />
         </Card>
         <Card className="p-5">
           <Stat label="Ausentes" value={counts.ausente} tone="danger" hint={`media del equipo ${teamAttendanceRate(data, teamId)}%`} />
@@ -212,7 +218,7 @@ export default function AttendancePage() {
           height={10}
           segments={[
             { value: counts.presente, color: 'bg-pitch', label: 'Presentes' },
-            { value: counts.justificado, color: 'bg-sun', label: 'Justificados' },
+            { value: counts.justificada, color: 'bg-sun', label: 'Justificadas' },
             { value: counts.ausente, color: 'bg-danger', label: 'Ausentes' },
             { value: counts.pendiente, color: 'bg-ink-200', label: 'Pendientes' },
           ]}
@@ -226,7 +232,7 @@ export default function AttendancePage() {
             const current = marks[p.id]?.mark ?? 'pendiente';
             return (
               <li key={p.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:px-5">
-                <Link to={`/app/jugadores/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3.5">
+                <Link to={`/app/jugadoras/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3.5">
                   <Avatar name={p.name} size={38} number={p.number} />
                   <span className="min-w-0">
                     <span className="block truncate text-[14px] font-medium text-ink-900">{p.shortName}</span>
@@ -254,7 +260,7 @@ export default function AttendancePage() {
                           active
                             ? m === 'presente'
                               ? 'border-pitch bg-pitch/10 text-[#1F6B44]'
-                              : m === 'justificado'
+                              : m === 'justificada'
                                 ? 'border-sun bg-sun/10 text-[#9A6412]'
                                 : m === 'ausente'
                                   ? 'border-danger bg-danger/8 text-[#A63B34]'
@@ -280,7 +286,7 @@ export default function AttendancePage() {
         <Card className="flex flex-col items-stretch gap-3 p-4 shadow-pop sm:flex-row sm:flex-wrap sm:items-center sm:justify-between lg:shadow-card">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone="success">{counts.presente} presentes</Badge>
-            <Badge tone="warning">{counts.justificado} justificados</Badge>
+            <Badge tone="warning">{counts.justificada} justificadas</Badge>
             <Badge tone="danger">{counts.ausente} ausentes</Badge>
             {counts.pendiente > 0 && <Badge tone="neutral">{counts.pendiente} sin marcar</Badge>}
           </div>
@@ -311,7 +317,7 @@ export default function AttendancePage() {
                 Descartar cambios
               </Button>
             )}
-            <Button size="sm" icon={<Save size={15} />} onClick={save} disabled={!dirty && !!existing} className="flex-1 sm:flex-none">
+            <Button size="sm" icon={<Save size={15} />} loading={saving} onClick={save} disabled={!dirty && !!existing} className="flex-1 sm:flex-none">
               Guardar
               <span className="hidden sm:inline">&nbsp;asistencia</span>
             </Button>

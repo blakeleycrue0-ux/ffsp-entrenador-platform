@@ -4,7 +4,7 @@ import {
   CalendarDays, ChevronLeft, ChevronRight, Clock, Download, MapPin, Plus, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, visibleTeams } from '@/store/selectors';
+import { visibleTeams } from '@/store/selectors';
 import { buildEvents, downloadICS } from '@/services/calendar';
 import {
   Badge, Button, Card, EmptyState, Modal, PageHeader, SegmentedControl, Select,
@@ -20,10 +20,9 @@ type View = 'dia' | 'semana' | 'mes';
 const DAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 export default function CalendarPage() {
-  const { data, session } = useClub();
+  const { data } = useClub();
   const toast = useToast();
-  const staff = currentStaff(data, session?.staffId);
-  const teams = visibleTeams(data, staff);
+  const teams = visibleTeams(data);
 
   const [view, setView] = useState<View>('semana');
   const [cursor, setCursor] = useState(() => today());
@@ -361,7 +360,7 @@ function EventModal({ event, onClose }: { event: CalendarEvent | null; onClose: 
       <dl className="space-y-3.5">
         {[
           [<Clock key="c" size={16} />, 'Horario', event.end ? `${event.start} – ${event.end}` : event.start],
-          [<Users key="u" size={16} />, 'Equipo', `${team?.name ?? '—'} · ${squad} jugadores`],
+          [<Users key="u" size={16} />, 'Equipo', `${team?.name ?? '—'} · ${squad} jugadoras`],
           [<MapPin key="m" size={16} />, 'Ubicación', event.venue ?? 'Sin definir'],
         ].map(([icon, label, value], i) => (
           <div key={i} className="flex items-start gap-3">
