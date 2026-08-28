@@ -8,7 +8,7 @@ import { cn, shortDate } from '@/lib/utils';
 
 export default function DrillDetail() {
   const { drillId = '' } = useParams();
-  const { data, dispatch } = useClub();
+  const { data, actions } = useClub();
   const toast = useToast();
 
   const d = data.drills.find((x) => x.id === drillId);
@@ -40,8 +40,11 @@ export default function DrillDetail() {
               size="sm"
               icon={<Star size={15} className={d.favorite ? 'fill-current text-sun' : ''} />}
               onClick={() => {
-                dispatch({ type: 'drill/favorite', id: d.id });
-                toast.success(d.favorite ? 'Quitado de favoritos' : 'Guardado en favoritos ✓');
+                const wasFavorite = d.favorite;
+                actions
+                  .toggleFavorite(d)
+                  .then(() => toast.success(wasFavorite ? 'Quitado de favoritos' : 'Guardado en favoritos ✓'))
+                  .catch(() => toast.error('No hemos podido guardar el favorito'));
               }}
             >
               {d.favorite ? 'En favoritos' : 'Guardar favorito'}
@@ -107,7 +110,7 @@ export default function DrillDetail() {
             <dl className="mt-3.5 space-y-3">
               {[
                 [<Clock key="a" size={15} />, 'Duración', `${d.duration} minutos`],
-                [<Users key="b" size={15} />, 'Jugadores', d.players],
+                [<Users key="b" size={15} />, 'Jugadoras', d.players],
                 [<Target key="c" size={15} />, 'Edad recomendada', d.ageRange],
               ].map(([icon, label, value], i) => (
                 <div key={i} className="flex items-center gap-3">
@@ -156,13 +159,11 @@ export default function DrillDetail() {
             )}
           </Card>
 
-          <Card className={cn('p-5', d.createdBy === 'club' ? 'bg-ink-50/60' : 'bg-brand-50/40')}>
+          <Card className={cn('p-5', 'bg-ink-50/60')}>
             <p className="text-[12.5px] leading-relaxed text-ink-500">
-              {d.createdBy === 'club'
-                ? 'Ejercicio de la biblioteca oficial del club. Puedes duplicarlo y adaptarlo a tu categoría.'
-                : d.createdBy === 'ia'
-                  ? 'Ejercicio propuesto por el asistente. Revísalo antes de usarlo con el grupo.'
-                  : 'Ejercicio creado por el cuerpo técnico.'}
+              {!d.createdBy
+                ? 'Ejercicio de la biblioteca del club. Puedes duplicarlo y adaptarlo a tu categoría.'
+                : 'Ejercicio creado por el cuerpo técnico. Toda la biblioteca es compartida por el club.'}
             </p>
           </Card>
         </div>

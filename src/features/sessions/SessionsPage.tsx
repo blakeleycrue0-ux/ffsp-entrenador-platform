@@ -2,14 +2,13 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarClock, ChevronRight, Clock, MapPin, Plus, Sparkles, UserSquare2 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, visibleTeams } from '@/store/selectors';
+import { visibleTeams } from '@/store/selectors';
 import { Badge, Card, EmptyState, LinkButton, PageHeader, Select, Tabs } from '@/components/ui';
 import { cn, minutesToLabel, relativeDay, toISODate, today } from '@/lib/utils';
 
 export default function SessionsPage() {
-  const { data, session, teamId, setTeamId } = useClub();
-  const staff = currentStaff(data, session?.staffId);
-  const teams = visibleTeams(data, staff);
+  const { data, teamId, setTeamId } = useClub();
+  const teams = visibleTeams(data);
   const [tab, setTab] = useState('proximas');
 
   const sessions = useMemo(() => {
@@ -137,7 +136,7 @@ export default function SessionsPage() {
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <span className="text-[12px] text-ink-400">{s.blocks.length} bloques · {s.expectedPlayers} jugadores</span>
+                <span className="text-[12px] text-ink-400">{s.blocks.length} bloques · {s.expectedPlayers} jugadoras</span>
                 <ChevronRight size={15} className="text-ink-300" />
               </div>
             </Link>

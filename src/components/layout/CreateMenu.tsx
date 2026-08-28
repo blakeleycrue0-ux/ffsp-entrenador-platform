@@ -11,10 +11,10 @@ const OPTIONS = [
   { icon: UserSquare2, label: 'Entrenamiento', hint: 'Crea la sesión desde cero o con el constructor', to: '/app/planificaciones/nuevo' },
   { icon: Sparkles, label: 'Entrenamiento con IA', hint: 'Describe el objetivo y te la genera', to: '/app/planificaciones/nuevo?ia=1', highlight: true },
   { icon: Swords, label: 'Partido', hint: 'Rival, competición, campo y horario', to: '/app/partidos/nuevo' },
-  { icon: Users, label: 'Convocatoria', hint: 'Selecciona jugadores y envíala por WhatsApp', to: '/app/partidos?convocar=1' },
+  { icon: Users, label: 'Jugadora', hint: 'Añádela a la plantilla de tu equipo', to: '/app/jugadoras/nueva' },
   { icon: MessageSquarePlus, label: 'Mensaje', hint: 'Equipo, individual o desde plantilla', to: '/app/mensajes/nuevo' },
   { icon: Dumbbell, label: 'Ejercicio', hint: 'Añádelo a la biblioteca del club', to: '/app/ejercicios/nuevo' },
-  { icon: CalendarPlus, label: 'Evento', hint: 'Reunión, charla o cualquier cita', to: '/app/calendario?nuevo=1' },
+  { icon: CalendarPlus, label: 'Evento', hint: 'Reunión, charla o cualquier cita', to: '/app/calendario' },
 ];
 
 export function CreateMenu({ open, onClose }: { open: boolean; onClose: () => void }) {

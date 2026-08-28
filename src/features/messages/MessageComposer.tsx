@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, Eye, FileText, Save, Send, Users } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, squadOf, visibleTeams } from '@/store/selectors';
+import { squadOf, visibleTeams } from '@/store/selectors';
+import { humanError } from '@/services/supabase';
 import { renderTemplate } from '@/services/whatsapp';
 import {
   Badge, Button, Card, Field, Input, PageHeader, Select, Textarea, Toggle,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { WhatsAppPreviewModal, WhatsAppStatusChip } from './WhatsAppPreview';
-import { cn, longDate, uid } from '@/lib/utils';
+import { cn, longDate } from '@/lib/utils';
 import type { MessageTemplateKind } from '@/types';
 
 interface ComposerState {
@@ -24,9 +25,9 @@ export default function MessageComposer() {
   const navigate = useNavigate();
   const toast = useToast();
   const location = useLocation() as { state?: ComposerState };
-  const { data, session: auth, teamId: activeTeam, dispatch, log } = useClub();
-  const staff = currentStaff(data, auth?.staffId);
-  const teams = visibleTeams(data, staff);
+  const { data, teamId: activeTeam, actions } = useClub();
+  const teams = visibleTeams(data);
+  const [busy, setBusy] = useState(false);
 
   const st = location.state ?? {};
   const [teamId, setTeamId] = useState(st.teamId ?? activeTeam);
@@ -89,15 +90,19 @@ export default function MessageComposer() {
     return squad.map((p) => ({ name: p.shortName, phone: p.guardians[0]?.phone ?? p.phone ?? '', playerId: p.id }));
   }, [scope, playerId, squad]);
 
-  const saveDraft = () => {
+  const saveDraft = async () => {
     if (!body.trim()) {
       toast.error('El mensaje está vacío', 'Escribe el texto o elige una plantilla antes de guardarlo.');
       return;
     }
-    dispatch({
-      type: 'message/upsert',
-      message: {
-        id: uid('msg'),
+    if (!teamId) {
+      toast.error('Falta el equipo', 'Selecciona a qué equipo va dirigido el mensaje.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await actions.saveMessage({
+        id: '',
         channel: 'whatsapp',
         kind: (template?.kind ?? 'general') as MessageTemplateKind,
         scope,
@@ -109,11 +114,15 @@ export default function MessageComposer() {
         createdAt: new Date().toISOString(),
         scheduledFor: scheduled && scheduleAt ? new Date(scheduleAt).toISOString() : undefined,
         recipients: recipients.length,
-        demo: true,
-      },
-    });
-    toast.success(scheduled ? 'Mensaje programado ✓' : 'Borrador guardado ✓');
-    navigate('/app/mensajes');
+        simulated: true,
+      });
+      toast.success(scheduled ? 'Mensaje programado ✓' : 'Borrador guardado ✓');
+      navigate('/app/mensajes');
+    } catch (e) {
+      toast.error('No hemos podido guardar el mensaje', humanError(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -131,7 +140,7 @@ export default function MessageComposer() {
         description="Elige destinatarios, escribe o usa una plantilla, y revisa la vista previa antes de enviar."
         actions={
           <>
-            <Button variant="ghost" size="sm" icon={<Save size={15} />} onClick={saveDraft}>
+            <Button variant="ghost" size="sm" icon={<Save size={15} />} loading={busy} onClick={saveDraft}>
               Guardar borrador
             </Button>
             <Button
@@ -185,12 +194,12 @@ export default function MessageComposer() {
               </Field>
 
               {scope === 'individual' && (
-                <Field label="Jugador" className="sm:col-span-2">
+                <Field label="Jugadora" className="sm:col-span-2">
                   <Select value={playerId} onChange={(e) => setPlayerId(e.target.value)}>
-                    <option value="">Selecciona un jugador…</option>
+                    <option value="">Selecciona una jugadora…</option>
                     {squad.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.number}. {p.shortName} — {p.position}
+                        {p.number}. {p.shortName}{p.position ? ` — ${p.position}` : ''}
                       </option>
                     ))}
                   </Select>
@@ -200,7 +209,7 @@ export default function MessageComposer() {
 
             <p className="mt-3 text-[12.5px] text-ink-500">
               {recipients.length} destinatario{recipients.length === 1 ? '' : 's'}
-              {scope === 'equipo' && ' (familias y jugadores mayores de edad del equipo)'}
+              {scope === 'equipo' && ' (familias y jugadoras mayores de edad del equipo)'}
             </p>
           </Card>
 
@@ -225,7 +234,7 @@ export default function MessageComposer() {
             </div>
 
             <div className="mt-4 space-y-4">
-              <Field label="Asunto interno" hint="Sólo se ve dentro del VLE, para que localices el mensaje después.">
+              <Field label="Asunto interno" hint="Sólo se ve dentro de la plataforma, para que localices el mensaje después.">
                 <Input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
@@ -310,32 +319,34 @@ export default function MessageComposer() {
         body={body}
         recipients={recipients}
         teamId={teamId}
-        subject={subject || 'Mensaje del entrenador'}
-        onSent={({ simulated, body: sentBody }) => {
-          dispatch({
-            type: 'message/upsert',
-            message: {
-              id: uid('msg'),
+        subject={subject || 'Mensaje de la entrenadora'}
+        onSent={async ({ simulated, body: sentBody }) => {
+          try {
+            await actions.saveMessage({
+              id: '',
               channel: 'whatsapp',
               kind: (template?.kind ?? 'general') as MessageTemplateKind,
               scope,
               teamId,
               playerId: scope === 'individual' ? playerId : undefined,
-              subject: subject || 'Mensaje del entrenador',
+              subject: subject || 'Mensaje de la entrenadora',
               body: sentBody,
               status: 'enviado',
               createdAt: new Date().toISOString(),
               sentAt: new Date().toISOString(),
               recipients: recipients.length,
-              demo: simulated,
-            },
-          });
-          log({
-            kind: 'mensaje',
-            text: `Has enviado «${subject || 'un mensaje'}» a ${recipients.length} destinatarios.`,
-            link: '/app/mensajes',
-          });
-          navigate('/app/mensajes');
+              simulated,
+            });
+            await actions.log({
+              kind: 'mensaje',
+              teamId,
+              text: `Has preparado «${subject || 'un mensaje'}» para ${recipients.length} destinatarios.`,
+              link: '/app/mensajes',
+            });
+            navigate('/app/mensajes');
+          } catch (e) {
+            toast.error('No hemos podido registrar el mensaje', humanError(e));
+          }
         }}
       />
     </>

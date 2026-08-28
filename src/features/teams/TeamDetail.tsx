@@ -5,10 +5,10 @@ import {
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import {
-  attendanceTrend, callupOfMatch, currentStaff, nextMatch, nextSession, playerAttendance,
+  attendanceTrend, callupOfMatch, nextMatch, nextSession, playerAttendance, staffOfTeam,
   squadOf, teamAttendanceRate, upcomingMatches, upcomingSessions, visibleTeams,
 } from '@/store/selectors';
-import { ROLE_LABEL } from '@/services/auth';
+import { ROLE_LABEL, isCoordinator } from '@/services/auth';
 import { Avatar, Badge, Card, EmptyState, LinkButton, PageHeader, Stat, Tabs } from '@/components/ui';
 import { LineTrend, Ring } from '@/components/domain/Charts';
 import { AvailabilityDot, AVAILABILITY } from '@/components/domain/StatusBits';
@@ -16,11 +16,11 @@ import { cn, longDate, minutesToLabel, relativeDay, shortDate } from '@/lib/util
 
 export default function TeamDetail() {
   const { teamId = '' } = useParams();
-  const { data, session } = useClub();
-  const staff = currentStaff(data, session?.staffId);
+  const { data } = useClub();
+  const staff = data.profile;
   const [tab, setTab] = useState('resumen');
 
-  const teams = visibleTeams(data, staff);
+  const teams = visibleTeams(data);
   const team = teams.find((t) => t.id === teamId);
 
   const squad = useMemo(() => (team ? squadOf(data, team.id) : []), [data, team]);
@@ -36,10 +36,10 @@ export default function TeamDetail() {
   const nm = nextMatch(data, [team.id]);
   const callup = callupOfMatch(data, nm?.id);
   const selected = callup?.entries.filter((e) => e.selected) ?? [];
-  const confirmed = selected.filter((e) => e.response === 'confirmado').length;
+  const confirmed = selected.filter((e) => e.response === 'confirmada').length;
   const pending = selected.filter((e) => e.response === 'pendiente').length;
   const unavailable = squad.filter((p) => !['disponible', 'duda'].includes(p.availability.status));
-  const coaches = data.staff.filter((s) => team.staffIds.includes(s.id));
+  const coaches = staffOfTeam(data, team.id);
 
   return (
     <>
@@ -69,6 +69,11 @@ export default function TeamDetail() {
             <LinkButton to="/app/asistencia" variant="outline" size="sm" icon={<ClipboardList size={15} />}>
               Pasar asistencia
             </LinkButton>
+            {isCoordinator(staff) && (
+              <LinkButton to={`/app/equipos/${team.id}/editar`} variant="ghost" size="sm">
+                Editar equipo
+              </LinkButton>
+            )}
             <LinkButton to="/app/planificaciones/nuevo" size="sm">
               Crear entrenamiento
             </LinkButton>
@@ -83,7 +88,7 @@ export default function TeamDetail() {
           <Stat label="Asistencia media" value={`${teamAttendanceRate(data, team.id)}%`} hint="últimas 6 sesiones" />
         </Card>
         <Card className="p-5">
-          <Stat label="Jugadores" value={squad.length} hint={`${unavailable.length} no disponibles`} />
+          <Stat label="Jugadoras" value={squad.length} hint={`${unavailable.length} no disponibles`} />
         </Card>
         <Card className="p-5">
           <Stat
@@ -94,7 +99,7 @@ export default function TeamDetail() {
         </Card>
         <Card className="p-5">
           <Stat
-            label="Convocados"
+            label="Convocadas"
             value={callup ? `${confirmed} / ${selected.length}` : '—'}
             hint={callup ? `${pending} pendientes de confirmar` : 'sin convocatoria'}
             tone={pending > 0 ? 'warning' : 'success'}
@@ -131,7 +136,7 @@ export default function TeamDetail() {
                 <ul className="mt-3.5 space-y-3">
                   {unavailable.map((p) => (
                     <li key={p.id}>
-                      <Link to={`/app/jugadores/${p.id}`} className="flex items-start gap-3 group">
+                      <Link to={`/app/jugadoras/${p.id}`} className="flex items-start gap-3 group">
                         <Avatar name={p.name} size={34} number={p.number} />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[13.5px] font-medium text-ink-800 group-hover:text-brand-800">
@@ -155,7 +160,7 @@ export default function TeamDetail() {
 
             <Card className="p-5 lg:col-span-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-[15px] font-semibold">Jugadores con menor asistencia</h3>
+                <h3 className="text-[15px] font-semibold">Jugadoras con menor asistencia</h3>
                 <Link to="/app/estadisticas" className="text-[12.5px] font-medium text-brand-700 hover:text-brand-800">
                   Ver estadísticas
                 </Link>
@@ -167,7 +172,7 @@ export default function TeamDetail() {
                   .map((r) => (
                     <Link
                       key={r.player.id}
-                      to={`/app/jugadores/${r.player.id}`}
+                      to={`/app/jugadoras/${r.player.id}`}
                       className="flex items-center gap-3 rounded-xl border border-ink-200 p-3 transition-colors hover:border-brand-300 hover:bg-brand-50/40"
                     >
                       <Avatar name={r.player.name} size={34} number={r.player.number} />
@@ -198,7 +203,7 @@ export default function TeamDetail() {
                 return (
                   <Link
                     key={p.id}
-                    to={`/app/jugadores/${p.id}`}
+                    to={`/app/jugadoras/${p.id}`}
                     className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-brand-50/40 sm:px-5"
                   >
                     <Avatar name={p.name} size={38} number={p.number} />
@@ -320,7 +325,7 @@ export default function TeamDetail() {
                   </LinkButton>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <Badge tone="success">{confirmed} confirmados</Badge>
+                  <Badge tone="success">{confirmed} confirmadas</Badge>
                   <Badge tone="warning">{pending} pendientes</Badge>
                   <Badge tone="danger">{selected.length - confirmed - pending} no pueden</Badge>
                 </div>
@@ -349,7 +354,7 @@ export default function TeamDetail() {
               <div className="text-center">
                 <Users size={22} className="mx-auto text-ink-300" />
                 <p className="mt-2 text-[13px] text-ink-500">
-                  Los cambios en el cuerpo técnico los gestiona el coordinador del club.
+                  Los cambios en el cuerpo técnico los gestiona la coordinadora del club.
                 </p>
               </div>
             </Card>

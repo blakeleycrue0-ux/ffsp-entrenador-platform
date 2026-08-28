@@ -26,13 +26,13 @@ const NOTIF_TONE: Record<Notification['icon'], string> = {
 };
 
 export function Topbar({ onSearch, onCreate }: { onSearch: () => void; onCreate: () => void }) {
-  const { data, session, dispatch } = useClub();
+  const { data, actions } = useClub();
   const navigate = useNavigate();
-  const staff = currentStaff(data, session?.staffId);
+  const staff = currentStaff(data);
   const unread = data.notifications.filter((n) => !n.read).length;
 
   const openNotification = (n: Notification, close: () => void) => {
-    dispatch({ type: 'notification/read', id: n.id });
+    void actions.readNotification(n.id);
     if (n.link) navigate(n.link);
     close();
   };
@@ -84,7 +84,7 @@ export function Topbar({ onSearch, onCreate }: { onSearch: () => void; onCreate:
                 <p className="text-[14px] font-semibold text-ink-900">Notificaciones</p>
                 {unread > 0 && (
                   <button
-                    onClick={() => dispatch({ type: 'notification/readAll' })}
+                    onClick={() => void actions.readAllNotifications()}
                     className="flex items-center gap-1.5 text-[12.5px] font-medium text-brand-700 hover:text-brand-800"
                   >
                     <CheckCheck size={14} /> Marcar todas

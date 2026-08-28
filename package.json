@@ -1,9 +1,9 @@
 {
-  "name": "ffsp-vle",
+  "name": "ffsp",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "FFSP VLE — Sistema inteligente para entrenadores (Santa Ponsa CF)",
+  "description": "FFSP — Sistema para entrenadores (Santa Ponsa CF)",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,6 +11,7 @@
     "typecheck": "tsc -b --noEmit false --emitDeclarationOnly false --pretty"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
     "clsx": "^2.1.1",
     "lucide-react": "^0.454.0",
     "react": "^18.3.1",

@@ -1,28 +1,30 @@
 /**
  * Selectores — toda la lógica derivada vive aquí, no en los componentes.
- * Aplican además el filtro de permisos: sólo se devuelven equipos asignados.
+ * El filtrado por permisos ya lo ha hecho el servidor (RLS): lo que llega en
+ * `data` es exactamente lo que la usuaria puede ver.
  */
 
 import type {
   AttendanceRecord, Callup, ClubData, Match, Player, Staff, Team, TrainingSession,
 } from '@/types';
-import { pct, shortDate, toISODate, today } from '@/lib/utils';
+import { normalize, pct, shortDate, toISODate, today } from '@/lib/utils';
 
-export const currentStaff = (data: ClubData, staffId?: string): Staff | null =>
-  data.staff.find((s) => s.id === staffId) ?? data.staff[0] ?? null;
+export const currentStaff = (data: ClubData): Staff | null => data.profile;
 
-/** Equipos visibles para el usuario en sesión. */
-export const visibleTeams = (data: ClubData, staff: Staff | null): Team[] => {
-  if (!staff) return [];
-  if (staff.permissions.includes('club.admin')) return data.teams;
-  return data.teams.filter((t) => staff.teamIds.includes(t.id));
-};
+/** Equipos visibles. Con RLS activo, `data.teams` ya viene filtrado. */
+export const visibleTeams = (data: ClubData): Team[] => data.teams;
 
 export const teamById = (data: ClubData, id: string) => data.teams.find((t) => t.id === id);
+
 export const squadOf = (data: ClubData, teamId: string): Player[] =>
   data.players.filter((p) => p.teamId === teamId).sort((a, b) => a.number - b.number);
 
 export const playerById = (data: ClubData, id: string) => data.players.find((p) => p.id === id);
+
+export const staffOfTeam = (data: ClubData, teamId: string): Staff[] => {
+  const ids = data.teamStaff.filter((l) => l.teamId === teamId).map((l) => l.profileId);
+  return data.staff.filter((s) => ids.includes(s.id));
+};
 
 /* ─────────────────────────────── Próximos eventos ────────────────────────── */
 
@@ -47,19 +49,10 @@ export const callupOfMatch = (data: ClubData, matchId?: string): Callup | undefi
 
 /* ─────────────────────────────────── Asistencia ──────────────────────────── */
 
-export interface AttendanceSummary {
-  total: number;
-  present: number;
-  justified: number;
-  absent: number;
-  pending: number;
-  rate: number;
-}
-
-export const summarizeRecord = (record: AttendanceRecord | undefined, squadSize: number): AttendanceSummary => {
+export const summarizeRecord = (record: AttendanceRecord | undefined, squadSize: number) => {
   const marks = Object.values(record?.marks ?? {});
   const present = marks.filter((m) => m.mark === 'presente').length;
-  const justified = marks.filter((m) => m.mark === 'justificado').length;
+  const justified = marks.filter((m) => m.mark === 'justificada').length;
   const absent = marks.filter((m) => m.mark === 'ausente').length;
   const counted = present + justified + absent;
   return {
@@ -97,7 +90,8 @@ export interface PlayerAttendance {
   absent: number;
   total: number;
   rate: number;
-  streak: number; // ausencias consecutivas más recientes
+  /** Ausencias consecutivas más recientes. */
+  streak: number;
 }
 
 export const playerAttendance = (data: ClubData, teamId: string, lastN = 10): PlayerAttendance[] => {
@@ -108,7 +102,7 @@ export const playerAttendance = (data: ClubData, teamId: string, lastN = 10): Pl
   return squadOf(data, teamId).map((player) => {
     const marks = records.map((r) => r.marks[player.id]?.mark ?? 'pendiente');
     const present = marks.filter((m) => m === 'presente').length;
-    const justified = marks.filter((m) => m === 'justificado').length;
+    const justified = marks.filter((m) => m === 'justificada').length;
     const absent = marks.filter((m) => m === 'ausente').length;
     let streak = 0;
     for (const m of marks) {
@@ -120,7 +114,6 @@ export const playerAttendance = (data: ClubData, teamId: string, lastN = 10): Pl
   });
 };
 
-/** Evolución semanal de la asistencia (para el gráfico sencillo). */
 export const attendanceTrend = (data: ClubData, teamId: string, weeks = 6) => {
   const records = data.attendance
     .filter((a) => a.teamId === teamId)
@@ -160,7 +153,7 @@ export const teamOverview = (data: ClubData, team: Team): TeamOverview => {
     nextSession: ns,
     nextMatch: nm,
     callup,
-    confirmed: selected.filter((e) => e.response === 'confirmado').length,
+    confirmed: selected.filter((e) => e.response === 'confirmada').length,
     pending: selected.filter((e) => e.response === 'pendiente').length,
     unavailable: squad.filter((p) => !['disponible', 'duda'].includes(p.availability.status)).length,
   };
@@ -170,57 +163,79 @@ export const teamOverview = (data: ClubData, team: Team): TeamOverview => {
 
 export interface SearchHit {
   id: string;
-  kind: 'jugador' | 'equipo' | 'entrenamiento' | 'ejercicio' | 'partido' | 'mensaje';
+  kind: 'jugadora' | 'equipo' | 'entrenamiento' | 'ejercicio' | 'partido' | 'mensaje';
   title: string;
   subtitle: string;
   meta?: string;
   to: string;
 }
 
-import { normalize } from '@/lib/utils';
-
-export function globalSearch(data: ClubData, teamIds: string[], query: string): SearchHit[] {
+export function globalSearch(data: ClubData, query: string): SearchHit[] {
   const q = normalize(query.trim());
   if (q.length < 2) return [];
   const hits: SearchHit[] = [];
   const teamName = (id: string) => data.teams.find((t) => t.id === id)?.name ?? '';
 
   data.players
-    .filter((p) => teamIds.includes(p.teamId) && normalize(p.name).includes(q))
+    .filter((p) => normalize(p.name).includes(q))
     .slice(0, 6)
     .forEach((p) =>
       hits.push({
-        id: p.id, kind: 'jugador', title: p.name,
-        subtitle: `${teamName(p.teamId)} · ${p.position}`,
-        meta: `Dorsal ${p.number}`, to: `/app/jugadores/${p.id}`,
+        id: p.id,
+        kind: 'jugadora',
+        title: p.name,
+        subtitle: `${teamName(p.teamId)}${p.position ? ` · ${p.position}` : ''}`,
+        meta: `Dorsal ${p.number}`,
+        to: `/app/jugadoras/${p.id}`,
       }),
     );
 
   data.teams
-    .filter((t) => teamIds.includes(t.id) && normalize(t.name).includes(q))
-    .forEach((t) => hits.push({ id: t.id, kind: 'equipo', title: t.name, subtitle: t.competition, to: `/app/equipos/${t.id}` }));
+    .filter((t) => normalize(t.name).includes(q))
+    .forEach((t) =>
+      hits.push({ id: t.id, kind: 'equipo', title: t.name, subtitle: t.competition || t.category, to: `/app/equipos/${t.id}` }),
+    );
 
   data.sessions
-    .filter((s) => teamIds.includes(s.teamId) && (normalize(s.title).includes(q) || normalize(s.objective).includes(q)))
+    .filter((s) => normalize(s.title).includes(q) || normalize(s.objective).includes(q))
     .slice(0, 5)
     .forEach((s) =>
-      hits.push({ id: s.id, kind: 'entrenamiento', title: s.title, subtitle: `${teamName(s.teamId)} · ${shortDate(s.date)}`, to: `/app/planificaciones/${s.id}` }),
+      hits.push({
+        id: s.id,
+        kind: 'entrenamiento',
+        title: s.title,
+        subtitle: `${teamName(s.teamId)} · ${shortDate(s.date)}`,
+        to: `/app/planificaciones/${s.id}`,
+      }),
     );
 
   data.drills
-    .filter((d) => normalize(d.name).includes(q) || normalize(d.objective).includes(q) || d.tags.some((t) => normalize(t).includes(q)))
+    .filter(
+      (d) =>
+        normalize(d.name).includes(q) ||
+        normalize(d.objective).includes(q) ||
+        d.tags.some((t) => normalize(t).includes(q)),
+    )
     .slice(0, 5)
-    .forEach((d) => hits.push({ id: d.id, kind: 'ejercicio', title: d.name, subtitle: d.tags.join(' · '), meta: `${d.duration}′`, to: `/app/ejercicios/${d.id}` }));
+    .forEach((d) =>
+      hits.push({ id: d.id, kind: 'ejercicio', title: d.name, subtitle: d.tags.join(' · '), meta: `${d.duration}′`, to: `/app/ejercicios/${d.id}` }),
+    );
 
   data.matches
-    .filter((m) => teamIds.includes(m.teamId) && normalize(m.opponent).includes(q))
+    .filter((m) => normalize(m.opponent).includes(q))
     .slice(0, 5)
     .forEach((m) =>
-      hits.push({ id: m.id, kind: 'partido', title: `${m.home ? 'vs' : 'en'} ${m.opponent}`, subtitle: `${teamName(m.teamId)} · ${shortDate(m.date)}`, to: `/app/partidos/${m.id}` }),
+      hits.push({
+        id: m.id,
+        kind: 'partido',
+        title: `${m.home ? 'vs' : 'en'} ${m.opponent}`,
+        subtitle: `${teamName(m.teamId)} · ${shortDate(m.date)}`,
+        to: `/app/partidos/${m.id}`,
+      }),
     );
 
   data.messages
-    .filter((m) => teamIds.includes(m.teamId) && normalize(m.subject).includes(q))
+    .filter((m) => normalize(m.subject).includes(q))
     .slice(0, 4)
     .forEach((m) => hits.push({ id: m.id, kind: 'mensaje', title: m.subject, subtitle: teamName(m.teamId), to: '/app/mensajes' }));
 

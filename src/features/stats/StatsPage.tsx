@@ -3,16 +3,15 @@ import { Link } from 'react-router-dom';
 import { AlertTriangle, TrendingDown, TrendingUp, Trophy } from 'lucide-react';
 import { useClub } from '@/store/store';
 import {
-  attendanceTrend, currentStaff, playerAttendance, squadOf, teamAttendanceRate, visibleTeams,
+  attendanceTrend, playerAttendance, squadOf, teamAttendanceRate, visibleTeams,
 } from '@/store/selectors';
 import { Avatar, Badge, Card, EmptyState, PageHeader, ProgressBar, Select, Stat } from '@/components/ui';
 import { BarTrend, LineTrend, Ring } from '@/components/domain/Charts';
 import { cn, dayShort, shortDate } from '@/lib/utils';
 
 export default function StatsPage() {
-  const { data, session, teamId, setTeamId } = useClub();
-  const staff = currentStaff(data, session?.staffId);
-  const teams = visibleTeams(data, staff);
+  const { data, teamId, setTeamId } = useClub();
+  const teams = visibleTeams(data);
 
   const squad = useMemo(() => squadOf(data, teamId), [data, teamId]);
   const rows = useMemo(() => playerAttendance(data, teamId), [data, teamId]);
@@ -34,7 +33,7 @@ export default function StatsPage() {
   if (records.length === 0) {
     return (
       <>
-        <PageHeader title="Estadísticas" description="Asistencia, evolución y jugadores a los que prestar atención." />
+        <PageHeader title="Estadísticas" description="Asistencia, evolución y jugadoras a las que prestar atención." />
         <Card>
           <EmptyState
             icon={<TrendingUp size={26} />}
@@ -50,7 +49,7 @@ export default function StatsPage() {
     <>
       <PageHeader
         title="Estadísticas"
-        description="Sólo lo que ayuda a decidir: asistencia, evolución y jugadores en riesgo."
+        description="Sólo lo que ayuda a decidir: asistencia, evolución y jugadoras en riesgo."
         actions={
           <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-auto min-w-[180px]">
             {teams.map((t) => (
@@ -81,7 +80,7 @@ export default function StatsPage() {
         </Card>
         <Card className="p-5">
           <Stat
-            label="Jugadores en riesgo"
+            label="Jugadoras en riesgo"
             value={risk.length}
             hint="ausencias seguidas o menos del 60 %"
             tone={risk.length > 0 ? 'warning' : 'success'}
@@ -124,7 +123,7 @@ export default function StatsPage() {
           <ul className="mt-4 space-y-3">
             {best.map((r, i) => (
               <li key={r.player.id}>
-                <Link to={`/app/jugadores/${r.player.id}`} className="group flex items-center gap-3">
+                <Link to={`/app/jugadoras/${r.player.id}`} className="group flex items-center gap-3">
                   <span className="w-5 text-center text-[12.5px] font-semibold text-ink-400 tabular-nums">{i + 1}</span>
                   <Avatar name={r.player.name} size={34} number={r.player.number} />
                   <span className="min-w-0 flex-1">
@@ -150,7 +149,7 @@ export default function StatsPage() {
           <ul className="mt-4 space-y-3">
             {worst.map((r, i) => (
               <li key={r.player.id}>
-                <Link to={`/app/jugadores/${r.player.id}`} className="group flex items-center gap-3">
+                <Link to={`/app/jugadoras/${r.player.id}`} className="group flex items-center gap-3">
                   <span className="w-5 text-center text-[12.5px] font-semibold text-ink-400 tabular-nums">{i + 1}</span>
                   <Avatar name={r.player.name} size={34} number={r.player.number} />
                   <span className="min-w-0 flex-1">
@@ -184,14 +183,14 @@ export default function StatsPage() {
             <AlertTriangle size={16} /> Merecen una conversación
           </h2>
           <p className="mt-1.5 text-[13px] leading-relaxed text-[#8A5A10]/85">
-            Jugadores con dos o más ausencias seguidas, o por debajo del 60 % de asistencia. Antes de tomar decisiones
-            deportivas suele merecer la pena hablar con ellos o con sus familias.
+            Jugadoras con dos o más ausencias seguidas, o por debajo del 60 % de asistencia. Antes de tomar decisiones
+            deportivas suele merecer la pena hablar con ellas o con sus familias.
           </p>
           <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {risk.map((r) => (
               <Link
                 key={r.player.id}
-                to={`/app/jugadores/${r.player.id}`}
+                to={`/app/jugadoras/${r.player.id}`}
                 className="flex items-center gap-3 rounded-xl border border-sun/25 bg-white p-3 transition-colors hover:border-sun/50"
               >
                 <Avatar name={r.player.name} size={34} number={r.player.number} />
@@ -224,7 +223,7 @@ export default function StatsPage() {
               <tr className="border-b border-ink-100 bg-ink-50/60 text-[11.5px] uppercase tracking-wide text-ink-400">
                 <th className="px-5 py-2.5 text-left font-medium">Fecha</th>
                 <th className="px-3 py-2.5 text-right font-medium">Presentes</th>
-                <th className="px-3 py-2.5 text-right font-medium">Justificados</th>
+                <th className="px-3 py-2.5 text-right font-medium">Justificadas</th>
                 <th className="px-3 py-2.5 text-right font-medium">Ausentes</th>
                 <th className="px-5 py-2.5 text-right font-medium">Asistencia</th>
               </tr>
@@ -233,7 +232,7 @@ export default function StatsPage() {
               {[...records].reverse().map((r) => {
                 const marks = Object.values(r.marks);
                 const present = marks.filter((m) => m.mark === 'presente').length;
-                const justified = marks.filter((m) => m.mark === 'justificado').length;
+                const justified = marks.filter((m) => m.mark === 'justificada').length;
                 const absent = marks.filter((m) => m.mark === 'ausente').length;
                 const pctv = Math.round((present / (marks.length || 1)) * 100);
                 return (

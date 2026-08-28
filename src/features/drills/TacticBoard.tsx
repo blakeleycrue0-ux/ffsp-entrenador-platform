@@ -2,8 +2,8 @@
  * Editor táctico.
  * ---------------------------------------------------------------------------
  * Pizarra sobre un campo de fútbol en SVG con coordenadas normalizadas (0-100)
- * para que sea responsive sin recalcular nada. Permite añadir jugadores
- * propios y rivales, balón, conos, portería, flechas (pase, desmarque,
+ * para que sea responsive sin recalcular nada. Permite añadir jugadoras
+ * propias y rivales, balón, conos, portería, flechas (pase, desmarque,
  * conducción), zonas y texto. El resultado se guarda dentro del ejercicio.
  */
 
@@ -20,7 +20,7 @@ type Tool =
 
 const TOOLS: { id: Tool; label: string; icon: typeof Circle }[] = [
   { id: 'seleccionar', label: 'Mover', icon: MousePointer2 },
-  { id: 'jugador', label: 'Jugador', icon: Users },
+  { id: 'jugador', label: 'Jugadora', icon: Users },
   { id: 'rival', label: 'Rival', icon: Circle },
   { id: 'balon', label: 'Balón', icon: CircleDot },
   { id: 'cono', label: 'Cono', icon: Triangle },
@@ -272,7 +272,7 @@ export function TacticBoard({
       {!readOnly && (
         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-ink-500">
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-brand-700" /> Jugador propio
+            <span className="h-2.5 w-2.5 rounded-full bg-brand-700" /> Jugadora propia
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full border border-ink-400 bg-white" /> Rival

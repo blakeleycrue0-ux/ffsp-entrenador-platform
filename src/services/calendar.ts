@@ -1,7 +1,7 @@
 /**
  * Servicio de calendario.
  * ---------------------------------------------------------------------------
- * Construye la agenda unificada del entrenador (entrenamientos + partidos +
+ * Construye la agenda unificada de la entrenadora (entrenamientos + partidos +
  * convocatorias) y exporta a iCalendar. La sincronización bidireccional con
  * Google Calendar / Apple Calendar se conectará sobre `subscribeUrl()`.
  */
@@ -57,14 +57,14 @@ export function toICS(events: CalendarEvent[]): string {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//FFSP VLE//Santa Ponsa CF//ES',
+    'PRODID:-//FFSP//Santa Ponsa CF//ES',
     'CALSCALE:GREGORIAN',
-    'X-WR-CALNAME:FFSP VLE — Santa Ponsa CF',
+    'X-WR-CALNAME:FFSP — Santa Ponsa CF',
   ];
   events.forEach((e) => {
     lines.push(
       'BEGIN:VEVENT',
-      `UID:${e.id}@ffsp-vle.demo`,
+      `UID:${e.id}@ffsp.santaponsacf`,
       `DTSTART:${icsDate(e.date, e.start)}`,
       `DTEND:${icsDate(e.date, e.end ?? addMinutes(e.start, 90))}`,
       `SUMMARY:${e.title}`,

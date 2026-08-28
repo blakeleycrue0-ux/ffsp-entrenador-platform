@@ -24,7 +24,7 @@ const TABS = [
 ];
 
 const MORE = [
-  { to: '/app/jugadores', label: 'Jugadores', icon: Users },
+  { to: '/app/jugadoras', label: 'Jugadoras', icon: Users },
   { to: '/app/calendario', label: 'Calendario', icon: CalendarDays },
   { to: '/app/partidos', label: 'Partidos', icon: Swords },
   { to: '/app/asistencia', label: 'Asistencia', icon: ClipboardList },
@@ -37,7 +37,7 @@ const MORE = [
 const QUICK = [
   { label: 'Nuevo entrenamiento', to: '/app/planificaciones/nuevo', icon: UserSquare2 },
   { label: 'Nuevo partido', to: '/app/partidos/nuevo', icon: Swords },
-  { label: 'Nueva convocatoria', to: '/app/partidos?convocar=1', icon: Users },
+  { label: 'Nueva jugadora', to: '/app/jugadoras/nueva', icon: Users },
   { label: 'Nuevo mensaje', to: '/app/mensajes/nuevo', icon: MessageSquare },
   { label: 'Nuevo ejercicio', to: '/app/ejercicios/nuevo', icon: Dumbbell },
 ];
@@ -45,8 +45,8 @@ const QUICK = [
 export function BottomNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { data, session, signOut } = useClub();
-  const staff = currentStaff(data, session?.staffId);
+  const { data, signOut } = useClub();
+  const staff = currentStaff(data);
   const [sheet, setSheet] = useState<null | 'more' | 'create'>(null);
 
   const active = (tab: (typeof TABS)[number]) =>
@@ -178,7 +178,7 @@ export function BottomNav() {
                     <UserRound size={18} className="text-ink-300" />
                   </button>
                   <button
-                    onClick={signOut}
+                    onClick={() => void signOut()}
                     className="mt-1 flex w-full items-center gap-3 rounded-xl px-2 py-3 text-left text-[14px] font-medium text-danger active:bg-danger/5"
                   >
                     <LogOut size={18} /> Cerrar sesión

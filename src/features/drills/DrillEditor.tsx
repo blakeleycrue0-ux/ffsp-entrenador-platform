@@ -4,8 +4,9 @@ import { ArrowLeft, Plus, Save, X } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { Button, Card, Field, Input, PageHeader, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { humanError } from '@/services/supabase';
 import { TacticBoard } from './TacticBoard';
-import { cn, uid } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import type { Drill, DrillTag, TacticShape } from '@/types';
 
 const TAGS: DrillTag[] = [
@@ -14,7 +15,7 @@ const TAGS: DrillTag[] = [
 ];
 
 const empty = (): Drill => ({
-  id: uid('drl'),
+  id: '',
   name: '',
   objective: '',
   tags: [],
@@ -25,21 +26,22 @@ const empty = (): Drill => ({
   description: '',
   progressions: [],
   tactic: [],
-  createdBy: 'entrenador',
 });
 
 export default function DrillEditor() {
   const { drillId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const { data, dispatch } = useClub();
+  const { data, actions } = useClub();
 
   const existing = drillId ? data.drills.find((d) => d.id === drillId) : undefined;
   const [form, setForm] = useState<Drill>(existing ?? empty());
 
   const patch = (p: Partial<Drill>) => setForm((f) => ({ ...f, ...p }));
 
-  const save = () => {
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
     if (!form.name.trim()) {
       toast.error('Falta el nombre del ejercicio', 'Ponle un nombre reconocible para el resto del cuerpo técnico.');
       return;
@@ -48,9 +50,16 @@ export default function DrillEditor() {
       toast.error('Añade al menos una etiqueta', 'Sin etiquetas el ejercicio no aparecerá en los filtros.');
       return;
     }
-    dispatch({ type: 'drill/upsert', drill: form });
-    toast.success(existing ? 'Ejercicio actualizado ✓' : 'Ejercicio guardado en la biblioteca ✓');
-    navigate(`/app/ejercicios/${form.id}`);
+    setBusy(true);
+    try {
+      const saved = await actions.saveDrill(form);
+      toast.success(existing ? 'Ejercicio actualizado ✓' : 'Ejercicio guardado en la biblioteca ✓');
+      navigate(`/app/ejercicios/${saved.id}`);
+    } catch (e) {
+      toast.error('No hemos podido guardar el ejercicio', humanError(e));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -70,7 +79,7 @@ export default function DrillEditor() {
             <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
               Cancelar
             </Button>
-            <Button size="sm" icon={<Save size={15} />} onClick={save}>
+            <Button size="sm" icon={<Save size={15} />} loading={busy} onClick={save}>
               Guardar ejercicio
             </Button>
           </>
@@ -95,7 +104,7 @@ export default function DrillEditor() {
               <Field label="Duración (minutos)">
                 <Input type="number" value={form.duration} onChange={(e) => patch({ duration: Number(e.target.value) })} />
               </Field>
-              <Field label="Jugadores">
+              <Field label="Jugadoras">
                 <Input value={form.players} onChange={(e) => patch({ players: e.target.value })} placeholder="12 – 18" />
               </Field>
               <Field label="Edad recomendada" className="sm:col-span-2">
@@ -128,7 +137,7 @@ export default function DrillEditor() {
               <Textarea
                 value={form.description}
                 onChange={(e) => patch({ description: e.target.value })}
-                placeholder="Espacio, número de jugadores, reglas, puntuación, rotaciones…"
+                placeholder="Espacio, número de jugadoras, reglas, puntuación, rotaciones…"
                 className="min-h-[130px]"
               />
             </Field>
@@ -137,7 +146,7 @@ export default function DrillEditor() {
           <Card className="p-5">
             <h2 className="text-[15px] font-semibold">Editor táctico</h2>
             <p className="mt-1 text-[13px] text-ink-500">
-              Coloca jugadores, dibuja movimientos y marca zonas. El esquema se guarda dentro del ejercicio.
+              Coloca jugadoras, dibuja movimientos y marca zonas. El esquema se guarda dentro del ejercicio.
             </p>
             <div className="mt-4">
               <TacticBoard shapes={form.tactic ?? []} onChange={(t: TacticShape[]) => patch({ tactic: t })} />

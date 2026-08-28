@@ -3,7 +3,7 @@ import {
   AlertTriangle, CheckCheck, Clock, FileText, MessageSquare, Plus, Send, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, visibleTeams } from '@/store/selectors';
+import { visibleTeams } from '@/store/selectors';
 import { Badge, Card, EmptyState, LinkButton, PageHeader, Tabs } from '@/components/ui';
 import { MESSAGE_STATUS } from '@/components/domain/StatusBits';
 import { WhatsAppStatusChip } from './WhatsAppPreview';
@@ -18,9 +18,8 @@ const TABS = [
 ];
 
 export default function MessagesPage() {
-  const { data, session } = useClub();
-  const staff = currentStaff(data, session?.staffId);
-  const teams = visibleTeams(data, staff);
+  const { data } = useClub();
+  const teams = visibleTeams(data);
   const [tab, setTab] = useState('todos');
 
   const messages = useMemo(() => {
@@ -66,7 +65,7 @@ export default function MessagesPage() {
               <p className="text-[14px] font-medium text-[#8A5A10]">WhatsApp Business no está conectado</p>
               <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-[#8A5A10]/85">
                 La interfaz y la capa de integración están completas, pero hasta que el club introduzca sus credenciales
-                los envíos se registran dentro del VLE y se marcan como simulación. Nunca decimos que un mensaje ha
+                los envíos se registran dentro de la plataforma y se marcan como no enviados. Nunca decimos que un mensaje ha
                 salido si no lo ha hecho.
               </p>
             </div>
@@ -151,7 +150,7 @@ export default function MessagesPage() {
                       <Badge tone={s.tone} size="sm">
                         {s.label}
                       </Badge>
-                      {m.demo && (
+                      {m.simulated && (
                         <Badge tone="warning" size="sm">
                           Simulado
                         </Badge>
@@ -209,7 +208,7 @@ export default function MessagesPage() {
           Cada convocatoria incluye tres respuestas rápidas: <strong className="font-medium text-ink-700">✅ Voy</strong>,{' '}
           <strong className="font-medium text-ink-700">❌ No puedo</strong> y{' '}
           <strong className="font-medium text-ink-700">❓ Aún no lo sé</strong>. Cuando WhatsApp esté conectado, el
-          webhook de respuestas actualizará el estado del jugador en la convocatoria sin que tengas que anotar nada.
+          webhook de respuestas actualizará el estado de cada jugadora en la convocatoria sin que tengas que anotar nada.
         </p>
       </div>
     </>

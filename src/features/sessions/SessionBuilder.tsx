@@ -14,13 +14,14 @@ import {
   Trash2, X,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, visibleTeams } from '@/store/selectors';
+import { visibleTeams } from '@/store/selectors';
 import { ai } from '@/services/ai';
 import {
   Badge, Button, Card, Field, Input, Modal, PageHeader, Select, Textarea,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { addMinutes, cn, minutesToLabel, normalize, toISODate, today, uid } from '@/lib/utils';
+import { humanError } from '@/services/supabase';
 import type { Drill, DrillTag, SessionBlock, TrainingSession } from '@/types';
 
 const TAGS: DrillTag[] = [
@@ -29,7 +30,7 @@ const TAGS: DrillTag[] = [
 ];
 
 const emptySession = (teamId: string): TrainingSession => ({
-  id: uid('ses'),
+  id: '',
   teamId,
   title: '',
   date: toISODate(today()),
@@ -48,9 +49,9 @@ export default function SessionBuilder() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const { data, session: auth, teamId, dispatch, log } = useClub();
-  const staff = currentStaff(data, auth?.staffId);
-  const teams = visibleTeams(data, staff);
+  const { data, teamId, actions } = useClub();
+  const teams = visibleTeams(data);
+  const [saving, setSaving] = useState(false);
 
   const existing = sessionId ? data.sessions.find((s) => s.id === sessionId) : undefined;
   const [draft, setDraft] = useState<TrainingSession>(() => existing ?? emptySession(teamId));
@@ -130,7 +131,11 @@ export default function SessionBuilder() {
       return { ...d, blocks };
     });
 
-  const save = (status: TrainingSession['status']) => {
+  const save = async (status: TrainingSession['status']) => {
+    if (!draft.teamId) {
+      toast.error('Falta el equipo', 'Selecciona el equipo para el que preparas la sesión.');
+      return;
+    }
     if (!draft.title.trim()) {
       toast.error('Falta el título del entrenamiento', 'Ponle un nombre para poder reconocerlo en tu planificación.');
       return;
@@ -139,18 +144,25 @@ export default function SessionBuilder() {
       toast.error('La sesión está vacía', 'Añade al menos un ejercicio desde la biblioteca o crea un bloque propio.');
       return;
     }
-    const saved: TrainingSession = { ...draft, duration: totalDuration, status };
-    dispatch({ type: 'session/upsert', session: saved });
-    log({
-      kind: 'sesion',
-      text: existing ? `Has actualizado «${saved.title}».` : `Has creado un nuevo entrenamiento: «${saved.title}».`,
-      link: `/app/planificaciones/${saved.id}`,
-    });
-    toast.success(
-      status === 'borrador' ? 'Borrador guardado ✓' : 'Entrenamiento guardado correctamente ✓',
-      `${minutesToLabel(totalDuration)} · ${saved.blocks.length} bloques`,
-    );
-    navigate(`/app/planificaciones/${saved.id}`);
+    setSaving(true);
+    try {
+      const saved = await actions.saveSession({ ...draft, duration: totalDuration, status });
+      await actions.log({
+        kind: 'sesion',
+        teamId: saved.teamId,
+        text: existing ? `Has actualizado «${saved.title}».` : `Has creado un nuevo entrenamiento: «${saved.title}».`,
+        link: `/app/planificaciones/${saved.id}`,
+      });
+      toast.success(
+        status === 'borrador' ? 'Borrador guardado ✓' : 'Entrenamiento guardado correctamente ✓',
+        `${minutesToLabel(totalDuration)} · ${saved.blocks.length} bloques`,
+      );
+      navigate(`/app/planificaciones/${saved.id}`);
+    } catch (e) {
+      toast.error('No hemos podido guardar el entrenamiento', humanError(e));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -170,10 +182,10 @@ export default function SessionBuilder() {
             <Button variant="outline" size="sm" icon={<Sparkles size={15} />} onClick={() => setAiOpen(true)}>
               Crear con IA
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => save('borrador')}>
+            <Button variant="ghost" size="sm" disabled={saving} onClick={() => save('borrador')}>
               Guardar borrador
             </Button>
-            <Button size="sm" icon={<Save size={15} />} onClick={() => save('planificado')}>
+            <Button size="sm" icon={<Save size={15} />} loading={saving} onClick={() => save('planificado')}>
               Guardar
             </Button>
           </>
@@ -218,7 +230,7 @@ export default function SessionBuilder() {
                   placeholder="¿Qué quieres que mejoren hoy?"
                 />
               </Field>
-              <Field label="Número de jugadores">
+              <Field label="Número de jugadoras">
                 <Input
                   type="number"
                   value={draft.expectedPlayers}
@@ -240,7 +252,7 @@ export default function SessionBuilder() {
                 <Textarea
                   value={draft.notes ?? ''}
                   onChange={(e) => update({ notes: e.target.value })}
-                  placeholder="Notas para el cuerpo técnico, cargas individuales, jugadores al margen…"
+                  placeholder="Notas para el cuerpo técnico, cargas individuales, jugadoras al margen…"
                   className="min-h-[72px]"
                 />
               </Field>
@@ -534,9 +546,8 @@ function AIGeneratorModal({
   defaultTeamId: string;
   onGenerated: (s: TrainingSession) => void;
 }) {
-  const { data, session: auth } = useClub();
-  const staff = currentStaff(data, auth?.staffId);
-  const teams = visibleTeams(data, staff);
+  const { data } = useClub();
+  const teams = visibleTeams(data);
 
   const [form, setForm] = useState({
     teamId: defaultTeamId,
@@ -637,7 +648,7 @@ function AIGeneratorModal({
               onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })}
             />
           </Field>
-          <Field label="Número de jugadores">
+          <Field label="Número de jugadoras">
             <Input
               type="number"
               value={form.players}

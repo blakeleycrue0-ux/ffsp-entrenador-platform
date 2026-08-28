@@ -1,96 +1,93 @@
 /**
- * FFSP VLE — Modelo de dominio
+ * FFSP — Modelo de dominio
  * ---------------------------------------------------------------------------
- * Estos tipos son el contrato entre la capa de datos (hoy: repositorio local
- * con datos de demostración; mañana: API real), los servicios (IA, WhatsApp)
- * y la UI. Ningún componente debería inventar su propia forma de los datos.
+ * Contrato único entre la base de datos (Supabase), los servicios y la interfaz.
+ * Los valores de los estados coinciden exactamente con los tipos `enum` de
+ * PostgreSQL definidos en supabase/migrations/0001_esquema_inicial.sql.
  */
 
 /* ────────────────────────────── Identidad y accesos ───────────────────────── */
 
 export type StaffRole =
-  | 'entrenador'
-  | 'segundo-entrenador'
-  | 'preparador-fisico'
-  | 'director-deportivo'
-  | 'coordinador'
+  | 'entrenadora'
+  | 'segunda-entrenadora'
+  | 'preparadora-fisica'
+  | 'directora-deportiva'
+  | 'coordinadora'
   | 'admin-club';
-
-export type Permission =
-  | 'teams.read'
-  | 'teams.write'
-  | 'players.read'
-  | 'players.read.sensitive'
-  | 'players.write'
-  | 'sessions.read'
-  | 'sessions.write'
-  | 'matches.write'
-  | 'callups.write'
-  | 'attendance.write'
-  | 'messages.send'
-  | 'club.admin';
 
 export interface Staff {
   id: string;
   name: string;
-  avatar?: string;
-  role: StaffRole;
   email: string;
   phone?: string;
-  licence?: string; // UEFA B, Nivel 2...
-  teamIds: string[]; // equipos asignados → base del control de acceso
-  permissions: Permission[];
+  licence?: string;
+  role: StaffRole;
+  avatar?: string;
+  /** Equipos asignados en `team_staff`. Base del control de acceso. */
+  teamIds: string[];
+  createdAt?: string;
 }
+
+/** Roles con permiso para crear equipos y asignar cuerpo técnico. */
+export const COORDINATOR_ROLES: StaffRole[] = ['coordinadora', 'directora-deportiva', 'admin-club'];
 
 /* ────────────────────────────────── Equipos ───────────────────────────────── */
 
-export type Category =
-  | 'Primer Equipo'
-  | 'Juvenil'
-  | 'Cadete'
-  | 'Infantil'
-  | 'Alevín'
-  | 'Benjamín';
+export interface TrainingSlot {
+  weekday: number;
+  start: string;
+  end: string;
+  venue: string;
+}
 
 export interface Team {
   id: string;
-  name: string; // "Sub-17"
-  category: Category;
-  season: string; // "2025/26"
+  name: string;
+  category: string;
+  season: string;
   competition: string;
-  colorAccent?: string;
-  staffIds: string[];
   venue: string;
-  trainingSlots: { weekday: number; start: string; end: string; venue: string }[];
+  trainingSlots: TrainingSlot[];
+  createdBy?: string;
 }
 
-/* ───────────────────────────────── Jugadores ──────────────────────────────── */
+export interface TeamStaffLink {
+  teamId: string;
+  profileId: string;
+  role: StaffRole;
+}
 
-export type PlayerPosition =
-  | 'Portero'
-  | 'Central'
-  | 'Lateral derecho'
-  | 'Lateral izquierdo'
-  | 'Pivote'
-  | 'Interior'
-  | 'Mediapunta'
-  | 'Extremo derecho'
-  | 'Extremo izquierdo'
-  | 'Delantero';
+/* ───────────────────────────────── Jugadoras ──────────────────────────────── */
+
+export const POSITIONS = [
+  'Portera',
+  'Central',
+  'Lateral derecha',
+  'Lateral izquierda',
+  'Pivote',
+  'Interior',
+  'Mediapunta',
+  'Extremo derecha',
+  'Extremo izquierda',
+  'Delantera',
+] as const;
+
+export type PlayerPosition = (typeof POSITIONS)[number];
 
 export type AvailabilityStatus =
   | 'disponible'
-  | 'lesionado'
-  | 'enfermo'
+  | 'lesionada'
+  | 'enferma'
   | 'ausente'
-  | 'sancionado'
+  | 'sancionada'
   | 'duda';
 
 export interface Availability {
   status: AvailabilityStatus;
   note?: string;
-  since?: string; // ISO
-  until?: string; // ISO — retorno estimado
+  since?: string;
+  until?: string;
 }
 
 export interface Guardian {
@@ -100,6 +97,15 @@ export interface Guardian {
   email?: string;
 }
 
+export interface PlayerStats {
+  matches: number;
+  minutes: number;
+  goals: number;
+  assists: number;
+  yellow: number;
+  red: number;
+}
+
 export interface Player {
   id: string;
   teamId: string;
@@ -107,39 +113,35 @@ export interface Player {
   shortName: string;
   photo?: string;
   number: number;
-  position: PlayerPosition;
+  position: PlayerPosition | '';
   secondaryPosition?: PlayerPosition;
-  foot: 'Diestro' | 'Zurdo' | 'Ambidiestro';
-  birthDate: string; // ISO
+  foot: 'Diestra' | 'Zurda' | 'Ambidiestra';
+  birthDate?: string;
   phone?: string;
   email?: string;
   guardians: Guardian[];
   availability: Availability;
-  stats: {
-    matches: number;
-    minutes: number;
-    goals: number;
-    assists: number;
-    yellow: number;
-    red: number;
-  };
+  stats: PlayerStats;
   notes?: string;
   joinedAt: string;
 }
 
 /* ──────────────────────────── Ejercicios y sesiones ───────────────────────── */
 
-export type DrillTag =
-  | 'Posesión'
-  | 'Finalización'
-  | 'Defensa'
-  | 'Ataque'
-  | 'Presión'
-  | 'Transición'
-  | 'Técnica'
-  | 'Táctica'
-  | 'Preparación física'
-  | 'Calentamiento';
+export const DRILL_TAGS = [
+  'Posesión',
+  'Finalización',
+  'Defensa',
+  'Ataque',
+  'Presión',
+  'Transición',
+  'Técnica',
+  'Táctica',
+  'Preparación física',
+  'Calentamiento',
+] as const;
+
+export type DrillTag = (typeof DRILL_TAGS)[number];
 
 /** Elementos del editor táctico: se guardan dentro del ejercicio. */
 export type TacticShape =
@@ -156,15 +158,15 @@ export interface Drill {
   name: string;
   objective: string;
   tags: DrillTag[];
-  ageRange: string; // "U15 – U19"
-  players: string; // "12 – 18"
-  duration: number; // minutos
+  ageRange: string;
+  players: string;
+  duration: number;
   material: string[];
   description: string;
-  progressions?: string[];
-  tactic?: TacticShape[];
+  progressions: string[];
+  tactic: TacticShape[];
   favorite?: boolean;
-  createdBy: 'club' | 'entrenador' | 'ia';
+  createdBy?: string;
 }
 
 export interface SessionBlock {
@@ -174,7 +176,7 @@ export interface SessionBlock {
   duration: number;
   tags: DrillTag[];
   notes?: string;
-  series?: string; // "4 x 4' / 90'' desc."
+  series?: string;
 }
 
 export type SessionStatus = 'borrador' | 'planificado' | 'completado';
@@ -183,9 +185,9 @@ export interface TrainingSession {
   id: string;
   teamId: string;
   title: string;
-  date: string; // ISO
-  start: string; // "19:00"
-  duration: number; // minutos
+  date: string;
+  start: string;
+  duration: number;
   venue: string;
   objective: string;
   expectedPlayers: number;
@@ -203,19 +205,18 @@ export interface Match {
   teamId: string;
   opponent: string;
   competition: string;
-  date: string; // ISO
+  date: string;
   start: string;
   venue: string;
   home: boolean;
   matchday?: number;
   status: 'programado' | 'jugado' | 'aplazado';
   result?: { own: number; rival: number };
-  notes?: string;
-  lineup?: { playerId: string; x: number; y: number }[];
   formation?: string;
+  notes?: string;
 }
 
-export type CallupResponse = 'confirmado' | 'pendiente' | 'rechazado';
+export type CallupResponse = 'confirmada' | 'pendiente' | 'rechazada';
 
 export interface CallupEntry {
   playerId: string;
@@ -229,7 +230,7 @@ export interface Callup {
   id: string;
   matchId: string;
   teamId: string;
-  slots: number; // convocados máximos
+  slots: number;
   meetingTime: string;
   meetingPlace: string;
   kit: string;
@@ -241,14 +242,14 @@ export interface Callup {
 
 /* ───────────────────────────────── Asistencia ─────────────────────────────── */
 
-export type AttendanceMark = 'presente' | 'justificado' | 'ausente' | 'pendiente';
+export type AttendanceMark = 'presente' | 'justificada' | 'ausente' | 'pendiente';
 
 export interface AttendanceRecord {
   id: string;
   sessionId: string;
   teamId: string;
   date: string;
-  marks: Record<string, { mark: AttendanceMark; reason?: string }>; // playerId → marca
+  marks: Record<string, { mark: AttendanceMark; reason?: string }>;
   savedAt?: string;
 }
 
@@ -262,17 +263,22 @@ export interface CalendarEvent {
   title: string;
   subtitle?: string;
   teamId?: string;
-  date: string; // ISO date (yyyy-mm-dd)
+  date: string;
   start: string;
   end?: string;
   venue?: string;
-  refId?: string; // id de la sesión / partido / convocatoria
+  refId?: string;
 }
 
 /* ───────────────────────────── Mensajes / WhatsApp ────────────────────────── */
 
-export type MessageChannel = 'whatsapp' | 'interno';
-export type MessageStatus = 'borrador' | 'programado' | 'enviado' | 'entregado' | 'leido' | 'respondido';
+export type MessageStatus =
+  | 'borrador'
+  | 'programado'
+  | 'enviado'
+  | 'entregado'
+  | 'leido'
+  | 'respondido';
 
 export type MessageTemplateKind =
   | 'convocatoria'
@@ -289,13 +295,13 @@ export interface MessageTemplate {
   kind: MessageTemplateKind;
   name: string;
   description: string;
-  body: string; // con {{variables}}
+  body: string;
   variables: string[];
 }
 
 export interface MessageThread {
   id: string;
-  channel: MessageChannel;
+  channel: 'whatsapp' | 'interno';
   kind: MessageTemplateKind;
   scope: 'equipo' | 'individual';
   teamId: string;
@@ -308,7 +314,8 @@ export interface MessageThread {
   sentAt?: string;
   recipients: number;
   responses?: { confirmed: number; declined: number; unknown: number };
-  demo?: boolean; // marcado como simulación: no ha salido de la plataforma
+  /** true mientras WhatsApp no esté conectado: el mensaje no ha salido. */
+  simulated: boolean;
 }
 
 /* ─────────────────────── Notificaciones, tareas, actividad ────────────────── */
@@ -320,7 +327,7 @@ export interface Notification {
   detail?: string;
   createdAt: string;
   read: boolean;
-  link?: string; // ruta accionable
+  link?: string;
 }
 
 export type TaskPriority = 'alta' | 'media' | 'baja';
@@ -340,8 +347,8 @@ export interface ActivityItem {
   id: string;
   text: string;
   at: string;
-  actor?: string;
-  kind: 'sesion' | 'asistencia' | 'convocatoria' | 'mensaje' | 'jugador';
+  teamId?: string;
+  kind: 'sesion' | 'asistencia' | 'convocatoria' | 'mensaje' | 'jugadora' | 'equipo';
   link?: string;
 }
 
@@ -353,8 +360,8 @@ export interface IntegrationState {
   id: IntegrationId;
   name: string;
   connected: boolean;
-  provider?: string;
-  detail?: string;
+  provider: string;
+  detail: string;
 }
 
 /* ───────────────────────────── Asistente de IA ────────────────────────────── */
@@ -380,7 +387,6 @@ export interface AssistantMessage {
   role: 'user' | 'assistant';
   text: string;
   intent?: AssistantIntent;
-  /** Bloques enriquecidos que la UI sabe renderizar (sesión generada, tabla, etc.) */
   card?:
     | { type: 'session'; session: TrainingSession }
     | { type: 'attendance'; rows: { player: string; missed: number; pct: number }[] }
@@ -389,14 +395,16 @@ export interface AssistantMessage {
     | { type: 'summary'; bullets: string[] };
   actions?: AssistantAction[];
   at: string;
-  pending?: boolean;
 }
 
-/* ───────────────────────────── Estado persistido ──────────────────────────── */
+/* ───────────────────────────── Estado de la sesión ────────────────────────── */
 
 export interface ClubData {
+  profile: Staff | null;
+  /** Sólo el personal visible: uno mismo, o todo el club si eres coordinadora. */
   staff: Staff[];
   teams: Team[];
+  teamStaff: TeamStaffLink[];
   players: Player[];
   drills: Drill[];
   sessions: TrainingSession[];
@@ -410,3 +418,48 @@ export interface ClubData {
   activity: ActivityItem[];
   integrations: IntegrationState[];
 }
+
+export const EMPTY_CLUB_DATA: ClubData = {
+  profile: null,
+  staff: [],
+  teams: [],
+  teamStaff: [],
+  players: [],
+  drills: [],
+  sessions: [],
+  matches: [],
+  callups: [],
+  attendance: [],
+  messages: [],
+  templates: [],
+  notifications: [],
+  tasks: [],
+  activity: [],
+  integrations: [
+    {
+      id: 'whatsapp',
+      name: 'WhatsApp Business',
+      connected: false,
+      provider: 'WhatsApp Cloud API',
+      detail:
+        'Sin conectar. Los mensajes se guardan en la plataforma y se marcan como no enviados hasta que el club ' +
+        'introduzca sus credenciales.',
+    },
+    {
+      id: 'ia',
+      name: 'Asistente IA',
+      connected: false,
+      provider: 'Modelo compatible (Claude / OpenAI)',
+      detail:
+        'Sin API configurada. El asistente funciona con el motor local, que consulta tus datos reales pero no ' +
+        'llama a ningún modelo externo.',
+    },
+    {
+      id: 'calendario',
+      name: 'Calendario externo',
+      connected: false,
+      provider: 'Google Calendar / iCal',
+      detail: 'Sin conectar. La exportación en formato .ics sí está disponible.',
+    },
+  ],
+};

@@ -1,29 +1,28 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Filter, Search, Users } from 'lucide-react';
+import { ChevronRight, Filter, Plus, Search, Users } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, playerAttendance, visibleTeams } from '@/store/selectors';
-import { Avatar, Badge, Card, EmptyState, Input, PageHeader, SegmentedControl, Select } from '@/components/ui';
+import { playerAttendance, visibleTeams } from '@/store/selectors';
+import { Avatar, Badge, Card, EmptyState, Input, LinkButton, PageHeader, SegmentedControl, Select } from '@/components/ui';
 import { AVAILABILITY, AvailabilityDot } from '@/components/domain/StatusBits';
 import { cn, age, normalize } from '@/lib/utils';
 import type { AvailabilityStatus, PlayerPosition } from '@/types';
 
 const POSITION_GROUPS: { id: string; label: string; positions: PlayerPosition[] }[] = [
-  { id: 'todos', label: 'Todas', positions: [] },
-  { id: 'por', label: 'Porteros', positions: ['Portero'] },
-  { id: 'def', label: 'Defensas', positions: ['Central', 'Lateral derecho', 'Lateral izquierdo'] },
+  { id: 'todas', label: 'Todas', positions: [] },
+  { id: 'por', label: 'Porteras', positions: ['Portera'] },
+  { id: 'def', label: 'Defensas', positions: ['Central', 'Lateral derecha', 'Lateral izquierda'] },
   { id: 'med', label: 'Medios', positions: ['Pivote', 'Interior', 'Mediapunta'] },
-  { id: 'del', label: 'Delanteros', positions: ['Extremo derecho', 'Extremo izquierdo', 'Delantero'] },
+  { id: 'del', label: 'Delanteras', positions: ['Extremo derecha', 'Extremo izquierda', 'Delantera'] },
 ];
 
 export default function PlayersPage() {
-  const { data, session, teamId, setTeamId } = useClub();
-  const staff = currentStaff(data, session?.staffId);
-  const teams = visibleTeams(data, staff);
+  const { data, teamId, setTeamId } = useClub();
+  const teams = visibleTeams(data);
 
   const [query, setQuery] = useState('');
-  const [group, setGroup] = useState('todos');
-  const [status, setStatus] = useState<'todos' | AvailabilityStatus>('todos');
+  const [group, setGroup] = useState('todas');
+  const [status, setStatus] = useState<'todas' | AvailabilityStatus>('todas');
   const [view, setView] = useState<'lista' | 'fichas'>('lista');
 
   const attendance = useMemo(() => playerAttendance(data, teamId), [data, teamId]);
@@ -32,8 +31,8 @@ export default function PlayersPage() {
     const positions = POSITION_GROUPS.find((g) => g.id === group)?.positions ?? [];
     return data.players
       .filter((p) => p.teamId === teamId)
-      .filter((p) => (positions.length ? positions.includes(p.position) : true))
-      .filter((p) => (status === 'todos' ? true : p.availability.status === status))
+      .filter((p) => (positions.length ? positions.includes(p.position as PlayerPosition) : true))
+      .filter((p) => (status === 'todas' ? true : p.availability.status === status))
       .filter((p) => (query.trim() ? normalize(p.name).includes(normalize(query)) : true))
       .sort((a, b) => a.number - b.number);
   }, [data.players, teamId, group, status, query]);
@@ -44,17 +43,22 @@ export default function PlayersPage() {
   return (
     <>
       <PageHeader
-        title="Jugadores"
+        title="Jugadoras"
         description="Fichas, posiciones, disponibilidad y asistencia de la plantilla."
         actions={
-          <SegmentedControl
-            value={view}
-            onChange={setView}
-            options={[
-              { id: 'lista', label: 'Lista' },
-              { id: 'fichas', label: 'Fichas' },
-            ]}
-          />
+          <>
+            <SegmentedControl
+              value={view}
+              onChange={setView}
+              options={[
+                { id: 'lista', label: 'Lista' },
+                { id: 'fichas', label: 'Fichas' },
+              ]}
+            />
+            <LinkButton to="/app/jugadoras/nueva" size="sm" icon={<Plus size={16} />}>
+              Añadir jugadora
+            </LinkButton>
+          </>
         }
       />
 
@@ -66,7 +70,7 @@ export default function PlayersPage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar jugador por nombre…"
+              placeholder="Buscar jugadora por nombre…"
               className="pl-10"
             />
           </div>
@@ -79,7 +83,7 @@ export default function PlayersPage() {
               ))}
             </Select>
             <Select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className="w-auto min-w-[150px]">
-              <option value="todos">Cualquier estado</option>
+              <option value="todas">Cualquier estado</option>
               {(Object.keys(AVAILABILITY) as AvailabilityStatus[]).map((s) => (
                 <option key={s} value={s}>
                   {AVAILABILITY[s].label}
@@ -104,7 +108,7 @@ export default function PlayersPage() {
             </button>
           ))}
           <span className="ml-auto text-[12.5px] text-ink-400">
-            {players.length} de {data.players.filter((p) => p.teamId === teamId).length} jugadores
+            {players.length} de {data.players.filter((p) => p.teamId === teamId).length} jugadoras
           </span>
         </div>
       </Card>
@@ -113,14 +117,27 @@ export default function PlayersPage() {
         <Card>
           <EmptyState
             icon={<Users size={26} />}
-            title="Ningún jugador coincide con el filtro"
-            description="Prueba a limpiar la búsqueda o a seleccionar otra demarcación."
+            title={
+              data.players.filter((p) => p.teamId === teamId).length === 0
+                ? 'Tu plantilla todavía está vacía'
+                : 'Ninguna jugadora coincide con el filtro'
+            }
+            description={
+              data.players.filter((p) => p.teamId === teamId).length === 0
+                ? 'Añade a tus jugadoras una a una. Con el nombre y el dorsal ya puedes empezar a pasar asistencia y a convocar.'
+                : 'Prueba a limpiar la búsqueda o a seleccionar otra demarcación.'
+            }
+            action={
+              <LinkButton to="/app/jugadoras/nueva" size="sm">
+                Añadir jugadora
+              </LinkButton>
+            }
           />
         </Card>
       ) : view === 'lista' ? (
         <Card className="overflow-hidden">
           <div className="hidden border-b border-ink-100 bg-ink-50/50 px-5 py-2.5 text-[11.5px] font-medium uppercase tracking-wide text-ink-400 sm:flex">
-            <span className="flex-1">Jugador</span>
+            <span className="flex-1">Jugadora</span>
             <span className="w-40">Posición</span>
             <span className="w-24 text-right">Asistencia</span>
             <span className="w-32 pl-4">Estado</span>
@@ -130,7 +147,7 @@ export default function PlayersPage() {
             {players.map((p) => (
               <Link
                 key={p.id}
-                to={`/app/jugadores/${p.id}`}
+                to={`/app/jugadoras/${p.id}`}
                 className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-brand-50/40 sm:px-5"
               >
                 <Avatar name={p.name} size={38} number={p.number} />
@@ -140,7 +157,7 @@ export default function PlayersPage() {
                     {p.position} · {rate(p.id)}%
                   </p>
                   <p className="mt-0.5 hidden text-[12.5px] text-ink-400 sm:block">
-                    {age(p.birthDate)} años · {p.foot}
+                    {p.birthDate ? `${age(p.birthDate)} años · ` : ''}{p.foot}
                   </p>
                 </div>
                 <div className="hidden w-40 sm:block">
@@ -171,7 +188,7 @@ export default function PlayersPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {players.map((p) => (
-            <Link key={p.id} to={`/app/jugadores/${p.id}`} className="card card-hover p-4">
+            <Link key={p.id} to={`/app/jugadoras/${p.id}`} className="card card-hover p-4">
               <div className="flex items-start justify-between">
                 <Avatar name={p.name} size={48} number={p.number} />
                 <Badge tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>
@@ -179,7 +196,7 @@ export default function PlayersPage() {
                 </Badge>
               </div>
               <p className="mt-3 truncate text-[14.5px] font-semibold text-ink-900">{p.shortName}</p>
-              <p className="mt-0.5 truncate text-[12.5px] text-ink-500">{p.position}</p>
+              <p className="mt-0.5 truncate text-[12.5px] text-ink-500">{p.position || 'Sin posición'}</p>
               <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-ink-100 pt-3 text-center">
                 <div>
                   <p className="text-[14px] font-semibold text-ink-800 tabular-nums">{rate(p.id)}%</p>
@@ -200,7 +217,7 @@ export default function PlayersPage() {
       )}
 
       <p className="mt-5 text-[12.5px] text-ink-400">
-        {team?.name} · Los datos de contacto de los jugadores y sus familias son privados y sólo se muestran en la
+        {team?.name} · Los datos de contacto de las jugadoras y sus familias son privados y sólo se muestran en la
         ficha individual.
       </p>
     </>
