@@ -7,9 +7,9 @@
 -- Modelo de seguridad:
 --   · Todas las tablas tienen RLS activado. Sin sesión no se lee ni se escribe
 --     absolutamente nada (la clave anónima por sí sola no da acceso a datos).
---   · Un entrenador sólo ve los equipos que tiene asignados en `team_staff`.
---   · El coordinador del club crea equipos y asigna entrenadores.
---   · El PRIMER usuario que se registre queda como coordinador automáticamente.
+--   · Cada entrenadora sólo ve los equipos que tiene asignados en `team_staff`.
+--   · La coordinadora del club crea los equipos y asigna al cuerpo técnico.
+--   · La PRIMERA cuenta que se registre queda como coordinadora automáticamente.
 -- ============================================================================
 
 create extension if not exists "pgcrypto";
@@ -60,7 +60,7 @@ create table if not exists public.profiles (
   created_at  timestamptz not null default now()
 );
 
--- Crea el perfil al registrarse. El primer usuario del club es coordinador.
+-- Crea el perfil al registrarse. La primera cuenta del club es la coordinadora.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
