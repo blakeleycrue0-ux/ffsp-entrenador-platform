@@ -1,5 +1,5 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, PencilLine, Plus, Star, Target, Users } from 'lucide-react';
+import { ArrowLeft, Bookmark, Clock, PencilLine, Plus, Target, Users } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { Tag, Button, Panel, LinkButton, PageHeader } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
@@ -39,16 +39,16 @@ export default function DrillDetail() {
             <Button
               variant="ghost"
               size="sm"
-              icon={<Star size={15} className={d.favorite ? 'fill-current text-warn' : ''} />}
+              icon={<Bookmark size={15} className={d.favorite ? 'fill-current' : ''} />}
               onClick={() => {
                 const wasFavorite = d.favorite;
                 actions
                   .toggleFavorite(d)
-                  .then(() => toast.success(wasFavorite ? 'Quitado de favoritos' : 'Guardado en favoritos'))
-                  .catch(() => toast.error('No hemos podido guardar el favorito'));
+                  .then(() => toast.success(wasFavorite ? 'Quitado de tus guardados' : 'Guardado'))
+                  .catch(() => toast.error('No hemos podido guardarlo'));
               }}
             >
-              {d.favorite ? 'En favoritos' : 'Guardar favorito'}
+              {d.favorite ? 'Guardado' : 'Guardar'}
             </Button>
             <LinkButton to={`/app/ejercicios/${d.id}/editar`} variant="secondary" size="sm" icon={<PencilLine size={15} />}>
               Editar

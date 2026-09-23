@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarClock, ChevronRight, Clock, MapPin, Plus, Users } from 'lucide-react';
+import { CalendarClock, ChevronRight, MapPin, Plus, Users } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { visibleTeams } from '@/store/selectors';
 import { Tag, Panel, EmptyState, LinkButton, PageHeader, Select, Tabs } from '@/components/ui';
-import { CLUB_NAME, cn, longDate, relativeDay, toISODate, today } from '@/lib/utils';
+import { CLUB_NAME, cn, relativeDay, shortDate, toISODate, today } from '@/lib/utils';
 
 export default function MatchesPage() {
   const { data, teamId, setTeamId } = useClub();
@@ -94,12 +94,12 @@ export default function MatchesPage() {
                   {/* Fecha */}
                   <div className="flex shrink-0 items-center gap-4 sm:w-40 sm:flex-col sm:items-start sm:gap-0">
                     <div>
-                      <p className="text-[13px] font-semibold text-navy-900">{relativeDay(m.date)}</p>
-                      <p className="mt-0.5 text-[12px] text-navy-400">{longDate(m.date)}</p>
+                      <p className="text-base font-semibold text-navy-900">{relativeDay(m.date)}</p>
+                      <p className="mt-0.5 text-sm text-muted">
+                        {shortDate(m.date)}
+                        {m.start && ` · ${m.start}`}
+                      </p>
                     </div>
-                    <span className="flex items-center gap-1.5 text-[12.5px] text-muted sm:mt-2">
-                      <Clock size={12} /> {m.start}
-                    </span>
                   </div>
 
                   {/* Enfrentamiento */}

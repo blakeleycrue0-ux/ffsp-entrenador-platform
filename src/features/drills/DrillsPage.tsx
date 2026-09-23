@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Star, Users } from 'lucide-react';
+import { Bookmark, Plus, Search, Users } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { Tag, Panel, EmptyState, Input, LinkButton, PageHeader } from '@/components/ui';
 import { cn, normalize } from '@/lib/utils';
@@ -38,7 +38,7 @@ export default function DrillsPage() {
   return (
     <>
       <PageHeader
-        title="Ejercicios"
+        title="Biblioteca de ejercicios"
         description="La biblioteca del club. Fíltralos, úsalos en un entrenamiento o crea los tuyos."
         actions={
           <LinkButton to="/app/ejercicios/nuevo" size="sm" icon={<Plus size={16} />}>
@@ -66,7 +66,7 @@ export default function DrillsPage() {
               onlyFav ? 'bg-warn/10 text-[#9A6412] ring-1 ring-inset ring-warn/30' : 'text-muted hover:bg-navy-100',
             )}
           >
-            <Star size={14} className={onlyFav ? 'fill-current' : ''} /> Favoritos
+            <Bookmark size={14} className={onlyFav ? 'fill-current' : ''} /> Guardados
           </button>
           <span className="mx-1 h-5 w-px bg-line" />
           {TAGS.map((t) => (
@@ -126,11 +126,11 @@ export default function DrillsPage() {
                   onClick={() => void actions.toggleFavorite(d)}
                   className={cn(
                     'shrink-0 rounded-lg p-1.5 transition-colors',
-                    d.favorite ? 'text-warn' : 'text-navy-300 hover:text-warn',
+                    d.favorite ? 'text-navy-900' : 'text-navy-300 hover:text-navy-700',
                   )}
-                  aria-label="Marcar favorito"
+                  aria-label="Guardar este ejercicio"
                 >
-                  <Star size={16} className={d.favorite ? 'fill-current' : ''} />
+                  <Bookmark size={15} className={d.favorite ? 'fill-current' : ''} />
                 </button>
               </div>
 
