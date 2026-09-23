@@ -62,11 +62,11 @@ export const ATTENDANCE_ORDER: AttendanceMark[] = [
 
 export const CALLUP_RESPONSE: Record<
   CallupResponse,
-  { label: string; tone: 'ok' | 'warn' | 'bad'; icon: string }
+  { label: string; tone: 'ok' | 'warn' | 'bad' }
 > = {
-  confirmada: { label: 'Confirmada', tone: 'ok', icon: '✅' },
-  pendiente: { label: 'Pendiente', tone: 'warn', icon: '❓' },
-  rechazada: { label: 'No puede', tone: 'bad', icon: '❌' },
+  confirmada: { label: 'Confirmada', tone: 'ok' },
+  pendiente: { label: 'Pendiente', tone: 'warn' },
+  rechazada: { label: 'No puede', tone: 'bad' },
 };
 
 export const CallupResponseBadge = ({ response }: { response: CallupResponse }) => {

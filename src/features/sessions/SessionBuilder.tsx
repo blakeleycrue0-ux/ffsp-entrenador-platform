@@ -3,7 +3,6 @@
  * ---------------------------------------------------------------------------
  * Dos formas de trabajar, misma pantalla:
  *   1. Arrastrar ejercicios de la biblioteca a la línea de sesión (o pulsarlos).
- *   2. Pedirle la sesión al asistente y ajustar lo que haga falta.
  * La duración total se recalcula sola en cada cambio.
  */
 
@@ -148,13 +147,13 @@ export default function SessionBuilder() {
         kind: 'sesion',
         teamId: saved.teamId,
         text: existing ? `Has actualizado «${saved.title}».` : `Has creado un nuevo entrenamiento: «${saved.title}».`,
-        link: `/app/planificaciones/${saved.id}`,
+        link: `/app/entrenamientos/${saved.id}`,
       });
       toast.success(
-        status === 'borrador' ? 'Borrador guardado ✓' : 'Entrenamiento guardado correctamente ✓',
+        status === 'borrador' ? 'Borrador guardado' : 'Entrenamiento guardado correctamente',
         `${minutesToLabel(totalDuration)} · ${saved.blocks.length} bloques`,
       );
-      navigate(`/app/planificaciones/${saved.id}`);
+      navigate(`/app/entrenamientos/${saved.id}`);
     } catch (e) {
       toast.error('No hemos podido guardar el entrenamiento', humanError(e));
     } finally {
@@ -165,7 +164,7 @@ export default function SessionBuilder() {
   return (
     <>
       <Link
-        to="/app/planificaciones"
+        to="/app/entrenamientos"
         className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> Planificaciones
@@ -280,7 +279,7 @@ export default function SessionBuilder() {
               >
                 <p className="text-[14px] font-medium text-navy-700">Arrastra aquí tu primer ejercicio</p>
                 <p className="mx-auto mt-1.5 max-w-xs text-[13px] leading-relaxed text-muted">
-                  Cógelos de la biblioteca de la derecha, crea un bloque propio o pídele la sesión completa al asistente.
+                  Cógelos de la biblioteca de la derecha o crea un bloque propio.
                 </p>
               </div>
             ) : (

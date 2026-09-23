@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, Cake, Footprints, MessageSquare, PencilLine, Phone, Shield, Target, TrendingUp, User,
+  ArrowLeft, Cake, Footprints, PencilLine, Phone, Shield, Target, TrendingUp, User,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { playerAttendance, visibleTeams } from '@/store/selectors';
@@ -35,7 +35,7 @@ export default function PlayerDetail() {
     [data, player],
   );
 
-  if (!player || !allowed) return <Navigate to="/app/jugadoras" replace />;
+  if (!player || !allowed) return <Navigate to="/app/plantilla" replace />;
 
   const team = data.teams.find((t) => t.id === player.teamId);
   const canSeeContact = canSeePersonalData(data.profile);
@@ -43,7 +43,7 @@ export default function PlayerDetail() {
   return (
     <>
       <Link
-        to="/app/jugadoras"
+        to="/app/plantilla"
         className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> Jugadoras
@@ -95,20 +95,13 @@ export default function PlayerDetail() {
 
             <div className="mt-5 flex flex-wrap gap-2">
               <LinkButton
-                to={`/app/jugadoras/${player.id}/editar`}
+                to={`/app/plantilla/${player.id}/editar`}
                 size="sm"
                 variant="secondary"
                 icon={<PencilLine size={15} />}
               >
                 Editar ficha
               </LinkButton>
-              <Link
-                to="/app/mensajes/nuevo"
-                state={{ playerId: player.id, teamId: player.teamId }}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] font-medium text-navy-700 transition-colors hover:border-navy-300 hover:text-navy-900"
-              >
-                <MessageSquare size={15} /> Enviar mensaje
-              </Link>
             </div>
           </div>
 
@@ -250,7 +243,7 @@ export default function PlayerDetail() {
             {canSeeContact ? (
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <p className="section-title">Datos de la jugadora</p>
+                  <p className="eyebrow">Datos de la jugadora</p>
                   <dl className="mt-3 space-y-2.5 text-[13.5px]">
                     <div className="flex justify-between gap-4">
                       <dt className="text-muted">Fecha de nacimiento</dt>
@@ -274,7 +267,7 @@ export default function PlayerDetail() {
                 </div>
 
                 <div>
-                  <p className="section-title">Familia / tutores</p>
+                  <p className="eyebrow">Familia / tutores</p>
                   {player.guardians.length === 0 ? (
                     <p className="mt-3 text-[13.5px] text-muted">
                       Jugadora mayor de edad: la comunicación se hace directamente con ella.

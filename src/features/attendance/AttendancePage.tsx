@@ -243,7 +243,7 @@ export default function AttendancePage() {
             const current = marks[p.id]?.mark ?? 'pendiente';
             return (
               <li key={p.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:px-5">
-                <Link to={`/app/jugadoras/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3.5">
+                <Link to={`/app/plantilla/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3.5">
                   <Avatar name={p.name} size={38} badge={p.number} />
                   <span className="min-w-0">
                     <span className="block truncate text-[14px] font-medium text-navy-900">{p.shortName}</span>

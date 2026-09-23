@@ -53,7 +53,7 @@ export default function DrillEditor() {
     setBusy(true);
     try {
       const saved = await actions.saveDrill(form);
-      toast.success(existing ? 'Ejercicio actualizado ✓' : 'Ejercicio guardado en la biblioteca ✓');
+      toast.success(existing ? 'Ejercicio actualizado' : 'Ejercicio guardado en la biblioteca');
       navigate(`/app/ejercicios/${saved.id}`);
     } catch (e) {
       toast.error('No hemos podido guardar el ejercicio', humanError(e));
@@ -112,7 +112,7 @@ export default function DrillEditor() {
               </Field>
             </div>
 
-            <Field label="Etiquetas" className="mt-4" hint="Determinan en qué filtros aparece y cómo lo usa el asistente.">
+            <Field label="Etiquetas" className="mt-4" hint="Determinan en qué filtros aparece.">
               <div className="flex flex-wrap gap-1.5">
                 {TAGS.map((t) => (
                   <button

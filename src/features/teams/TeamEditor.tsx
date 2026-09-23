@@ -58,10 +58,10 @@ export default function TeamEditor() {
         kind: 'equipo',
         teamId: saved.id,
         text: existing ? `Has actualizado el equipo ${saved.name}.` : `Has creado el equipo ${saved.name}.`,
-        link: `/app/equipos/${saved.id}`,
+        link: `/app/equipo-tecnico/${saved.id}`,
       });
-      toast.success(existing ? 'Equipo actualizado ✓' : 'Equipo creado ✓', 'Ya puedes asignarle cuerpo técnico y jugadoras.');
-      navigate(`/app/equipos/${saved.id}`);
+      toast.success(existing ? 'Equipo actualizado' : 'Equipo creado', 'Ya puedes asignarle cuerpo técnico y jugadoras.');
+      navigate(`/app/equipo-tecnico/${saved.id}`);
     } catch (e) {
       toast.error('No hemos podido guardar el equipo', humanError(e));
     } finally {
@@ -75,7 +75,7 @@ export default function TeamEditor() {
     try {
       await actions.deleteTeam(existing.id);
       toast.success('Equipo eliminado');
-      navigate('/app/equipos');
+      navigate('/app/equipo-tecnico');
     } catch (e) {
       toast.error('No hemos podido eliminarlo', humanError(e));
     } finally {
@@ -87,7 +87,7 @@ export default function TeamEditor() {
   return (
     <>
       <Link
-        to="/app/equipos"
+        to="/app/equipo-tecnico"
         className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> Equipos

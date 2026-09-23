@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight, CalendarClock, ChevronRight, ClipboardList, Clock, MapPin,
-  Plus, Send, Sparkles, Users,
+  Plus, Send, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import {
@@ -105,7 +105,7 @@ export default function Dashboard() {
       <div className="space-y-7">
         <div>
           <h1 className="text-[26px] font-semibold leading-tight sm:text-[30px]">
-            Hola{firstName ? `, ${firstName}` : ''} 👋
+            Hola{firstName ? `, ${firstName}` : ''}
           </h1>
           <p className="mt-1.5 text-[14.5px] text-muted">{longDate(toISODate(today()))}</p>
         </div>
@@ -121,7 +121,7 @@ export default function Dashboard() {
             }
             action={
               isCoordinator(staff) ? (
-                <LinkButton to="/app/equipos/nuevo" size="sm">
+                <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm">
                   Crear equipo
                 </LinkButton>
               ) : undefined
@@ -138,17 +138,13 @@ export default function Dashboard() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-[26px] font-semibold leading-tight sm:text-[30px]">
-            Hola{firstName ? `, ${firstName}` : ''} 👋
+            Hola{firstName ? `, ${firstName}` : ''}
           </h1>
           <p className="mt-1.5 text-[14.5px] text-muted">
             Esto es lo que tienes preparado para hoy · {longDate(toISODate(today()))}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" icon={<Sparkles size={16} />} onClick={() => navigate('/app/asistente')}>
-            <span className="hidden sm:inline">Preguntar a la IA</span>
-            <span className="sm:hidden">IA</span>
-          </Button>
           <Button icon={<Plus size={17} strokeWidth={2.3} />} onClick={() => setCreateOpen(true)}>
             Crear
           </Button>
@@ -162,7 +158,7 @@ export default function Dashboard() {
           <Panel className="relative overflow-hidden">
             <div className="relative p-5">
               <div className="flex items-center justify-between gap-3">
-                <span className="section-title">Próximo entrenamiento</span>
+                <span className="eyebrow">Próximo entrenamiento</span>
                 <Tag tone={daysFromToday(session0.date) === 0 ? 'solid' : 'neutral'} size="sm">
                   {relativeDay(session0.date)}
                 </Tag>
@@ -202,10 +198,10 @@ export default function Dashboard() {
               <p className="mt-2 text-[12px] text-navy-400">{session0.blocks.length} bloques · {session0.objective}</p>
 
               <div className="mt-5 flex flex-wrap gap-2">
-                <LinkButton to={`/app/planificaciones/${session0.id}`} size="sm">
+                <LinkButton to={`/app/entrenamientos/${session0.id}`} size="sm">
                   Ver entrenamiento
                 </LinkButton>
-                <LinkButton to="/app/asistencia" size="sm" variant="secondary" icon={<ClipboardList size={15} />}>
+                <LinkButton to="/app/entrenamientos" size="sm" variant="secondary" icon={<ClipboardList size={15} />}>
                   Pasar asistencia
                 </LinkButton>
               </div>
@@ -217,8 +213,8 @@ export default function Dashboard() {
              
              
               title="No tienes entrenamientos planificados"
-              description="Empieza creando tu primera sesión: puedes hacerlo desde cero o pedírsela al asistente."
-              action={<LinkButton to="/app/planificaciones/nuevo" size="sm">Crear entrenamiento</LinkButton>}
+              description="Monta la primera sesión con los ejercicios de tu biblioteca."
+              action={<LinkButton to="/app/entrenamientos/nuevo" size="sm">Crear entrenamiento</LinkButton>}
             />
           </Panel>
         )}
@@ -228,7 +224,7 @@ export default function Dashboard() {
           <Panel className="relative overflow-hidden">
             <div className="relative p-5">
               <div className="flex items-center justify-between gap-3">
-                <span className="section-title">Próximo partido</span>
+                <span className="eyebrow">Próximo partido</span>
                 <Tag tone="solid" size="sm">
                   {relativeDay(match0.date)}
                 </Tag>
@@ -301,8 +297,8 @@ export default function Dashboard() {
         {/* Asistencia */}
         <Panel className="p-5">
           <div className="flex items-center justify-between gap-3">
-            <span className="section-title">Asistencia</span>
-            <Link to="/app/asistencia" className="text-[12.5px] font-medium text-navy-900 hover:text-navy-900">
+            <span className="eyebrow">Asistencia</span>
+            <Link to="/app/entrenamientos" className="text-[12.5px] font-medium text-navy-900 hover:text-navy-900">
               Ver asistencia
             </Link>
           </div>
@@ -343,7 +339,7 @@ export default function Dashboard() {
         {/* Convocatoria */}
         <Panel className="p-5">
           <div className="flex items-center justify-between gap-3">
-            <span className="section-title">Convocatoria</span>
+            <span className="eyebrow">Convocatoria</span>
             {match0 && (
               <Link to={`/app/partidos/${match0.id}`} className="text-[12.5px] font-medium text-navy-900 hover:text-navy-900">
                 Gestionar
@@ -394,7 +390,7 @@ export default function Dashboard() {
              
              
               title="Sin convocatoria todavía"
-              description="Selecciona a las jugadoras y envíala por WhatsApp en dos pasos."
+              description="Elige a las jugadoras y copia la lista para compartirla."
               action={
                 match0 && (
                   <LinkButton to={`/app/partidos/${match0.id}`} size="sm">
@@ -411,7 +407,7 @@ export default function Dashboard() {
       <div className="grid gap-4 lg:grid-cols-5">
         <Panel className="p-5 lg:col-span-2">
           <div className="flex items-center justify-between gap-3">
-            <span className="section-title">Tareas pendientes</span>
+            <span className="eyebrow">Tareas pendientes</span>
             <span className="text-[12.5px] text-navy-400">{openTasks.length} abiertas</span>
           </div>
 
@@ -434,7 +430,7 @@ export default function Dashboard() {
 
         <Panel className="p-5 lg:col-span-3">
           <div className="flex items-center justify-between gap-3">
-            <span className="section-title">Actividad reciente</span>
+            <span className="eyebrow">Actividad reciente</span>
           </div>
           <ul className="mt-4 space-y-3.5">
             {data.activity.slice(0, 6).map((a) => (
@@ -460,14 +456,14 @@ export default function Dashboard() {
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-[17px] font-semibold">Mis equipos</h2>
-          <Link to="/app/equipos" className="flex items-center gap-1 text-[13px] font-medium text-navy-900 hover:text-navy-900">
+          <Link to="/app/equipo-tecnico" className="flex items-center gap-1 text-[13px] font-medium text-navy-900 hover:text-navy-900">
             Ver todos <ArrowRight size={14} />
           </Link>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {overviews.map((o) => (
-            <Link key={o.team.id} to={`/app/equipos/${o.team.id}`} className="card card-hover block p-4">
+            <Link key={o.team.id} to={`/app/equipo-tecnico/${o.team.id}`} className="panel panel-hover block p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate text-[15px] font-semibold text-navy-900">{o.team.name}</p>

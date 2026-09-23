@@ -11,7 +11,7 @@ export function AppShell() {
   const [create, setCreate] = useState(false);
   const { pathname } = useLocation();
 
-  // Atajos: ⌘K buscar · ⌘J asistente · N crear
+  // Atajos: ⌘K buscar · ⌘I crear
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;

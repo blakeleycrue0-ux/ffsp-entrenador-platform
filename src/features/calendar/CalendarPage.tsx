@@ -170,7 +170,7 @@ function DayView({ date, events, onOpen }: { date: Date; events: CalendarEvent[]
   return (
     <div className="space-y-3">
       {events.map((e) => (
-        <button key={e.id} onClick={() => onOpen(e)} className="card card-hover flex w-full items-stretch gap-0 overflow-hidden text-left">
+        <button key={e.id} onClick={() => onOpen(e)} className="panel panel-hover flex w-full items-stretch gap-0 overflow-hidden text-left">
           <span className={cn('w-1.5 shrink-0', EVENT_KIND[e.kind].bar)} />
           <span className="flex flex-1 items-center gap-4 p-4">
             <span className="w-16 shrink-0 text-center">
@@ -331,7 +331,7 @@ function EventModal({ event, onClose }: { event: CalendarEvent | null; onClose: 
   const squad = data.players.filter((p) => p.teamId === event.teamId).length;
   const link =
     event.kind === 'entrenamiento'
-      ? `/app/planificaciones/${event.refId}`
+      ? `/app/entrenamientos/${event.refId}`
       : event.kind === 'partido'
         ? `/app/partidos/${event.refId}`
         : '/app/partidos';

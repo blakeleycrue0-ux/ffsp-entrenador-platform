@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, CalendarClock, ChevronRight, ClipboardList, MapPin, Send, Sparkles, Swords, Users,
+  ArrowLeft, CalendarClock, ChevronRight, ClipboardList, MapPin, Send, Swords, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import {
@@ -30,7 +30,7 @@ export default function TeamDetail() {
   const trend = useMemo(() => (team ? attendanceTrend(data, team.id) : []), [data, team]);
 
   // Permisos: si el equipo no está asignado al usuario, no se muestra nada.
-  if (!team) return <Navigate to="/app/equipos" replace />;
+  if (!team) return <Navigate to="/app/equipo-tecnico" replace />;
 
   const ns = nextSession(data, [team.id]);
   const nm = nextMatch(data, [team.id]);
@@ -44,7 +44,7 @@ export default function TeamDetail() {
   return (
     <>
       <Link
-        to="/app/equipos"
+        to="/app/equipo-tecnico"
         className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> Mis equipos
@@ -66,15 +66,15 @@ export default function TeamDetail() {
         }
         actions={
           <>
-            <LinkButton to="/app/asistencia" variant="secondary" size="sm" icon={<ClipboardList size={15} />}>
+            <LinkButton to="/app/entrenamientos" variant="secondary" size="sm" icon={<ClipboardList size={15} />}>
               Pasar asistencia
             </LinkButton>
             {isCoordinator(staff) && (
-              <LinkButton to={`/app/equipos/${team.id}/editar`} variant="ghost" size="sm">
+              <LinkButton to={`/app/equipo-tecnico/${team.id}/editar`} variant="ghost" size="sm">
                 Editar equipo
               </LinkButton>
             )}
-            <LinkButton to="/app/planificaciones/nuevo" size="sm">
+            <LinkButton to="/app/entrenamientos/nuevo" size="sm">
               Crear entrenamiento
             </LinkButton>
           </>
@@ -136,7 +136,7 @@ export default function TeamDetail() {
                 <ul className="mt-3.5 space-y-3">
                   {unavailable.map((p) => (
                     <li key={p.id}>
-                      <Link to={`/app/jugadoras/${p.id}`} className="flex items-start gap-3 group">
+                      <Link to={`/app/plantilla/${p.id}`} className="flex items-start gap-3 group">
                         <Avatar name={p.name} size={34} badge={p.number} />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[13.5px] font-medium text-navy-800 group-hover:text-navy-900">
@@ -161,7 +161,7 @@ export default function TeamDetail() {
             <Panel className="p-5 lg:col-span-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-[15px] font-semibold">Jugadoras con menor asistencia</h3>
-                <Link to="/app/estadisticas" className="text-[12.5px] font-medium text-navy-900 hover:text-navy-900">
+                <Link to="/app/analiticas" className="text-[12.5px] font-medium text-navy-900 hover:text-navy-900">
                   Ver estadísticas
                 </Link>
               </div>
@@ -172,7 +172,7 @@ export default function TeamDetail() {
                   .map((r) => (
                     <Link
                       key={r.player.id}
-                      to={`/app/jugadoras/${r.player.id}`}
+                      to={`/app/plantilla/${r.player.id}`}
                       className="flex items-center gap-3 rounded-xl border border-line p-3 transition-colors hover:border-navy-300 hover:bg-navy-50/40"
                     >
                       <Avatar name={r.player.name} size={34} badge={r.player.number} />
@@ -203,7 +203,7 @@ export default function TeamDetail() {
                 return (
                   <Link
                     key={p.id}
-                    to={`/app/jugadoras/${p.id}`}
+                    to={`/app/plantilla/${p.id}`}
                     className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-navy-50/40 sm:px-5"
                   >
                     <Avatar name={p.name} size={38} badge={p.number} />
@@ -245,13 +245,13 @@ export default function TeamDetail() {
                  
                   title="No hay entrenamientos planificados"
                   description="Crea la próxima sesión para este equipo."
-                  action={<LinkButton to="/app/planificaciones/nuevo" size="sm">Crear entrenamiento</LinkButton>}
+                  action={<LinkButton to="/app/entrenamientos/nuevo" size="sm">Crear entrenamiento</LinkButton>}
                 />
               ) : (
                 <ul className="divide-y divide-navy-100">
                   {sessions.map((s) => (
                     <li key={s.id}>
-                      <Link to={`/app/planificaciones/${s.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-navy-50/40">
+                      <Link to={`/app/entrenamientos/${s.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-navy-50/40">
                         <span className="w-16 shrink-0">
                           <span className="block text-[13px] font-semibold text-navy-900">{relativeDay(s.date)}</span>
                           <span className="block text-[11.5px] text-navy-400">{s.start}</span>
@@ -362,23 +362,6 @@ export default function TeamDetail() {
         )}
       </div>
 
-      {/* Atajo al asistente con contexto del equipo */}
-      <Panel className="mt-6 flex flex-wrap items-center justify-between gap-4 border-navy-200 bg-navy-50/40 p-5">
-        <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-navy-900">
-            <Sparkles size={18} className="text-white" />
-          </span>
-          <div>
-            <p className="text-[14.5px] font-medium text-navy-900">¿Necesitas preparar algo para el {team.name}?</p>
-            <p className="mt-0.5 text-[13px] text-muted">
-              El asistente conoce las asistencias, las lesiones y las posiciones de esta plantilla.
-            </p>
-          </div>
-        </div>
-        <LinkButton to="/app/asistente" size="sm">
-          Abrir asistente
-        </LinkButton>
-      </Panel>
     </>
   );
 }

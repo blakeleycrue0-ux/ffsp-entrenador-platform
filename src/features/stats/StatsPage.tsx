@@ -123,7 +123,7 @@ export default function StatsPage() {
           <ul className="mt-4 space-y-3">
             {best.map((r, i) => (
               <li key={r.player.id}>
-                <Link to={`/app/jugadoras/${r.player.id}`} className="group flex items-center gap-3">
+                <Link to={`/app/plantilla/${r.player.id}`} className="group flex items-center gap-3">
                   <span className="w-5 text-center text-[12.5px] font-semibold text-navy-400 tabular-nums">{i + 1}</span>
                   <Avatar name={r.player.name} size={34} badge={r.player.number} />
                   <span className="min-w-0 flex-1">
@@ -149,7 +149,7 @@ export default function StatsPage() {
           <ul className="mt-4 space-y-3">
             {worst.map((r, i) => (
               <li key={r.player.id}>
-                <Link to={`/app/jugadoras/${r.player.id}`} className="group flex items-center gap-3">
+                <Link to={`/app/plantilla/${r.player.id}`} className="group flex items-center gap-3">
                   <span className="w-5 text-center text-[12.5px] font-semibold text-navy-400 tabular-nums">{i + 1}</span>
                   <Avatar name={r.player.name} size={34} badge={r.player.number} />
                   <span className="min-w-0 flex-1">
@@ -190,7 +190,7 @@ export default function StatsPage() {
             {risk.map((r) => (
               <Link
                 key={r.player.id}
-                to={`/app/jugadoras/${r.player.id}`}
+                to={`/app/plantilla/${r.player.id}`}
                 className="flex items-center gap-3 rounded-xl border border-warn/25 bg-white p-3 transition-colors hover:border-warn/50"
               >
                 <Avatar name={r.player.name} size={34} badge={r.player.number} />

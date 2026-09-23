@@ -43,7 +43,7 @@ export default function DrillDetail() {
                 const wasFavorite = d.favorite;
                 actions
                   .toggleFavorite(d)
-                  .then(() => toast.success(wasFavorite ? 'Quitado de favoritos' : 'Guardado en favoritos ✓'))
+                  .then(() => toast.success(wasFavorite ? 'Quitado de favoritos' : 'Guardado en favoritos'))
                   .catch(() => toast.error('No hemos podido guardar el favorito'));
               }}
             >
@@ -52,7 +52,7 @@ export default function DrillDetail() {
             <LinkButton to={`/app/ejercicios/${d.id}/editar`} variant="secondary" size="sm" icon={<PencilLine size={15} />}>
               Editar
             </LinkButton>
-            <LinkButton to="/app/planificaciones/nuevo" size="sm" icon={<Plus size={15} />}>
+            <LinkButton to="/app/entrenamientos/nuevo" size="sm" icon={<Plus size={15} />}>
               Usar en entrenamiento
             </LinkButton>
           </>
@@ -145,7 +145,7 @@ export default function DrillDetail() {
                 {usedIn.slice(0, 5).map((s) => (
                   <li key={s.id}>
                     <Link
-                      to={`/app/planificaciones/${s.id}`}
+                      to={`/app/entrenamientos/${s.id}`}
                       className="block truncate text-[13.5px] text-navy-700 hover:text-navy-900"
                     >
                       {s.title}

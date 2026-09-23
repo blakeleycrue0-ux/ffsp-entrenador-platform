@@ -158,7 +158,7 @@ export default function DrillsPage() {
               </div>
 
               <div className="mt-3.5 flex gap-2">
-                <LinkButton to="/app/planificaciones/nuevo" size="sm" variant="secondary" className="flex-1">
+                <LinkButton to="/app/entrenamientos/nuevo" size="sm" variant="secondary" className="flex-1">
                   Usar en entrenamiento
                 </LinkButton>
                 <LinkButton to={`/app/ejercicios/${d.id}`} size="sm" variant="secondary">

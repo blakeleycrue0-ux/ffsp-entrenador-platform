@@ -55,7 +55,7 @@ export default function PlayersPage() {
                 { id: 'fichas', label: 'Fichas' },
               ]}
             />
-            <LinkButton to="/app/jugadoras/nueva" size="sm" icon={<Plus size={16} />}>
+            <LinkButton to="/app/plantilla/nueva" size="sm" icon={<Plus size={16} />}>
               Añadir jugadora
             </LinkButton>
           </>
@@ -128,7 +128,7 @@ export default function PlayersPage() {
                 : 'Prueba a limpiar la búsqueda o a seleccionar otra demarcación.'
             }
             action={
-              <LinkButton to="/app/jugadoras/nueva" size="sm">
+              <LinkButton to="/app/plantilla/nueva" size="sm">
                 Añadir jugadora
               </LinkButton>
             }
@@ -147,7 +147,7 @@ export default function PlayersPage() {
             {players.map((p) => (
               <Link
                 key={p.id}
-                to={`/app/jugadoras/${p.id}`}
+                to={`/app/plantilla/${p.id}`}
                 className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-navy-50/40 sm:px-5"
               >
                 <Avatar name={p.name} size={38} badge={p.number} />
@@ -188,7 +188,7 @@ export default function PlayersPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {players.map((p) => (
-            <Link key={p.id} to={`/app/jugadoras/${p.id}`} className="card card-hover p-4">
+            <Link key={p.id} to={`/app/plantilla/${p.id}`} className="panel panel-hover p-4">
               <div className="flex items-start justify-between">
                 <Avatar name={p.name} size={48} badge={p.number} />
                 <Tag tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>

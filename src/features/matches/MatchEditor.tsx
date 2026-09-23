@@ -57,7 +57,7 @@ export default function MatchEditor() {
           : `Has creado el partido contra ${saved.opponent}.`,
         link: `/app/partidos/${saved.id}`,
       });
-      toast.success(existing ? 'Partido actualizado ✓' : 'Partido creado ✓', 'Ya aparece en el calendario del equipo.');
+      toast.success(existing ? 'Partido actualizado' : 'Partido creado', 'Ya aparece en el calendario del equipo.');
       navigate(`/app/partidos/${saved.id}`);
     } catch (e) {
       toast.error('No hemos podido guardar el partido', humanError(e));
@@ -200,7 +200,7 @@ export default function MatchEditor() {
           <Panel className="bg-navy-50/40 p-5">
             <p className="text-[12.5px] leading-relaxed text-navy-600">
               Al guardar, el partido aparecerá en el calendario y en el panel de todos tus equipos. Desde su ficha
-              podrás crear la convocatoria y enviarla por WhatsApp.
+              podrás crear la convocatoria y compartirla con el equipo.
             </p>
           </Panel>
         </div>

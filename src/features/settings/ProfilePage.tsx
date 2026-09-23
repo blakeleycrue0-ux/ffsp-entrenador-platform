@@ -64,10 +64,10 @@ export default function ProfilePage() {
         <Panel className="p-5">
           <h3 className="text-[14.5px] font-semibold">Accesos</h3>
           <div className="mt-3.5 space-y-2">
-            <LinkButton to="/app/configuracion" variant="secondary" size="sm" block icon={<Settings size={15} />}>
+            <LinkButton to="/app/ajustes" variant="secondary" size="sm" block icon={<Settings size={15} />}>
               Configuración
             </LinkButton>
-            <LinkButton to="/app/configuracion" variant="secondary" size="sm" block icon={<Bell size={15} />}>
+            <LinkButton to="/app/ajustes" variant="secondary" size="sm" block icon={<Bell size={15} />}>
               Notificaciones
             </LinkButton>
             <Button variant="danger" size="sm" block icon={<LogOut size={15} />} onClick={() => void signOut()}>
@@ -91,7 +91,7 @@ export default function ProfilePage() {
         {teams.map((t) => {
           const o = teamOverview(data, t);
           return (
-            <Link key={t.id} to={`/app/equipos/${t.id}`} className="card card-hover flex items-center gap-4 p-4">
+            <Link key={t.id} to={`/app/equipo-tecnico/${t.id}`} className="panel panel-hover flex items-center gap-4 p-4">
               <Ring value={o.attendanceRate} size={54} stroke={5} />
               <div className="min-w-0">
                 <p className="truncate text-[14.5px] font-semibold text-navy-900">{t.name}</p>

@@ -36,7 +36,7 @@ export default function TeamsPage() {
         }
         actions={
           isCoordinator(staff) ? (
-            <LinkButton to="/app/equipos/nuevo" size="sm" icon={<Plus size={16} />}>
+            <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm" icon={<Plus size={16} />}>
               Crear equipo
             </LinkButton>
           ) : undefined
@@ -44,7 +44,7 @@ export default function TeamsPage() {
       />
 
       {teams.length === 0 ? (
-        <div className="card">
+        <div className="panel">
           <EmptyState
            
             title={isCoordinator(staff) ? 'Todavía no hay equipos en el club' : 'No tienes equipos asignados'}
@@ -55,7 +55,7 @@ export default function TeamsPage() {
             }
             action={
               isCoordinator(staff) ? (
-                <LinkButton to="/app/equipos/nuevo" size="sm">
+                <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm">
                   Crear equipo
                 </LinkButton>
               ) : undefined
@@ -65,7 +65,7 @@ export default function TeamsPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {overviews.map((o) => (
-            <Link key={o.team.id} to={`/app/equipos/${o.team.id}`} className="card card-hover block overflow-hidden">
+            <Link key={o.team.id} to={`/app/equipo-tecnico/${o.team.id}`} className="panel panel-hover block overflow-hidden">
               <div className="flex items-start justify-between gap-4 border-b border-navy-100 p-5">
                 <div className="flex items-start gap-3.5">
                   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-navy-900 text-[14px] font-bold text-white">

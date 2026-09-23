@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarClock, ChevronRight, Clock, MapPin, Plus, Sparkles } from 'lucide-react';
+import { CalendarClock, ChevronRight, Clock, MapPin, Plus } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { visibleTeams } from '@/store/selectors';
 import { Tag, Panel, EmptyState, LinkButton, PageHeader, Select, Tabs } from '@/components/ui';
@@ -34,14 +34,11 @@ export default function SessionsPage() {
   return (
     <>
       <PageHeader
-        title="Planificaciones"
+        title="Entrenamientos"
         description="Todas tus sesiones de entrenamiento, con su estructura y su material."
         actions={
           <>
-            <LinkButton to="/app/planificaciones/nuevo?ia=1" variant="secondary" size="sm" icon={<Sparkles size={15} />}>
-              Crear con IA
-            </LinkButton>
-            <LinkButton to="/app/planificaciones/nuevo" size="sm" icon={<Plus size={16} />}>
+            <LinkButton to="/app/entrenamientos/nuevo" size="sm" icon={<Plus size={16} />}>
               Crear entrenamiento
             </LinkButton>
           </>
@@ -73,14 +70,11 @@ export default function SessionsPage() {
           <EmptyState
            
             title="No tienes entrenamientos creados todavía"
-            description="Empieza creando tu primera sesión: constrúyela arrastrando ejercicios o pídesela al asistente."
+            description="Monta la primera sesión arrastrando ejercicios de tu biblioteca."
             action={
               <div className="flex gap-2">
-                <LinkButton to="/app/planificaciones/nuevo" size="sm">
+                <LinkButton to="/app/entrenamientos/nuevo" size="sm">
                   Crear entrenamiento
-                </LinkButton>
-                <LinkButton to="/app/planificaciones/nuevo?ia=1" variant="secondary" size="sm">
-                  Crear con IA
                 </LinkButton>
               </div>
             }
@@ -89,7 +83,7 @@ export default function SessionsPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {sessions.map((s) => (
-            <Link key={s.id} to={`/app/planificaciones/${s.id}`} className="card card-hover block p-5">
+            <Link key={s.id} to={`/app/entrenamientos/${s.id}`} className="panel panel-hover block p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-[12.5px] font-medium text-navy-900">
@@ -98,11 +92,6 @@ export default function SessionsPage() {
                   <h3 className="mt-0.5 text-[16px] font-semibold leading-tight">{s.title}</h3>
                 </div>
                 <div className="flex shrink-0 gap-1.5">
-                  {s.generatedByAI && (
-                    <Tag tone="solid" size="sm">
-                      <Sparkles size={11} /> IA
-                    </Tag>
-                  )}
                   <Tag tone={s.status === 'borrador' ? 'warn' : s.status === 'completado' ? 'neutral' : 'ok'} size="sm">
                     {s.status}
                   </Tag>

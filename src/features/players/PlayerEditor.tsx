@@ -77,10 +77,10 @@ export default function PlayerEditor() {
         text: existing
           ? `Has actualizado la ficha de ${saved.shortName}.`
           : `Has dado de alta a ${saved.shortName} en la plantilla.`,
-        link: `/app/jugadoras/${saved.id}`,
+        link: `/app/plantilla/${saved.id}`,
       });
-      toast.success(existing ? 'Ficha actualizada ✓' : 'Jugadora añadida ✓');
-      navigate(`/app/jugadoras/${saved.id}`);
+      toast.success(existing ? 'Ficha actualizada' : 'Jugadora añadida');
+      navigate(`/app/plantilla/${saved.id}`);
     } catch (e) {
       toast.error('No hemos podido guardar la ficha', humanError(e));
     } finally {
@@ -94,7 +94,7 @@ export default function PlayerEditor() {
     try {
       await actions.deletePlayer(existing.id);
       toast.success('Jugadora eliminada');
-      navigate('/app/jugadoras');
+      navigate('/app/plantilla');
     } catch (e) {
       toast.error('No hemos podido eliminarla', humanError(e));
     } finally {
@@ -122,7 +122,7 @@ export default function PlayerEditor() {
   return (
     <>
       <Link
-        to={existing ? `/app/jugadoras/${existing.id}` : '/app/jugadoras'}
+        to={existing ? `/app/plantilla/${existing.id}` : '/app/plantilla'}
         className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> {existing ? existing.shortName : 'Jugadoras'}

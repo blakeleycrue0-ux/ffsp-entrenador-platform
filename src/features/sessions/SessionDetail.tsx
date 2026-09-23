@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, ClipboardList, Clock, Copy, MapPin, Package, PencilLine, Share2, Sparkles, Target, Trash2, Users,
+  ArrowLeft, ClipboardList, Clock, Copy, MapPin, Package, PencilLine, Share2, Target, Trash2, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { visibleTeams } from '@/store/selectors';
@@ -29,7 +29,7 @@ export default function SessionDetail() {
     });
   }, [s]);
 
-  if (!s || !allowed) return <Navigate to="/app/planificaciones" replace />;
+  if (!s || !allowed) return <Navigate to="/app/entrenamientos" replace />;
 
   const team = data.teams.find((t) => t.id === s.teamId);
 
@@ -45,11 +45,11 @@ export default function SessionDetail() {
         kind: 'sesion',
         teamId: s.teamId,
         text: `Has duplicado «${s.title}».`,
-        link: `/app/planificaciones/${copy.id}`,
+        link: `/app/entrenamientos/${copy.id}`,
       });
       toast.success('Entrenamiento duplicado', 'La copia se ha guardado como borrador.', {
         label: 'Abrir copia',
-        onClick: () => navigate(`/app/planificaciones/${copy.id}`),
+        onClick: () => navigate(`/app/entrenamientos/${copy.id}`),
       });
     } catch (e) {
       toast.error('No hemos podido duplicarlo', humanError(e));
@@ -60,7 +60,7 @@ export default function SessionDetail() {
     try {
       await actions.deleteSession(s.id);
       toast.success('Entrenamiento eliminado');
-      navigate('/app/planificaciones');
+      navigate('/app/entrenamientos');
     } catch (e) {
       toast.error('No hemos podido eliminarlo', humanError(e));
     }
@@ -69,7 +69,7 @@ export default function SessionDetail() {
   return (
     <>
       <Link
-        to="/app/planificaciones"
+        to="/app/entrenamientos"
         className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> Planificaciones
@@ -84,11 +84,6 @@ export default function SessionDetail() {
             <Tag tone={relativeDay(s.date) === 'Hoy' ? 'solid' : 'neutral'} size="sm">
               {relativeDay(s.date)}
             </Tag>
-            {s.generatedByAI && (
-              <Tag tone="solid" size="sm">
-                <Sparkles size={11} /> Generado con IA
-              </Tag>
-            )}
           </>
         }
         title={s.title}
@@ -106,7 +101,7 @@ export default function SessionDetail() {
             >
               Compartir
             </Button>
-            <LinkButton to={`/app/planificaciones/${s.id}/editar`} size="sm" icon={<PencilLine size={15} />}>
+            <LinkButton to={`/app/entrenamientos/${s.id}/editar`} size="sm" icon={<PencilLine size={15} />}>
               Editar
             </LinkButton>
           </>
@@ -190,7 +185,7 @@ export default function SessionDetail() {
                           to={`/app/ejercicios/${drill.id}`}
                           className="ml-1 text-[12px] font-medium text-navy-900 hover:text-navy-900"
                         >
-                          Ver ejercicio →
+                          Ver ejercicio
                         </Link>
                       )}
                     </div>
@@ -251,11 +246,8 @@ export default function SessionDetail() {
           <Panel className="p-5">
             <h3 className="text-[14.5px] font-semibold">Acciones rápidas</h3>
             <div className="mt-3 space-y-2">
-              <LinkButton to="/app/asistencia" variant="secondary" size="sm" block icon={<ClipboardList size={15} />}>
+              <LinkButton to={`/app/entrenamientos/${s.id}/asistencia`} variant="secondary" size="sm" block icon={<ClipboardList size={15} />}>
                 Pasar asistencia de esta sesión
-              </LinkButton>
-              <LinkButton to="/app/mensajes/nuevo" variant="secondary" size="sm" block>
-                Avisar al equipo por WhatsApp
               </LinkButton>
               <Button variant="danger" size="sm" block icon={<Trash2 size={15} />} onClick={remove}>
                 Eliminar entrenamiento

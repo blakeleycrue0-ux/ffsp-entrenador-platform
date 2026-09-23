@@ -9,7 +9,7 @@ import { useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, CalendarClock, CheckCheck, ClipboardCopy, Clock, MapPin, PencilLine, Shirt,
-  Sparkles, Users,
+  Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { squadOf, playerAttendance, visibleTeams } from '@/store/selectors';
@@ -43,15 +43,10 @@ export default function MatchDetail() {
   const team = data.teams.find((t) => t.id === match.teamId)!;
   const fixture = match.home ? `${CLUB_NAME} vs ${match.opponent}` : `${match.opponent} vs ${CLUB_NAME}`;
 
-  /* ── Crear convocatoria: propone jugadoras por disponibilidad y asistencia ── */
-  const createCallup = async (withAI = false) => {
+  /* ── Crear convocatoria: parte de quien está disponible, y tú decides ── */
+  const createCallup = async () => {
     const eligible = squad.filter((p) => ['disponible', 'duda'].includes(p.availability.status));
-    const scored = [...eligible].sort((a, b) => {
-      const ra = attendance.find((x) => x.player.id === a.id)?.rate ?? 0;
-      const rb = attendance.find((x) => x.player.id === b.id)?.rate ?? 0;
-      return rb - ra;
-    });
-    const chosen = new Set((withAI ? scored : eligible).slice(0, 16).map((p) => p.id));
+    const chosen = new Set(eligible.slice(0, 16).map((p) => p.id));
 
     const fresh: Callup = {
       id: '',
@@ -59,21 +54,16 @@ export default function MatchDetail() {
       teamId: match.teamId,
       slots: 16,
       meetingTime: '16:30',
-      meetingPlace: `Vestuarios · ${match.venue}`,
-      kit: 'Equipación morada · medias moradas',
-      notes: 'Traer segunda camiseta y botella individual.',
+      meetingPlace: match.venue ? `Vestuarios · ${match.venue}` : '',
+      kit: '',
+      notes: '',
       entries: squad.map((p) => ({ playerId: p.id, selected: chosen.has(p.id), response: 'pendiente' })),
       status: 'borrador',
     };
     setBusy(true);
     try {
       await actions.saveCallup(fresh);
-      toast.success(
-        withAI ? 'Borrador propuesto por el asistente ✓' : 'Convocatoria creada ✓',
-        withAI
-          ? 'Criterio: disponibilidad, líneas cubiertas y asistencia reciente. Revísala antes de enviar.'
-          : 'Selecciona a las jugadoras y envíala cuando quieras.',
-      );
+      toast.success('Convocatoria creada', 'Ajusta la selección y compártela cuando quieras.');
     } catch (e) {
       toast.error('No hemos podido crear la convocatoria', humanError(e));
     } finally {
@@ -183,13 +173,12 @@ export default function MatchDetail() {
                 </span>
                 <h3 className="text-[16px] font-semibold text-navy-800">Todavía no hay convocatoria</h3>
                 <p className="mt-2 max-w-md text-[13.5px] leading-relaxed text-muted">
-                  Crea la lista con las jugadoras disponibles y envíala por WhatsApp. Cuando WhatsApp esté conectado,
-                  las respuestas se registrarán automáticamente.
+                  Parte de las jugadoras disponibles, ajusta la selección y copia la lista para
+                  compartirla. Las respuestas las registras tú según te vayan contestando.
                 </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  <Button loading={busy} onClick={() => createCallup(false)}>Crear convocatoria</Button>
-                  <Button variant="secondary" icon={<Sparkles size={15} />} disabled={busy} onClick={() => createCallup(true)}>
-                    Proponer con IA
+                <div className="mt-6 flex justify-center">
+                  <Button loading={busy} onClick={() => createCallup()}>
+                    Crear convocatoria
                   </Button>
                 </div>
               </div>
@@ -215,8 +204,21 @@ export default function MatchDetail() {
                     >
                       Vaciar
                     </Button>
-                    <Button size="sm" variant="secondary" icon={<Sparkles size={15} />} onClick={() => createCallup(true)}>
-                      Proponer con IA
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() =>
+                        patchCallup({
+                          entries: callup.entries.map((e) => ({
+                            ...e,
+                            selected: ['disponible', 'duda'].includes(
+                              squad.find((p) => p.id === e.playerId)?.availability.status ?? '',
+                            ),
+                          })),
+                        })
+                      }
+                    >
+                      Todas las disponibles
                     </Button>
                   </div>
                 </div>
@@ -268,7 +270,7 @@ export default function MatchDetail() {
                               </Tag>
                             ) : entry?.selected ? (
                               <Tag tone={CALLUP_RESPONSE[entry.response].tone} size="sm">
-                                {CALLUP_RESPONSE[entry.response].icon} {CALLUP_RESPONSE[entry.response].label}
+                                {CALLUP_RESPONSE[entry.response].label}
                               </Tag>
                             ) : (
                               <span className="text-[12.5px] text-navy-400">No convocada</span>

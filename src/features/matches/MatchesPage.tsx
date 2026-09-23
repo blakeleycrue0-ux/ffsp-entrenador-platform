@@ -89,7 +89,7 @@ export default function MatchesPage() {
             const pending = selected.filter((e) => e.response === 'pendiente').length;
 
             return (
-              <Link key={m.id} to={`/app/partidos/${m.id}`} className="card card-hover block overflow-hidden">
+              <Link key={m.id} to={`/app/partidos/${m.id}`} className="panel panel-hover block overflow-hidden">
                 <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
                   {/* Fecha */}
                   <div className="flex shrink-0 items-center gap-4 sm:w-40 sm:flex-col sm:items-start sm:gap-0">
