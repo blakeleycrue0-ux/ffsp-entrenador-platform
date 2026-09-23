@@ -12,7 +12,7 @@
 
 import { supabase } from './supabase';
 import type {
-  ActivityItem, AttendanceRecord, Callup, ClubData, CoachTask, Drill, Match, MessageTemplate,
+  ActivityItem, AttendanceMark, AttendanceRecord, Callup, ClubData, CoachTask, Drill, Match, MessageTemplate,
   MessageThread, Notification, Player, Staff, Team, TeamStaffLink, TrainingSession,
 } from '@/types';
 import { EMPTY_CLUB_DATA } from '@/types';
@@ -238,12 +238,40 @@ const fromCallup = (c: Callup) => ({
   sent_at: c.sentAt || null,
 });
 
+/**
+ * Las marcas guardadas antes de ampliar los estados usaban «pendiente» para
+ * decir «nadie ha pasado lista». Se traduce al leer, sin tocar lo guardado:
+ * los registros antiguos siguen siendo válidos y significan lo mismo.
+ */
+const MARCAS_ANTIGUAS: Record<string, AttendanceMark> = {
+  pendiente: 'sin_registrar',
+};
+
+const MARCAS_VALIDAS: AttendanceMark[] = [
+  'presente', 'tarde', 'justificada', 'lesionada', 'ausente', 'sin_registrar',
+];
+
+const toMarks = (raw: unknown): AttendanceRecord['marks'] => {
+  const entries = Object.entries((raw as AttendanceRecord['marks']) ?? {});
+  const out: AttendanceRecord['marks'] = {};
+  for (const [playerId, value] of entries) {
+    const mark = value?.mark as string;
+    out[playerId] = {
+      ...value,
+      mark: MARCAS_ANTIGUAS[mark] ?? (MARCAS_VALIDAS.includes(mark as AttendanceMark)
+        ? (mark as AttendanceMark)
+        : 'sin_registrar'),
+    };
+  }
+  return out;
+};
+
 const toAttendance = (r: Row): AttendanceRecord => ({
   id: r.id as string,
   sessionId: r.session_id as string,
   teamId: r.team_id as string,
   date: r.date as string,
-  marks: (r.marks as AttendanceRecord['marks']) ?? {},
+  marks: toMarks(r.marks),
   savedAt: (r.saved_at as string) ?? undefined,
 });
 
