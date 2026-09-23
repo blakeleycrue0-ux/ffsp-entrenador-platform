@@ -21,7 +21,7 @@ export function CreateMenu({ open, onClose }: { open: boolean; onClose: () => vo
   const navigate = useNavigate();
 
   return (
-    <Modal open={open} onClose={onClose} title="¿Qué quieres crear?" subtitle="Elige y te llevamos directamente al flujo.">
+    <Modal open={open} onClose={onClose} title="¿Qué quieres crear?" description="Elige y te llevamos directamente al flujo.">
       <div className="grid gap-2 sm:grid-cols-2">
         {OPTIONS.map((o) => {
           const Icon = o.icon;
@@ -32,21 +32,21 @@ export function CreateMenu({ open, onClose }: { open: boolean; onClose: () => vo
                 navigate(o.to);
                 onClose();
               }}
-              className="group flex items-start gap-3 rounded-xl border border-ink-200 p-3.5 text-left transition-all duration-150 hover:-translate-y-px hover:border-brand-300 hover:bg-brand-50/40 hover:shadow-card"
+              className="group flex items-start gap-3 rounded-xl border border-line p-3.5 text-left transition-all duration-150 hover:-translate-y-px hover:border-navy-300 hover:bg-navy-50/40 hover:shadow-card"
             >
               <span
                 className={
                   'grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors ' +
                   (o.highlight
-                    ? 'bg-brand-700 text-white'
-                    : 'bg-brand-50 text-brand-700 group-hover:bg-brand-100')
+                    ? 'bg-navy-900 text-white'
+                    : 'bg-navy-50 text-navy-900 group-hover:bg-navy-100')
                 }
               >
                 <Icon size={19} />
               </span>
               <span className="min-w-0">
-                <span className="block text-[14.5px] font-medium text-ink-900">{o.label}</span>
-                <span className="mt-0.5 block text-[12.5px] leading-snug text-ink-500">{o.hint}</span>
+                <span className="block text-[14.5px] font-medium text-navy-900">{o.label}</span>
+                <span className="mt-0.5 block text-[12.5px] leading-snug text-muted">{o.hint}</span>
               </span>
             </button>
           );

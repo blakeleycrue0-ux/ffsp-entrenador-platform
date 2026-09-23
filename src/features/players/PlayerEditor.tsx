@@ -11,7 +11,7 @@ import { useClub } from '@/store/store';
 import { squadOf, visibleTeams } from '@/store/selectors';
 import { canSeePersonalData } from '@/services/auth';
 import { humanError } from '@/services/supabase';
-import { Button, Card, Field, Input, Modal, PageHeader, Select, Textarea } from '@/components/ui';
+import { Button, Panel, Field, Input, Modal, PageHeader, Select, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { AVAILABILITY, AVAILABILITY_ORDER } from '@/components/domain/StatusBits';
 import { cn } from '@/lib/utils';
@@ -110,11 +110,11 @@ export default function PlayerEditor() {
     return (
       <>
         <PageHeader title="Nueva jugadora" />
-        <Card className="p-8 text-center">
-          <p className="text-[14px] text-ink-600">
+        <Panel className="p-8 text-center">
+          <p className="text-[14px] text-navy-600">
             Todavía no tienes ningún equipo asignado. Pídeselo a la coordinadora del club.
           </p>
-        </Card>
+        </Panel>
       </>
     );
   }
@@ -123,7 +123,7 @@ export default function PlayerEditor() {
     <>
       <Link
         to={existing ? `/app/jugadoras/${existing.id}` : '/app/jugadoras'}
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-500 transition-colors hover:text-brand-800"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> {existing ? existing.shortName : 'Jugadoras'}
       </Link>
@@ -150,7 +150,7 @@ export default function PlayerEditor() {
 
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
         <div className="space-y-4">
-          <Card className="p-5">
+          <Panel className="p-5">
             <h2 className="text-[15px] font-semibold">Datos básicos</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <Field label="Nombre y apellidos" className="sm:col-span-2">
@@ -216,12 +216,12 @@ export default function PlayerEditor() {
                 <Input type="date" value={form.joinedAt} onChange={(e) => patch({ joinedAt: e.target.value })} />
               </Field>
             </div>
-          </Card>
+          </Panel>
 
           {canSeeContact && (
-            <Card className="p-5">
+            <Panel className="p-5">
               <h2 className="text-[15px] font-semibold">Contacto</h2>
-              <p className="mt-1 text-[12.5px] text-ink-500">
+              <p className="mt-1 text-[12.5px] text-muted">
                 Datos personales. Sólo los ven los perfiles con permiso y nunca aparecen en listados.
               </p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -235,9 +235,9 @@ export default function PlayerEditor() {
 
               <div className="mt-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[14px] font-medium text-ink-800">Familia o tutores</h3>
+                  <h3 className="text-[14px] font-medium text-navy-800">Familia o tutores</h3>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     icon={<Plus size={15} />}
                     onClick={() =>
@@ -249,14 +249,14 @@ export default function PlayerEditor() {
                 </div>
 
                 {form.guardians.length === 0 ? (
-                  <p className="mt-3 text-[13px] text-ink-500">
+                  <p className="mt-3 text-[13px] text-muted">
                     Sin contactos registrados. Si la jugadora es menor, añade al menos uno para poder enviar
                     convocatorias.
                   </p>
                 ) : (
                   <div className="mt-3 space-y-3">
                     {form.guardians.map((g, i) => (
-                      <div key={i} className="rounded-xl border border-ink-200 p-3.5">
+                      <div key={i} className="rounded-xl border border-line p-3.5">
                         <div className="grid gap-3 sm:grid-cols-3">
                           <Field label="Nombre">
                             <Input value={g.name} onChange={(e) => setGuardian(i, { name: e.target.value })} />
@@ -277,7 +277,7 @@ export default function PlayerEditor() {
                         </div>
                         <button
                           onClick={() => patch({ guardians: form.guardians.filter((_, k) => k !== i) })}
-                          className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-ink-400 transition-colors hover:text-danger"
+                          className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-navy-400 transition-colors hover:text-bad"
                         >
                           <X size={13} /> Quitar contacto
                         </button>
@@ -286,12 +286,12 @@ export default function PlayerEditor() {
                   </div>
                 )}
               </div>
-            </Card>
+            </Panel>
           )}
         </div>
 
         <div className="space-y-4">
-          <Card className="p-5">
+          <Panel className="p-5">
             <h2 className="text-[14.5px] font-semibold">Disponibilidad</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {AVAILABILITY_ORDER.map((s) => (
@@ -301,8 +301,8 @@ export default function PlayerEditor() {
                   className={cn(
                     'flex items-center gap-2 rounded-xl border px-3 py-2 text-[13px] font-medium transition-all',
                     form.availability.status === s
-                      ? 'border-brand-400 bg-brand-50 text-brand-800 ring-2 ring-brand-100'
-                      : 'border-ink-200 text-ink-600 hover:border-brand-200',
+                      ? 'border-navy-400 bg-navy-50 text-navy-900 ring-2 ring-navy-100'
+                      : 'border-line text-navy-600 hover:border-navy-200',
                   )}
                 >
                   <span className={cn('h-2 w-2 rounded-full', AVAILABILITY[s].dot)} />
@@ -327,9 +327,9 @@ export default function PlayerEditor() {
                 onChange={(e) => patch({ availability: { ...form.availability, until: e.target.value } })}
               />
             </Field>
-          </Card>
+          </Panel>
 
-          <Card className="p-5">
+          <Panel className="p-5">
             <h2 className="text-[14.5px] font-semibold">Notas de la entrenadora</h2>
             <Textarea
               value={form.notes ?? ''}
@@ -337,7 +337,7 @@ export default function PlayerEditor() {
               placeholder="Observaciones deportivas, evolución, objetivos individuales…"
               className="mt-3 min-h-[120px]"
             />
-          </Card>
+          </Panel>
         </div>
       </div>
 
@@ -345,7 +345,7 @@ export default function PlayerEditor() {
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         title={`¿Eliminar a ${existing?.shortName}?`}
-        subtitle="Se borrará su ficha y su historial de asistencia. No se puede deshacer."
+        description="Se borrará su ficha y su historial de asistencia. No se puede deshacer."
         footer={
           <>
             <Button variant="ghost" onClick={() => setConfirmDelete(false)}>
@@ -357,7 +357,7 @@ export default function PlayerEditor() {
           </>
         }
       >
-        <p className="text-[14px] leading-relaxed text-ink-600">
+        <p className="text-[14px] leading-relaxed text-navy-600">
           Si sólo se ha marchado temporalmente, es mejor cambiar su disponibilidad a «Ausente» en lugar de eliminarla:
           así conservas su historial.
         </p>

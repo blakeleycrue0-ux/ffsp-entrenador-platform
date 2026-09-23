@@ -4,57 +4,70 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Inter var"', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
       colors: {
-        // Lila del escudo del Santa Ponsa CF (#653F8A) — suavizado en escala completa
-        brand: {
-          50: '#F8F6FC',
-          100: '#F1ECF8',
-          200: '#E3DAF1',
-          300: '#CDBEE4',
-          400: '#AE9AD1',
-          500: '#9179BE',
-          600: '#7A5CA8',
-          700: '#653F8A',
-          800: '#523371',
-          900: '#402759',
+        // Navy mate. Sin brillos ni degradados: el 900 es el color de marca.
+        navy: {
+          50: '#F4F6F8',
+          100: '#E7EBF0',
+          200: '#DCE2E8',
+          300: '#B9C3D0',
+          400: '#8C99AB',
+          500: '#647184',
+          600: '#47556B',
+          700: '#2C3B52',
+          800: '#192940',
+          900: '#101C2D',
         },
-        ink: {
-          900: '#1C1B22',
-          800: '#2E2C38',
-          700: '#44424F',
-          600: '#5D5A6B',
-          500: '#7B7889',
-          400: '#9B98A7',
-          300: '#C0BECA',
-          200: '#E2E1E8',
-          100: '#F0EFF4',
-          50: '#F8F8FB',
-        },
-        pitch: '#2F8F5B',   // verde de la cruz y las estrellas
-        sun: '#E9A23B',     // sol naciente del banderín
-        sea: '#3A7FB5',     // azul del banderín
-        danger: '#D25A52',
+        // Grises de interfaz
+        line: '#DCE2E8',
+        muted: '#647184',
+        surface: '#F4F6F8',
+        // Colores funcionales: sólo cuando transmiten información
+        ok: '#1F7A4D',
+        warn: '#9A6712',
+        bad: '#B3372C',
+        info: '#2C5A87',
       },
       boxShadow: {
-        card: '0 1px 2px rgba(28,27,34,.04), 0 4px 16px -6px rgba(28,27,34,.08)',
-        pop: '0 4px 12px rgba(28,27,34,.06), 0 18px 40px -14px rgba(28,27,34,.18)',
-        brand: '0 6px 20px -8px rgba(101,63,138,.45)',
+        // Sombras mínimas, nunca decorativas
+        card: '0 1px 2px rgba(16, 28, 45, 0.05)',
+        raised: '0 2px 8px rgba(16, 28, 45, 0.08)',
+        pop: '0 8px 28px -12px rgba(16, 28, 45, 0.28)',
       },
-      borderRadius: { xl: '14px', '2xl': '18px', '3xl': '24px' },
+      borderRadius: {
+        DEFAULT: '4px',
+        md: '5px',
+        lg: '6px',
+        xl: '8px',
+        '2xl': '10px',
+      },
+      fontSize: {
+        '2xs': ['11px', '16px'],
+        xs: ['12px', '18px'],
+        sm: ['13px', '20px'],
+        base: ['14px', '21px'],
+        md: ['15px', '23px'],
+        lg: ['17px', '25px'],
+        xl: ['20px', '28px'],
+        '2xl': ['24px', '32px'],
+        '3xl': ['30px', '38px'],
+        '4xl': ['38px', '46px'],
+        '5xl': ['48px', '56px'],
+      },
+      transitionDuration: {
+        120: '120ms',
+      },
       keyframes: {
-        'fade-up': { '0%': { opacity: 0, transform: 'translateY(6px)' }, '100%': { opacity: 1, transform: 'none' } },
         'fade-in': { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
-        'scale-in': { '0%': { opacity: 0, transform: 'scale(.97)' }, '100%': { opacity: 1, transform: 'none' } },
+        'fade-up': { '0%': { opacity: 0, transform: 'translateY(4px)' }, '100%': { opacity: 1, transform: 'none' } },
         'slide-up': { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'none' } },
-        'sheen': { '100%': { transform: 'translateX(100%)' } },
       },
       animation: {
-        'fade-up': 'fade-up .28s cubic-bezier(.22,1,.36,1) both',
-        'fade-in': 'fade-in .2s ease-out both',
-        'scale-in': 'scale-in .18s cubic-bezier(.22,1,.36,1) both',
-        'slide-up': 'slide-up .24s cubic-bezier(.22,1,.36,1) both',
+        'fade-in': 'fade-in .15s ease-out both',
+        'fade-up': 'fade-up .2s ease-out both',
+        'slide-up': 'slide-up .22s cubic-bezier(.22,1,.36,1) both',
       },
     },
   },

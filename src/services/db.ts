@@ -78,6 +78,7 @@ const toPlayer = (r: Row): Player => ({
   stats: (r.stats as Player['stats']) ?? { matches: 0, minutes: 0, goals: 0, assists: 0, yellow: 0, red: 0 },
   notes: (r.notes as string) ?? undefined,
   joinedAt: (r.joined_at as string) ?? '',
+  archivedAt: (r.archived_at as string) ?? undefined,
 });
 
 const fromPlayer = (p: Player) => ({
@@ -101,6 +102,7 @@ const fromPlayer = (p: Player) => ({
   stats: p.stats,
   notes: p.notes || null,
   joined_at: p.joinedAt || new Date().toISOString().slice(0, 10),
+  archived_at: p.archivedAt || null,
 });
 
 const toDrill = (r: Row, favorites: Set<string>): Drill => ({

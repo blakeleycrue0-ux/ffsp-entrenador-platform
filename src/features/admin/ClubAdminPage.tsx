@@ -8,11 +8,11 @@
 
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Shield, UserPlus, Users, X } from 'lucide-react';
+import { Plus, UserPlus, X } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { ASSIGNABLE_ROLES, ROLE_LABEL, isCoordinator } from '@/services/auth';
 import { humanError } from '@/services/supabase';
-import { Avatar, Badge, Button, Card, EmptyState, LinkButton, Modal, PageHeader, Select, Tabs } from '@/components/ui';
+import { Avatar, Tag, Button, Panel, EmptyState, LinkButton, Modal, PageHeader, Select, Tabs } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { squadOf } from '@/store/selectors';
 import type { Staff, StaffRole } from '@/types';
@@ -31,7 +31,7 @@ export default function ClubAdminPage() {
   return (
     <>
       <PageHeader
-        eyebrow={<Badge tone="brand" size="sm">Coordinación</Badge>}
+        eyebrow={<Tag tone="solid" size="sm">Coordinación</Tag>}
         title="Club"
         description="Crea los equipos de la temporada y asigna a cada persona del cuerpo técnico el suyo."
         actions={
@@ -42,14 +42,14 @@ export default function ClubAdminPage() {
       />
 
       {unassigned.length > 0 && (
-        <Card className="mb-5 border-sun/30 bg-sun/5 p-4">
+        <Panel className="mb-5 border-warn/30 bg-warn/5 p-4">
           <p className="text-[14px] font-medium text-[#8A5A10]">
             {unassigned.length} {unassigned.length === 1 ? 'persona' : 'personas'} sin equipo asignado
           </p>
           <p className="mt-1 text-[13px] leading-relaxed text-[#8A5A10]/85">
             Han creado su cuenta pero todavía no ven nada al entrar: {unassigned.map((s) => s.name).join(', ')}.
           </p>
-        </Card>
+        </Panel>
       )}
 
       <Tabs
@@ -64,9 +64,9 @@ export default function ClubAdminPage() {
 
       {tab === 'equipos' &&
         (data.teams.length === 0 ? (
-          <Card>
+          <Panel>
             <EmptyState
-              icon={<Shield size={26} />}
+             
               title="Todavía no hay equipos"
               description="Crea el primer equipo de la temporada. Después podrás asignarle entrenadoras y ellas empezarán a meter sus jugadoras."
               action={
@@ -75,7 +75,7 @@ export default function ClubAdminPage() {
                 </LinkButton>
               }
             />
-          </Card>
+          </Panel>
         ) : (
           <div className="space-y-3">
             {data.teams.map((team) => {
@@ -85,27 +85,27 @@ export default function ClubAdminPage() {
                 .filter((x) => x.staff);
 
               return (
-                <Card key={team.id} className="p-5">
+                <Panel key={team.id} className="p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="flex items-start gap-3.5">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-700 text-[13px] font-bold text-white">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy-900 text-[13px] font-bold text-white">
                         {team.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || '—'}
                       </span>
                       <div className="min-w-0">
-                        <Link to={`/app/equipos/${team.id}`} className="text-[16px] font-semibold hover:text-brand-800">
+                        <Link to={`/app/equipos/${team.id}`} className="text-[16px] font-semibold hover:text-navy-900">
                           {team.name}
                         </Link>
-                        <p className="mt-0.5 text-[12.5px] text-ink-500">
+                        <p className="mt-0.5 text-[12.5px] text-muted">
                           {[team.category, team.competition, team.season].filter(Boolean).join(' · ') || 'Sin detalles'}
                         </p>
-                        <p className="mt-1 text-[12.5px] text-ink-400">
+                        <p className="mt-1 text-[12.5px] text-navy-400">
                           {squadOf(data, team.id).length} jugadoras
                         </p>
                       </div>
                     </div>
 
                     <div className="flex gap-2">
-                      <LinkButton to={`/app/equipos/${team.id}/editar`} variant="outline" size="sm">
+                      <LinkButton to={`/app/equipos/${team.id}/editar`} variant="secondary" size="sm">
                         Editar
                       </LinkButton>
                       <Button size="sm" icon={<UserPlus size={15} />} onClick={() => setAssignTo(team.id)}>
@@ -114,9 +114,9 @@ export default function ClubAdminPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 border-t border-ink-100 pt-3">
+                  <div className="mt-4 border-t border-navy-100 pt-3">
                     {people.length === 0 ? (
-                      <p className="text-[13px] text-ink-500">
+                      <p className="text-[13px] text-muted">
                         Sin cuerpo técnico asignado. Nadie ve este equipo todavía.
                       </p>
                     ) : (
@@ -124,11 +124,11 @@ export default function ClubAdminPage() {
                         {people.map(({ staff, role }) => (
                           <span
                             key={staff!.id}
-                            className="inline-flex items-center gap-2 rounded-xl border border-ink-200 py-1.5 pl-1.5 pr-2.5"
+                            className="inline-flex items-center gap-2 rounded-xl border border-line py-1.5 pl-1.5 pr-2.5"
                           >
                             <Avatar name={staff!.name} size={26} />
-                            <span className="text-[13px] text-ink-700">{staff!.name}</span>
-                            <span className="text-[11.5px] text-ink-400">{ROLE_LABEL[role]}</span>
+                            <span className="text-[13px] text-navy-700">{staff!.name}</span>
+                            <span className="text-[11.5px] text-navy-400">{ROLE_LABEL[role]}</span>
                             <button
                               onClick={async () => {
                                 try {
@@ -138,7 +138,7 @@ export default function ClubAdminPage() {
                                   toast.error('No hemos podido retirarla', humanError(e));
                                 }
                               }}
-                              className="text-ink-300 transition-colors hover:text-danger"
+                              className="text-navy-300 transition-colors hover:text-bad"
                               aria-label={`Quitar a ${staff!.name}`}
                             >
                               <X size={14} />
@@ -148,7 +148,7 @@ export default function ClubAdminPage() {
                       </div>
                     )}
                   </div>
-                </Card>
+                </Panel>
               );
             })}
           </div>
@@ -157,22 +157,22 @@ export default function ClubAdminPage() {
       {tab === 'personas' && (
         <div className="space-y-3">
           {data.staff.length === 0 ? (
-            <Card>
-              <EmptyState icon={<Users size={26} />} title="Todavía no hay nadie registrado" />
-            </Card>
+            <Panel>
+              <EmptyState title="Todavía no hay nadie registrado" />
+            </Panel>
           ) : (
             data.staff.map((person) => <StaffRow key={person.id} person={person} />)
           )}
 
-          <Card className="bg-ink-50/60 p-5">
+          <Panel className="bg-navy-50/60 p-5">
             <h3 className="text-[14.5px] font-semibold">Cómo se da de alta a una entrenadora</h3>
-            <ol className="mt-2.5 space-y-1.5 text-[13px] leading-relaxed text-ink-600">
+            <ol className="mt-2.5 space-y-1.5 text-[13px] leading-relaxed text-navy-600">
               <li>1. Ella entra en la plataforma y pulsa «Crear cuenta» con su correo.</li>
               <li>2. Aparece en esta lista sin ningún equipo asignado.</li>
               <li>3. Tú le asignas su equipo desde la pestaña «Equipos».</li>
               <li>4. A partir de ese momento ve su equipo y sólo el suyo.</li>
             </ol>
-          </Card>
+          </Panel>
         </div>
       )}
 
@@ -205,21 +205,21 @@ function StaffRow({ person }: { person: Staff }) {
   };
 
   return (
-    <Card className="flex flex-wrap items-center gap-4 p-4">
+    <Panel className="flex flex-wrap items-center gap-4 p-4">
       <Avatar name={person.name} size={42} />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[14.5px] font-medium text-ink-900">{person.name}</p>
-        <p className="truncate text-[12.5px] text-ink-500">{person.email}</p>
+        <p className="truncate text-[14.5px] font-medium text-navy-900">{person.name}</p>
+        <p className="truncate text-[12.5px] text-muted">{person.email}</p>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {teams.length === 0 ? (
-            <Badge tone="warning" size="sm">
+            <Tag tone="warn" size="sm">
               Sin equipo
-            </Badge>
+            </Tag>
           ) : (
             teams.map((t) => (
-              <Badge key={t} tone="brand" size="sm">
+              <Tag key={t} tone="solid" size="sm">
                 {t}
-              </Badge>
+              </Tag>
             ))
           )}
         </div>
@@ -236,7 +236,7 @@ function StaffRow({ person }: { person: Staff }) {
           </option>
         ))}
       </Select>
-    </Card>
+    </Panel>
   );
 }
 
@@ -277,7 +277,7 @@ function AssignModal({ teamId, onClose }: { teamId: string | null; onClose: () =
       open
       onClose={onClose}
       title={`Asignar a ${team?.name ?? 'equipo'}`}
-      subtitle="Sólo verá los equipos que le asignes."
+      description="Sólo verá los equipos que le asignes."
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
@@ -290,7 +290,7 @@ function AssignModal({ teamId, onClose }: { teamId: string | null; onClose: () =
       }
     >
       {candidates.length === 0 ? (
-        <p className="text-[14px] leading-relaxed text-ink-600">
+        <p className="text-[14px] leading-relaxed text-navy-600">
           Ya están asignadas todas las personas registradas. Cuando alguien nuevo cree su cuenta, aparecerá aquí.
         </p>
       ) : (

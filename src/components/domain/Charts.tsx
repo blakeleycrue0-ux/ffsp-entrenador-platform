@@ -26,16 +26,16 @@ export function BarTrend({
     <div className={cn('flex items-end gap-2', className)} style={{ height }}>
       {data.map((d, i) => (
         <div key={i} className="group flex flex-1 flex-col items-center justify-end gap-1.5">
-          <span className="text-[11px] font-semibold text-ink-500 tabular-nums">
+          <span className="text-[11px] font-semibold text-muted tabular-nums">
             {d.value}
             {suffix}
           </span>
           <div
-            className="w-full rounded-t-md bg-brand-200 transition-colors duration-200 group-hover:bg-brand-500"
+            className="w-full rounded-t-md bg-navy-200 transition-colors duration-200 group-hover:bg-navy-700"
             style={{ height: `${Math.max(6, ((d.value - floor) / (max - floor || 1)) * track)}px` }}
             title={`${d.label}: ${d.value}${suffix}`}
           />
-          <span className="text-[10.5px] text-ink-400">{d.label}</span>
+          <span className="text-[10.5px] text-navy-400">{d.label}</span>
         </div>
       ))}
     </div>
@@ -47,7 +47,7 @@ export function LineTrend({
 }: { points: { date: string; rate: number }[]; height?: number; className?: string }) {
   if (points.length < 2) {
     return (
-      <div className={cn('grid place-items-center text-[13px] text-ink-400', className)} style={{ height }}>
+      <div className={cn('grid place-items-center text-[13px] text-navy-400', className)} style={{ height }}>
         Aún no hay datos suficientes para dibujar la evolución.
       </div>
     );
@@ -78,7 +78,7 @@ export function LineTrend({
           <circle key={i} cx={x(i)} cy={y(p.rate)} r="3" fill="#fff" stroke="#653F8A" strokeWidth="2" />
         ))}
       </svg>
-      <div className="mt-1 flex justify-between px-1 text-[10.5px] text-ink-400">
+      <div className="mt-1 flex justify-between px-1 text-[10.5px] text-navy-400">
         <span>{shortDate(points[0].date)}</span>
         <span>{shortDate(points[points.length - 1].date)}</span>
       </div>
@@ -88,11 +88,11 @@ export function LineTrend({
 
 /** Anillo de progreso — para porcentajes únicos (asistencia media, confirmaciones). */
 export function Ring({
-  value, size = 72, stroke = 7, label, tone = 'brand',
-}: { value: number; size?: number; stroke?: number; label?: string; tone?: 'brand' | 'success' | 'warning' }) {
+  value, size = 72, stroke = 7, label, tone = 'solid',
+}: { value: number; size?: number; stroke?: number; label?: string; tone?: 'solid' | 'ok' | 'warn' }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
-  const color = { brand: '#7A5CA8', success: '#2F8F5B', warning: '#E9A23B' }[tone];
+  const color = { solid: '#101C2D', ok: '#1F7A4D', warn: '#9A6712' }[tone];
   return (
     <div className="relative inline-grid place-items-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
@@ -105,8 +105,8 @@ export function Ring({
         />
       </svg>
       <div className="absolute text-center">
-        <span className="block text-[15px] font-semibold leading-none text-ink-900 tabular-nums">{value}%</span>
-        {label && <span className="mt-0.5 block text-[10px] text-ink-400">{label}</span>}
+        <span className="block text-[15px] font-semibold leading-none text-navy-900 tabular-nums">{value}%</span>
+        {label && <span className="mt-0.5 block text-[10px] text-navy-400">{label}</span>}
       </div>
     </div>
   );
@@ -118,7 +118,7 @@ export function SplitBar({
 }: { segments: { value: number; color: string; label: string }[]; height?: number; className?: string }) {
   const total = segments.reduce((a, s) => a + s.value, 0) || 1;
   return (
-    <div className={cn('flex w-full overflow-hidden rounded-full bg-ink-100', className)} style={{ height }}>
+    <div className={cn('flex w-full overflow-hidden rounded-full bg-navy-100', className)} style={{ height }}>
       {segments.map((s, i) => (
         <div
           key={i}

@@ -88,40 +88,40 @@ export default function Login() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* Marca */}
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-brand-50/50 p-12 lg:flex">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand-100/50 blur-3xl" />
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-navy-50/50 p-12 lg:flex">
+        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-navy-100/50 blur-3xl" />
         <Link
           to="/"
-          className="relative inline-flex items-center gap-1.5 text-[14px] font-medium text-ink-600 transition-colors hover:text-brand-800"
+          className="relative inline-flex items-center gap-1.5 text-[14px] font-medium text-navy-600 transition-colors hover:text-navy-900"
         >
           <ArrowLeft size={16} /> Volver
         </Link>
 
         <div className="relative">
           <Crest size={110} />
-          <h1 className="mt-9 max-w-md text-[38px] font-semibold leading-[1.12] tracking-[-0.02em] text-ink-900">
+          <h1 className="mt-9 max-w-md text-[38px] font-semibold leading-[1.12] tracking-[-0.02em] text-navy-900">
             El centro de operaciones de la entrenadora.
           </h1>
-          <p className="mt-5 max-w-sm text-[16px] leading-relaxed text-ink-500">
+          <p className="mt-5 max-w-sm text-[16px] leading-relaxed text-muted">
             Planifica, gestiona, comunica y mejora desde un único lugar.
           </p>
 
-          <div className="mt-10 flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3">
-            <ShieldCheck size={18} className="shrink-0 text-brand-600" />
-            <p className="text-[13px] leading-relaxed text-ink-600">
+          <div className="mt-10 flex items-center gap-3 rounded-xl border border-line bg-white px-4 py-3">
+            <ShieldCheck size={18} className="shrink-0 text-navy-800" />
+            <p className="text-[13px] leading-relaxed text-navy-600">
               Cada entrenadora ve únicamente los equipos que tiene asignados. Los datos de las jugadoras son privados.
             </p>
           </div>
         </div>
 
-        <p className="relative text-[13px] text-ink-400">FFSP · Santa Ponsa CF</p>
+        <p className="relative text-[13px] text-navy-400">FFSP · Santa Ponsa CF</p>
       </div>
 
       {/* Formulario */}
       <div className="flex flex-col justify-center px-5 py-12 sm:px-12">
         <div className="mx-auto w-full max-w-md">
           <div className="lg:hidden">
-            <Link to="/" className="mb-8 inline-flex items-center gap-2 text-[14px] font-medium text-ink-600">
+            <Link to="/" className="mb-8 inline-flex items-center gap-2 text-[14px] font-medium text-navy-600">
               <ArrowLeft size={16} /> Volver
             </Link>
             <Wordmark size="lg" />
@@ -129,14 +129,14 @@ export default function Login() {
 
           <div className="mt-8 lg:mt-0">
             <h2 className="text-[24px] font-semibold leading-tight">{t.title}</h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-ink-500">{t.sub}</p>
+            <p className="mt-2 text-[14px] leading-relaxed text-muted">{t.sub}</p>
           </div>
 
           <form onSubmit={submit} className="mt-7 space-y-4">
             {mode === 'registro' && (
               <Field label="Nombre y apellidos">
                 <div className="relative">
-                  <User size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+                  <User size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-400" />
                   <Input
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -150,7 +150,7 @@ export default function Login() {
 
             <Field label="Correo electrónico">
               <div className="relative">
-                <Mail size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+                <Mail size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-400" />
                 <Input
                   type="email"
                   value={email}
@@ -168,7 +168,7 @@ export default function Login() {
                 hint={mode === 'registro' ? 'Mínimo 6 caracteres.' : undefined}
               >
                 <div className="relative">
-                  <Lock size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+                  <Lock size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-400" />
                   <Input
                     type="password"
                     value={password}
@@ -182,12 +182,12 @@ export default function Login() {
             )}
 
             {error && (
-              <p className="rounded-xl border border-danger/25 bg-danger/5 px-3.5 py-2.5 text-[13px] leading-relaxed text-[#A63B34]">
+              <p className="rounded-xl border border-bad/25 bg-bad/5 px-3.5 py-2.5 text-[13px] leading-relaxed text-[#A63B34]">
                 {error}
               </p>
             )}
             {notice && (
-              <p className="flex items-start gap-2 rounded-xl border border-pitch/25 bg-pitch/5 px-3.5 py-2.5 text-[13px] leading-relaxed text-[#1F6B44]">
+              <p className="flex items-start gap-2 rounded-xl border border-ok/25 bg-ok/5 px-3.5 py-2.5 text-[13px] leading-relaxed text-[#1F6B44]">
                 <CheckCircle2 size={15} className="mt-0.5 shrink-0" />
                 {notice}
               </p>
@@ -201,28 +201,28 @@ export default function Login() {
           <div className="mt-6 space-y-2 text-[13.5px]">
             {mode === 'entrar' && (
               <>
-                <p className="text-ink-500">
+                <p className="text-muted">
                   ¿Has olvidado la contraseña?{' '}
-                  <button onClick={() => { setMode('recuperar'); setError(null); }} className="font-medium text-brand-700 hover:text-brand-800">
+                  <button onClick={() => { setMode('recuperar'); setError(null); }} className="font-medium text-navy-900 hover:text-navy-900">
                     Recupérala
                   </button>
                 </p>
-                <p className="text-ink-500">
+                <p className="text-muted">
                   ¿Aún no tienes cuenta?{' '}
-                  <button onClick={() => { setMode('registro'); setError(null); }} className="font-medium text-brand-700 hover:text-brand-800">
+                  <button onClick={() => { setMode('registro'); setError(null); }} className="font-medium text-navy-900 hover:text-navy-900">
                     Crear cuenta
                   </button>
                 </p>
               </>
             )}
             {mode !== 'entrar' && (
-              <button onClick={() => { setMode('entrar'); setError(null); }} className="font-medium text-brand-700 hover:text-brand-800">
+              <button onClick={() => { setMode('entrar'); setError(null); }} className="font-medium text-navy-900 hover:text-navy-900">
                 ← Volver a entrar
               </button>
             )}
           </div>
 
-          <p className="mt-8 flex items-start gap-2 text-[12.5px] leading-relaxed text-ink-400">
+          <p className="mt-8 flex items-start gap-2 text-[12.5px] leading-relaxed text-navy-400">
             <Lock size={14} className="mt-0.5 shrink-0" />
             La primera persona que cree una cuenta queda como coordinadora del club y podrá crear los equipos y asignar
             al resto del cuerpo técnico.

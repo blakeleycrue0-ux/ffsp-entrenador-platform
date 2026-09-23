@@ -124,6 +124,11 @@ export interface Player {
   stats: PlayerStats;
   notes?: string;
   joinedAt: string;
+  /**
+   * Una jugadora que deja el equipo se archiva, no se borra: su historial de
+   * asistencia, partidos y minutos sigue siendo válido.
+   */
+  archivedAt?: string;
 }
 
 /* ──────────────────────────── Ejercicios y sesiones ───────────────────────── */
@@ -242,7 +247,17 @@ export interface Callup {
 
 /* ───────────────────────────────── Asistencia ─────────────────────────────── */
 
-export type AttendanceMark = 'presente' | 'justificada' | 'ausente' | 'pendiente';
+/**
+ * Estados de asistencia. «sin_registrar» no es una ausencia: significa que
+ * todavía nadie ha pasado lista, y así se muestra en toda la plataforma.
+ */
+export type AttendanceMark =
+  | 'presente'
+  | 'tarde'
+  | 'justificada'
+  | 'lesionada'
+  | 'ausente'
+  | 'sin_registrar';
 
 export interface AttendanceRecord {
   id: string;

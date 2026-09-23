@@ -79,19 +79,19 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
 
   return (
     <div className="fixed inset-0 z-[80] flex items-start justify-center p-4 pt-[12vh]">
-      <div className="absolute inset-0 bg-ink-900/25 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-pop animate-scale-in">
-        <div className="flex items-center gap-3 border-b border-ink-200/80 px-4">
-          <Search size={18} className="shrink-0 text-ink-400" />
+      <div className="absolute inset-0 bg-navy-900/25 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-line bg-white shadow-pop animate-scale-in">
+        <div className="flex items-center gap-3 border-b border-line/80 px-4">
+          <Search size={18} className="shrink-0 text-navy-400" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Buscar jugadora, equipo, entrenamiento, ejercicio, partido…"
-            className="h-14 flex-1 bg-transparent text-[15px] text-ink-900 outline-none placeholder:text-ink-400"
+            className="h-14 flex-1 bg-transparent text-[15px] text-navy-900 outline-none placeholder:text-navy-400"
           />
-          <kbd className="hidden rounded-md border border-ink-200 px-1.5 py-0.5 text-[11px] font-medium text-ink-400 sm:block">
+          <kbd className="hidden rounded-md border border-line px-1.5 py-0.5 text-[11px] font-medium text-navy-400 sm:block">
             ESC
           </kbd>
         </div>
@@ -99,13 +99,13 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
         <div className="max-h-[52vh] overflow-y-auto p-2">
           {query.trim().length < 2 ? (
             <div className="px-3 py-6">
-              <p className="text-[12.5px] font-medium uppercase tracking-wide text-ink-400">Sugerencias</p>
+              <p className="text-[12.5px] font-medium uppercase tracking-wide text-navy-400">Sugerencias</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {['Sub-17', 'Presión', 'Rondo', 'Posesión'].map((s) => (
                   <button
                     key={s}
                     onClick={() => setQuery(s)}
-                    className="rounded-lg border border-ink-200 px-2.5 py-1.5 text-[13px] text-ink-600 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                    className="rounded-lg border border-line px-2.5 py-1.5 text-[13px] text-navy-600 transition-colors hover:border-navy-300 hover:bg-navy-50 hover:text-navy-900"
                   >
                     {s}
                   </button>
@@ -114,8 +114,8 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
             </div>
           ) : hits.length === 0 ? (
             <div className="px-4 py-10 text-center">
-              <p className="text-[14px] font-medium text-ink-700">Sin resultados para «{query}»</p>
-              <p className="mt-1 text-[13px] text-ink-500">Prueba con el nombre de una jugadora, un rival o una etiqueta.</p>
+              <p className="text-[14px] font-medium text-navy-700">Sin resultados para «{query}»</p>
+              <p className="mt-1 text-[13px] text-muted">Prueba con el nombre de una jugadora, un rival o una etiqueta.</p>
             </div>
           ) : (
             hits.map((hit, i) => {
@@ -128,23 +128,23 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
                   onClick={() => go(hit)}
                   className={cn(
                     'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
-                    i === cursor ? 'bg-brand-50' : 'hover:bg-ink-50',
+                    i === cursor ? 'bg-navy-50' : 'hover:bg-navy-50',
                   )}
                 >
                   <span
                     className={cn(
                       'grid h-9 w-9 shrink-0 place-items-center rounded-lg',
-                      i === cursor ? 'bg-brand-100 text-brand-700' : 'bg-ink-100 text-ink-500',
+                      i === cursor ? 'bg-navy-100 text-navy-900' : 'bg-navy-100 text-muted',
                     )}
                   >
                     <Icon size={17} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-medium text-ink-900">{hit.title}</span>
-                    <span className="block truncate text-[12.5px] text-ink-500">{hit.subtitle}</span>
+                    <span className="block truncate text-[14px] font-medium text-navy-900">{hit.title}</span>
+                    <span className="block truncate text-[12.5px] text-muted">{hit.subtitle}</span>
                   </span>
-                  {meta && <span className="shrink-0 text-[12px] font-medium text-ink-400">{meta}</span>}
-                  <span className="shrink-0 rounded-md bg-white px-1.5 py-0.5 text-[10.5px] font-medium uppercase tracking-wide text-ink-400 ring-1 ring-ink-200">
+                  {meta && <span className="shrink-0 text-[12px] font-medium text-navy-400">{meta}</span>}
+                  <span className="shrink-0 rounded-md bg-white px-1.5 py-0.5 text-[10.5px] font-medium uppercase tracking-wide text-navy-400 ring-1 ring-line">
                     {KIND_LABEL[hit.kind]}
                   </span>
                 </button>
@@ -153,7 +153,7 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-ink-200/80 bg-ink-50/60 px-4 py-2.5 text-[11.5px] text-ink-400">
+        <div className="flex items-center justify-between border-t border-line/80 bg-navy-50/60 px-4 py-2.5 text-[11.5px] text-navy-400">
           <span className="flex items-center gap-3">
             <span className="flex items-center gap-1">↑↓ navegar</span>
             <span className="flex items-center gap-1">

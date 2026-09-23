@@ -5,7 +5,6 @@ import { Topbar } from './Topbar';
 import { BottomNav } from './BottomNav';
 import { CreateMenu } from './CreateMenu';
 import { GlobalSearch } from './GlobalSearch';
-import { AssistantLauncher } from '@/features/assistant/AssistantLauncher';
 
 export function AppShell() {
   const [search, setSearch] = useState(false);
@@ -36,18 +35,17 @@ export function AppShell() {
   const openCreate = useCallback(() => setCreate(true), []);
 
   return (
-    <div className="min-h-screen bg-ink-50/40">
+    <div className="min-h-screen bg-surface">
       <Sidebar onCreate={openCreate} />
 
       <div className="lg:pl-[var(--sidebar-w)]">
         <Topbar onSearch={() => setSearch(true)} onCreate={openCreate} />
-        <main className="mx-auto w-full max-w-[1400px] px-4 pb-[calc(96px+var(--safe-bottom))] pt-6 lg:px-8 lg:pb-14">
+        <main className="mx-auto w-full max-w-[1320px] px-4 pb-[calc(88px+var(--safe-bottom))] pt-5 lg:px-6 lg:pb-12">
           <Outlet />
         </main>
       </div>
 
       <BottomNav />
-      <AssistantLauncher />
       <GlobalSearch open={search} onClose={() => setSearch(false)} />
       <CreateMenu open={create} onClose={() => setCreate(false)} />
     </div>

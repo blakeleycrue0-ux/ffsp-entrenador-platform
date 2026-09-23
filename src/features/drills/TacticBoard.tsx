@@ -133,16 +133,16 @@ export function TacticBoard({
                 className={cn(
                   'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium transition-colors',
                   active
-                    ? 'bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-200'
-                    : 'text-ink-500 hover:bg-ink-100 hover:text-ink-800',
+                    ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200'
+                    : 'text-muted hover:bg-navy-100 hover:text-navy-800',
                 )}
               >
                 <Icon
                   size={14}
                   className={cn(
-                    t.id === 'desmarque' && 'text-pitch',
-                    t.id === 'conduccion' && 'text-sun',
-                    t.id === 'borrar' && 'text-danger',
+                    t.id === 'desmarque' && 'text-ok',
+                    t.id === 'conduccion' && 'text-warn',
+                    t.id === 'borrar' && 'text-bad',
                   )}
                 />
                 {t.label}
@@ -151,14 +151,14 @@ export function TacticBoard({
           })}
           <button
             onClick={() => emit([])}
-            className="ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-ink-500 transition-colors hover:bg-danger/8 hover:text-danger"
+            className="ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-muted transition-colors hover:bg-bad/8 hover:text-bad"
           >
             <Trash2 size={14} /> Vaciar pizarra
           </button>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-ink-200">
+      <div className="overflow-hidden rounded-2xl border border-line">
         <svg
           ref={svgRef}
           viewBox="0 0 100 68"
@@ -270,21 +270,21 @@ export function TacticBoard({
       </div>
 
       {!readOnly && (
-        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-ink-500">
+        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-muted">
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-brand-700" /> Jugadora propia
+            <span className="h-2.5 w-2.5 rounded-full bg-navy-900" /> Jugadora propia
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full border border-ink-400 bg-white" /> Rival
+            <span className="h-2.5 w-2.5 rounded-full border border-navy-400 bg-white" /> Rival
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-0.5 w-5 bg-brand-700" /> Pase
+            <span className="h-0.5 w-5 bg-navy-900" /> Pase
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-0.5 w-5 border-t-2 border-dashed border-pitch" /> Desmarque
+            <span className="h-0.5 w-5 border-t-2 border-dashed border-ok" /> Desmarque
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-0.5 w-5 border-t-2 border-dotted border-sun" /> Conducción
+            <span className="h-0.5 w-5 border-t-2 border-dotted border-warn" /> Conducción
           </span>
           <span className="ml-auto">Con la herramienta «Mover» puedes arrastrar cualquier elemento.</span>
         </div>

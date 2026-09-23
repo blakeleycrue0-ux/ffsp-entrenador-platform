@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Save, X } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { Button, Card, Field, Input, PageHeader, Textarea } from '@/components/ui';
+import { Button, Panel, Field, Input, PageHeader, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { humanError } from '@/services/supabase';
 import { TacticBoard } from './TacticBoard';
@@ -66,7 +66,7 @@ export default function DrillEditor() {
     <>
       <Link
         to="/app/ejercicios"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-500 transition-colors hover:text-brand-800"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> Ejercicios
       </Link>
@@ -88,7 +88,7 @@ export default function DrillEditor() {
 
       <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
         <div className="space-y-4">
-          <Card className="p-5">
+          <Panel className="p-5">
             <h2 className="text-[15px] font-semibold">Definición</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <Field label="Nombre" className="sm:col-span-2">
@@ -123,8 +123,8 @@ export default function DrillEditor() {
                     className={cn(
                       'rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
                       form.tags.includes(t)
-                        ? 'bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-200'
-                        : 'text-ink-500 ring-1 ring-inset ring-ink-200 hover:bg-ink-50',
+                        ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200'
+                        : 'text-muted ring-1 ring-inset ring-line hover:bg-navy-50',
                     )}
                   >
                     {t}
@@ -141,32 +141,32 @@ export default function DrillEditor() {
                 className="min-h-[130px]"
               />
             </Field>
-          </Card>
+          </Panel>
 
-          <Card className="p-5">
+          <Panel className="p-5">
             <h2 className="text-[15px] font-semibold">Editor táctico</h2>
-            <p className="mt-1 text-[13px] text-ink-500">
+            <p className="mt-1 text-[13px] text-muted">
               Coloca jugadoras, dibuja movimientos y marca zonas. El esquema se guarda dentro del ejercicio.
             </p>
             <div className="mt-4">
               <TacticBoard shapes={form.tactic ?? []} onChange={(t: TacticShape[]) => patch({ tactic: t })} />
             </div>
-          </Card>
+          </Panel>
         </div>
 
         <div className="space-y-4">
-          <Card className="p-5">
+          <Panel className="p-5">
             <h2 className="text-[14.5px] font-semibold">Material</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {form.material.map((m) => (
                 <span
                   key={m}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 px-2.5 py-1.5 text-[13px] text-ink-700"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[13px] text-navy-700"
                 >
                   {m}
                   <button
                     onClick={() => patch({ material: form.material.filter((x) => x !== m) })}
-                    className="text-ink-300 transition-colors hover:text-danger"
+                    className="text-navy-300 transition-colors hover:text-bad"
                     aria-label={`Quitar ${m}`}
                   >
                     <X size={13} />
@@ -182,18 +182,18 @@ export default function DrillEditor() {
                     (e.target as HTMLInputElement).value = '';
                   }
                 }}
-                className="rounded-lg border border-dashed border-ink-300 px-2.5 py-1.5 text-[13px] outline-none placeholder:text-ink-400 focus:border-brand-400"
+                className="rounded-lg border border-dashed border-navy-300 px-2.5 py-1.5 text-[13px] outline-none placeholder:text-navy-400 focus:border-navy-400"
               />
             </div>
-          </Card>
+          </Panel>
 
-          <Card className="p-5">
+          <Panel className="p-5">
             <h2 className="text-[14.5px] font-semibold">Progresiones</h2>
-            <p className="mt-1 text-[12.5px] text-ink-500">Variantes para subir o bajar la exigencia.</p>
+            <p className="mt-1 text-[12.5px] text-muted">Variantes para subir o bajar la exigencia.</p>
             <ul className="mt-3 space-y-2">
               {(form.progressions ?? []).map((p, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="mt-2 grid h-5 w-5 shrink-0 place-items-center rounded bg-brand-50 text-[10.5px] font-bold text-brand-700">
+                  <span className="mt-2 grid h-5 w-5 shrink-0 place-items-center rounded bg-navy-50 text-[10.5px] font-bold text-navy-900">
                     {i + 1}
                   </span>
                   <input
@@ -203,11 +203,11 @@ export default function DrillEditor() {
                       next[i] = e.target.value;
                       patch({ progressions: next });
                     }}
-                    className="flex-1 rounded-lg border border-ink-200 px-2.5 py-1.5 text-[13px] outline-none focus:border-brand-400"
+                    className="flex-1 rounded-lg border border-line px-2.5 py-1.5 text-[13px] outline-none focus:border-navy-400"
                   />
                   <button
                     onClick={() => patch({ progressions: (form.progressions ?? []).filter((_, k) => k !== i) })}
-                    className="mt-1.5 text-ink-300 transition-colors hover:text-danger"
+                    className="mt-1.5 text-navy-300 transition-colors hover:text-bad"
                     aria-label="Quitar progresión"
                   >
                     <X size={14} />
@@ -216,7 +216,7 @@ export default function DrillEditor() {
               ))}
             </ul>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               block
               className="mt-3"
@@ -225,7 +225,7 @@ export default function DrillEditor() {
             >
               Añadir progresión
             </Button>
-          </Card>
+          </Panel>
         </div>
       </div>
     </>

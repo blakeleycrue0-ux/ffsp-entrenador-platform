@@ -8,7 +8,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Save, Trash2, X } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { humanError } from '@/services/supabase';
-import { Button, Card, Field, Input, Modal, PageHeader, Select } from '@/components/ui';
+import { Button, Panel, Field, Input, Modal, PageHeader, Select } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import type { Team, TrainingSlot } from '@/types';
 
@@ -88,7 +88,7 @@ export default function TeamEditor() {
     <>
       <Link
         to="/app/equipos"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-500 transition-colors hover:text-brand-800"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> Equipos
       </Link>
@@ -114,7 +114,7 @@ export default function TeamEditor() {
       />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
-        <Card className="p-5 sm:p-6">
+        <Panel className="p-5 sm:p-6">
           <h2 className="text-[15px] font-semibold">Datos del equipo</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field label="Nombre" className="sm:col-span-2" hint="Como lo llamáis en el club.">
@@ -145,13 +145,13 @@ export default function TeamEditor() {
               />
             </Field>
           </div>
-        </Card>
+        </Panel>
 
-        <Card className="p-5">
+        <Panel className="p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-[14.5px] font-semibold">Horarios de entrenamiento</h2>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               icon={<Plus size={15} />}
               onClick={() =>
@@ -168,13 +168,13 @@ export default function TeamEditor() {
           </div>
 
           {form.trainingSlots.length === 0 ? (
-            <p className="mt-3 text-[13px] leading-relaxed text-ink-500">
+            <p className="mt-3 text-[13px] leading-relaxed text-muted">
               Sin horarios fijos. Puedes añadirlos ahora o planificar cada sesión con su propia hora.
             </p>
           ) : (
             <div className="mt-3 space-y-3">
               {form.trainingSlots.map((s, i) => (
-                <div key={i} className="rounded-xl border border-ink-200 p-3">
+                <div key={i} className="rounded-xl border border-line p-3">
                   <Select value={s.weekday} onChange={(e) => setSlot(i, { weekday: Number(e.target.value) })}>
                     {WEEKDAYS.map((d, k) => (
                       <option key={d} value={k}>
@@ -194,7 +194,7 @@ export default function TeamEditor() {
                   />
                   <button
                     onClick={() => patch({ trainingSlots: form.trainingSlots.filter((_, k) => k !== i) })}
-                    className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-ink-400 transition-colors hover:text-danger"
+                    className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-navy-400 transition-colors hover:text-bad"
                   >
                     <X size={13} /> Quitar horario
                   </button>
@@ -202,14 +202,14 @@ export default function TeamEditor() {
               ))}
             </div>
           )}
-        </Card>
+        </Panel>
       </div>
 
       <Modal
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         title={`¿Eliminar ${existing?.name}?`}
-        subtitle="Se borrarán también sus jugadoras, entrenamientos, partidos y asistencia."
+        description="Se borrarán también sus jugadoras, entrenamientos, partidos y asistencia."
         footer={
           <>
             <Button variant="ghost" onClick={() => setConfirmDelete(false)}>
@@ -221,7 +221,7 @@ export default function TeamEditor() {
           </>
         }
       >
-        <p className="text-[14px] leading-relaxed text-ink-600">
+        <p className="text-[14px] leading-relaxed text-navy-600">
           Esta acción no se puede deshacer. Si el equipo simplemente ha terminado la temporada, es preferible dejarlo
           como está y crear uno nuevo para la temporada siguiente.
         </p>

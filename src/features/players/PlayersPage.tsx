@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Filter, Plus, Search, Users } from 'lucide-react';
+import { ChevronRight, Filter, Plus, Search } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { playerAttendance, visibleTeams } from '@/store/selectors';
-import { Avatar, Badge, Card, EmptyState, Input, LinkButton, PageHeader, SegmentedControl, Select } from '@/components/ui';
+import { Avatar, Tag, Panel, EmptyState, Input, LinkButton, PageHeader, Segmented, Select } from '@/components/ui';
 import { AVAILABILITY, AvailabilityDot } from '@/components/domain/StatusBits';
 import { cn, age, normalize } from '@/lib/utils';
 import type { AvailabilityStatus, PlayerPosition } from '@/types';
@@ -47,7 +47,7 @@ export default function PlayersPage() {
         description="Fichas, posiciones, disponibilidad y asistencia de la plantilla."
         actions={
           <>
-            <SegmentedControl
+            <Segmented
               value={view}
               onChange={setView}
               options={[
@@ -63,10 +63,10 @@ export default function PlayersPage() {
       />
 
       {/* Filtros */}
-      <Card className="mb-5 p-4">
+      <Panel className="mb-5 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1">
-            <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+            <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-400" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -94,29 +94,29 @@ export default function PlayersPage() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          <Filter size={14} className="mr-1 text-ink-400" />
+          <Filter size={14} className="mr-1 text-navy-400" />
           {POSITION_GROUPS.map((g) => (
             <button
               key={g.id}
               onClick={() => setGroup(g.id)}
               className={cn(
                 'rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
-                group === g.id ? 'bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-200' : 'text-ink-500 hover:bg-ink-100',
+                group === g.id ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200' : 'text-muted hover:bg-navy-100',
               )}
             >
               {g.label}
             </button>
           ))}
-          <span className="ml-auto text-[12.5px] text-ink-400">
+          <span className="ml-auto text-[12.5px] text-navy-400">
             {players.length} de {data.players.filter((p) => p.teamId === teamId).length} jugadoras
           </span>
         </div>
-      </Card>
+      </Panel>
 
       {players.length === 0 ? (
-        <Card>
+        <Panel>
           <EmptyState
-            icon={<Users size={26} />}
+           
             title={
               data.players.filter((p) => p.teamId === teamId).length === 0
                 ? 'Tu plantilla todavía está vacía'
@@ -133,82 +133,82 @@ export default function PlayersPage() {
               </LinkButton>
             }
           />
-        </Card>
+        </Panel>
       ) : view === 'lista' ? (
-        <Card className="overflow-hidden">
-          <div className="hidden border-b border-ink-100 bg-ink-50/50 px-5 py-2.5 text-[11.5px] font-medium uppercase tracking-wide text-ink-400 sm:flex">
+        <Panel className="overflow-hidden">
+          <div className="hidden border-b border-navy-100 bg-navy-50/50 px-5 py-2.5 text-[11.5px] font-medium uppercase tracking-wide text-navy-400 sm:flex">
             <span className="flex-1">Jugadora</span>
             <span className="w-40">Posición</span>
             <span className="w-24 text-right">Asistencia</span>
             <span className="w-32 pl-4">Estado</span>
             <span className="w-6" />
           </div>
-          <div className="divide-y divide-ink-100">
+          <div className="divide-y divide-navy-100">
             {players.map((p) => (
               <Link
                 key={p.id}
                 to={`/app/jugadoras/${p.id}`}
-                className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-brand-50/40 sm:px-5"
+                className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-navy-50/40 sm:px-5"
               >
-                <Avatar name={p.name} size={38} number={p.number} />
+                <Avatar name={p.name} size={38} badge={p.number} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-medium text-ink-900">{p.name}</p>
-                  <p className="mt-0.5 text-[12.5px] text-ink-500 sm:hidden">
+                  <p className="truncate text-[14px] font-medium text-navy-900">{p.name}</p>
+                  <p className="mt-0.5 text-[12.5px] text-muted sm:hidden">
                     {p.position} · {rate(p.id)}%
                   </p>
-                  <p className="mt-0.5 hidden text-[12.5px] text-ink-400 sm:block">
+                  <p className="mt-0.5 hidden text-[12.5px] text-navy-400 sm:block">
                     {p.birthDate ? `${age(p.birthDate)} años · ` : ''}{p.foot}
                   </p>
                 </div>
                 <div className="hidden w-40 sm:block">
-                  <p className="truncate text-[13.5px] text-ink-700">{p.position}</p>
-                  {p.secondaryPosition && <p className="truncate text-[12px] text-ink-400">{p.secondaryPosition}</p>}
+                  <p className="truncate text-[13.5px] text-navy-700">{p.position}</p>
+                  {p.secondaryPosition && <p className="truncate text-[12px] text-navy-400">{p.secondaryPosition}</p>}
                 </div>
                 <div className="hidden w-24 text-right sm:block">
                   <span
                     className={cn(
                       'text-[14px] font-semibold tabular-nums',
-                      rate(p.id) >= 85 ? 'text-[#1F6B44]' : rate(p.id) >= 70 ? 'text-[#9A6412]' : 'text-danger',
+                      rate(p.id) >= 85 ? 'text-[#1F6B44]' : rate(p.id) >= 70 ? 'text-[#9A6412]' : 'text-bad',
                     )}
                   >
                     {rate(p.id)}%
                   </span>
                 </div>
                 <div className="hidden w-32 pl-4 sm:block">
-                  <Badge tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>
+                  <Tag tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>
                     {AVAILABILITY[p.availability.status].label}
-                  </Badge>
+                  </Tag>
                 </div>
                 <AvailabilityDot status={p.availability.status} className="sm:hidden" />
-                <ChevronRight size={16} className="shrink-0 text-ink-300" />
+                <ChevronRight size={16} className="shrink-0 text-navy-300" />
               </Link>
             ))}
           </div>
-        </Card>
+        </Panel>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {players.map((p) => (
             <Link key={p.id} to={`/app/jugadoras/${p.id}`} className="card card-hover p-4">
               <div className="flex items-start justify-between">
-                <Avatar name={p.name} size={48} number={p.number} />
-                <Badge tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>
+                <Avatar name={p.name} size={48} badge={p.number} />
+                <Tag tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>
                   {AVAILABILITY[p.availability.status].label}
-                </Badge>
+                </Tag>
               </div>
-              <p className="mt-3 truncate text-[14.5px] font-semibold text-ink-900">{p.shortName}</p>
-              <p className="mt-0.5 truncate text-[12.5px] text-ink-500">{p.position || 'Sin posición'}</p>
-              <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-ink-100 pt-3 text-center">
+              <p className="mt-3 truncate text-[14.5px] font-semibold text-navy-900">{p.shortName}</p>
+              <p className="mt-0.5 truncate text-[12.5px] text-muted">{p.position || 'Sin posición'}</p>
+              <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-navy-100 pt-3 text-center">
                 <div>
-                  <p className="text-[14px] font-semibold text-ink-800 tabular-nums">{rate(p.id)}%</p>
-                  <p className="text-[10.5px] text-ink-400">asistencia</p>
+                  <p className="text-[14px] font-semibold text-navy-800 tabular-nums">{rate(p.id)}%</p>
+                  <p className="text-[10.5px] text-navy-400">asistencia</p>
                 </div>
                 <div>
-                  <p className="text-[14px] font-semibold text-ink-800 tabular-nums">{p.stats.matches}</p>
-                  <p className="text-[10.5px] text-ink-400">partidos</p>
+                  <p className="text-[14px] font-semibold text-navy-800 tabular-nums">{p.stats.matches}</p>
+                  <p className="text-[10.5px] text-navy-400">partidos</p>
                 </div>
                 <div>
-                  <p className="text-[14px] font-semibold text-ink-800 tabular-nums">{p.stats.goals}</p>
-                  <p className="text-[10.5px] text-ink-400">goles</p>
+                  <p className="text-[14px] font-semibold text-navy-800 tabular-nums">{p.stats.goals}</p>
+                  <p className="text-[10.5px] text-navy-400">goles</p>
                 </div>
               </div>
             </Link>
@@ -216,7 +216,7 @@ export default function PlayersPage() {
         </div>
       )}
 
-      <p className="mt-5 text-[12.5px] text-ink-400">
+      <p className="mt-5 text-[12.5px] text-navy-400">
         {team?.name} · Los datos de contacto de las jugadoras y sus familias son privados y sólo se muestran en la
         ficha individual.
       </p>
