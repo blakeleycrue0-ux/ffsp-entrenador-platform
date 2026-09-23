@@ -406,9 +406,9 @@ export default function BoardPage() {
 
             <div className="bg-navy-900/5 p-2 sm:p-3">
               {loading && !current && scene.objects.length === 0 ? (
-                <Skeleton className="aspect-[105/68] w-full" />
+                <Skeleton className="aspect-[111/74] w-full" />
               ) : (
-                <div className="mx-auto aspect-[105/68] w-full overflow-hidden rounded">
+                <div className="mx-auto w-full overflow-hidden rounded">
                   <BoardStage
                     scene={scene}
                     playback={playback}

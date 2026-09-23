@@ -5,7 +5,7 @@
  */
 
 import type {
-  AttendanceRecord, Callup, ClubData, Match, Player, Staff, Team, TrainingSession,
+  AttendanceMark, AttendanceRecord, Callup, ClubData, Match, Player, Staff, Team, TrainingSession,
 } from '@/types';
 import { normalize, pct, shortDate, toISODate, today } from '@/lib/utils';
 
@@ -49,48 +49,72 @@ export const callupOfMatch = (data: ClubData, matchId?: string): Callup | undefi
 
 /* ─────────────────────────────────── Asistencia ──────────────────────────── */
 
+/**
+ * Regla de la casa: el porcentaje de asistencia se calcula **sólo sobre las
+ * sesiones en las que la jugadora podía estar y se pasó lista**. Una falta
+ * justificada, una lesión o una sesión sin registrar no cuentan como cero: no
+ * hay dato, y así se dice. Por eso el porcentaje puede ser `null`.
+ */
+
+/** Marcas que entran en el cálculo: estar o no estar pudiendo estar. */
+const CUENTAN: AttendanceMark[] = ['presente', 'tarde', 'ausente'];
+/** Marcas que se consideran «ha venido». */
+const PRESENTES: AttendanceMark[] = ['presente', 'tarde'];
+
 export const summarizeRecord = (record: AttendanceRecord | undefined, squadSize: number) => {
-  const marks = Object.values(record?.marks ?? {});
-  const present = marks.filter((m) => m.mark === 'presente').length;
-  const justified = marks.filter((m) => m.mark === 'justificada').length;
-  const absent = marks.filter((m) => m.mark === 'ausente').length;
-  const counted = present + justified + absent;
+  const marks = Object.values(record?.marks ?? {}).map((m) => m.mark);
+  const count = (list: AttendanceMark[]) => marks.filter((m) => list.includes(m)).length;
+  const present = count(['presente']);
+  const late = count(['tarde']);
+  const justified = count(['justificada']);
+  const injured = count(['lesionada']);
+  const absent = count(['ausente']);
+  const registered = present + late + justified + injured + absent;
+  const computable = count(CUENTAN);
   return {
     total: squadSize,
     present,
+    late,
     justified,
+    injured,
     absent,
-    pending: Math.max(0, squadSize - counted),
-    rate: pct(present, counted || squadSize),
+    /** Jugadoras de las que nadie ha dicho nada todavía. */
+    unregistered: Math.max(0, squadSize - registered),
+    /** `null` cuando no hay ninguna marca sobre la que calcular. */
+    rate: computable === 0 ? null : pct(present + late, computable),
   };
 };
 
-export const teamAttendanceRate = (data: ClubData, teamId: string, lastN = 6): number => {
+/** Asistencia media del equipo. `null` si todavía no hay nada registrado. */
+export const teamAttendanceRate = (data: ClubData, teamId: string, lastN = 6): number | null => {
   const records = data.attendance
     .filter((a) => a.teamId === teamId)
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, lastN);
-  if (!records.length) return 0;
-  const totals = records.reduce(
-    (acc, r) => {
-      const marks = Object.values(r.marks);
-      acc.present += marks.filter((m) => m.mark === 'presente').length;
-      acc.counted += marks.length;
-      return acc;
-    },
-    { present: 0, counted: 0 },
-  );
-  return pct(totals.present, totals.counted);
+  let present = 0;
+  let computable = 0;
+  for (const r of records) {
+    for (const entry of Object.values(r.marks)) {
+      if (!CUENTAN.includes(entry.mark)) continue;
+      computable += 1;
+      if (PRESENTES.includes(entry.mark)) present += 1;
+    }
+  }
+  return computable === 0 ? null : pct(present, computable);
 };
 
 export interface PlayerAttendance {
   player: Player;
   present: number;
+  late: number;
   justified: number;
+  injured: number;
   absent: number;
-  total: number;
-  rate: number;
-  /** Ausencias consecutivas más recientes. */
+  /** Sesiones sobre las que se ha podido calcular. */
+  computable: number;
+  /** `null` mientras no haya ninguna sesión que contar. */
+  rate: number | null;
+  /** Ausencias consecutivas más recientes, sin contar las justificadas. */
   streak: number;
 }
 
@@ -100,17 +124,30 @@ export const playerAttendance = (data: ClubData, teamId: string, lastN = 10): Pl
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, lastN);
   return squadOf(data, teamId).map((player) => {
-    const marks = records.map((r) => r.marks[player.id]?.mark ?? 'pendiente');
-    const present = marks.filter((m) => m === 'presente').length;
-    const justified = marks.filter((m) => m === 'justificada').length;
-    const absent = marks.filter((m) => m === 'ausente').length;
+    const marks = records.map((r) => r.marks[player.id]?.mark ?? 'sin_registrar');
+    const count = (list: AttendanceMark[]) => marks.filter((m) => list.includes(m)).length;
+    const present = count(['presente']);
+    const late = count(['tarde']);
+    const computable = count(CUENTAN);
+
     let streak = 0;
     for (const m of marks) {
-      if (m === 'ausente') streak++;
+      if (m === 'ausente') streak += 1;
+      else if (m === 'sin_registrar') continue; // una sesión sin lista no rompe la racha
       else break;
     }
-    const total = present + justified + absent;
-    return { player, present, justified, absent, total, rate: pct(present, total || 1), streak };
+
+    return {
+      player,
+      present,
+      late,
+      justified: count(['justificada']),
+      injured: count(['lesionada']),
+      absent: count(['ausente']),
+      computable,
+      rate: computable === 0 ? null : pct(present + late, computable),
+      streak,
+    };
   });
 };
 
@@ -119,11 +156,15 @@ export const attendanceTrend = (data: ClubData, teamId: string, weeks = 6) => {
     .filter((a) => a.teamId === teamId)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(-weeks);
-  return records.map((r) => {
-    const marks = Object.values(r.marks);
-    const present = marks.filter((m) => m.mark === 'presente').length;
-    return { date: r.date, rate: pct(present, marks.length || 1) };
-  });
+  const out: { date: string; rate: number }[] = [];
+  for (const r of records) {
+    const marks = Object.values(r.marks).map((m) => m.mark);
+    const computable = marks.filter((m) => CUENTAN.includes(m)).length;
+    // Una sesión sin lista no se dibuja: no es un cero, es que no hay dato.
+    if (computable === 0) continue;
+    out.push({ date: r.date, rate: pct(marks.filter((m) => PRESENTES.includes(m)).length, computable) });
+  }
+  return out;
 };
 
 /* ─────────────────────────────── Panel del equipo ────────────────────────── */
@@ -131,7 +172,7 @@ export const attendanceTrend = (data: ClubData, teamId: string, weeks = 6) => {
 export interface TeamOverview {
   team: Team;
   squadSize: number;
-  attendanceRate: number;
+  attendanceRate: number | null;
   nextSession?: TrainingSession;
   nextMatch?: Match;
   callup?: Callup;

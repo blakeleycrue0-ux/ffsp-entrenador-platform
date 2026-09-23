@@ -72,7 +72,7 @@ export default function CalendarPage() {
                 toast.success('Calendario exportado', 'Archivo .ics listo para importar en Google Calendar o Apple Calendar.');
               }}
             >
-              Sincronizar con mi calendario
+              Exportar a mi calendario (.ics)
             </Button>
             <Button
               size="sm"

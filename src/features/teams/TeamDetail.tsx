@@ -85,7 +85,11 @@ export default function TeamDetail() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Panel className="flex items-center gap-4 p-5">
           <Ring value={teamAttendanceRate(data, team.id)} size={64} stroke={6} />
-          <Figure label="Asistencia media" value={`${teamAttendanceRate(data, team.id)}%`} hint="últimas 6 sesiones" />
+          <Figure
+            label="Asistencia media"
+            value={teamAttendanceRate(data, team.id) === null ? 'Sin datos' : `${teamAttendanceRate(data, team.id)}%`}
+            hint="Últimas 6 sesiones con lista pasada"
+          />
         </Panel>
         <Panel className="p-5">
           <Figure label="Jugadoras" value={squad.length} hint={`${unavailable.length} no disponibles`} />
@@ -162,12 +166,13 @@ export default function TeamDetail() {
               <div className="flex items-center justify-between">
                 <h3 className="text-[15px] font-semibold">Jugadoras con menor asistencia</h3>
                 <Link to="/app/analiticas" className="text-[12.5px] font-medium text-navy-900 hover:text-navy-900">
-                  Ver estadísticas
+                  Ver analíticas
                 </Link>
               </div>
               <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {[...rows]
-                  .sort((a, b) => a.rate - b.rate)
+                  .filter((r) => r.computable > 0)
+                  .sort((a, b) => (a.rate ?? 0) - (b.rate ?? 0))
                   .slice(0, 6)
                   .map((r) => (
                     <Link
@@ -183,7 +188,7 @@ export default function TeamDetail() {
                       <span
                         className={cn(
                           'shrink-0 text-[14px] font-semibold tabular-nums',
-                          r.rate >= 85 ? 'text-[#1F6B44]' : r.rate >= 70 ? 'text-[#9A6412]' : 'text-bad',
+                          (r.rate ?? 0) >= 85 ? 'text-ok' : (r.rate ?? 0) >= 70 ? 'text-warn' : 'text-bad',
                         )}
                       >
                         {r.rate}%

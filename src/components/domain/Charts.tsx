@@ -31,7 +31,7 @@ export function BarTrend({
             {suffix}
           </span>
           <div
-            className="w-full rounded-t-md bg-navy-200 transition-colors duration-200 group-hover:bg-navy-700"
+            className="w-full rounded-t bg-navy-700 transition-colors duration-200 group-hover:bg-navy-900"
             style={{ height: `${Math.max(6, ((d.value - floor) / (max - floor || 1)) * track)}px` }}
             title={`${d.label}: ${d.value}${suffix}`}
           />
@@ -68,14 +68,14 @@ export function LineTrend({
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }} preserveAspectRatio="none">
         <defs>
           <linearGradient id="lt-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#653F8A" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="#653F8A" stopOpacity="0" />
+            <stop offset="0%" stopColor="#101C2D" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="#101C2D" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={area} fill="url(#lt-fill)" />
-        <path d={line} fill="none" stroke="#7A5CA8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={line} fill="none" stroke="#101C2D" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         {points.map((p, i) => (
-          <circle key={i} cx={x(i)} cy={y(p.rate)} r="3" fill="#fff" stroke="#653F8A" strokeWidth="2" />
+          <circle key={i} cx={x(i)} cy={y(p.rate)} r="2.6" fill="#fff" stroke="#101C2D" strokeWidth="1.8" />
         ))}
       </svg>
       <div className="mt-1 flex justify-between px-1 text-[10.5px] text-navy-400">
@@ -89,24 +89,30 @@ export function LineTrend({
 /** Anillo de progreso — para porcentajes únicos (asistencia media, confirmaciones). */
 export function Ring({
   value, size = 72, stroke = 7, label, tone = 'solid',
-}: { value: number; size?: number; stroke?: number; label?: string; tone?: 'solid' | 'ok' | 'warn' }) {
+}: { value: number | null; size?: number; stroke?: number; label?: string; tone?: 'solid' | 'ok' | 'warn' }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const color = { solid: '#101C2D', ok: '#1F7A4D', warn: '#9A6712' }[tone];
+  // Sin dato no se dibuja un anillo vacío que parezca un 0 %: se dice que falta.
+  const filled = value === null ? 0 : Math.min(100, Math.max(0, value));
   return (
     <div className="relative inline-grid place-items-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#F0EFF4" strokeWidth={stroke} />
-        <circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-          strokeLinecap="round" strokeDasharray={c}
-          strokeDashoffset={c - (Math.min(100, Math.max(0, value)) / 100) * c}
-          style={{ transition: 'stroke-dashoffset .7s cubic-bezier(.22,1,.36,1)' }}
-        />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#E7EBF0" strokeWidth={stroke} />
+        {value !== null && (
+          <circle
+            cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+            strokeLinecap="round" strokeDasharray={c}
+            strokeDashoffset={c - (filled / 100) * c}
+            style={{ transition: 'stroke-dashoffset .7s cubic-bezier(.22,1,.36,1)' }}
+          />
+        )}
       </svg>
       <div className="absolute text-center">
-        <span className="block text-[15px] font-semibold leading-none text-navy-900 tabular-nums">{value}%</span>
-        {label && <span className="mt-0.5 block text-[10px] text-navy-400">{label}</span>}
+        <span className="block text-[14px] font-semibold leading-none tabular-nums text-navy-900">
+          {value === null ? '—' : `${value}%`}
+        </span>
+        {label && value !== null && <span className="mt-0.5 block text-[10px] text-navy-400">{label}</span>}
       </div>
     </div>
   );

@@ -72,6 +72,12 @@ export const longDate = (iso: string): string => {
   return `${cap(DAYS[d.getDay()])} ${d.getDate()} de ${MONTHS[d.getMonth()]}`;
 };
 
+/** La misma fecha, en minúscula, para incrustarla dentro de una frase. */
+export const longDateInline = (iso: string): string => {
+  const d = longDate(iso);
+  return d.charAt(0).toLowerCase() + d.slice(1);
+};
+
 export const shortDate = (iso: string): string => {
   const d = parseISO(iso);
   return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()].toLowerCase()}`;

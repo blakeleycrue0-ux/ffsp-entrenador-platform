@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import {
-  callupOfMatch, currentStaff, nextMatch, nextSession, squadOf, teamOverview, visibleTeams,
+  callupOfMatch, currentStaff, nextMatch, nextSession, squadOf, summarizeRecord, teamOverview,
+  visibleTeams,
 } from '@/store/selectors';
 import { isCoordinator } from '@/services/auth';
 import { humanError } from '@/services/supabase';
@@ -52,14 +53,12 @@ export default function Dashboard() {
     [data.attendance, activeTeam],
   );
 
-  const attCounts = useMemo(() => {
-    const marks = Object.values(lastAttendance?.marks ?? {});
-    return {
-      present: marks.filter((m) => m.mark === 'presente').length,
-      justified: marks.filter((m) => m.mark === 'justificada').length,
-      absent: marks.filter((m) => m.mark === 'ausente').length,
-    };
-  }, [lastAttendance]);
+  // El resumen sale del mismo selector que usa Analíticas, para que las cifras
+  // de las dos pantallas nunca se contradigan.
+  const attCounts = useMemo(
+    () => summarizeRecord(lastAttendance, squad.length),
+    [lastAttendance, squad.length],
+  );
 
   const selected = callup?.entries.filter((e) => e.selected) ?? [];
   const confirmed = selected.filter((e) => e.response === 'confirmada').length;
@@ -315,9 +314,10 @@ export default function Dashboard() {
               <div className="mt-3 space-y-2">
                 <SplitBar
                   segments={[
-                    { value: attCounts.present, color: 'bg-ok', label: 'Presentes' },
-                    { value: attCounts.justified, color: 'bg-warn', label: 'Justificados' },
+                    { value: attCounts.present + attCounts.late, color: 'bg-ok', label: 'Vinieron' },
+                    { value: attCounts.justified + attCounts.injured, color: 'bg-warn', label: 'Justificadas' },
                     { value: attCounts.absent, color: 'bg-bad', label: 'Ausentes' },
+                    { value: attCounts.unregistered, color: 'bg-line', label: 'Sin registrar' },
                   ]}
                 />
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
@@ -325,10 +325,12 @@ export default function Dashboard() {
                     <span className="h-2 w-2 rounded-full bg-ok" /> {attCounts.present} presentes
                   </span>
                   <span className="flex items-center gap-1.5 text-navy-600">
-                    <span className="h-2 w-2 rounded-full bg-warn" /> {attCounts.justified} justificadas
+                    <span className="h-2 w-2 rounded-full bg-warn" /> {attCounts.justified + attCounts.injured}{' '}
+                    justificadas
                   </span>
                   <span className="flex items-center gap-1.5 text-navy-600">
-                    <span className="h-2 w-2 rounded-full bg-bad" /> {attCounts.absent} ausentes
+                    <span className="h-2 w-2 rounded-full bg-bad" /> {attCounts.absent}{' '}
+                    {attCounts.absent === 1 ? 'ausente' : 'ausentes'}
                   </span>
                 </div>
               </div>

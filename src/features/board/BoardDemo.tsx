@@ -61,7 +61,7 @@ export function BoardDemo({ className }: { className?: string }) {
   return (
     <div className={cn('overflow-hidden rounded-lg border border-line bg-white', className)}>
       <div className="bg-navy-900/5 p-2">
-        <div className="aspect-[105/68] w-full overflow-hidden rounded">
+        <div className="w-full overflow-hidden rounded">
           <BoardStage
             scene={scene}
             playback={playback}

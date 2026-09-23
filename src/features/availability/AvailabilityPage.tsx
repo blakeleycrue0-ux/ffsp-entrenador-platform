@@ -20,7 +20,7 @@ import {
   INJURY_STATE, INJURY_STATES, injuries as api,
   type Injury, type InjuryState, type InjuryUpdate,
 } from '@/services/injuries';
-import { longDate, toISODate, today } from '@/lib/utils';
+import { longDate, longDateInline, toISODate, today } from '@/lib/utils';
 
 export default function AvailabilityPage() {
   const { data, teamId, setTeamId, userId } = useClub();
@@ -228,8 +228,8 @@ export default function AvailabilityPage() {
                         {playerName(r.playerId)}
                       </span>
                       <span className="mt-0.5 block text-sm text-muted">
-                        Desde el {longDate(r.startedOn)}
-                        {r.expectedReturn && ` · Previsión de vuelta: ${longDate(r.expectedReturn)}`}
+                        Desde el {longDateInline(r.startedOn)}
+                        {r.expectedReturn && ` · Previsión de vuelta: ${longDateInline(r.expectedReturn)}`}
                       </span>
                     </span>
                     <Tag tone={INJURY_STATE[r.state].tone} size="sm">
@@ -329,7 +329,7 @@ export default function AvailabilityPage() {
         open={!!detail}
         onClose={() => setDetail(null)}
         title={detail ? playerName(detail.playerId) : ''}
-        description={detail ? `Parte abierto el ${longDate(detail.startedOn)}` : ''}
+        description={detail ? `Parte abierto el ${longDateInline(detail.startedOn)}` : ''}
         footer={
           detail && !detail.resolvedOn ? (
             <>
@@ -347,7 +347,7 @@ export default function AvailabilityPage() {
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <Tag tone={INJURY_STATE[detail.state].tone}>{INJURY_STATE[detail.state].label}</Tag>
-              {detail.resolvedOn && <Tag tone="ok">Alta el {longDate(detail.resolvedOn)}</Tag>}
+              {detail.resolvedOn && <Tag tone="ok">Alta el {longDateInline(detail.resolvedOn)}</Tag>}
             </div>
 
             {detail.description && (

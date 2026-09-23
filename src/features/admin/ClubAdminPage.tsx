@@ -40,9 +40,9 @@ export default function ClubAdminPage() {
   return (
     <>
       <PageHeader
-        eyebrow={<Tag tone="solid" size="sm">Coordinación</Tag>}
-        title="Club"
-        description="Crea los equipos de la temporada y asigna a cada persona del cuerpo técnico el suyo."
+        eyebrow="Administración del club"
+        title="Equipo técnico"
+        description="Equipos de la temporada, quién trabaja en cada uno e invitaciones pendientes."
         actions={
           <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm" icon={<Plus size={16} />}>
             Crear equipo

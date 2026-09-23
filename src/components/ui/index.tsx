@@ -268,14 +268,17 @@ export function Toggle({
   checked, onChange, label, disabled,
 }: { checked: boolean; onChange: (v: boolean) => void; label?: string; disabled?: boolean }) {
   return (
-    <label className={cn('inline-flex select-none items-center gap-2.5', disabled ? 'opacity-50' : 'cursor-pointer')}>
+    <label className={cn('flex select-none items-center gap-2.5', disabled ? 'opacity-50' : 'cursor-pointer')}>
       <button
         type="button"
         role="switch"
         aria-checked={checked}
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className={cn('relative h-5 w-9 rounded-full transition-colors', checked ? 'bg-navy-900' : 'bg-navy-300')}
+        className={cn(
+          'relative h-5 w-9 shrink-0 rounded-full transition-colors',
+          checked ? 'bg-navy-900' : 'bg-navy-300',
+        )}
       >
         <span
           className={cn(

@@ -62,7 +62,10 @@ export function Pitch({ spec }: { spec: PitchSpec }) {
           </>
         )}
 
-        {/* Porterías */}
+      </g>
+
+      {/* Porterías: quedan fuera del verde, así que se dibujan en oscuro */}
+      <g fill="none" stroke="#47556B" strokeWidth={s}>
         <rect x={-1.6} y={cy - spec.goalWidth / 2} width={1.6} height={spec.goalWidth} />
         {!spec.half && <rect x={L} y={cy - spec.goalWidth / 2} width={1.6} height={spec.goalWidth} />}
       </g>

@@ -57,6 +57,16 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * La sección «Equipo técnico» muestra la gestión del club a quien puede
+ * administrarlo y, al resto, sus equipos y con quién los comparte.
+ */
+function StaffSection() {
+  const { data, loading } = useClub();
+  if (loading) return <Booting />;
+  return isCoordinator(data.profile) ? <ClubAdminPage /> : <TeamsPage />;
+}
+
 /** Administración del club: crear equipos y gestionar el cuerpo técnico. */
 function RequireCoordinator({ children }: { children: React.ReactNode }) {
   const { data, loading } = useClub();
@@ -114,7 +124,8 @@ export default function App() {
 
           <Route path="analiticas" element={<StatsPage />} />
 
-          <Route path="equipo-tecnico" element={<TeamsPage />} />
+          {/* Quien administra el club ve la gestión; el resto, sus equipos. */}
+          <Route path="equipo-tecnico" element={<StaffSection />} />
           <Route path="equipo-tecnico/:teamId" element={<TeamDetail />} />
           <Route
             path="equipo-tecnico/nuevo-equipo"

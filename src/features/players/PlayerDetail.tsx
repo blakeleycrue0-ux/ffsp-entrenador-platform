@@ -143,7 +143,15 @@ export default function PlayerDetail() {
         {tab === 'asistencia' && (
           <div className="grid gap-4 lg:grid-cols-3">
             <Panel className="p-5">
-              <Figure label="Asistencia" value={`${row?.rate ?? 0}%`} hint={`${row?.total ?? 0} sesiones registradas`} />
+              <Figure
+                label="Asistencia"
+                value={row?.rate === null || row?.rate === undefined ? 'Sin datos' : `${row.rate}%`}
+                hint={
+                  row && row.computable > 0
+                    ? `${row.computable} ${row.computable === 1 ? 'sesión contada' : 'sesiones contadas'}`
+                    : 'Todavía no se ha pasado lista con ella'
+                }
+              />
               <div className="mt-4 space-y-2.5">
                 {[
                   ['Presente', row?.present ?? 0, 'bg-ok'],

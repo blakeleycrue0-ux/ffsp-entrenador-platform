@@ -63,6 +63,8 @@ export function BoardStage({
 
   const margin = 3;
   const viewBox = `${-margin} ${-margin} ${spec.length + margin * 2} ${spec.width + margin * 2}`;
+  /** Proporción real del dibujo, para que el contenedor no lo recorte. */
+  const ratio = (spec.length + margin * 2) / (spec.width + margin * 2);
 
   /** Convierte un punto de pantalla a metros sobre el campo. */
   const toPitch = useCallback(
@@ -138,7 +140,8 @@ export function BoardStage({
     <svg
       ref={svg}
       viewBox={viewBox}
-      className={cn('board-surface block h-full w-full', className)}
+      style={{ aspectRatio: ratio }}
+      className={cn('board-surface mx-auto block max-h-full w-full', className)}
       role="img"
       aria-label={`Pizarra táctica con ${scene.objects.length} elementos`}
       onPointerMove={onPointerMove}
