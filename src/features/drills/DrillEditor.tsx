@@ -5,9 +5,9 @@ import { useClub } from '@/store/store';
 import { Button, Panel, Field, Input, PageHeader, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { humanError } from '@/services/supabase';
-import { TacticBoard } from './TacticBoard';
+import { DrillBoardEditor } from '@/features/board/DrillBoard';
 import { cn } from '@/lib/utils';
-import type { Drill, DrillTag, TacticShape } from '@/types';
+import type { Drill, DrillTag } from '@/types';
 
 const TAGS: DrillTag[] = [
   'Posesión', 'Finalización', 'Defensa', 'Ataque', 'Presión', 'Transición',
@@ -143,13 +143,19 @@ export default function DrillEditor() {
             </Field>
           </Panel>
 
-          <Panel className="p-5">
-            <h2 className="text-[15px] font-semibold">Editor táctico</h2>
-            <p className="mt-1 text-[13px] text-muted">
-              Coloca jugadoras, dibuja movimientos y marca zonas. El esquema se guarda dentro del ejercicio.
-            </p>
-            <div className="mt-4">
-              <TacticBoard shapes={form.tactic ?? []} onChange={(t: TacticShape[]) => patch({ tactic: t })} />
+          <Panel>
+            <div className="border-b border-line px-4 py-3">
+              <h2 className="text-md font-semibold">Esquema</h2>
+              <p className="mt-0.5 text-sm text-muted">
+                Coloca a las jugadoras y, si el ejercicio lo pide, muévelas en distintos instantes:
+                el esquema se reproducirá dentro de la ficha.
+              </p>
+            </div>
+            <div className="p-3">
+              <DrillBoardEditor
+                value={form.animation}
+                onChange={(scene) => patch({ animation: scene ?? undefined })}
+              />
             </div>
           </Panel>
         </div>

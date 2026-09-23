@@ -87,8 +87,27 @@ export interface Keyframe {
   /** Cómo se entra y se sale de este tramo. */
   ease?: 'lineal' | 'suave';
   /** Qué representa el tramo que termina aquí: sirve para dibujar la estela. */
-  move?: 'carrera' | 'conduccion' | 'pase' | 'desmarque';
+  move?: MoveKind;
 }
+
+export type MoveKind = 'carrera' | 'conduccion' | 'pase' | 'desmarque';
+
+export const MOVES: MoveKind[] = ['carrera', 'conduccion', 'pase', 'desmarque'];
+
+export const MOVE_LABEL: Record<MoveKind, string> = {
+  carrera: 'Carrera',
+  conduccion: 'Conducción',
+  pase: 'Pase',
+  desmarque: 'Desmarque',
+};
+
+/** Trazo de cada tipo de movimiento, en metros. */
+export const MOVE_DASH: Record<MoveKind, string | undefined> = {
+  carrera: undefined,
+  conduccion: '0.9 0.5',
+  pase: '1.6 1',
+  desmarque: '0.3 0.7',
+};
 
 export type Track = Keyframe[];
 
@@ -163,17 +182,29 @@ export function sampleScene(scene: Scene, t: number): Record<string, Point> {
   return out;
 }
 
-/** Puntos para dibujar la estela completa de una pista. */
-export function trackPath(track: Track, steps = 24): Point[] {
+/**
+ * Tramos de la estela, uno por fotograma, con su tipo de movimiento: así el
+ * pase se dibuja con un trazo distinto al de la carrera.
+ */
+export interface TrackSegment {
+  points: Point[];
+  move: MoveKind;
+}
+
+export function trackSegments(track: Track, stepsPerLeg = 12): TrackSegment[] {
   if (!track || track.length < 2) return [];
-  const t0 = track[0].t;
-  const t1 = track[track.length - 1].t;
-  const pts: Point[] = [];
-  for (let i = 0; i <= steps; i += 1) {
-    const p = sampleTrack(track, t0 + ((t1 - t0) * i) / steps);
-    if (p) pts.push(p);
+  const out: TrackSegment[] = [];
+  for (let i = 1; i < track.length; i += 1) {
+    const a = track[i - 1];
+    const b = track[i];
+    const points: Point[] = [];
+    for (let j = 0; j <= stepsPerLeg; j += 1) {
+      const p = sampleTrack(track, a.t + ((b.t - a.t) * j) / stepsPerLeg);
+      if (p) points.push(p);
+    }
+    out.push({ points, move: b.move ?? 'carrera' });
   }
-  return pts;
+  return out;
 }
 
 /* ──────────────────────────────── Edición ────────────────────────────────── */
@@ -203,6 +234,16 @@ export function moveObject(scene: Scene, objectId: string, t: number, at: Point)
     return { ...scene, tracks: { ...scene.tracks, [objectId]: [{ t: 0, x: at.x, y: at.y }] } };
   }
   return putKeyframe(scene, objectId, t, at);
+}
+
+/** Cambia el instante o el tipo de un fotograma sin tocar el resto. */
+export function patchKeyframe(
+  scene: Scene, objectId: string, t: number, patch: Partial<Keyframe>,
+): Scene {
+  const track = (scene.tracks[objectId] ?? []).map((k) => (k.t === t ? { ...k, ...patch } : k));
+  // El primer fotograma siempre se queda en el instante cero.
+  track.sort((a, b) => a.t - b.t);
+  return { ...scene, tracks: { ...scene.tracks, [objectId]: track } };
 }
 
 export function removeKeyframe(scene: Scene, objectId: string, t: number): Scene {

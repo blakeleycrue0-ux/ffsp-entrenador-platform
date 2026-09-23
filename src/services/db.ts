@@ -117,6 +117,7 @@ const toDrill = (r: Row, favorites: Set<string>): Drill => ({
   description: (r.description as string) ?? '',
   progressions: (r.progressions as string[]) ?? [],
   tactic: (r.tactic as Drill['tactic']) ?? [],
+  animation: r.animation ?? undefined,
   favorite: favorites.has(r.id as string),
   createdBy: (r.created_by as string) ?? undefined,
 });
@@ -133,6 +134,7 @@ const fromDrill = (d: Drill, userId?: string) => ({
   description: d.description,
   progressions: d.progressions,
   tactic: d.tactic,
+  animation: d.animation ?? null,
   created_by: d.createdBy ?? userId ?? null,
 });
 

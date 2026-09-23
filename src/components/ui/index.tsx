@@ -280,9 +280,11 @@ export function Toggle({
           checked ? 'bg-navy-900' : 'bg-navy-300',
         )}
       >
+        {/* `left-0` es imprescindible: sin él la bolita se coloca al final del
+            botón y el desplazamiento la saca fuera, encima de la etiqueta. */}
         <span
           className={cn(
-            'absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform',
+            'absolute left-0 top-0.5 h-4 w-4 rounded-full bg-white transition-transform',
             checked ? 'translate-x-[18px]' : 'translate-x-0.5',
           )}
         />

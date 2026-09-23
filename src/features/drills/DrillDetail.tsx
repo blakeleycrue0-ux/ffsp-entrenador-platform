@@ -3,6 +3,7 @@ import { ArrowLeft, Clock, PencilLine, Plus, Star, Target, Users } from 'lucide-
 import { useClub } from '@/store/store';
 import { Tag, Button, Panel, LinkButton, PageHeader } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { DrillBoardViewer } from '@/features/board/DrillBoard';
 import { TacticBoard } from './TacticBoard';
 import { cn, shortDate } from '@/lib/utils';
 
@@ -63,8 +64,12 @@ export default function DrillDetail() {
         <div className="space-y-4 lg:col-span-2">
           {/* Pizarra */}
           <Panel className="p-5">
-            <h2 className="text-[15px] font-semibold">Esquema táctico</h2>
-            {d.tactic && d.tactic.length > 0 ? (
+            <h2 className="text-md font-semibold">Esquema</h2>
+            {d.animation ? (
+              <div className="mt-4">
+                <DrillBoardViewer value={d.animation} />
+              </div>
+            ) : d.tactic && d.tactic.length > 0 ? (
               <div className="mt-4">
                 <TacticBoard shapes={d.tactic} readOnly />
               </div>

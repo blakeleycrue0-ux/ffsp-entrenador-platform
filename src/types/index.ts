@@ -169,7 +169,13 @@ export interface Drill {
   material: string[];
   description: string;
   progressions: string[];
+  /** Esquema estático heredado. Se conserva para no perder los ejercicios ya creados. */
   tactic: TacticShape[];
+  /**
+   * Escena animada de la pizarra (`BoardScene`). Se guarda como jsonb y se
+   * valida al leerla, por eso el tipo es abierto aquí.
+   */
+  animation?: unknown;
   favorite?: boolean;
   createdBy?: string;
 }

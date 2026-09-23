@@ -11,8 +11,8 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Pitch } from './Pitch';
 import {
-  PITCHES, type BoardObject, type ObjectKind, type Point, type Scene,
-  sampleScene, trackPath,
+  MOVE_DASH, PITCHES, type BoardObject, type ObjectKind, type Point, type Scene,
+  sampleScene, trackSegments,
 } from './scene';
 import type { Playback } from './playback';
 import { cn } from '@/lib/utils';
@@ -130,8 +130,14 @@ export function BoardStage({
     if (playback.playing) return [];
     return scene.objects
       .filter((o) => showPaths || o.id === selected)
-      .map((o) => ({ id: o.id, kind: o.kind, pts: trackPath(scene.tracks[o.id] ?? []) }))
-      .filter((p) => p.pts.length > 1);
+      .flatMap((o) =>
+        trackSegments(scene.tracks[o.id] ?? []).map((seg, i) => ({
+          key: `${o.id}-${i}`,
+          id: o.id,
+          kind: o.kind,
+          ...seg,
+        })),
+      );
   }, [scene, selected, showPaths, playback.playing]);
 
   const positions = useMemo(() => sampleScene(scene, playback.time), [scene, playback.time]);
@@ -157,18 +163,41 @@ export function BoardStage({
         if (kind && at) onDropNew(kind, at);
       }}
     >
+      {/* Puntas de flecha: dicen hacia dónde va cada recorrido */}
+      <defs>
+        {[
+          ['propia', '#9FD9BB'],
+          ['rival', '#F0C3BE'],
+          ['balon', '#FFFFFF'],
+        ].map(([id, color]) => (
+          <marker
+            key={id}
+            id={`punta-${id}`}
+            viewBox="0 0 8 8"
+            refX={6}
+            refY={4}
+            markerWidth={3}
+            markerHeight={3}
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 1 L 7 4 L 0 7 z" fill={color} />
+          </marker>
+        ))}
+      </defs>
+
       <Pitch spec={spec} />
 
       {/* Estelas */}
-      <g fill="none" strokeLinecap="round">
+      <g fill="none" strokeLinecap="round" strokeLinejoin="round">
         {paths.map((p) => (
           <polyline
-            key={p.id}
-            points={p.pts.map((q) => `${q.x},${q.y}`).join(' ')}
+            key={p.key}
+            points={p.points.map((q) => `${q.x},${q.y}`).join(' ')}
             stroke={p.kind === 'balon' ? '#FFFFFF' : p.kind === 'rival' ? '#F0C3BE' : '#9FD9BB'}
             strokeWidth={0.36}
-            strokeDasharray={p.kind === 'balon' ? '1.4 1' : undefined}
-            opacity={p.id === selected ? 0.95 : 0.55}
+            strokeDasharray={p.kind === 'balon' ? MOVE_DASH.pase : MOVE_DASH[p.move]}
+            opacity={p.id === selected ? 0.95 : 0.5}
+            markerEnd={`url(#punta-${p.kind === 'balon' ? 'balon' : p.kind === 'rival' ? 'rival' : 'propia'})`}
           />
         ))}
       </g>
