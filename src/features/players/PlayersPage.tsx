@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Filter, Plus, Search } from 'lucide-react';
+import { ChevronRight, Filter, Plus, Search, Upload } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { playerAttendance, visibleTeams } from '@/store/selectors';
-import { Avatar, Tag, Panel, EmptyState, Input, LinkButton, PageHeader, Segmented, Select } from '@/components/ui';
+import {
+  Avatar, Button, EmptyState, Input, LinkButton, PageHeader, Panel, Segmented, Select, Tag,
+} from '@/components/ui';
+import { ImportPlayers } from './ImportPlayers';
 import { AVAILABILITY, AvailabilityDot } from '@/components/domain/StatusBits';
 import { cn, age, normalize } from '@/lib/utils';
 import type { AvailabilityStatus, PlayerPosition } from '@/types';
@@ -24,6 +27,7 @@ export default function PlayersPage() {
   const [group, setGroup] = useState('todas');
   const [status, setStatus] = useState<'todas' | AvailabilityStatus>('todas');
   const [view, setView] = useState<'lista' | 'fichas'>('lista');
+  const [importing, setImporting] = useState(false);
 
   const attendance = useMemo(() => playerAttendance(data, teamId), [data, teamId]);
 
@@ -55,12 +59,23 @@ export default function PlayersPage() {
                 { id: 'fichas', label: 'Fichas' },
               ]}
             />
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<Upload size={15} />}
+              onClick={() => setImporting(true)}
+              disabled={!teamId}
+            >
+              Importar
+            </Button>
             <LinkButton to="/app/plantilla/nueva" size="sm" icon={<Plus size={16} />}>
               Añadir jugadora
             </LinkButton>
           </>
         }
       />
+
+      <ImportPlayers open={importing} onClose={() => setImporting(false)} teamId={teamId} />
 
       {/* Filtros */}
       <Panel className="mb-5 p-4">
@@ -128,9 +143,14 @@ export default function PlayersPage() {
                 : 'Prueba a limpiar la búsqueda o a seleccionar otra demarcación.'
             }
             action={
-              <LinkButton to="/app/plantilla/nueva" size="sm">
-                Añadir jugadora
-              </LinkButton>
+              <>
+                <LinkButton to="/app/plantilla/nueva" size="sm">
+                  Añadir jugadora
+                </LinkButton>
+                <Button variant="secondary" size="sm" onClick={() => setImporting(true)} disabled={!teamId}>
+                  Importar desde un archivo
+                </Button>
+              </>
             }
           />
         </Panel>
