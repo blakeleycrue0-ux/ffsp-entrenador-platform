@@ -12,7 +12,7 @@
 
 import { supabase } from './supabase';
 import type {
-  ActivityItem, AttendanceMark, AttendanceRecord, Callup, ClubData, CoachTask, Drill, Match, MessageTemplate,
+  ActivityItem, AttendanceMark, AttendanceRecord, Callup, Club, ClubData, CoachTask, Drill, Match,
   MessageThread, Notification, Player, Staff, Team, TeamStaffLink, TrainingSession,
 } from '@/types';
 import { EMPTY_CLUB_DATA } from '@/types';
@@ -321,15 +321,6 @@ const fromMessage = (m: MessageThread, userId?: string) => ({
   created_by: userId ?? null,
 });
 
-const toTemplate = (r: Row): MessageTemplate => ({
-  id: r.id as string,
-  kind: r.kind as MessageTemplate['kind'],
-  name: r.name as string,
-  description: (r.description as string) ?? '',
-  body: r.body as string,
-  variables: (r.variables as string[]) ?? [],
-});
-
 const toTask = (r: Row): CoachTask => ({
   id: r.id as string,
   title: r.title as string,
@@ -384,19 +375,40 @@ const unwrap = <T,>(res: { data: T | null; error: unknown }): T => {
  * tiene equipos asignados, las consultas devuelven listas vacías.
  */
 export async function loadWorkspace(userId: string): Promise<ClubData> {
-  const [profileRes, staffRes, teamsRes, teamStaffRes, templatesRes, tasksRes, notifsRes] =
+  const [profileRes, staffRes, teamsRes, teamStaffRes, clubRes, tasksRes, notifsRes] =
     await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
       supabase.from('profiles').select('*'),
       supabase.from('teams').select('*').order('name'),
       supabase.from('team_staff').select('*'),
-      supabase.from('message_templates').select('*').order('name'),
+      // El club de quien entra. RLS ya limita la consulta a los suyos.
+      supabase
+        .from('club_members')
+        .select('role, clubs(id, name, short_name, city, season, crest_url)')
+        .eq('profile_id', userId)
+        .order('created_at')
+        .limit(1)
+        .maybeSingle(),
       supabase.from('tasks').select('*').order('created_at', { ascending: false }),
       supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(40),
     ]);
 
   if (profileRes.error) throw profileRes.error;
   if (teamsRes.error) throw teamsRes.error;
+
+  const clubRow = clubRes.data as Row | null;
+  const clubData = (clubRow?.clubs ?? null) as Row | null;
+  const club: Club | null = clubData
+    ? {
+        id: clubData.id as string,
+        name: clubData.name as string,
+        shortName: (clubData.short_name as string) || (clubData.name as string),
+        city: (clubData.city as string) ?? undefined,
+        season: (clubData.season as string) ?? undefined,
+        crestUrl: (clubData.crest_url as string) ?? undefined,
+        role: (clubRow?.role as Club['role']) ?? undefined,
+      }
+    : null;
 
   const teamStaffRows = (teamStaffRes.data ?? []) as Row[];
   const teamStaff: TeamStaffLink[] = teamStaffRows.map((r) => ({
@@ -422,11 +434,11 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
     return {
       ...EMPTY_CLUB_DATA,
       profile,
+      club,
       staff,
       teams,
       teamStaff,
       drills: ((drillsRes.data ?? []) as Row[]).map((r) => toDrill(r, favorites)),
-      templates: ((templatesRes.data ?? []) as Row[]).map(toTemplate),
       tasks: ((tasksRes.data ?? []) as Row[]).map(toTask),
       notifications: ((notifsRes.data ?? []) as Row[]).map(toNotification),
     };
@@ -450,6 +462,7 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
   return {
     ...EMPTY_CLUB_DATA,
     profile,
+    club,
     staff,
     teams,
     teamStaff,
@@ -461,7 +474,6 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
     messages: unwrap<Row[]>(messagesRes).map(toMessage),
     activity: unwrap<Row[]>(activityRes).map(toActivity),
     drills: unwrap<Row[]>(drillsRes).map((r) => toDrill(r, favorites)),
-    templates: ((templatesRes.data ?? []) as Row[]).map(toTemplate),
     tasks: ((tasksRes.data ?? []) as Row[]).map(toTask),
     notifications: ((notifsRes.data ?? []) as Row[]).map(toNotification),
   };

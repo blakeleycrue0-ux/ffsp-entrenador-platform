@@ -11,6 +11,18 @@ import { normalize, pct, shortDate, toISODate, today } from '@/lib/utils';
 
 export const currentStaff = (data: ClubData): Staff | null => data.profile;
 
+/**
+ * Nombre del club para los marcadores y las convocatorias. Hasta que exista un
+ * club, se dice «Nuestro equipo»: es preferible a inventarse un nombre.
+ */
+export const clubShortName = (data: ClubData): string =>
+  data.club?.shortName || data.club?.name || 'Nuestro equipo';
+
+export const clubName = (data: ClubData): string => data.club?.name || 'Tu club';
+
+/** Puede administrar el club: crear equipos, invitar y cambiar cargos. */
+export const isClubAdmin = (data: ClubData): boolean => data.club?.role === 'admin';
+
 /** Equipos visibles. Con RLS activo, `data.teams` ya viene filtrado. */
 export const visibleTeams = (data: ClubData): Team[] => data.teams;
 

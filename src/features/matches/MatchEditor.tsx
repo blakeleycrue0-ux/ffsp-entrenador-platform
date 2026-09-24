@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { visibleTeams } from '@/store/selectors';
+import { clubShortName, visibleTeams } from '@/store/selectors';
 import { Button, Panel, Field, Input, PageHeader, Select, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { CLUB_NAME, cn, toISODate, today } from '@/lib/utils';
+import { cn, toISODate, today } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
 import type { Match } from '@/types';
 
@@ -26,6 +26,7 @@ export default function MatchEditor() {
   const navigate = useNavigate();
   const toast = useToast();
   const { data, teamId, actions } = useClub();
+  const ownName = clubShortName(data);
   const teams = visibleTeams(data);
   const [busy, setBusy] = useState(false);
   const activeTeam = teams.find((t) => t.id === teamId) ?? teams[0];
@@ -181,13 +182,13 @@ export default function MatchEditor() {
               </p>
               <div className="mt-2.5 flex items-center gap-3">
                 <span className="flex-1 text-right text-[14px] font-semibold text-navy-900">
-                  {form.home ? CLUB_NAME : form.opponent || 'Rival'}
+                  {form.home ? ownName : form.opponent || 'Rival'}
                 </span>
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-navy-50 text-[10.5px] font-semibold text-navy-900">
                   vs
                 </span>
                 <span className="flex-1 text-[14px] font-semibold text-navy-900">
-                  {form.home ? form.opponent || 'Rival' : CLUB_NAME}
+                  {form.home ? form.opponent || 'Rival' : ownName}
                 </span>
               </div>
               <p className="mt-3 text-center text-[12.5px] text-muted">

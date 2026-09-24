@@ -7,7 +7,7 @@
  */
 
 import { supabase } from './supabase';
-import { COORDINATOR_ROLES, type Staff, type StaffRole } from '@/types';
+import type { Staff, StaffRole } from '@/types';
 
 export const auth = {
   async currentUserId(): Promise<string | null> {
@@ -59,20 +59,20 @@ export const auth = {
 };
 
 /* ─────────────────────────────── Permisos ─────────────────────────────────── */
+/*
+ * Aviso importante: esto NO es el control de acceso. El control de acceso lo
+ * aplican las políticas de la base de datos, que miran la pertenencia al club.
+ * Lo de aquí sólo sirve para no ofrecer botones que el servidor va a rechazar.
+ *
+ * Con varios clubes en la plataforma, la autoridad viene de `club_members`
+ * (ver `isClubAdmin` en los selectores), no del cargo escrito en el perfil:
+ * el cargo es descriptivo y no concede nada.
+ */
 
-export const isCoordinator = (staff: Staff | null): boolean =>
-  !!staff && COORDINATOR_ROLES.includes(staff.role);
-
-/** Un equipo es visible si está asignado o si eres coordinación del club. */
-export const canSeeTeam = (staff: Staff | null, teamId: string): boolean =>
-  !!staff && (isCoordinator(staff) || staff.teamIds.includes(teamId));
-
-/** Modificar jugadoras, sesiones, partidos y convocatorias del equipo. */
-export const canEditTeam = (staff: Staff | null, teamId: string): boolean => canSeeTeam(staff, teamId);
-
-/** Ver teléfonos y datos de familias. */
+/** Ver teléfonos y datos de familias de las jugadoras. */
 export const canSeePersonalData = (staff: Staff | null): boolean =>
-  !!staff && (isCoordinator(staff) || staff.role === 'entrenadora' || staff.role === 'segunda-entrenadora');
+  !!staff && ['entrenadora', 'segunda-entrenadora', 'coordinadora', 'directora-deportiva', 'admin-club']
+    .includes(staff.role);
 
 export const ROLE_LABEL: Record<StaffRole, string> = {
   entrenadora: 'Entrenadora',

@@ -10,23 +10,22 @@ import {
   Plus, Send, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import {
-  callupOfMatch, currentStaff, nextMatch, nextSession, squadOf, summarizeRecord, teamOverview,
-  visibleTeams,
-} from '@/store/selectors';
-import { isCoordinator } from '@/services/auth';
+import { callupOfMatch, clubShortName, currentStaff, isClubAdmin, nextMatch, nextSession, squadOf, summarizeRecord, teamOverview, visibleTeams } from '@/store/selectors';
+
 import { humanError } from '@/services/supabase';
 import { useToast } from '@/components/ui/Toast';
 import {
   Tag, Button, Panel, Checkbox, EmptyState, LinkButton, Meter, Skeleton,
 } from '@/components/ui';
 import { Ring, SplitBar } from '@/components/domain/Charts';
-import { CLUB_NAME, cn, daysFromToday, longDate, minutesToLabel, relativeDay, relativeTime, toISODate, today } from '@/lib/utils';
+import { cn, daysFromToday, longDate, minutesToLabel, relativeDay, relativeTime, toISODate, today } from '@/lib/utils';
 import { CreateMenu } from '@/components/layout/CreateMenu';
 import type { CoachTask } from '@/types';
 
 export default function Dashboard() {
   const { data, loading, loadError, teamId, actions } = useClub();
+  const ownName = clubShortName(data);
+  const admin = isClubAdmin(data);
   const navigate = useNavigate();
   const toast = useToast();
   const [createOpen, setCreateOpen] = useState(false);
@@ -112,14 +111,14 @@ export default function Dashboard() {
         <Panel>
           <EmptyState
            
-            title={isCoordinator(staff) ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
+            title={admin ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
             description={
-              isCoordinator(staff)
+              admin
                 ? 'Crea los equipos de la temporada y asigna a cada entrenadora el suyo. A partir de ahí, cada una monta su plantilla, sus entrenamientos y sus convocatorias.'
                 : 'La coordinadora del club tiene que asignarte tu equipo. En cuanto lo haga, aquí verás tu día completo: entrenamiento, partido, asistencia y convocatoria.'
             }
             action={
-              isCoordinator(staff) ? (
+              admin ? (
                 <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm">
                   Crear equipo
                 </LinkButton>
@@ -236,7 +235,7 @@ export default function Dashboard() {
               <div className="mt-3 flex items-center gap-4">
                 <div className="flex-1 text-right">
                   <p className="text-[16px] font-semibold leading-tight text-navy-900">
-                    {match0.home ? CLUB_NAME : match0.opponent}
+                    {match0.home ? ownName : match0.opponent}
                   </p>
                   <p className="mt-0.5 text-[11.5px] text-navy-400">{match0.home ? 'Local' : 'Visitante'}</p>
                 </div>
@@ -245,7 +244,7 @@ export default function Dashboard() {
                 </span>
                 <div className="flex-1">
                   <p className="text-[16px] font-semibold leading-tight text-navy-900">
-                    {match0.home ? match0.opponent : CLUB_NAME}
+                    {match0.home ? match0.opponent : ownName}
                   </p>
                   <p className="mt-0.5 text-[11.5px] text-navy-400">{match0.home ? 'Visitante' : 'Local'}</p>
                 </div>

@@ -4,11 +4,8 @@ import {
   ArrowLeft, CalendarClock, ChevronRight, ClipboardList, MapPin, Send, Swords, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import {
-  attendanceTrend, callupOfMatch, nextMatch, nextSession, playerAttendance, staffOfTeam,
-  squadOf, teamAttendanceRate, upcomingMatches, upcomingSessions, visibleTeams,
-} from '@/store/selectors';
-import { ROLE_LABEL, isCoordinator } from '@/services/auth';
+import { attendanceTrend, callupOfMatch, isClubAdmin, nextMatch, nextSession, playerAttendance, squadOf, staffOfTeam, teamAttendanceRate, upcomingMatches, upcomingSessions, visibleTeams } from '@/store/selectors';
+import { ROLE_LABEL } from '@/services/auth';
 import { Avatar, Tag, Panel, EmptyState, LinkButton, PageHeader, Figure, Tabs } from '@/components/ui';
 import { LineTrend, Ring } from '@/components/domain/Charts';
 import { AvailabilityDot, AVAILABILITY } from '@/components/domain/StatusBits';
@@ -17,7 +14,6 @@ import { cn, longDate, minutesToLabel, relativeDay, shortDate } from '@/lib/util
 export default function TeamDetail() {
   const { teamId = '' } = useParams();
   const { data } = useClub();
-  const staff = data.profile;
   const [tab, setTab] = useState('resumen');
 
   const teams = visibleTeams(data);
@@ -69,7 +65,7 @@ export default function TeamDetail() {
             <LinkButton to="/app/entrenamientos" variant="secondary" size="sm" icon={<ClipboardList size={15} />}>
               Pasar asistencia
             </LinkButton>
-            {isCoordinator(staff) && (
+            {isClubAdmin(data) && (
               <LinkButton to={`/app/equipo-tecnico/${team.id}/editar`} variant="ghost" size="sm">
                 Editar equipo
               </LinkButton>
@@ -359,7 +355,7 @@ export default function TeamDetail() {
               <div className="text-center">
                 <Users size={22} className="mx-auto text-navy-300" />
                 <p className="mt-2 text-[13px] text-muted">
-                  Los cambios en el cuerpo técnico los gestiona la coordinadora del club.
+                  Los cambios en el cuerpo técnico los gestiona quien administra el club.
                 </p>
               </div>
             </Panel>

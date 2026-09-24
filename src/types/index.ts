@@ -29,8 +29,38 @@ export interface Staff {
   createdAt?: string;
 }
 
-/** Roles con permiso para crear equipos y asignar cuerpo técnico. */
-export const COORDINATOR_ROLES: StaffRole[] = ['coordinadora', 'directora-deportiva', 'admin-club'];
+/**
+ * El cargo que ocupa esa persona. Es descriptivo: **no concede permisos**.
+ * Quién puede administrar el club lo dice `club_members.role`, y lo aplica el
+ * servidor.
+ */
+
+/* ─────────────────────────────────── Club ─────────────────────────────────── */
+
+/**
+ * La plataforma es para cualquier club. Todo lo demás cuelga de aquí: quien no
+ * pertenece a un club no ve nada, y el servidor lo impone con sus políticas de
+ * acceso, no la interfaz.
+ */
+export type ClubRole = 'admin' | 'entrenadora' | 'asistente';
+
+export const CLUB_ROLE_LABEL: Record<ClubRole, string> = {
+  admin: 'Administración del club',
+  entrenadora: 'Entrenadora',
+  asistente: 'Asistente técnico',
+};
+
+export interface Club {
+  id: string;
+  name: string;
+  /** El que cabe en un marcador: «Santa Ponsa CF», no su razón social. */
+  shortName: string;
+  city?: string;
+  season?: string;
+  crestUrl?: string;
+  /** Rol de quien ha iniciado sesión dentro de este club. */
+  role?: ClubRole;
+}
 
 /* ────────────────────────────────── Equipos ───────────────────────────────── */
 
@@ -422,7 +452,9 @@ export interface AssistantMessage {
 
 export interface ClubData {
   profile: Staff | null;
-  /** Sólo el personal visible: uno mismo, o todo el club si eres coordinadora. */
+  /** El club de quien ha iniciado sesión. `null` mientras no tenga ninguno. */
+  club: Club | null;
+  /** El personal visible: quien comparte club, según decide el servidor. */
   staff: Staff[];
   teams: Team[];
   teamStaff: TeamStaffLink[];
@@ -442,6 +474,7 @@ export interface ClubData {
 
 export const EMPTY_CLUB_DATA: ClubData = {
   profile: null,
+  club: null,
   staff: [],
   teams: [],
   teamStaff: [],

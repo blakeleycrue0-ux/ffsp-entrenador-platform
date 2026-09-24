@@ -112,7 +112,7 @@ export default function PlayerEditor() {
         <PageHeader title="Nueva jugadora" />
         <Panel className="p-8 text-center">
           <p className="text-[14px] text-navy-600">
-            Todavía no tienes ningún equipo asignado. Pídeselo a la coordinadora del club.
+            Todavía no tienes ningún equipo asignado. Pídeselo a quien administra el club.
           </p>
         </Panel>
       </>

@@ -2,8 +2,8 @@ import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { useClub } from '@/store/store';
-import { isCoordinator } from '@/services/auth';
-import { Crest } from '@/components/ui/Brand';
+import { isClubAdmin } from '@/store/selectors';
+import { Mark } from '@/components/ui/Brand';
 
 // Rutas con carga diferida: la primera pantalla llega antes y cada módulo
 // (pizarra, analíticas, constructor de sesiones…) se descarga sólo si se usa.
@@ -34,13 +34,14 @@ const StatsPage = lazy(() => import('@/features/stats/StatsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
 const ProfilePage = lazy(() => import('@/features/settings/ProfilePage'));
 const LegalPage = lazy(() => import('@/features/legal/LegalPage'));
+const CreateClub = lazy(() => import('@/features/onboarding/CreateClub'));
 
 /** Pantalla de arranque mientras se comprueba la sesión y se cargan los datos. */
 function Booting() {
   return (
     <div className="grid min-h-screen place-items-center bg-white">
       <div className="flex flex-col items-center gap-4">
-        <Crest size={52} />
+        <Mark size={40} />
         <div className="h-0.5 w-24 overflow-hidden rounded-full bg-navy-100">
           <div className="skeleton h-full w-full" />
         </div>
@@ -58,20 +59,32 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 }
 
 /**
+ * La plataforma es para cualquier club, así que lo primero es tener uno. Quien
+ * entra sin pertenecer a ninguno crea el suyo; quien llega invitada ya viene
+ * dentro y no ve esta pantalla.
+ */
+function RequireClub({ children }: { children: React.ReactNode }) {
+  const { data, loading } = useClub();
+  if (loading) return <Booting />;
+  if (!data.club && data.teams.length === 0) return <CreateClub />;
+  return <>{children}</>;
+}
+
+/**
  * La sección «Equipo técnico» muestra la gestión del club a quien puede
  * administrarlo y, al resto, sus equipos y con quién los comparte.
  */
 function StaffSection() {
   const { data, loading } = useClub();
   if (loading) return <Booting />;
-  return isCoordinator(data.profile) ? <ClubAdminPage /> : <TeamsPage />;
+  return isClubAdmin(data) ? <ClubAdminPage /> : <TeamsPage />;
 }
 
 /** Administración del club: crear equipos y gestionar el cuerpo técnico. */
-function RequireCoordinator({ children }: { children: React.ReactNode }) {
+function RequireClubAdmin({ children }: { children: React.ReactNode }) {
   const { data, loading } = useClub();
   if (loading) return <Booting />;
-  if (!isCoordinator(data.profile)) return <Navigate to="/app" replace />;
+  if (!isClubAdmin(data)) return <Navigate to="/app" replace />;
   return <>{children}</>;
 }
 
@@ -88,7 +101,9 @@ export default function App() {
           path="/app"
           element={
             <RequireAuth>
-              <AppShell />
+              <RequireClub>
+                <AppShell />
+              </RequireClub>
             </RequireAuth>
           }
         >
@@ -130,25 +145,25 @@ export default function App() {
           <Route
             path="equipo-tecnico/nuevo-equipo"
             element={
-              <RequireCoordinator>
+              <RequireClubAdmin>
                 <TeamEditor />
-              </RequireCoordinator>
+              </RequireClubAdmin>
             }
           />
           <Route
             path="equipo-tecnico/:teamId/editar"
             element={
-              <RequireCoordinator>
+              <RequireClubAdmin>
                 <TeamEditor />
-              </RequireCoordinator>
+              </RequireClubAdmin>
             }
           />
           <Route
             path="equipo-tecnico/club"
             element={
-              <RequireCoordinator>
+              <RequireClubAdmin>
                 <ClubAdminPage />
-              </RequireCoordinator>
+              </RequireClubAdmin>
             }
           />
 

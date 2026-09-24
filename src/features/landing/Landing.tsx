@@ -33,8 +33,8 @@ const SECCIONES = [
     body: 'Asistencia, minutos y participación calculados sobre lo que habéis anotado. Si falta un dato se dice que falta; nunca se convierte en un cero.',
   },
   {
-    title: 'Acceso por equipo',
-    body: 'Cada persona del cuerpo técnico entra con su cuenta y ve sólo los equipos que tiene asignados. El permiso lo aplica el servidor, no la pantalla.',
+    title: 'Un club, sus datos',
+    body: 'Cada club es independiente: sus equipos, sus jugadoras y sus jugadas no son visibles para ningún otro. Dentro del club, cada persona ve sólo los equipos que tiene asignados. Lo aplica el servidor, no la pantalla.',
   },
 ];
 
@@ -56,8 +56,12 @@ const FAQ = [
     'No. Guarda lo que anota el cuerpo técnico. No emite diagnósticos, ni estimaciones de riesgo, ni métricas calculadas automáticamente.',
   ],
   [
-    '¿Cómo consigo una cuenta?',
-    'Las cuentas las da quien administra el club. Si formas parte del cuerpo técnico y aún no tienes acceso, pídeselo a la coordinación.',
+    '¿Cómo empiezo con mi club?',
+    'Creas tu cuenta, creas tu club y quedas como su administración. Desde ahí montas los equipos e invitas al resto del cuerpo técnico con un enlace.',
+  ],
+  [
+    '¿Puede otro club ver lo nuestro?',
+    'No. El aislamiento entre clubes lo imponen las políticas de acceso de la base de datos, así que no depende de que la aplicación se comporte bien.',
   ],
 ];
 
@@ -86,7 +90,7 @@ export default function Landing() {
               </h1>
               <p className="mt-4 max-w-xl text-lg leading-relaxed text-navy-700">
                 Plantilla, entrenamientos, partidos y una pizarra táctica que se mueve de verdad.
-                Todo en un sitio, con cada equipo separado del resto.
+                Para cualquier club: cada uno con sus datos, separados de los de los demás.
               </p>
               <p className="mt-6 text-md font-medium text-navy-900">
                 Menos gestión. Más tiempo para entrenar.

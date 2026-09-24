@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Bell, GraduationCap, LogOut, Mail, Phone, Settings, Shield } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { currentStaff, teamOverview, visibleTeams } from '@/store/selectors';
-import { ROLE_LABEL, isCoordinator } from '@/services/auth';
+import { currentStaff, isClubAdmin, teamOverview, visibleTeams } from '@/store/selectors';
+import { ROLE_LABEL } from '@/services/auth';
 import { Avatar, Tag, Button, Panel, LinkButton, PageHeader } from '@/components/ui';
 import { Ring } from '@/components/domain/Charts';
 import { relativeDay } from '@/lib/utils';
@@ -81,7 +81,7 @@ export default function ProfilePage() {
       {teams.length === 0 && (
         <Panel className="p-5">
           <p className="text-[13.5px] leading-relaxed text-muted">
-            {isCoordinator(staff)
+            {isClubAdmin(data)
               ? 'Todavía no hay equipos creados en el club. Puedes crearlos desde Gestión del club.'
               : 'La coordinadora del club aún no te ha asignado ningún equipo.'}
           </p>

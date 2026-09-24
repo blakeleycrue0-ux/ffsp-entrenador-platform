@@ -6,8 +6,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useClub } from '@/store/store';
-import { currentStaff, visibleTeams } from '@/store/selectors';
-import { ROLE_LABEL, auth, isCoordinator } from '@/services/auth';
+import { currentStaff, isClubAdmin, visibleTeams } from '@/store/selectors';
+import { ROLE_LABEL, auth } from '@/services/auth';
 import { humanError, supabase } from '@/services/supabase';
 import {
   Button, Field, Figure, Input, PageHeader, Panel, PanelHeader, ScoreInput, Tabs, Tag, Textarea,
@@ -160,7 +160,7 @@ export default function SettingsPage() {
           <Panel>
             <PanelHeader title="Qué puedes hacer" />
             <ul className="space-y-1.5 p-4 text-base text-navy-700">
-              {(isCoordinator(staff)
+              {(isClubAdmin(data)
                 ? [
                     'Crear equipos y asignar al cuerpo técnico',
                     'Ver todos los equipos del club',

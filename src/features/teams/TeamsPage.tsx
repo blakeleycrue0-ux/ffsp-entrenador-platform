@@ -2,15 +2,15 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarClock, ChevronRight, Plus, Swords, Users } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { teamOverview, visibleTeams } from '@/store/selectors';
-import { isCoordinator } from '@/services/auth';
+import { isClubAdmin, teamOverview, visibleTeams } from '@/store/selectors';
+
 import { Tag, EmptyState, LinkButton, PageHeader, Skeleton } from '@/components/ui';
 import { Ring } from '@/components/domain/Charts';
 import { relativeDay } from '@/lib/utils';
 
 export default function TeamsPage() {
   const { data, loading } = useClub();
-  const staff = data.profile;
+  const admin = isClubAdmin(data);
   const teams = useMemo(() => visibleTeams(data), [data]);
   const overviews = useMemo(() => teams.map((t) => teamOverview(data, t)), [data, teams]);
 
@@ -35,7 +35,7 @@ export default function TeamsPage() {
               }`
         }
         actions={
-          isCoordinator(staff) ? (
+          admin ? (
             <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm" icon={<Plus size={16} />}>
               Crear equipo
             </LinkButton>
@@ -47,14 +47,14 @@ export default function TeamsPage() {
         <div className="panel">
           <EmptyState
            
-            title={isCoordinator(staff) ? 'Todavía no hay equipos en el club' : 'No tienes equipos asignados'}
+            title={admin ? 'Todavía no hay equipos en el club' : 'No tienes equipos asignados'}
             description={
-              isCoordinator(staff)
+              admin
                 ? 'Crea el primer equipo de la temporada y asígnale su cuerpo técnico.'
-                : 'Pídele a la coordinadora del club que te asigne un equipo para empezar a trabajar.'
+                : 'Pide a quien administra el club que te asigne uno para empezar a trabajar.'
             }
             action={
-              isCoordinator(staff) ? (
+              admin ? (
                 <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm">
                   Crear equipo
                 </LinkButton>

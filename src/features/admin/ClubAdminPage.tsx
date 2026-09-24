@@ -10,9 +10,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ClipboardCopy, Plus, UserPlus, X } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { ASSIGNABLE_ROLES, ROLE_LABEL, isCoordinator } from '@/services/auth';
+import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { humanError } from '@/services/supabase';
-import { clubs, type Club } from '@/services/clubs';
+import { clubs } from '@/services/clubs';
+import { ClubCrest } from '@/components/ui/Brand';
 import {
   CLUB_ROLE_LABEL, invitationLink, invitationState, invitations,
   type ClubRole, type Invitation,
@@ -24,7 +25,7 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { squadOf } from '@/store/selectors';
 import { longDate } from '@/lib/utils';
-import type { Staff, StaffRole } from '@/types';
+import type { Club, Staff, StaffRole } from '@/types';
 
 export default function ClubAdminPage() {
   const { data, actions } = useClub();
@@ -33,7 +34,7 @@ export default function ClubAdminPage() {
   const [assignTo, setAssignTo] = useState<string | null>(null);
 
   const unassigned = useMemo(
-    () => data.staff.filter((s) => s.teamIds.length === 0 && !isCoordinator(s)),
+    () => data.staff.filter((s) => s.teamIds.length === 0 && s.id !== data.profile?.id),
     [data.staff],
   );
 
@@ -69,6 +70,7 @@ export default function ClubAdminPage() {
           { id: 'equipos', label: 'Equipos', count: data.teams.length },
           { id: 'personas', label: 'Cuerpo técnico', count: data.staff.length },
           { id: 'invitaciones', label: 'Invitaciones' },
+          { id: 'club', label: 'Datos del club' },
         ]}
       />
 
@@ -187,6 +189,8 @@ export default function ClubAdminPage() {
       )}
 
       {tab === 'invitaciones' && <InvitationsTab />}
+
+      {tab === 'club' && <ClubDataTab />}
 
       <AssignModal teamId={assignTo} onClose={() => setAssignTo(null)} />
     </>
@@ -355,15 +359,14 @@ function InvitationsTab() {
 
   const load = useCallback(async () => {
     try {
-      const mine = await clubs.mine();
-      const found = mine[0] ?? (data.teams[0] ? await clubs.ofTeam(data.teams[0].id) : null);
+      const found = data.club ?? (data.teams[0] ? await clubs.ofTeam(data.teams[0].id) : null);
       setClub(found);
       setRows(found ? await invitations.listByClub(found.id) : []);
     } catch (e) {
       setError(humanError(e));
       setClub(null);
     }
-  }, [data.teams]);
+  }, [data.club, data.teams]);
 
   useEffect(() => {
     void load();
@@ -538,6 +541,115 @@ function InvitationsTab() {
             })}
           </ul>
         )}
+      </Panel>
+    </div>
+  );
+}
+
+/* ──────────────────────────── Datos del club ─────────────────────────────── */
+
+/**
+ * El nombre del club no está en el código: se guarda aquí y de aquí sale para
+ * los marcadores, las convocatorias y la agenda exportada.
+ */
+function ClubDataTab() {
+  const { data, actions } = useClub();
+  const toast = useToast();
+  const club = data.club;
+
+  const [name, setName] = useState(club?.name ?? '');
+  const [shortName, setShortName] = useState(club?.shortName ?? '');
+  const [season, setSeason] = useState(club?.season ?? '');
+  const [crestUrl, setCrestUrl] = useState(club?.crestUrl ?? '');
+  const [busy, setBusy] = useState(false);
+
+  if (!club) {
+    return (
+      <Panel>
+        <EmptyState
+          title="Todavía no hay un club"
+          description="Crea un equipo y se creará el club junto con él."
+        />
+      </Panel>
+    );
+  }
+
+  const save = async () => {
+    if (name.trim().length < 2) {
+      toast.error('El club necesita un nombre');
+      return;
+    }
+    setBusy(true);
+    try {
+      await clubs.update(club.id, { name, shortName, season, crestUrl });
+      await actions.refresh();
+      toast.success('Datos del club guardados');
+    } catch (e) {
+      toast.error('No hemos podido guardarlos', humanError(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="grid gap-3 lg:grid-cols-2">
+      <Panel>
+        <div className="border-b border-line px-4 py-3">
+          <h3 className="text-md font-semibold">Identidad</h3>
+          <p className="mt-0.5 text-sm text-muted">
+            De aquí salen los marcadores, las convocatorias y el nombre de la agenda exportada.
+          </p>
+        </div>
+        <div className="space-y-3 p-4">
+          <Field label="Nombre del club" required>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </Field>
+          <Field label="Nombre corto" hint="El que cabe en un marcador.">
+            <Input value={shortName} onChange={(e) => setShortName(e.target.value)} maxLength={28} />
+          </Field>
+          <Field label="Temporada" hint="Opcional. Aparece bajo el nombre del club.">
+            <Input value={season} onChange={(e) => setSeason(e.target.value)} placeholder="2025/26" />
+          </Field>
+          <Field
+            label="Escudo"
+            hint="Dirección de la imagen. Todavía no se pueden subir archivos: pega una URL pública."
+          >
+            <Input
+              value={crestUrl}
+              onChange={(e) => setCrestUrl(e.target.value)}
+              placeholder="https://…/escudo.png"
+              inputMode="url"
+            />
+          </Field>
+          <Button loading={busy} onClick={save}>
+            Guardar
+          </Button>
+        </div>
+      </Panel>
+
+      <Panel>
+        <div className="border-b border-line px-4 py-3">
+          <h3 className="text-md font-semibold">Cómo se verá</h3>
+        </div>
+        <div className="space-y-4 p-4">
+          <div className="flex items-center gap-2.5">
+            <ClubCrest name={name} src={crestUrl || undefined} size={34} />
+            <div className="min-w-0">
+              <p className="truncate text-base font-semibold text-navy-900">{name || 'Tu club'}</p>
+              {season && <p className="text-xs text-muted">{season}</p>}
+            </div>
+          </div>
+          <div>
+            <p className="eyebrow mb-1.5">En un marcador</p>
+            <p className="text-base text-navy-800">
+              {shortName || name || 'Tu club'} <span className="text-muted">vs</span> Rival
+            </p>
+          </div>
+          <p className="text-xs leading-relaxed text-muted">
+            Los datos de tu club no son visibles para ningún otro club de la plataforma. El
+            aislamiento lo aplican las políticas de acceso de la base de datos.
+          </p>
+        </div>
       </Panel>
     </div>
   );

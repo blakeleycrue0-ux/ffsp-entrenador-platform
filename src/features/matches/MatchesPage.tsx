@@ -2,12 +2,13 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarClock, ChevronRight, MapPin, Plus, Users } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { visibleTeams } from '@/store/selectors';
+import { clubShortName, visibleTeams } from '@/store/selectors';
 import { Tag, Panel, EmptyState, LinkButton, PageHeader, Select, Tabs } from '@/components/ui';
-import { CLUB_NAME, cn, relativeDay, shortDate, toISODate, today } from '@/lib/utils';
+import { cn, relativeDay, shortDate, toISODate, today } from '@/lib/utils';
 
 export default function MatchesPage() {
   const { data, teamId, setTeamId } = useClub();
+  const ownName = clubShortName(data);
   const teams = visibleTeams(data);
   const [tab, setTab] = useState('proximos');
 
@@ -106,7 +107,7 @@ export default function MatchesPage() {
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     <div className="min-w-0 flex-1 text-right">
                       <p className="truncate text-[15px] font-semibold text-navy-900">
-                        {m.home ? CLUB_NAME : m.opponent}
+                        {m.home ? ownName : m.opponent}
                       </p>
                     </div>
                     {m.result ? (
@@ -120,7 +121,7 @@ export default function MatchesPage() {
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[15px] font-semibold text-navy-900">
-                        {m.home ? m.opponent : CLUB_NAME}
+                        {m.home ? m.opponent : ownName}
                       </p>
                     </div>
                   </div>

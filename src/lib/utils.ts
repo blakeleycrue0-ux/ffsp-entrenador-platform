@@ -1,8 +1,5 @@
 import clsx, { type ClassValue } from 'clsx';
 
-/** Nombre del club, usado en mensajes y cabeceras. */
-export const CLUB_NAME = 'Santa Ponsa CF';
-
 export const cn = (...inputs: ClassValue[]) => clsx(inputs);
 
 /* ──────────────────────────────── Fechas ─────────────────────────────────── */

@@ -15,7 +15,7 @@ import {
   ACCEPT_ERROR, CLUB_ROLE_LABEL, invitations, type InvitationPeek,
 } from '@/services/invitations';
 import { Button, Field, Input, Tag } from '@/components/ui';
-import { Crest, Wordmark } from '@/components/ui/Brand';
+import { Mark, Wordmark } from '@/components/ui/Brand';
 
 type Mode = 'entrar' | 'registro' | 'recuperar';
 
@@ -110,14 +110,14 @@ export default function Login() {
   const titles: Record<Mode, { title: string; sub: string; cta: string }> = {
     entrar: {
       title: 'Entrar',
-      sub: 'Accede con el correo con el que te dieron de alta en el club.',
+      sub: 'Accede con el correo con el que te dieron de alta en tu club.',
       cta: 'Entrar',
     },
     registro: {
       title: token ? 'Crear tu cuenta' : 'Crear cuenta',
       sub: token
         ? 'Crea tu acceso con el correo al que se envió la invitación.'
-        : 'Crea tu acceso. Quien administra el club te asignará después tu equipo.',
+        : 'Crea tu acceso y, al entrar, tu club. Si te han invitado a uno, abre su enlace.',
       cta: 'Crear cuenta',
     },
     recuperar: {
@@ -140,9 +140,9 @@ export default function Login() {
         </Link>
 
         <div>
-          <Crest size={88} />
+          <Mark size={52} />
           <h1 className="mt-7 max-w-sm text-3xl font-semibold leading-tight tracking-[-0.015em]">
-            Plantilla, entrenamientos, partidos y pizarra táctica.
+La herramienta de tu club: plantilla, entrenamientos, partidos y pizarra táctica.
           </h1>
           <p className="mt-4 max-w-sm text-md leading-relaxed text-navy-700">
             Menos gestión. Más tiempo para entrenar.
@@ -154,7 +154,7 @@ export default function Login() {
           </p>
         </div>
 
-        <p className="text-sm text-navy-400">FFSP · Santa Ponsa CF</p>
+        <p className="text-sm text-navy-400">Cada club, con sus datos separados de los demás.</p>
       </div>
 
       {/* Formulario */}
@@ -298,8 +298,9 @@ export default function Login() {
 
           {!token && (
             <p className="mt-7 text-xs leading-relaxed text-muted">
-              La primera persona que cree una cuenta queda como coordinadora del club y podrá crear
-              los equipos e invitar al resto del cuerpo técnico.
+              Al entrar por primera vez creas tu club y quedas como su administración: desde ahí
+              creas los equipos e invitas al resto del cuerpo técnico. Los datos de cada club están
+              separados de los de cualquier otro.
             </p>
           )}
         </div>

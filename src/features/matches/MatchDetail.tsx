@@ -12,19 +12,20 @@ import {
   Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { squadOf, playerAttendance, visibleTeams } from '@/store/selectors';
+import { clubShortName, squadOf, playerAttendance, visibleTeams } from '@/store/selectors';
 import {
   Avatar, Button, Field, Figure, Input, LinkButton, Modal, PageHeader, Panel, Tabs, Tag, Textarea,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { AVAILABILITY, AvailabilityDot, CALLUP_RESPONSE } from '@/components/domain/StatusBits';
-import { CLUB_NAME, cn, longDate, relativeDay, relativeTime } from '@/lib/utils';
+import { cn, longDate, relativeDay, relativeTime } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
 import type { Callup } from '@/types';
 
 export default function MatchDetail() {
   const { matchId = '' } = useParams();
   const { data, actions } = useClub();
+  const ownName = clubShortName(data);
   const toast = useToast();
 
   const [tab, setTab] = useState('convocatoria');
@@ -41,7 +42,7 @@ export default function MatchDetail() {
   if (!match || !allowed) return <Navigate to="/app/partidos" replace />;
 
   const team = data.teams.find((t) => t.id === match.teamId)!;
-  const fixture = match.home ? `${CLUB_NAME} vs ${match.opponent}` : `${match.opponent} vs ${CLUB_NAME}`;
+  const fixture = match.home ? `${ownName} vs ${match.opponent}` : `${match.opponent} vs ${ownName}`;
 
   /* ── Crear convocatoria: parte de quien está disponible, y tú decides ── */
   const createCallup = async () => {

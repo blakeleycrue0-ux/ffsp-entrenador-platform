@@ -4,7 +4,7 @@ import {
   ChevronLeft, ChevronRight, Clock, Download, MapPin, Plus, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { visibleTeams } from '@/store/selectors';
+import { clubShortName, visibleTeams } from '@/store/selectors';
 import { buildEvents, downloadICS } from '@/services/calendar';
 import {
   Tag, Button, Panel, EmptyState, Modal, PageHeader, Segmented, Select,
@@ -68,7 +68,7 @@ export default function CalendarPage() {
               size="sm"
               icon={<Download size={15} />}
               onClick={() => {
-                downloadICS(events, 'ffsp-vle-calendario.ics');
+                downloadICS(events, clubShortName(data), `${clubShortName(data).toLowerCase().replace(/\s+/g, '-')}-calendario.ics`);
                 toast.success('Calendario exportado', 'Archivo .ics listo para importar en Google Calendar o Apple Calendar.');
               }}
             >

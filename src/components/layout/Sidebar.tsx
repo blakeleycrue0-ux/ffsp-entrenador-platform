@@ -1,10 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronsUpDown, LogOut, Plus, UserRound } from 'lucide-react';
-import { Wordmark } from '@/components/ui/Brand';
+import { ClubCrest } from '@/components/ui/Brand';
 import { Avatar, Dropdown, MenuItem } from '@/components/ui';
 import { NAV, isActive } from './navigation';
 import { useClub } from '@/store/store';
-import { currentStaff, visibleTeams } from '@/store/selectors';
+import { clubName, currentStaff, visibleTeams } from '@/store/selectors';
 import { ROLE_LABEL } from '@/services/auth';
 import { cn } from '@/lib/utils';
 
@@ -17,10 +17,15 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar-w)] flex-col border-r border-line bg-white lg:flex">
-      <div className="px-4 py-4">
-        <Link to="/app" className="inline-block">
-          <Wordmark />
-        </Link>
+      {/* El club de quien trabaja aquí, no la marca del producto */}
+      <div className="flex items-center gap-2.5 border-b border-line px-4 py-3">
+        <ClubCrest name={clubName(data)} src={data.club?.crestUrl} size={30} />
+        <div className="min-w-0">
+          <p className="truncate text-base font-semibold leading-tight text-navy-900">
+            {clubName(data)}
+          </p>
+          {data.club?.season && <p className="text-xs text-muted">{data.club.season}</p>}
+        </div>
       </div>
 
       {/* Equipo activo: da contexto a todas las pantallas */}
