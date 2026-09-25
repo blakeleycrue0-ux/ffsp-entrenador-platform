@@ -23,8 +23,9 @@ En el panel de Supabase → **SQL Editor** → **New query**, pega y ejecuta, po
 2. `supabase/migrations/0002_clubes_pizarra_y_seguimiento.sql`
 3. `supabase/migrations/0003_aislamiento_por_club.sql`
 4. `supabase/migrations/0004_cerrar_funciones_publicas.sql`
+5. `supabase/migrations/0005_ver_el_equipo_recien_creado.sql`
 
-Las cuatro son **idempotentes y aditivas**: se pueden ejecutar más de una vez, no borran tablas, no
+Las cinco son **idempotentes y aditivas**: se pueden ejecutar más de una vez, no borran tablas, no
 vacían registros y no reinician nada.
 
 - La **0002** añade clubes, invitaciones, lesiones, valoraciones, asistencia por filas y jugadas de
@@ -34,6 +35,15 @@ vacían registros y no reinician nada.
 - La **0004** retira del API pública las funciones de autorización. Supabase publica como REST toda
   función de `public`, así que `is_club_admin` o `create_club` eran invocables sin sesión. Sólo
   cambia permisos, no toca datos.
+- La **0005** arregla que crear un equipo fallara siempre. Sólo redefine políticas de `teams`,
+  diciendo lo mismo que antes pero leyéndolo de la fila. Ver abajo.
+
+> **Una política no debe consultar su propia tabla.** Guardar con `.select()` es `RETURNING`, y
+> devolver la fila recién escrita exige pasar la política de SELECT. Si esa política llama a una
+> función `stable` que vuelve a buscar la fila en la misma tabla, la función trabaja con la
+> instantánea del principio de la sentencia, donde esa fila **todavía no existe**: responde que no
+> y tumba la escritura entera, con un error que parece de permisos. Las políticas tienen que
+> decidir con las columnas que la fila ya trae (`club_id`, `created_by`, `team_id`).
 
 > **El esquema tiene que estar vacío.** Las migraciones usan `create table if not exists`, de modo
 > que si ya existen tablas llamadas `profiles`, `teams` o `players` con otras columnas, se saltarán
