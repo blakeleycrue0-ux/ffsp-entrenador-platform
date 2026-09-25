@@ -492,8 +492,32 @@ const one = async <T,>(promise: PromiseLike<{ data: unknown; error: unknown }>, 
 
 export const db = {
   /* Equipos y cuerpo técnico — sólo coordinación (lo impone RLS) */
-  saveTeam: (t: Team, userId: string) =>
-    one(supabase.from('teams').upsert(fromTeam(t, userId)).select().single(), toTeam),
+
+  /**
+   * Crear y editar son dos operaciones distintas, y aquí hay que separarlas.
+   *
+   * Con `upsert`, PostgREST manda `insert … on conflict do update`, y eso
+   * obliga a PostgreSQL a validar TAMBIÉN la política de UPDATE de la tabla.
+   * La de `teams` es `using (can_manage_team(id))`: pregunta si administras el
+   * club de ESE equipo, mirando la fila por su `id`. Al crear, esa fila todavía
+   * no existe, así que la respuesta es que no, y el equipo se rechazaba
+   * siempre con «new row violates row-level security policy» — un mensaje que
+   * suena a falta de permisos cuando en realidad sobraba una operación.
+   *
+   * Las demás tablas se libran porque sus políticas de UPDATE miran columnas
+   * que sí viajan en la fila (`team_id`, `created_by`), no su propio `id`.
+   */
+  saveTeam: (t: Team, userId: string) => {
+    const row = fromTeam(t, userId);
+    if (t.id) {
+      return one(
+        supabase.from('teams').update(row).eq('id', t.id).select().single(),
+        toTeam,
+      );
+    }
+    const { id: _sinId, ...nuevo } = row;
+    return one(supabase.from('teams').insert(nuevo).select().single(), toTeam);
+  },
 
   deleteTeam: async (id: string) => {
     const { error } = await supabase.from('teams').delete().eq('id', id);
