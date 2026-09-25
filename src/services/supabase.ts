@@ -13,9 +13,9 @@
 import { createClient } from '@supabase/supabase-js';
 
 const POR_DEFECTO = {
-  url: 'https://sqhavilwnypxxoqmrpkf.supabase.co',
+  url: 'https://snywuosknlaewkynrtdc.supabase.co',
   anonKey:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNxaGF2aWx3bnlweHhvcW1ycGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MDgyMjQsImV4cCI6MjEwMzQ4NDIyNH0.box09jIYI-nessL3Ug5u02qjENo4631LnW3xLR0kOVA',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNueXd1b3NrbmxhZXdreW5ydGRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyNDg3MjYsImV4cCI6MjEwMDgyNDcyNn0.wxFDfRsMJNQzOIxm0FK0CvxmcYxENGO1uYYnyoOeJ-g',
 };
 
 /**

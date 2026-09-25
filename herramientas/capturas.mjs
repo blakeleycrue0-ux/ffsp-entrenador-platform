@@ -18,7 +18,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 
 const OUT = 'public/producto';
-const REF = 'sqhavilwnypxxoqmrpkf';
+const REF = 'snywuosknlaewkynrtdc';
 const USER = '11111111-1111-1111-1111-111111111111';
 const TEAM = '22222222-2222-2222-2222-222222222222';
 const CLUB = '33333333-3333-3333-3333-333333333333';
@@ -108,8 +108,10 @@ async function capturar(nombre, ruta, vp, preparar) {
     return json(single ? rows[0] ?? null : rows);
   });
   const page = await ctx.newPage();
-  await page.addInitScript(([t, u]) => localStorage.setItem('sb-sqhavilwnypxxoqmrpkf-auth-token',
-    JSON.stringify({ access_token: t, refresh_token: 'x', expires_at: Math.floor(Date.now() / 1000) + 86400, user: { id: u } })), [jwt, USER]);
+  // `ref` viaja como argumento: esta función se ejecuta en el navegador y allí
+  // no existen las constantes de este archivo.
+  await page.addInitScript(([t, u, ref]) => localStorage.setItem(`sb-${ref}-auth-token`,
+    JSON.stringify({ access_token: t, refresh_token: 'x', expires_at: Math.floor(Date.now() / 1000) + 86400, user: { id: u } })), [jwt, USER, REF]);
   await page.goto('http://localhost:4173' + ruta, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1200);
   if (preparar) await preparar(page);
