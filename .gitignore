@@ -6,3 +6,8 @@ dist
 .env.*
 !.env.example
 tsconfig.tsbuildinfo
+
+# Datos reales del club: listas de jugadoras, inscripciones, exportaciones.
+# El repositorio es público y aquí hay menores, DNI y teléfonos. No se sube.
+salida/
+*.inscripciones.csv

@@ -19,6 +19,15 @@
   # comportamiento el día que Netlify actualice la suya por defecto.
   NODE_VERSION = "20"
 
+# ── Funciones ───────────────────────────────────────────────────────────────
+# El cobro necesita servidor. La clave secreta de Stripe y la clave de servicio
+# de Supabase viven aquí y NUNCA en el navegador: con cualquiera de las dos se
+# podría cobrar en nombre del club o leer la base de datos entera saltándose
+# las políticas de acceso.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 # ── Rutas ───────────────────────────────────────────────────────────────────
 # La aplicación resuelve sus rutas en el navegador, así que en el servidor sólo
 # existe un archivo. Sin esta regla, entrar directamente en /entrar o /app —o

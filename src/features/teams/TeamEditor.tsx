@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Save, Trash2, X } from 'lucide-react';
 import { useClub } from '@/store/store';
+import { cabeOtroEquipo, limiteDeEquipos } from '@/store/selectors';
 import { humanError } from '@/services/supabase';
 import { Button, Panel, Field, Input, Modal, PageHeader, Select } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
@@ -48,6 +49,17 @@ export default function TeamEditor() {
   const save = async () => {
     if (!form.name.trim()) {
       toast.error('Falta el nombre del equipo', 'Por ejemplo: «Sub-17» o «Primer equipo».');
+      return;
+    }
+    /* Aviso amable antes de que el servidor lo rechace. El límite lo impone la
+       base de datos de todas formas; esto sólo evita rellenar el formulario
+       entero para llevarse un error al final. */
+    if (!existing && !cabeOtroEquipo(data)) {
+      const limite = limiteDeEquipos(data);
+      toast.error(
+        `Tu plan permite ${limite === 1 ? 'un equipo' : `${limite} equipos`}`,
+        'Para llevar más equipos hace falta el plan Pro. Lo tienes en Ajustes.',
+      );
       return;
     }
     setBusy(true);

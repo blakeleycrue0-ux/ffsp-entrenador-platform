@@ -6,6 +6,8 @@
  * PostgreSQL definidos en supabase/migrations/0001_esquema_inicial.sql.
  */
 
+import type { Plan, Subscription } from '@/services/billing';
+
 /* ────────────────────────────── Identidad y accesos ───────────────────────── */
 
 export type StaffRole =
@@ -460,6 +462,12 @@ export interface ClubData {
   profile: Staff | null;
   /** El club de quien ha iniciado sesión. `null` mientras no tenga ninguno. */
   club: Club | null;
+  /**
+   * Plan y suscripción del club. Sirven para AVISAR antes de tiempo; quien
+   * impone el límite es la base de datos, no esto.
+   */
+  plans: Plan[];
+  subscription: Subscription | null;
   /** El personal visible: quien comparte club, según decide el servidor. */
   staff: Staff[];
   teams: Team[];
@@ -481,6 +489,8 @@ export interface ClubData {
 export const EMPTY_CLUB_DATA: ClubData = {
   profile: null,
   club: null,
+  plans: [],
+  subscription: null,
   staff: [],
   teams: [],
   teamStaff: [],
