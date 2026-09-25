@@ -8,7 +8,7 @@ import type {
   AttendanceMark, AttendanceRecord, Callup, ClubData, Match, Player, Staff, Team, TrainingSession,
 } from '@/types';
 import { normalize, pct, shortDate, toISODate, today } from '@/lib/utils';
-import { planEfectivo, type PlanTier } from '@/services/billing';
+import { NIVELES, planEfectivo, type PlanTier } from '@/services/billing';
 
 export const currentStaff = (data: ClubData): Staff | null => data.profile;
 
@@ -314,4 +314,18 @@ export const limiteDeEquipos = (data: ClubData): number | null =>
 export const cabeOtroEquipo = (data: ClubData): boolean => {
   const limite = limiteDeEquipos(data);
   return limite === null || data.teams.length < limite;
+};
+
+/**
+ * El primer plan que le permitiría más equipos de los que tiene ahora, por su
+ * nombre real. Se busca en los planes que haya, no en una lista escrita aquí:
+ * así el aviso sigue siendo cierto si mañana cambian los límites.
+ */
+export const siguientePlan = (data: ClubData): string | null => {
+  const actual = planActual(data);
+  const desde = NIVELES.indexOf(actual);
+  const mejor = NIVELES.slice(desde + 1)
+    .map((n) => data.plans.find((p) => p.tier === n))
+    .find((p) => p && (p.maxTeams === null || p.maxTeams > data.teams.length));
+  return mejor ? `el plan ${mejor.name}` : null;
 };

@@ -8,6 +8,22 @@ import type { AttendanceMark, AvailabilityStatus, CallupResponse, EventKind, Mes
 import { Tag } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
+/**
+ * Búsqueda tolerante en las tablas de estados.
+ * ---------------------------------------------------------------------------
+ * Estas tablas traducen un valor de la BASE DE DATOS a una palabra y un color.
+ * Leerlas con `TABLA[valor]` a secas es una bomba de relojería: basta con que
+ * alguien añada un estado en la base, o que una fila antigua tenga el campo
+ * vacío, para que salga `undefined` y la pantalla entera reviente al pedirle
+ * `.tone`. Ocurrió con la plantilla.
+ *
+ * Un estado que no conocemos es un dato que no sabemos leer, no un motivo para
+ * tirar la aplicación: se dice que no se sabe y se sigue.
+ */
+export function deTabla<T>(tabla: Record<string, T>, clave: unknown, respaldo: T): T {
+  return (typeof clave === 'string' && tabla[clave]) || respaldo;
+}
+
 /* ─────────────────────────────── Disponibilidad ──────────────────────────── */
 
 export const AVAILABILITY: Record<
@@ -26,8 +42,19 @@ export const AVAILABILITY_ORDER: AvailabilityStatus[] = [
   'disponible', 'duda', 'lesionada', 'enferma', 'sancionada', 'ausente',
 ];
 
+/** Lo que se enseña cuando la base dice algo que esta versión no conoce. */
+const DISPONIBILIDAD_DESCONOCIDA = {
+  label: 'Sin estado', tone: 'neutral', dot: 'bg-navy-300',
+} as const;
+
+/** Siempre por aquí, nunca `AVAILABILITY[x]` a pelo. */
+export const disponibilidad = (status: unknown) =>
+  deTabla<{ label: string; tone: 'ok' | 'warn' | 'bad' | 'neutral'; dot: string }>(
+    AVAILABILITY, status, DISPONIBILIDAD_DESCONOCIDA,
+  );
+
 export const AvailabilityBadge = ({ status, size = 'md' }: { status: AvailabilityStatus; size?: 'sm' | 'md' }) => {
-  const a = AVAILABILITY[status];
+  const a = disponibilidad(status);
   return (
     <Tag tone={a.tone} size={size} dot>
       {a.label}
@@ -36,7 +63,7 @@ export const AvailabilityBadge = ({ status, size = 'md' }: { status: Availabilit
 };
 
 export const AvailabilityDot = ({ status, className }: { status: AvailabilityStatus; className?: string }) => (
-  <span className={cn('inline-block h-2 w-2 shrink-0 rounded-full', AVAILABILITY[status].dot, className)} />
+  <span className={cn('inline-block h-2 w-2 shrink-0 rounded-full', disponibilidad(status).dot, className)} />
 );
 
 /* ─────────────────────────────── Asistencia ──────────────────────────────── */
@@ -58,6 +85,10 @@ export const ATTENDANCE_ORDER: AttendanceMark[] = [
   'presente', 'tarde', 'justificada', 'lesionada', 'ausente', 'sin_registrar',
 ];
 
+/** Igual que en disponibilidad: una marca desconocida no tumba la lista. */
+export const asistencia = (mark: unknown) =>
+  deTabla(ATTENDANCE, mark, ATTENDANCE.sin_registrar);
+
 /* ─────────────────────────── Respuesta a convocatoria ────────────────────── */
 
 export const CALLUP_RESPONSE: Record<
@@ -69,8 +100,11 @@ export const CALLUP_RESPONSE: Record<
   rechazada: { label: 'No puede', tone: 'bad' },
 };
 
+export const respuesta = (r: unknown) =>
+  deTabla(CALLUP_RESPONSE, r, { label: 'Sin respuesta', tone: 'warn' as const });
+
 export const CallupResponseBadge = ({ response }: { response: CallupResponse }) => {
-  const r = CALLUP_RESPONSE[response];
+  const r = respuesta(response);
   return (
     <Tag tone={r.tone} size="sm" dot>
       {r.label}

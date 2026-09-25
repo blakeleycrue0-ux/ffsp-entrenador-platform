@@ -64,16 +64,20 @@ export async function administraElClub(profileId: string, clubId: string): Promi
 
 export interface Plan {
   tier: string;
+  name: string;
   trial_days: number;
   stripe_price_monthly: string | null;
   stripe_price_yearly: string | null;
 }
 
-export async function planPro(): Promise<Plan | null> {
+/** Los niveles de pago. `free` no se contrata: es lo que hay sin pagar. */
+export const NIVELES_DE_PAGO = ['pro', 'max'] as const;
+
+export async function plan(tier: string): Promise<Plan | null> {
   const { data } = await admin()
     .from('plans')
-    .select('tier, trial_days, stripe_price_monthly, stripe_price_yearly')
-    .eq('tier', 'pro')
+    .select('tier, name, trial_days, stripe_price_monthly, stripe_price_yearly')
+    .eq('tier', tier)
     .maybeSingle();
   return (data as Plan | null) ?? null;
 }

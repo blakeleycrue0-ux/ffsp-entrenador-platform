@@ -65,7 +65,11 @@ export default function Dashboard() {
   const declined = selected.filter((e) => e.response === 'rechazada').length;
 
   const openTasks = data.tasks.filter((t) => !t.done);
-  const firstName = staff?.name.split(' ')[0] ?? '';
+  /* Sin nombre en el perfil, `name` cae en el correo, y saludar con
+     «Hola, marta.vives@gmail.com» es peor que no saludar con nombre. Una
+     dirección no es un nombre por mucho que ocupe su sitio. */
+  const tieneNombre = Boolean(staff?.name && staff.name !== staff.email);
+  const firstName = tieneNombre ? staff!.name.split(' ')[0] : '';
 
   if (loading) {
     return (

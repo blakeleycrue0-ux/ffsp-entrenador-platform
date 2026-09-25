@@ -11,7 +11,14 @@
 
 import { supabase } from './supabase';
 
-export type PlanTier = 'free' | 'pro';
+export type PlanTier = 'free' | 'pro' | 'max';
+
+/** De menor a mayor. Sirve para ordenar y para saber qué es «subir de plan». */
+export const NIVELES: PlanTier[] = ['free', 'pro', 'max'];
+
+/** Un nivel que la base de datos conozca y esta versión no, no tumba nada. */
+export const esNivel = (v: unknown): v is PlanTier =>
+  typeof v === 'string' && (NIVELES as string[]).includes(v);
 
 export type SubscriptionStatus =
   | 'none' | 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete';
@@ -42,7 +49,7 @@ type Row = Record<string, unknown>;
 
 /** Se exporta para que la carga inicial no tenga que repetir el mapeo. */
 export const parsePlan = (r: Row): Plan => ({
-  tier: r.tier as PlanTier,
+  tier: esNivel(r.tier) ? r.tier : 'free',
   name: r.name as string,
   maxTeams: (r.max_teams as number | null) ?? null,
   priceMonthly: (r.price_monthly as number | null) ?? null,
@@ -96,7 +103,7 @@ export const billing = {
     if (!data) return null;
     const r = data as Row;
     return {
-      tier: r.tier as PlanTier,
+      tier: esNivel(r.tier) ? r.tier : 'free',
       status: r.status as SubscriptionStatus,
       trialEndsAt: (r.trial_ends_at as string | null) ?? null,
       currentPeriodEnd: (r.current_period_end as string | null) ?? null,
@@ -108,8 +115,8 @@ export const billing = {
    * Pide al servidor una dirección de pago y devuelve a dónde ir. El navegador
    * no habla nunca con Stripe directamente ni conoce ninguna clave.
    */
-  async irAPagar(clubId: string, periodo: 'mensual' | 'anual'): Promise<string> {
-    return llamar('/.netlify/functions/pagar', { clubId, periodo });
+  async irAPagar(clubId: string, nivel: PlanTier, periodo: 'mensual' | 'anual'): Promise<string> {
+    return llamar('/.netlify/functions/pagar', { clubId, nivel, periodo });
   },
 
   /** Portal de Stripe: cambiar tarjeta, ver facturas, cancelar. */

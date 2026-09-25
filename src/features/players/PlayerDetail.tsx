@@ -7,7 +7,7 @@ import { useClub } from '@/store/store';
 import { playerAttendance, visibleTeams } from '@/store/selectors';
 import { canSeePersonalData } from '@/services/auth';
 import { Avatar, Tag, Panel, LinkButton, Figure, Tabs } from '@/components/ui';
-import { ATTENDANCE, AVAILABILITY } from '@/components/domain/StatusBits';
+import { asistencia, disponibilidad } from '@/components/domain/StatusBits';
 import { BarTrend, Ring } from '@/components/domain/Charts';
 import { age, cn, dayShort, longDate, shortDate } from '@/lib/utils';
 
@@ -57,8 +57,8 @@ export default function PlayerDetail() {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-[24px] font-semibold leading-tight">{player.name}</h1>
-              <Tag tone={AVAILABILITY[player.availability.status].tone} dot>
-                {AVAILABILITY[player.availability.status].label}
+              <Tag tone={disponibilidad(player.availability.status).tone} dot>
+                {disponibilidad(player.availability.status).label}
               </Tag>
             </div>
 
@@ -87,7 +87,7 @@ export default function PlayerDetail() {
                     : 'border-warn/30 bg-warn/5 text-[#8A5A10]',
                 )}
               >
-                <strong className="font-medium">{AVAILABILITY[player.availability.status].label}:</strong>{' '}
+                <strong className="font-medium">{disponibilidad(player.availability.status).label}:</strong>{' '}
                 {player.availability.note}
                 {player.availability.until && ` · retorno estimado ${shortDate(player.availability.until)}`}
               </div>
@@ -179,7 +179,7 @@ export default function PlayerDetail() {
               <div className="mt-4 space-y-1">
                 {records.map((r) => {
                   const mark = r.marks[player.id]?.mark ?? 'pendiente';
-                  const m = ATTENDANCE[mark];
+                  const m = asistencia(mark);
                   return (
                     <div key={r.id} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-navy-50">
                       <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', m.bg)} />

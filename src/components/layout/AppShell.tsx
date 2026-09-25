@@ -5,6 +5,7 @@ import { Topbar } from './Topbar';
 import { BottomNav } from './BottomNav';
 import { CreateMenu } from './CreateMenu';
 import { GlobalSearch } from './GlobalSearch';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export function AppShell() {
   const [search, setSearch] = useState(false);
@@ -41,7 +42,12 @@ export function AppShell() {
       <div className="lg:pl-[var(--sidebar-w)]">
         <Topbar onSearch={() => setSearch(true)} onCreate={openCreate} />
         <main className="mx-auto w-full max-w-[1320px] px-4 pb-[calc(88px+var(--safe-bottom))] pt-5 lg:px-6 lg:pb-12">
-          <Outlet />
+          {/* El límite va DENTRO del armazón, no fuera: si una pantalla falla,
+              el menú y la búsqueda siguen ahí y se puede ir a otro sitio. La
+              clave es la ruta, así que navegar reintenta solo. */}
+          <ErrorBoundary resetKey={pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
 

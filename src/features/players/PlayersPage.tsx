@@ -7,7 +7,7 @@ import {
   Avatar, Button, EmptyState, Input, LinkButton, PageHeader, Panel, Segmented, Select, Tag,
 } from '@/components/ui';
 import { ImportPlayers } from './ImportPlayers';
-import { AVAILABILITY, AvailabilityDot } from '@/components/domain/StatusBits';
+import { AVAILABILITY, AvailabilityDot, disponibilidad } from '@/components/domain/StatusBits';
 import { cn, age, normalize } from '@/lib/utils';
 import type { AvailabilityStatus, PlayerPosition } from '@/types';
 
@@ -195,8 +195,8 @@ export default function PlayersPage() {
                   </span>
                 </div>
                 <div className="hidden w-32 pl-4 sm:block">
-                  <Tag tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>
-                    {AVAILABILITY[p.availability.status].label}
+                  <Tag tone={disponibilidad(p.availability.status).tone} size="sm" dot>
+                    {disponibilidad(p.availability.status).label}
                   </Tag>
                 </div>
                 <AvailabilityDot status={p.availability.status} className="sm:hidden" />
@@ -211,8 +211,8 @@ export default function PlayersPage() {
             <Link key={p.id} to={`/app/plantilla/${p.id}`} className="panel panel-hover p-4">
               <div className="flex items-start justify-between">
                 <Avatar name={p.name} size={48} badge={p.number} />
-                <Tag tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>
-                  {AVAILABILITY[p.availability.status].label}
+                <Tag tone={disponibilidad(p.availability.status).tone} size="sm" dot>
+                  {disponibilidad(p.availability.status).label}
                 </Tag>
               </div>
               <p className="mt-3 truncate text-[14.5px] font-semibold text-navy-900">{p.shortName}</p>
