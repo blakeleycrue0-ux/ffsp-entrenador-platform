@@ -22,14 +22,23 @@ En el panel de Supabase → **SQL Editor** → **New query**, pega y ejecuta, po
 1. `supabase/migrations/0001_esquema_inicial.sql`
 2. `supabase/migrations/0002_clubes_pizarra_y_seguimiento.sql`
 3. `supabase/migrations/0003_aislamiento_por_club.sql`
+4. `supabase/migrations/0004_cerrar_funciones_publicas.sql`
 
-Las tres son **idempotentes y aditivas**: se pueden ejecutar más de una vez, no borran tablas, no
+Las cuatro son **idempotentes y aditivas**: se pueden ejecutar más de una vez, no borran tablas, no
 vacían registros y no reinician nada.
 
 - La **0002** añade clubes, invitaciones, lesiones, valoraciones, asistencia por filas y jugadas de
   pizarra, y **conserva intactas** las columnas `jsonb` anteriores.
 - La **0003** aísla cada club del resto. Antes de cerrar el acceso reparte la pertenencia, de modo
   que nadie pierde lo que ya veía.
+- La **0004** retira del API pública las funciones de autorización. Supabase publica como REST toda
+  función de `public`, así que `is_club_admin` o `create_club` eran invocables sin sesión. Sólo
+  cambia permisos, no toca datos.
+
+> **El esquema tiene que estar vacío.** Las migraciones usan `create table if not exists`, de modo
+> que si ya existen tablas llamadas `profiles`, `teams` o `players` con otras columnas, se saltarán
+> en silencio y quedará un híbrido que arranca y falla por dentro. Si el proyecto viene de otro
+> intento, retira su esquema antes.
 
 Cada una termina con una consulta de comprobación. **Si alguna cifra no cuadra, para y avisa**
 antes de seguir.
