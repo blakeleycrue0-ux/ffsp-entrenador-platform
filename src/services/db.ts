@@ -35,6 +35,7 @@ const toStaff = (r: Row, teamIds: string[] = []): Staff => ({
 
 const toTeam = (r: Row): Team => ({
   id: r.id as string,
+  clubId: (r.club_id as string) ?? undefined,
   name: r.name as string,
   category: (r.category as string) ?? '',
   season: (r.season as string) ?? '',
@@ -46,6 +47,8 @@ const toTeam = (r: Row): Team => ({
 
 const fromTeam = (t: Team, userId?: string) => ({
   id: t.id || undefined,
+  // Sin club, el servidor rechaza la fila. Se envía siempre.
+  club_id: t.clubId,
   name: t.name,
   category: t.category,
   season: t.season,

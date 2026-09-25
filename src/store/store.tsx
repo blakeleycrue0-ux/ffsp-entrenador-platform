@@ -300,10 +300,30 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
     return id;
   }, []);
 
+  /**
+   * El club activo, en una referencia para que las acciones no dependan de él
+   * y no haya que reconstruirlas en cada carga.
+   */
+  const clubRef = useRef<string | null>(null);
+  useEffect(() => {
+    clubRef.current = data.club?.id ?? null;
+  }, [data.club]);
+
+  const requireClub = useCallback((): string => {
+    const id = clubRef.current;
+    if (!id) {
+      throw new Error('Todavía no tienes club. Crea el tuyo antes de montar equipos.');
+    }
+    return id;
+  }, []);
+
   const actions = useMemo<ClubActions>(
     () => ({
       async saveTeam(team) {
-        const saved = await db.saveTeam(team, requireUser());
+        // Un equipo siempre pertenece a un club: el suyo si ya lo tiene (al
+        // editarlo), y si no el de quien lo está creando.
+        const conClub = { ...team, clubId: team.clubId || requireClub() };
+        const saved = await db.saveTeam(conClub, requireUser());
         dispatch({ type: 'team/put', team: saved });
         return saved;
       },
@@ -427,7 +447,7 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
         await hydrate(requireUser());
       },
     }),
-    [hydrate, requireUser],
+    [hydrate, requireUser, requireClub],
   );
 
   const signOut = useCallback(async () => {

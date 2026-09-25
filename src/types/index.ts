@@ -73,6 +73,12 @@ export interface TrainingSlot {
 
 export interface Team {
   id: string;
+  /**
+   * El club al que pertenece. No es opcional en la base de datos: la política
+   * de acceso rechaza un equipo sin club, porque un equipo huérfano no tendría
+   * quién lo viera ni quién lo administrara.
+   */
+  clubId?: string;
   name: string;
   category: string;
   season: string;
