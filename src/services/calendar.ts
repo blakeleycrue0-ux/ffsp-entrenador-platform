@@ -10,6 +10,8 @@ import type { CalendarEvent, ClubData } from '@/types';
 import { addMinutes } from '@/lib/utils';
 
 export function buildEvents(data: ClubData, teamIds: string[]): CalendarEvent[] {
+  // El nombre sale del club de quien mira, no de una constante del código.
+  const own = data.club?.shortName || data.club?.name || 'Nuestro equipo';
   const events: CalendarEvent[] = [];
   const teamName = (id: string) => data.teams.find((t) => t.id === id)?.name ?? '';
 
@@ -28,7 +30,7 @@ export function buildEvents(data: ClubData, teamIds: string[]): CalendarEvent[] 
     .forEach((m) =>
       events.push({
         id: `ev_m_${m.id}`, kind: 'partido',
-        title: m.home ? `Santa Ponsa CF vs ${m.opponent}` : `${m.opponent} vs Santa Ponsa CF`,
+        title: m.home ? `${own} vs ${m.opponent}` : `${m.opponent} vs ${own}`,
         subtitle: `${teamName(m.teamId)} · ${m.competition}`, teamId: m.teamId, date: m.date,
         start: m.start, end: addMinutes(m.start, 110), venue: m.venue, refId: m.id,
       }),
@@ -53,23 +55,26 @@ export function buildEvents(data: ClubData, teamIds: string[]): CalendarEvent[] 
 
 const icsDate = (date: string, time: string) => `${date.replace(/-/g, '')}T${time.replace(':', '')}00`;
 
-export function toICS(events: CalendarEvent[]): string {
+/** Escapa lo que iCalendar trata como separadores. */
+const icsText = (v: string) => v.replace(/([\\;,])/g, '\\$1').replace(/\n/g, '\\n');
+
+export function toICS(events: CalendarEvent[], clubName = 'Mi club'): string {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//FFSP//Santa Ponsa CF//ES',
+    'PRODID:-//FFSP//ES',
     'CALSCALE:GREGORIAN',
-    'X-WR-CALNAME:FFSP — Santa Ponsa CF',
+    `X-WR-CALNAME:${icsText(clubName)}`,
   ];
   events.forEach((e) => {
     lines.push(
       'BEGIN:VEVENT',
-      `UID:${e.id}@ffsp.santaponsacf`,
+      `UID:${e.id}@ffsp`,
       `DTSTART:${icsDate(e.date, e.start)}`,
       `DTEND:${icsDate(e.date, e.end ?? addMinutes(e.start, 90))}`,
-      `SUMMARY:${e.title}`,
-      `DESCRIPTION:${e.subtitle ?? ''}`,
-      `LOCATION:${e.venue ?? ''}`,
+      `SUMMARY:${icsText(e.title)}`,
+      `DESCRIPTION:${icsText(e.subtitle ?? '')}`,
+      `LOCATION:${icsText(e.venue ?? '')}`,
       'END:VEVENT',
     );
   });
@@ -77,8 +82,8 @@ export function toICS(events: CalendarEvent[]): string {
   return lines.join('\r\n');
 }
 
-export function downloadICS(events: CalendarEvent[], filename = 'ffsp-vle.ics'): void {
-  const blob = new Blob([toICS(events)], { type: 'text/calendar;charset=utf-8' });
+export function downloadICS(events: CalendarEvent[], clubName = 'Mi club', filename = 'agenda.ics'): void {
+  const blob = new Blob([toICS(events, clubName)], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

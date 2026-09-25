@@ -1,0 +1,43 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Publicación en Netlify
+# ════════════════════════════════════════════════════════════════════════════
+#
+# Sin este archivo, Netlify no sabe que esto es un proyecto que hay que
+# construir: publica el repositorio tal cual. Y el `index.html` del repositorio
+# apunta a `/src/main.tsx`, que es TypeScript: el navegador no sabe ejecutarlo,
+# aborta y deja la página en blanco, sin ningún mensaje.
+#
+# Aquí se dice lo único que falta: qué comando construye el sitio y qué carpeta
+# hay que publicar.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Se fija la versión de Node para que la publicación no cambie de
+  # comportamiento el día que Netlify actualice la suya por defecto.
+  NODE_VERSION = "20"
+
+# ── Rutas ───────────────────────────────────────────────────────────────────
+# La aplicación resuelve sus rutas en el navegador, así que en el servidor sólo
+# existe un archivo. Sin esta regla, entrar directamente en /entrar o /app —o
+# simplemente recargar la página— devuelve un 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ── Cabeceras ───────────────────────────────────────────────────────────────
+# Los archivos de `assets` llevan un identificador en el nombre: cuando cambia
+# el contenido, cambia el nombre. Por eso pueden guardarse indefinidamente.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# El índice, en cambio, nunca se guarda: es lo que apunta a la versión nueva.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"

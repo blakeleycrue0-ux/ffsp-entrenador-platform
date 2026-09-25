@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Dumbbell, Plus, Search, Star, Users } from 'lucide-react';
+import { Bookmark, Plus, Search, Users } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { Badge, Card, EmptyState, Input, LinkButton, PageHeader } from '@/components/ui';
+import { Tag, Panel, EmptyState, Input, LinkButton, PageHeader } from '@/components/ui';
 import { cn, normalize } from '@/lib/utils';
 import type { DrillTag } from '@/types';
 
@@ -38,7 +38,7 @@ export default function DrillsPage() {
   return (
     <>
       <PageHeader
-        title="Ejercicios"
+        title="Biblioteca de ejercicios"
         description="La biblioteca del club. Fíltralos, úsalos en un entrenamiento o crea los tuyos."
         actions={
           <LinkButton to="/app/ejercicios/nuevo" size="sm" icon={<Plus size={16} />}>
@@ -47,9 +47,9 @@ export default function DrillsPage() {
         }
       />
 
-      <Card className="mb-5 p-4">
+      <Panel className="mb-5 p-4">
         <div className="relative">
-          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-400" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -63,12 +63,12 @@ export default function DrillsPage() {
             onClick={() => setOnlyFav((f) => !f)}
             className={cn(
               'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
-              onlyFav ? 'bg-sun/10 text-[#9A6412] ring-1 ring-inset ring-sun/30' : 'text-ink-500 hover:bg-ink-100',
+              onlyFav ? 'bg-warn/10 text-[#9A6412] ring-1 ring-inset ring-warn/30' : 'text-muted hover:bg-navy-100',
             )}
           >
-            <Star size={14} className={onlyFav ? 'fill-current' : ''} /> Favoritos
+            <Bookmark size={14} className={onlyFav ? 'fill-current' : ''} /> Guardados
           </button>
-          <span className="mx-1 h-5 w-px bg-ink-200" />
+          <span className="mx-1 h-5 w-px bg-line" />
           {TAGS.map((t) => (
             <button
               key={t}
@@ -76,8 +76,8 @@ export default function DrillsPage() {
               className={cn(
                 'rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
                 active.includes(t)
-                  ? 'bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-200'
-                  : 'text-ink-500 hover:bg-ink-100',
+                  ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200'
+                  : 'text-muted hover:bg-navy-100',
               )}
             >
               {t}
@@ -90,19 +90,19 @@ export default function DrillsPage() {
                 setOnlyFav(false);
                 setQuery('');
               }}
-              className="ml-1 text-[12.5px] font-medium text-brand-700 hover:text-brand-800"
+              className="ml-1 text-[12.5px] font-medium text-navy-900 hover:text-navy-900"
             >
               Limpiar filtros
             </button>
           )}
-          <span className="ml-auto text-[12.5px] text-ink-400">{drills.length} ejercicios</span>
+          <span className="ml-auto text-[12.5px] text-navy-400">{drills.length} ejercicios</span>
         </div>
-      </Card>
+      </Panel>
 
       {drills.length === 0 ? (
-        <Card>
+        <Panel>
           <EmptyState
-            icon={<Dumbbell size={26} />}
+           
             title="Ningún ejercicio coincide con el filtro"
             description="Prueba con otras etiquetas o crea un ejercicio nuevo para la biblioteca del club."
             action={
@@ -111,14 +111,14 @@ export default function DrillsPage() {
               </LinkButton>
             }
           />
-        </Card>
+        </Panel>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {drills.map((d) => (
-            <Card key={d.id} className="flex flex-col p-5">
+            <Panel key={d.id} className="flex flex-col p-5">
               <div className="flex items-start justify-between gap-3">
                 <Link to={`/app/ejercicios/${d.id}`} className="min-w-0 flex-1">
-                  <h3 className="text-[15.5px] font-semibold leading-tight text-ink-900 hover:text-brand-800">
+                  <h3 className="text-[15.5px] font-semibold leading-tight text-navy-900 hover:text-navy-900">
                     {d.name}
                   </h3>
                 </Link>
@@ -126,46 +126,46 @@ export default function DrillsPage() {
                   onClick={() => void actions.toggleFavorite(d)}
                   className={cn(
                     'shrink-0 rounded-lg p-1.5 transition-colors',
-                    d.favorite ? 'text-sun' : 'text-ink-300 hover:text-sun',
+                    d.favorite ? 'text-navy-900' : 'text-navy-300 hover:text-navy-700',
                   )}
-                  aria-label="Marcar favorito"
+                  aria-label="Guardar este ejercicio"
                 >
-                  <Star size={16} className={d.favorite ? 'fill-current' : ''} />
+                  <Bookmark size={15} className={d.favorite ? 'fill-current' : ''} />
                 </button>
               </div>
 
-              <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-ink-500">{d.objective}</p>
+              <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted">{d.objective}</p>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {d.tags.slice(0, 3).map((t) => (
-                  <Badge key={t} tone="brand" size="sm">
+                  <Tag key={t} tone="solid" size="sm">
                     {t}
-                  </Badge>
+                  </Tag>
                 ))}
                 {d.tags.length > 3 && (
-                  <Badge tone="neutral" size="sm">
+                  <Tag tone="neutral" size="sm">
                     +{d.tags.length - 3}
-                  </Badge>
+                  </Tag>
                 )}
               </div>
 
-              <div className="mt-4 flex items-center gap-4 border-t border-ink-100 pt-3 text-[12.5px] text-ink-500">
+              <div className="mt-4 flex items-center gap-4 border-t border-navy-100 pt-3 text-[12.5px] text-muted">
                 <span className="flex items-center gap-1.5">
-                  <Users size={13} className="text-ink-400" /> {d.players}
+                  <Users size={13} className="text-navy-400" /> {d.players}
                 </span>
                 <span className="tabular-nums">{d.duration}′</span>
                 <span className="truncate">{d.ageRange}</span>
               </div>
 
               <div className="mt-3.5 flex gap-2">
-                <LinkButton to="/app/planificaciones/nuevo" size="sm" variant="secondary" className="flex-1">
+                <LinkButton to="/app/entrenamientos/nuevo" size="sm" variant="secondary" className="flex-1">
                   Usar en entrenamiento
                 </LinkButton>
-                <LinkButton to={`/app/ejercicios/${d.id}`} size="sm" variant="outline">
+                <LinkButton to={`/app/ejercicios/${d.id}`} size="sm" variant="secondary">
                   Ver
                 </LinkButton>
               </div>
-            </Card>
+            </Panel>
           ))}
         </div>
       )}

@@ -1,33 +1,38 @@
 /**
  * Sistema de componentes — FFSP
  * ---------------------------------------------------------------------------
- * Piezas neutras y reutilizables. Ninguna conoce el dominio: reciben props.
- * Paleta: blanco + grises + lila del escudo del Santa Ponsa CF.
+ * Navy mate y blanco. Bordes finos, esquinas discretas, sombras mínimas.
+ * Ninguna pieza conoce el dominio: todas reciben props.
+ *
+ * Los iconos son responsabilidad de quien usa el componente y sólo deben
+ * acompañar acciones (guardar, reproducir, editar), nunca decorar.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, ChevronDown, Loader2, X } from 'lucide-react';
-import { cn, initials } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 /* ─────────────────────────────────── Botón ───────────────────────────────── */
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger' | 'whatsapp';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'quiet';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900 shadow-brand disabled:bg-brand-300',
-  secondary: 'bg-brand-50 text-brand-800 hover:bg-brand-100 border border-brand-200/80',
-  outline: 'bg-white text-ink-800 border border-ink-200 hover:border-brand-300 hover:text-brand-800 hover:bg-brand-50/50',
-  ghost: 'text-ink-600 hover:bg-ink-100 hover:text-ink-900',
-  danger: 'bg-white text-danger border border-danger/30 hover:bg-danger/5',
-  whatsapp: 'bg-[#1F9D55] text-white hover:bg-[#188045] shadow-[0_6px_18px_-8px_rgba(31,157,85,.6)]',
+  primary:
+    'bg-navy-900 text-white border border-navy-900 hover:bg-navy-800 hover:border-navy-800 ' +
+    'disabled:bg-navy-400 disabled:border-navy-400',
+  secondary:
+    'bg-white text-navy-900 border border-line hover:border-navy-400 hover:bg-surface',
+  ghost: 'bg-transparent text-navy-700 border border-transparent hover:bg-navy-100',
+  quiet: 'bg-surface text-navy-800 border border-transparent hover:bg-navy-100',
+  danger: 'bg-white text-bad border border-bad/35 hover:bg-bad/5',
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3 text-[13px] gap-1.5 rounded-lg',
-  md: 'h-10 px-4 text-[14px] gap-2 rounded-xl',
-  lg: 'h-12 px-6 text-[15px] gap-2.5 rounded-xl',
+  sm: 'h-8 px-2.5 text-sm gap-1.5 rounded-md',
+  md: 'h-9 px-3.5 text-base gap-2 rounded-md',
+  lg: 'h-11 px-5 text-md gap-2 rounded-md',
 };
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -47,8 +52,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       ref={ref}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-150 select-none',
-        'disabled:opacity-60 disabled:cursor-not-allowed active:scale-[.985]',
+        'inline-flex select-none items-center justify-center whitespace-nowrap font-medium',
+        'transition-colors duration-120 disabled:cursor-not-allowed disabled:opacity-70',
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
         block && 'w-full',
@@ -56,7 +61,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       )}
       {...rest}
     >
-      {loading ? <Loader2 size={16} className="animate-spin" /> : icon}
+      {loading ? <Loader2 size={15} className="animate-spin" aria-hidden /> : icon}
       {children}
     </button>
   );
@@ -70,8 +75,7 @@ export function LinkButton({
       to={to}
       state={state}
       className={cn(
-        'inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-150',
-        'active:scale-[.985]',
+        'inline-flex select-none items-center justify-center whitespace-nowrap font-medium transition-colors duration-120',
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
         block && 'w-full',
@@ -84,123 +88,132 @@ export function LinkButton({
   );
 }
 
-/* ─────────────────────────────────── Card ────────────────────────────────── */
+/* ─────────────────────────────────── Panel ───────────────────────────────── */
 
-export function Card({
-  className, children, interactive, ...rest
-}: React.HTMLAttributes<HTMLDivElement> & { interactive?: boolean }) {
+export function Panel({
+  className, children, ...rest
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('card', interactive && 'card-hover cursor-pointer', className)} {...rest}>
+    <div className={cn('panel', className)} {...rest}>
       {children}
     </div>
   );
 }
 
-export function CardHeader({
-  title, subtitle, action, icon, className,
+export function PanelHeader({
+  title, description, actions, className,
 }: {
   title: React.ReactNode;
-  subtitle?: React.ReactNode;
-  action?: React.ReactNode;
-  icon?: React.ReactNode;
+  description?: React.ReactNode;
+  actions?: React.ReactNode;
   className?: string;
 }) {
   return (
-    <div className={cn('flex items-start justify-between gap-4 px-5 pt-5 pb-3', className)}>
-      <div className="flex items-start gap-3 min-w-0">
-        {icon && (
-          <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
-            {icon}
-          </span>
-        )}
-        <div className="min-w-0">
-          <h3 className="text-[15px] font-semibold leading-tight truncate">{title}</h3>
-          {subtitle && <p className="mt-0.5 text-[13px] text-ink-500 truncate">{subtitle}</p>}
-        </div>
+    <div className={cn('flex items-start justify-between gap-4 border-b border-line px-4 py-3', className)}>
+      <div className="min-w-0">
+        <h3 className="text-md font-semibold leading-snug">{title}</h3>
+        {description && <p className="mt-0.5 text-sm text-muted">{description}</p>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>
   );
 }
 
-/* ─────────────────────────────────── Badge ───────────────────────────────── */
+/* ──────────────────────────────── Etiquetas ──────────────────────────────── */
 
-type BadgeTone = 'brand' | 'neutral' | 'success' | 'warning' | 'danger' | 'info' | 'outline';
+type Tone = 'neutral' | 'ok' | 'warn' | 'bad' | 'info' | 'solid';
 
-const BADGE_TONES: Record<BadgeTone, string> = {
-  brand: 'bg-brand-50 text-brand-800 ring-brand-200/70',
-  neutral: 'bg-ink-100 text-ink-600 ring-ink-200',
-  success: 'bg-pitch/10 text-[#1F6B44] ring-pitch/20',
-  warning: 'bg-sun/12 text-[#9A6412] ring-sun/25',
-  danger: 'bg-danger/10 text-[#A63B34] ring-danger/20',
-  info: 'bg-sea/10 text-[#28618C] ring-sea/20',
-  outline: 'bg-white text-ink-600 ring-ink-200',
+const TONES: Record<Tone, string> = {
+  neutral: 'bg-surface text-navy-700 border-line',
+  ok: 'bg-ok/8 text-ok border-ok/25',
+  warn: 'bg-warn/8 text-warn border-warn/25',
+  bad: 'bg-bad/8 text-bad border-bad/25',
+  info: 'bg-info/8 text-info border-info/25',
+  solid: 'bg-navy-900 text-white border-navy-900',
 };
 
-export function Badge({
-  tone = 'neutral', children, className, dot, size = 'md',
-}: {
-  tone?: BadgeTone;
-  children: React.ReactNode;
-  className?: string;
-  dot?: boolean;
-  size?: 'sm' | 'md';
-}) {
+export function Tag({
+  tone = 'neutral', children, className, size = 'md', dot,
+}: { tone?: Tone; children: React.ReactNode; className?: string; size?: 'sm' | 'md'; dot?: boolean }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full font-medium ring-1 ring-inset whitespace-nowrap',
-        size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-1 text-[12px]',
-        BADGE_TONES[tone],
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded border font-medium',
+        size === 'sm' ? 'px-1.5 py-0.5 text-2xs' : 'px-2 py-0.5 text-xs',
+        TONES[tone],
         className,
       )}
     >
-      {dot && <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />}
+      {dot && <Dot tone={tone} />}
       {children}
     </span>
   );
 }
 
+/** Punto de estado: el color es la única información, sin icono. */
+export function Dot({ tone = 'neutral', className }: { tone?: Tone; className?: string }) {
+  const bg = {
+    neutral: 'bg-navy-400', ok: 'bg-ok', warn: 'bg-warn', bad: 'bg-bad', info: 'bg-info', solid: 'bg-navy-900',
+  }[tone];
+  return <span className={cn('inline-block h-1.5 w-1.5 shrink-0 rounded-full', bg, className)} />;
+}
+
 /* ─────────────────────────────────── Avatar ──────────────────────────────── */
 
 export function Avatar({
-  name, src, size = 40, number, className,
-}: { name: string; src?: string; size?: number; number?: number; className?: string }) {
+  name, src, size = 32, badge, className,
+}: { name: string; src?: string; size?: number; badge?: React.ReactNode; className?: string }) {
+  const initials = name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase();
+
   return (
     <span className={cn('relative inline-flex shrink-0', className)}>
       <span
-        className="grid place-items-center rounded-full bg-gradient-to-br from-brand-100 to-brand-200/70 font-semibold text-brand-800 ring-1 ring-inset ring-white/60"
-        style={{ width: size, height: size, fontSize: size * 0.36 }}
+        className="grid place-items-center overflow-hidden rounded-full bg-navy-100 font-semibold text-navy-700"
+        style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}
       >
-        {src ? (
-          <img src={src} alt={name} className="h-full w-full rounded-full object-cover" />
-        ) : (
-          initials(name)
-        )}
+        {src ? <img src={src} alt="" className="h-full w-full object-cover" /> : initials || '—'}
       </span>
-      {number !== undefined && (
+      {badge !== undefined && (
         <span
-          className="absolute -bottom-1 -right-1 grid place-items-center rounded-full bg-white text-[10px] font-bold text-ink-700 ring-1 ring-ink-200"
-          style={{ width: size * 0.45, height: size * 0.45 }}
+          className="absolute -bottom-0.5 -right-0.5 grid place-items-center rounded-full bg-navy-900 px-1 text-white"
+          style={{ minWidth: size * 0.44, height: size * 0.44, fontSize: Math.round(size * 0.26) }}
         >
-          {number}
+          {badge}
         </span>
       )}
     </span>
   );
 }
 
-/* ─────────────────────────────── Campos de forma ─────────────────────────── */
+/* ─────────────────────────────── Formularios ─────────────────────────────── */
 
 export function Field({
-  label, hint, error, children, className,
-}: { label?: string; hint?: string; error?: string; children: React.ReactNode; className?: string }) {
+  label, hint, error, children, className, required,
+}: {
+  label?: string;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+  className?: string;
+  required?: boolean;
+}) {
   return (
     <div className={className}>
-      {label && <label className="label">{label}</label>}
+      {label && (
+        <label className="label">
+          {label}
+          {required && <span className="ml-0.5 text-bad">*</span>}
+        </label>
+      )}
       {children}
-      {hint && !error && <p className="mt-1.5 text-[12px] text-ink-400">{hint}</p>}
-      {error && <p className="mt-1.5 text-[12px] text-danger">{error}</p>}
+      {hint && !error && <p className="mt-1 text-xs text-muted">{hint}</p>}
+      {error && <p className="mt-1 text-xs text-bad">{error}</p>}
     </div>
   );
 }
@@ -213,69 +226,123 @@ export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttribute
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
   function Textarea({ className, ...rest }, ref) {
-    return <textarea ref={ref} className={cn('field resize-y min-h-[96px] leading-relaxed', className)} {...rest} />;
+    return <textarea ref={ref} className={cn('field min-h-[84px] resize-y leading-relaxed', className)} {...rest} />;
   },
 );
 
-export function Select({
-  className, children, ...rest
-}: React.SelectHTMLAttributes<HTMLSelectElement>) {
+export function Select({ className, children, ...rest }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <div className="relative">
-      <select className={cn('field appearance-none pr-9 cursor-pointer', className)} {...rest}>
+      <select className={cn('field cursor-pointer appearance-none pr-8', className)} {...rest}>
         {children}
       </select>
-      <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-400" />
+      <ChevronDown size={15} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-navy-400" aria-hidden />
     </div>
   );
 }
 
 export function Checkbox({
-  checked, onChange, label, className,
-}: { checked: boolean; onChange: (v: boolean) => void; label?: React.ReactNode; className?: string }) {
+  checked, onChange, label, disabled, className,
+}: { checked: boolean; onChange: (v: boolean) => void; label?: React.ReactNode; disabled?: boolean; className?: string }) {
   return (
-    <label className={cn('inline-flex cursor-pointer items-center gap-2.5 select-none', className)}>
-      <span
-        onClick={(e) => {
-          e.preventDefault();
-          onChange(!checked);
-        }}
+    <label className={cn('inline-flex select-none items-center gap-2', disabled ? 'opacity-50' : 'cursor-pointer', className)}>
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={() => onChange(!checked)}
         className={cn(
-          'grid h-[18px] w-[18px] shrink-0 place-items-center rounded-md border transition-all duration-150',
-          checked ? 'border-brand-700 bg-brand-700 text-white' : 'border-ink-300 bg-white hover:border-brand-400',
+          'grid h-4 w-4 shrink-0 place-items-center rounded-[3px] border transition-colors',
+          checked ? 'border-navy-900 bg-navy-900 text-white' : 'border-navy-300 bg-white hover:border-navy-500',
         )}
       >
-        {checked && <Check size={12} strokeWidth={3} />}
-      </span>
-      {label && <span className="text-[14px] text-ink-700">{label}</span>}
+        {checked && <Check size={11} strokeWidth={3} aria-hidden />}
+      </button>
+      {label && <span className="text-base text-navy-800">{label}</span>}
     </label>
   );
 }
 
 export function Toggle({
-  checked, onChange, label,
-}: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
+  checked, onChange, label, disabled,
+}: { checked: boolean; onChange: (v: boolean) => void; label?: string; disabled?: boolean }) {
   return (
-    <label className="inline-flex cursor-pointer items-center gap-3 select-none">
+    <label className={cn('flex select-none items-center gap-2.5', disabled ? 'opacity-50' : 'cursor-pointer')}>
       <button
         type="button"
         role="switch"
         aria-checked={checked}
+        disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cn(
-          'relative h-6 w-11 rounded-full transition-colors duration-200',
-          checked ? 'bg-brand-700' : 'bg-ink-200',
+          'relative h-5 w-9 shrink-0 rounded-full transition-colors',
+          checked ? 'bg-navy-900' : 'bg-navy-300',
         )}
       >
+        {/* `left-0` es imprescindible: sin él la bolita se coloca al final del
+            botón y el desplazamiento la saca fuera, encima de la etiqueta. */}
         <span
           className={cn(
-            'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
-            checked ? 'translate-x-[22px]' : 'translate-x-0.5',
+            'absolute left-0 top-0.5 h-4 w-4 rounded-full bg-white transition-transform',
+            checked ? 'translate-x-[18px]' : 'translate-x-0.5',
           )}
         />
       </button>
-      {label && <span className="text-[14px] text-ink-700">{label}</span>}
+      {label && <span className="text-base text-navy-800">{label}</span>}
     </label>
+  );
+}
+
+/** Valoración del 1 al 10. Sin estrellas: números, que es lo que se registra. */
+export function ScoreInput({
+  value, onChange, name, className,
+}: { value: number | null; onChange: (v: number | null) => void; name?: string; className?: string }) {
+  return (
+    <div className={cn('inline-flex flex-wrap gap-1', className)} role="radiogroup" aria-label={name ?? 'Valoración de 1 a 10'}>
+      {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => {
+        const active = value === n;
+        return (
+          <button
+            key={n}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(active ? null : n)}
+            className={cn(
+              'h-7 w-7 rounded border text-sm font-medium tabular-nums transition-colors',
+              active
+                ? 'border-navy-900 bg-navy-900 text-white'
+                : 'border-line bg-white text-navy-600 hover:border-navy-400',
+            )}
+          >
+            {n}
+          </button>
+        );
+      })}
+      {value !== null && (
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          className="ml-1 self-center text-xs text-muted underline-offset-2 hover:text-navy-800 hover:underline"
+        >
+          Quitar
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Muestra una valoración ya registrada. */
+export function Score({ value, className }: { value: number | null | undefined; className?: string }) {
+  if (value === null || value === undefined) {
+    return <span className={cn('text-sm text-navy-400', className)}>Sin valorar</span>;
+  }
+  return (
+    <span className={cn('inline-flex items-baseline gap-0.5 tabular-nums', className)}>
+      <span className="text-md font-semibold text-navy-900">{value}</span>
+      <span className="text-xs text-muted">/10</span>
+    </span>
   );
 }
 
@@ -290,23 +357,23 @@ export function Tabs({
   className?: string;
 }) {
   return (
-    <div className={cn('flex gap-1 overflow-x-auto no-scrollbar border-b border-ink-200/80', className)}>
+    <div className={cn('flex gap-0.5 overflow-x-auto border-b border-line no-scrollbar', className)} role="tablist">
       {tabs.map((t) => {
         const active = t.id === value;
         return (
           <button
             key={t.id}
+            role="tab"
+            aria-selected={active}
             onClick={() => onChange(t.id)}
             className={cn(
-              'relative shrink-0 px-3.5 py-2.5 text-[14px] font-medium transition-colors',
-              active ? 'text-brand-800' : 'text-ink-500 hover:text-ink-800',
+              'relative shrink-0 px-3 py-2 text-base font-medium transition-colors',
+              active ? 'text-navy-900' : 'text-muted hover:text-navy-800',
             )}
           >
             {t.label}
-            {t.count !== undefined && (
-              <span className={cn('ml-1.5 text-[12px]', active ? 'text-brand-500' : 'text-ink-400')}>{t.count}</span>
-            )}
-            {active && <span className="absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-brand-700" />}
+            {t.count !== undefined && <span className="ml-1.5 text-sm text-navy-400 tabular-nums">{t.count}</span>}
+            {active && <span className="absolute inset-x-1.5 -bottom-px h-0.5 bg-navy-900" />}
           </button>
         );
       })}
@@ -314,15 +381,45 @@ export function Tabs({
   );
 }
 
+export function Segmented<T extends string>({
+  options, value, onChange, className, size = 'md',
+}: {
+  options: { id: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  className?: string;
+  size?: 'sm' | 'md';
+}) {
+  return (
+    <div className={cn('inline-flex rounded-md border border-line bg-white p-0.5', className)}>
+      {options.map((o) => (
+        <button
+          key={o.id}
+          type="button"
+          onClick={() => onChange(o.id)}
+          aria-pressed={value === o.id}
+          className={cn(
+            'rounded-[4px] font-medium transition-colors',
+            size === 'sm' ? 'px-2 py-1 text-xs' : 'px-2.5 py-1 text-sm',
+            value === o.id ? 'bg-navy-900 text-white' : 'text-navy-600 hover:text-navy-900',
+          )}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /* ─────────────────────────────────── Modal ───────────────────────────────── */
 
 export function Modal({
-  open, onClose, title, subtitle, children, footer, size = 'md',
+  open, onClose, title, description, children, footer, size = 'md',
 }: {
   open: boolean;
   onClose: () => void;
   title?: React.ReactNode;
-  subtitle?: React.ReactNode;
+  description?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -340,38 +437,38 @@ export function Modal({
   }, [open, onClose]);
 
   if (!open) return null;
-  const width = { sm: 'max-w-md', md: 'max-w-xl', lg: 'max-w-3xl', xl: 'max-w-5xl' }[size];
+  const width = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }[size];
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6">
-      <div className="absolute inset-0 bg-ink-900/25 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
+      <div className="absolute inset-0 bg-navy-900/35 animate-fade-in" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden bg-white shadow-pop',
-          'rounded-t-3xl sm:rounded-2xl animate-slide-up sm:animate-scale-in',
+          'relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden border border-line bg-white shadow-pop',
+          'rounded-t-xl sm:rounded-lg animate-slide-up sm:animate-fade-up',
           width,
         )}
       >
-        {(title || subtitle) && (
-          <div className="flex items-start justify-between gap-4 border-b border-ink-200/70 px-5 py-4 sm:px-6">
+        {(title || description) && (
+          <div className="flex items-start justify-between gap-4 border-b border-line px-4 py-3">
             <div className="min-w-0">
-              {title && <h2 className="text-[17px] font-semibold leading-tight">{title}</h2>}
-              {subtitle && <p className="mt-1 text-[13px] text-ink-500">{subtitle}</p>}
+              {title && <h2 className="text-md font-semibold leading-snug">{title}</h2>}
+              {description && <p className="mt-0.5 text-sm text-muted">{description}</p>}
             </div>
             <button
               onClick={onClose}
-              className="-mr-1 -mt-1 rounded-lg p-2 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
+              className="-mr-1 -mt-0.5 rounded p-1.5 text-navy-400 transition-colors hover:bg-surface hover:text-navy-800"
               aria-label="Cerrar"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
         )}
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-2.5 border-t border-ink-200/70 bg-ink-50/60 px-5 py-3.5 sm:px-6 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-center justify-end gap-2 border-t border-line bg-surface px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {footer}
           </div>
         )}
@@ -380,104 +477,110 @@ export function Modal({
   );
 }
 
-/* ────────────────────────────── Estados vacíos ───────────────────────────── */
-
-export function EmptyState({
-  icon, title, description, action, compact,
+/** Confirmación para acciones destructivas. */
+export function ConfirmDialog({
+  open, onCancel, onConfirm, title, description, confirmLabel = 'Eliminar', loading,
 }: {
-  icon?: React.ReactNode;
+  open: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
   title: string;
-  description?: string;
-  action?: React.ReactNode;
-  compact?: boolean;
+  description: React.ReactNode;
+  confirmLabel?: string;
+  loading?: boolean;
 }) {
   return (
-    <div className={cn('flex flex-col items-center justify-center text-center', compact ? 'py-10 px-5' : 'py-16 px-6')}>
-      {icon && (
-        <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-brand-50 text-brand-400">{icon}</span>
+    <Modal
+      open={open}
+      onClose={onCancel}
+      title={title}
+      size="sm"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button variant="danger" loading={loading} onClick={onConfirm}>
+            {confirmLabel}
+          </Button>
+        </>
+      }
+    >
+      <div className="text-base leading-relaxed text-navy-700">{description}</div>
+    </Modal>
+  );
+}
+
+/* ──────────────────────────── Estados de pantalla ────────────────────────── */
+
+export function EmptyState({
+  title, description, action, className,
+}: { title: string; description?: React.ReactNode; action?: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn('px-6 py-12 text-center', className)}>
+      <h3 className="text-md font-semibold text-navy-900">{title}</h3>
+      {description && <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-muted">{description}</p>}
+      {action && <div className="mt-5 flex justify-center gap-2">{action}</div>}
+    </div>
+  );
+}
+
+export function ErrorState({
+  title = 'No hemos podido cargar esta información',
+  description,
+  onRetry,
+  className,
+}: { title?: string; description?: React.ReactNode; onRetry?: () => void; className?: string }) {
+  return (
+    <div className={cn('panel border-bad/30 bg-bad/4 px-5 py-6', className)}>
+      <h3 className="text-md font-semibold text-bad">{title}</h3>
+      {description && <p className="mt-1.5 max-w-2xl text-base leading-relaxed text-navy-700">{description}</p>}
+      {onRetry && (
+        <Button variant="secondary" size="sm" className="mt-4" onClick={onRetry}>
+          Reintentar
+        </Button>
       )}
-      <h3 className="text-[15px] font-semibold text-ink-800">{title}</h3>
-      {description && <p className="mt-1.5 max-w-sm text-[13.5px] leading-relaxed text-ink-500">{description}</p>}
-      {action && <div className="mt-5">{action}</div>}
     </div>
   );
 }
 
-/* ───────────────────────────────── Skeletons ─────────────────────────────── */
+export const Skeleton = ({ className }: { className?: string }) => <div className={cn('skeleton', className)} />;
 
-export const Skeleton = ({ className }: { className?: string }) => (
-  <div className={cn('skeleton', className)} />
-);
-
-export function SkeletonCard() {
+export function SkeletonRows({ rows = 4, className }: { rows?: number; className?: string }) {
   return (
-    <div className="card p-5">
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-9 w-9 rounded-xl" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-3.5 w-1/3" />
-          <Skeleton className="h-3 w-1/4" />
-        </div>
-      </div>
-      <div className="mt-5 space-y-2.5">
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-5/6" />
-        <Skeleton className="h-3 w-2/3" />
-      </div>
+    <div className={cn('space-y-2', className)}>
+      {Array.from({ length: rows }, (_, i) => (
+        <Skeleton key={i} className="h-10 w-full" />
+      ))}
     </div>
   );
 }
 
-/* ───────────────────────── Progreso y micrográficos ──────────────────────── */
+/* ───────────────────────── Indicadores y medidas ─────────────────────────── */
 
-export function ProgressBar({
-  value, tone = 'brand', className, height = 6,
-}: { value: number; tone?: 'brand' | 'success' | 'warning' | 'danger'; className?: string; height?: number }) {
-  const colors = {
-    brand: 'bg-brand-600', success: 'bg-pitch', warning: 'bg-sun', danger: 'bg-danger',
-  };
+export function Meter({
+  value, max = 100, tone = 'solid', className, height = 4,
+}: { value: number; max?: number; tone?: Tone; className?: string; height?: number }) {
+  const pct = max === 0 ? 0 : Math.min(100, Math.max(0, (value / max) * 100));
+  const bg = { neutral: 'bg-navy-400', ok: 'bg-ok', warn: 'bg-warn', bad: 'bg-bad', info: 'bg-info', solid: 'bg-navy-900' }[tone];
   return (
-    <div className={cn('w-full overflow-hidden rounded-full bg-ink-100', className)} style={{ height }}>
-      <div
-        className={cn('h-full rounded-full transition-[width] duration-500 ease-out', colors[tone])}
-        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-      />
+    <div className={cn('w-full overflow-hidden rounded-full bg-navy-100', className)} style={{ height }}>
+      <div className={cn('h-full rounded-full transition-[width] duration-300', bg)} style={{ width: `${pct}%` }} />
     </div>
   );
 }
 
-export function Stat({
-  label, value, hint, tone,
-}: { label: string; value: React.ReactNode; hint?: string; tone?: 'brand' | 'success' | 'warning' | 'danger' }) {
-  const color = {
-    brand: 'text-brand-700', success: 'text-[#1F6B44]', warning: 'text-[#9A6412]', danger: 'text-danger',
-  }[tone ?? 'brand'];
+/** Cifra con etiqueta. Sin icono decorativo. */
+export function Figure({
+  label, value, hint, tone, className,
+}: { label: string; value: React.ReactNode; hint?: React.ReactNode; tone?: 'ok' | 'warn' | 'bad'; className?: string }) {
+  const color = tone ? { ok: 'text-ok', warn: 'text-warn', bad: 'text-bad' }[tone] : 'text-navy-900';
   return (
-    <div>
-      <p className="text-[12px] font-medium uppercase tracking-wide text-ink-400">{label}</p>
-      <p className={cn('mt-1 text-[26px] font-semibold leading-none tabular-nums', tone ? color : 'text-ink-900')}>
-        {value}
-      </p>
-      {hint && <p className="mt-1.5 text-[12.5px] text-ink-500">{hint}</p>}
+    <div className={className}>
+      <p className="eyebrow">{label}</p>
+      <p className={cn('mt-1 text-2xl font-semibold leading-none tabular-nums', color)}>{value}</p>
+      {hint && <p className="mt-1.5 text-sm text-muted">{hint}</p>}
     </div>
-  );
-}
-
-/* ──────────────────────────────── Tooltip ────────────────────────────────── */
-
-export function Tooltip({ label, children, side = 'top' }: { label: string; children: React.ReactNode; side?: 'top' | 'right' }) {
-  return (
-    <span className="group/tt relative inline-flex">
-      {children}
-      <span
-        className={cn(
-          'pointer-events-none absolute z-50 whitespace-nowrap rounded-lg bg-ink-900 px-2.5 py-1.5 text-[12px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover/tt:opacity-100',
-          side === 'top' ? 'bottom-full left-1/2 mb-2 -translate-x-1/2' : 'left-full top-1/2 ml-2 -translate-y-1/2',
-        )}
-      >
-        {label}
-      </span>
-    </span>
   );
 }
 
@@ -485,7 +588,12 @@ export function Tooltip({ label, children, side = 'top' }: { label: string; chil
 
 export function Dropdown({
   trigger, children, align = 'right', className,
-}: { trigger: React.ReactNode; children: (close: () => void) => React.ReactNode; align?: 'left' | 'right'; className?: string }) {
+}: {
+  trigger: React.ReactNode;
+  children: (close: () => void) => React.ReactNode;
+  align?: 'left' | 'right';
+  className?: string;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -509,7 +617,7 @@ export function Dropdown({
       {open && (
         <div
           className={cn(
-            'absolute z-50 mt-2 min-w-[220px] overflow-hidden rounded-xl border border-ink-200 bg-white p-1.5 shadow-pop animate-scale-in',
+            'absolute z-50 mt-1 min-w-[200px] overflow-hidden rounded-md border border-line bg-white p-1 shadow-pop animate-fade-up',
             align === 'right' ? 'right-0' : 'left-0',
             className,
           )}
@@ -525,12 +633,12 @@ export function MenuItem({
   icon, children, onClick, to, tone,
 }: { icon?: React.ReactNode; children: React.ReactNode; onClick?: () => void; to?: string; tone?: 'danger' }) {
   const cls = cn(
-    'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[14px] transition-colors',
-    tone === 'danger' ? 'text-danger hover:bg-danger/8' : 'text-ink-700 hover:bg-brand-50 hover:text-brand-800',
+    'flex w-full items-center gap-2 rounded px-2.5 py-1.5 text-left text-base transition-colors',
+    tone === 'danger' ? 'text-bad hover:bg-bad/6' : 'text-navy-700 hover:bg-surface hover:text-navy-900',
   );
   const inner = (
     <>
-      {icon && <span className="text-ink-400">{icon}</span>}
+      {icon && <span className="text-navy-400">{icon}</span>}
       {children}
     </>
   );
@@ -548,21 +656,22 @@ export function MenuItem({
 /* ─────────────────────────── Cabecera de página ──────────────────────────── */
 
 export function PageHeader({
-  eyebrow, title, description, actions, children,
+  eyebrow, title, description, actions, children, className,
 }: {
   eyebrow?: React.ReactNode;
   title: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;
   children?: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="mb-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className={cn('mb-5', className)}>
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          {eyebrow && <div className="mb-1.5 flex items-center gap-2 text-[13px] text-ink-500">{eyebrow}</div>}
-          <h1 className="text-[24px] font-semibold leading-tight sm:text-[28px]">{title}</h1>
-          {description && <p className="mt-1.5 max-w-2xl text-[14px] leading-relaxed text-ink-500">{description}</p>}
+          {eyebrow && <div className="mb-1 flex flex-wrap items-center gap-2 text-sm text-muted">{eyebrow}</div>}
+          <h1 className="text-xl font-semibold leading-tight sm:text-2xl">{title}</h1>
+          {description && <p className="mt-1 max-w-2xl text-base leading-relaxed text-muted">{description}</p>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
@@ -571,25 +680,39 @@ export function PageHeader({
   );
 }
 
-/* ─────────────────────────────── Segmentado ──────────────────────────────── */
+/* ─────────────────────── Estado de guardado visible ──────────────────────── */
 
-export function SegmentedControl<T extends string>({
-  options, value, onChange, className,
-}: { options: { id: T; label: string }[]; value: T; onChange: (v: T) => void; className?: string }) {
+export type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+
+export function SaveIndicator({ state, className }: { state: SaveState; className?: string }) {
+  if (state === 'idle') return null;
+  const text = { saving: 'Guardando…', saved: 'Guardado', error: 'No se ha guardado' }[state];
+  const tone = { saving: 'text-muted', saved: 'text-ok', error: 'text-bad' }[state];
   return (
-    <div className={cn('inline-flex rounded-xl bg-ink-100 p-1', className)}>
-      {options.map((o) => (
-        <button
-          key={o.id}
-          onClick={() => onChange(o.id)}
-          className={cn(
-            'rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition-all duration-150',
-            value === o.id ? 'bg-white text-brand-800 shadow-sm' : 'text-ink-500 hover:text-ink-800',
-          )}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
+    <span className={cn('inline-flex items-center gap-1.5 text-sm', tone, className)} aria-live="polite">
+      {state === 'saving' && <Loader2 size={13} className="animate-spin" aria-hidden />}
+      {text}
+    </span>
+  );
+}
+
+/* ──────────────────────────────── Tooltip ────────────────────────────────── */
+
+export function Tooltip({
+  label, children, side = 'top',
+}: { label: string; children: React.ReactNode; side?: 'top' | 'bottom' }) {
+  return (
+    <span className="group/tt relative inline-flex">
+      {children}
+      <span
+        role="tooltip"
+        className={cn(
+          'pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded bg-navy-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity duration-120 group-hover/tt:opacity-100',
+          side === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5',
+        )}
+      >
+        {label}
+      </span>
+    </span>
   );
 }

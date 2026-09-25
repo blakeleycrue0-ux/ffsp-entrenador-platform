@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarClock, ChevronRight, Clock, MapPin, Plus, Sparkles, UserSquare2 } from 'lucide-react';
+import { CalendarClock, ChevronRight, Clock, MapPin, Plus } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { visibleTeams } from '@/store/selectors';
-import { Badge, Card, EmptyState, LinkButton, PageHeader, Select, Tabs } from '@/components/ui';
+import { Tag, Panel, EmptyState, LinkButton, PageHeader, Select, Tabs } from '@/components/ui';
 import { cn, minutesToLabel, relativeDay, toISODate, today } from '@/lib/utils';
 
 export default function SessionsPage() {
@@ -34,14 +34,11 @@ export default function SessionsPage() {
   return (
     <>
       <PageHeader
-        title="Planificaciones"
+        title="Entrenamientos"
         description="Todas tus sesiones de entrenamiento, con su estructura y su material."
         actions={
           <>
-            <LinkButton to="/app/planificaciones/nuevo?ia=1" variant="outline" size="sm" icon={<Sparkles size={15} />}>
-              Crear con IA
-            </LinkButton>
-            <LinkButton to="/app/planificaciones/nuevo" size="sm" icon={<Plus size={16} />}>
+            <LinkButton to="/app/entrenamientos/nuevo" size="sm" icon={<Plus size={16} />}>
               Crear entrenamiento
             </LinkButton>
           </>
@@ -69,57 +66,49 @@ export default function SessionsPage() {
       </div>
 
       {sessions.length === 0 ? (
-        <Card>
+        <Panel>
           <EmptyState
-            icon={<UserSquare2 size={26} />}
+           
             title="No tienes entrenamientos creados todavía"
-            description="Empieza creando tu primera sesión: constrúyela arrastrando ejercicios o pídesela al asistente."
+            description="Monta la primera sesión arrastrando ejercicios de tu biblioteca."
             action={
               <div className="flex gap-2">
-                <LinkButton to="/app/planificaciones/nuevo" size="sm">
+                <LinkButton to="/app/entrenamientos/nuevo" size="sm">
                   Crear entrenamiento
-                </LinkButton>
-                <LinkButton to="/app/planificaciones/nuevo?ia=1" variant="outline" size="sm" icon={<Sparkles size={15} />}>
-                  Crear con IA
                 </LinkButton>
               </div>
             }
           />
-        </Card>
+        </Panel>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {sessions.map((s) => (
-            <Link key={s.id} to={`/app/planificaciones/${s.id}`} className="card card-hover block p-5">
+            <Link key={s.id} to={`/app/entrenamientos/${s.id}`} className="panel panel-hover block p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[12.5px] font-medium text-brand-700">
+                  <p className="text-[12.5px] font-medium text-navy-900">
                     {data.teams.find((t) => t.id === s.teamId)?.name}
                   </p>
                   <h3 className="mt-0.5 text-[16px] font-semibold leading-tight">{s.title}</h3>
                 </div>
                 <div className="flex shrink-0 gap-1.5">
-                  {s.generatedByAI && (
-                    <Badge tone="brand" size="sm">
-                      <Sparkles size={11} /> IA
-                    </Badge>
-                  )}
-                  <Badge tone={s.status === 'borrador' ? 'warning' : s.status === 'completado' ? 'neutral' : 'success'} size="sm">
+                  <Tag tone={s.status === 'borrador' ? 'warn' : s.status === 'completado' ? 'neutral' : 'ok'} size="sm">
                     {s.status}
-                  </Badge>
+                  </Tag>
                 </div>
               </div>
 
-              <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-ink-500">{s.objective}</p>
+              <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted">{s.objective}</p>
 
-              <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12.5px] text-ink-500">
+              <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12.5px] text-muted">
                 <span className="flex items-center gap-1.5">
-                  <CalendarClock size={13} className="text-ink-400" /> {relativeDay(s.date)}
+                  <CalendarClock size={13} className="text-navy-400" /> {relativeDay(s.date)}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock size={13} className="text-ink-400" /> {s.start} · {minutesToLabel(s.duration)}
+                  <Clock size={13} className="text-navy-400" /> {s.start} · {minutesToLabel(s.duration)}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <MapPin size={13} className="text-ink-400" /> {s.venue}
+                  <MapPin size={13} className="text-navy-400" /> {s.venue}
                 </span>
               </div>
 
@@ -129,15 +118,15 @@ export default function SessionsPage() {
                   <div
                     key={b.id}
                     title={`${b.title} · ${b.duration}′`}
-                    className={cn('h-1.5 rounded-full', b.tags.includes('Calentamiento') ? 'bg-brand-200' : 'bg-brand-400')}
+                    className={cn('h-1.5 rounded-full', b.tags.includes('Calentamiento') ? 'bg-navy-200' : 'bg-navy-400')}
                     style={{ flex: b.duration }}
                   />
                 ))}
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <span className="text-[12px] text-ink-400">{s.blocks.length} bloques · {s.expectedPlayers} jugadoras</span>
-                <ChevronRight size={15} className="text-ink-300" />
+                <span className="text-[12px] text-navy-400">{s.blocks.length} bloques · {s.expectedPlayers} jugadoras</span>
+                <ChevronRight size={15} className="text-navy-300" />
               </div>
             </Link>
           ))}

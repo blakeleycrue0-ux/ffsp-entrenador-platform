@@ -1,0 +1,5 @@
+# Copia de la regla de rutas de netlify.toml, por si el sitio se publica
+# arrastrando la carpeta `dist` en lugar de construyéndolo desde el repositorio.
+# La aplicación resuelve sus rutas en el navegador: en el servidor sólo hay un
+# archivo, así que todo tiene que llegar a él.
+/*  /index.html  200

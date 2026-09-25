@@ -3,21 +3,19 @@
  * ---------------------------------------------------------------------------
  * Dos formas de trabajar, misma pantalla:
  *   1. Arrastrar ejercicios de la biblioteca a la línea de sesión (o pulsarlos).
- *   2. Pedirle la sesión al asistente y ajustar lo que haga falta.
  * La duración total se recalcula sola en cada cambio.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, Clock, Copy, GripVertical, Loader2, Package, Plus, Save, Search, Sparkles,
+  ArrowLeft, Clock, Copy, GripVertical, Package, Plus, Save, Search,
   Trash2, X,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { visibleTeams } from '@/store/selectors';
-import { ai } from '@/services/ai';
 import {
-  Badge, Button, Card, Field, Input, Modal, PageHeader, Select, Textarea,
+  Button, Field, Input, PageHeader, Panel, Select, Tag, Textarea,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { addMinutes, cn, minutesToLabel, normalize, toISODate, today, uid } from '@/lib/utils';
@@ -46,7 +44,6 @@ const emptySession = (teamId: string): TrainingSession => ({
 
 export default function SessionBuilder() {
   const { sessionId } = useParams();
-  const [params] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
   const { data, teamId, actions } = useClub();
@@ -55,7 +52,6 @@ export default function SessionBuilder() {
 
   const existing = sessionId ? data.sessions.find((s) => s.id === sessionId) : undefined;
   const [draft, setDraft] = useState<TrainingSession>(() => existing ?? emptySession(teamId));
-  const [aiOpen, setAiOpen] = useState(params.get('ia') === '1');
   const [libraryQuery, setLibraryQuery] = useState('');
   const [libraryTag, setLibraryTag] = useState<DrillTag | 'todas'>('todas');
   const dragBlock = useRef<number | null>(null);
@@ -151,13 +147,13 @@ export default function SessionBuilder() {
         kind: 'sesion',
         teamId: saved.teamId,
         text: existing ? `Has actualizado «${saved.title}».` : `Has creado un nuevo entrenamiento: «${saved.title}».`,
-        link: `/app/planificaciones/${saved.id}`,
+        link: `/app/entrenamientos/${saved.id}`,
       });
       toast.success(
-        status === 'borrador' ? 'Borrador guardado ✓' : 'Entrenamiento guardado correctamente ✓',
+        status === 'borrador' ? 'Borrador guardado' : 'Entrenamiento guardado correctamente',
         `${minutesToLabel(totalDuration)} · ${saved.blocks.length} bloques`,
       );
-      navigate(`/app/planificaciones/${saved.id}`);
+      navigate(`/app/entrenamientos/${saved.id}`);
     } catch (e) {
       toast.error('No hemos podido guardar el entrenamiento', humanError(e));
     } finally {
@@ -168,8 +164,8 @@ export default function SessionBuilder() {
   return (
     <>
       <Link
-        to="/app/planificaciones"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-500 transition-colors hover:text-brand-800"
+        to="/app/entrenamientos"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> Planificaciones
       </Link>
@@ -179,9 +175,6 @@ export default function SessionBuilder() {
         description="Arrastra ejercicios a la línea de sesión, ajusta las duraciones y guarda."
         actions={
           <>
-            <Button variant="outline" size="sm" icon={<Sparkles size={15} />} onClick={() => setAiOpen(true)}>
-              Crear con IA
-            </Button>
             <Button variant="ghost" size="sm" disabled={saving} onClick={() => save('borrador')}>
               Guardar borrador
             </Button>
@@ -195,7 +188,7 @@ export default function SessionBuilder() {
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
         <div className="space-y-4">
           {/* Datos de la sesión */}
-          <Card className="p-5">
+          <Panel className="p-5">
             <h2 className="text-[15px] font-semibold">Datos de la sesión</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <Field label="Título" className="sm:col-span-2">
@@ -238,12 +231,12 @@ export default function SessionBuilder() {
                 />
               </Field>
               <Field label="Duración total" hint="Se calcula sola a partir de los bloques.">
-                <div className="flex h-[42px] items-center gap-2 rounded-xl border border-ink-200 bg-ink-50 px-3.5">
-                  <Clock size={16} className="text-brand-600" />
-                  <span className="text-[15px] font-semibold text-ink-900 tabular-nums">
+                <div className="flex h-[42px] items-center gap-2 rounded-xl border border-line bg-navy-50 px-3.5">
+                  <Clock size={16} className="text-navy-800" />
+                  <span className="text-[15px] font-semibold text-navy-900 tabular-nums">
                     {minutesToLabel(totalDuration)}
                   </span>
-                  <span className="text-[12.5px] text-ink-400">
+                  <span className="text-[12.5px] text-navy-400">
                     {draft.start} – {addMinutes(draft.start, totalDuration)}
                   </span>
                 </div>
@@ -257,18 +250,18 @@ export default function SessionBuilder() {
                 />
               </Field>
             </div>
-          </Card>
+          </Panel>
 
           {/* Línea de sesión */}
-          <Card className="overflow-hidden">
-            <div className="flex items-center justify-between border-b border-ink-100 px-5 py-4">
+          <Panel className="overflow-hidden">
+            <div className="flex items-center justify-between border-b border-navy-100 px-5 py-4">
               <div>
                 <h2 className="text-[15px] font-semibold">Línea de la sesión</h2>
-                <p className="mt-0.5 text-[12.5px] text-ink-500">
+                <p className="mt-0.5 text-[12.5px] text-muted">
                   {draft.blocks.length} bloques · {minutesToLabel(totalDuration)}
                 </p>
               </div>
-              <Button variant="outline" size="sm" icon={<Plus size={15} />} onClick={addCustomBlock}>
+              <Button variant="secondary" size="sm" icon={<Plus size={15} />} onClick={addCustomBlock}>
                 Bloque propio
               </Button>
             </div>
@@ -282,15 +275,12 @@ export default function SessionBuilder() {
                   const drill = data.drills.find((d) => d.id === id);
                   if (drill) addDrill(drill);
                 }}
-                className="m-5 rounded-2xl border-2 border-dashed border-ink-200 py-14 text-center"
+                className="m-5 rounded-2xl border-2 border-dashed border-line py-14 text-center"
               >
-                <p className="text-[14px] font-medium text-ink-700">Arrastra aquí tu primer ejercicio</p>
-                <p className="mx-auto mt-1.5 max-w-xs text-[13px] leading-relaxed text-ink-500">
-                  Cógelos de la biblioteca de la derecha, crea un bloque propio o pídele la sesión completa al asistente.
+                <p className="text-[14px] font-medium text-navy-700">Arrastra aquí tu primer ejercicio</p>
+                <p className="mx-auto mt-1.5 max-w-xs text-[13px] leading-relaxed text-muted">
+                  Cógelos de la biblioteca de la derecha o crea un bloque propio.
                 </p>
-                <Button size="sm" variant="outline" className="mt-4" icon={<Sparkles size={15} />} onClick={() => setAiOpen(true)}>
-                  Generar con IA
-                </Button>
               </div>
             ) : (
               <ol>
@@ -320,14 +310,14 @@ export default function SessionBuilder() {
                         dragBlock.current = null;
                       }}
                       className={cn(
-                        'group flex items-start gap-3 border-b border-ink-100 px-4 py-3.5 transition-colors last:border-0',
-                        dragOver === i && 'bg-brand-50/60',
+                        'group flex items-start gap-3 border-b border-navy-100 px-4 py-3.5 transition-colors last:border-0',
+                        dragOver === i && 'bg-navy-50/60',
                       )}
                     >
-                      <span className="mt-1 cursor-grab text-ink-300 transition-colors group-hover:text-ink-500 active:cursor-grabbing">
+                      <span className="mt-1 cursor-grab text-navy-300 transition-colors group-hover:text-muted active:cursor-grabbing">
                         <GripVertical size={17} />
                       </span>
-                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-50 text-[11px] font-bold text-brand-700 tabular-nums">
+                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-navy-50 text-[11px] font-bold text-navy-900 tabular-nums">
                         {String(i + 1).padStart(2, '0')}
                       </span>
 
@@ -335,41 +325,41 @@ export default function SessionBuilder() {
                         <input
                           value={block.title}
                           onChange={(e) => patchBlock(block.id, { title: e.target.value })}
-                          className="w-full rounded-md bg-transparent px-1 py-0.5 text-[14.5px] font-medium text-ink-900 outline-none transition-colors hover:bg-ink-50 focus:bg-ink-50"
+                          className="w-full rounded-md bg-transparent px-1 py-0.5 text-[14.5px] font-medium text-navy-900 outline-none transition-colors hover:bg-navy-50 focus:bg-navy-50"
                         />
                         <input
                           value={block.series ?? ''}
                           onChange={(e) => patchBlock(block.id, { series: e.target.value })}
                           placeholder="Series y descansos (ej.: 4 x 4′ / 90″)"
-                          className="mt-0.5 w-full rounded-md bg-transparent px-1 py-0.5 text-[12.5px] text-ink-500 outline-none transition-colors placeholder:text-ink-300 hover:bg-ink-50 focus:bg-ink-50"
+                          className="mt-0.5 w-full rounded-md bg-transparent px-1 py-0.5 text-[12.5px] text-muted outline-none transition-colors placeholder:text-navy-300 hover:bg-navy-50 focus:bg-navy-50"
                         />
                         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 px-1">
                           {block.tags.slice(0, 3).map((t) => (
-                            <Badge key={t} tone="neutral" size="sm">
+                            <Tag key={t} tone="neutral" size="sm">
                               {t}
-                            </Badge>
+                            </Tag>
                           ))}
-                          <span className="text-[11.5px] text-ink-400 tabular-nums">
+                          <span className="text-[11.5px] text-navy-400 tabular-nums">
                             {cursor} – {addMinutes(cursor, block.duration)}
                           </span>
                         </div>
                       </div>
 
                       <div className="flex shrink-0 items-center gap-1">
-                        <div className="flex items-center rounded-lg border border-ink-200">
+                        <div className="flex items-center rounded-lg border border-line">
                           <button
                             onClick={() => patchBlock(block.id, { duration: Math.max(5, block.duration - 5) })}
-                            className="px-2 py-1.5 text-ink-400 transition-colors hover:text-brand-700"
+                            className="px-2 py-1.5 text-navy-400 transition-colors hover:text-navy-900"
                             aria-label="Menos tiempo"
                           >
                             −
                           </button>
-                          <span className="w-10 text-center text-[13px] font-semibold text-ink-800 tabular-nums">
+                          <span className="w-10 text-center text-[13px] font-semibold text-navy-800 tabular-nums">
                             {block.duration}′
                           </span>
                           <button
                             onClick={() => patchBlock(block.id, { duration: block.duration + 5 })}
-                            className="px-2 py-1.5 text-ink-400 transition-colors hover:text-brand-700"
+                            className="px-2 py-1.5 text-navy-400 transition-colors hover:text-navy-900"
                             aria-label="Más tiempo"
                           >
                             +
@@ -377,14 +367,14 @@ export default function SessionBuilder() {
                         </div>
                         <button
                           onClick={() => duplicateBlock(block.id)}
-                          className="rounded-lg p-2 text-ink-300 transition-colors hover:bg-ink-100 hover:text-ink-600"
+                          className="rounded-lg p-2 text-navy-300 transition-colors hover:bg-navy-100 hover:text-navy-600"
                           aria-label="Duplicar bloque"
                         >
                           <Copy size={15} />
                         </button>
                         <button
                           onClick={() => removeBlock(block.id)}
-                          className="rounded-lg p-2 text-ink-300 transition-colors hover:bg-danger/8 hover:text-danger"
+                          className="rounded-lg p-2 text-navy-300 transition-colors hover:bg-bad/8 hover:text-bad"
                           aria-label="Eliminar bloque"
                         >
                           <Trash2 size={15} />
@@ -397,42 +387,42 @@ export default function SessionBuilder() {
             )}
 
             {draft.blocks.length > 0 && (
-              <div className="border-t border-ink-100 bg-ink-50/50 px-5 py-4">
+              <div className="border-t border-navy-100 bg-navy-50/50 px-5 py-4">
                 <div className="flex gap-1">
                   {draft.blocks.map((b) => (
                     <div
                       key={b.id}
                       title={`${b.title} · ${b.duration}′`}
-                      className="h-2 rounded-full bg-brand-400"
+                      className="h-2 rounded-full bg-navy-400"
                       style={{ flex: b.duration }}
                     />
                   ))}
                 </div>
                 <div className="mt-2.5 flex items-center justify-between">
-                  <span className="text-[12.5px] text-ink-500">Duración total</span>
-                  <span className="text-[15px] font-semibold text-ink-900 tabular-nums">
+                  <span className="text-[12.5px] text-muted">Duración total</span>
+                  <span className="text-[15px] font-semibold text-navy-900 tabular-nums">
                     {minutesToLabel(totalDuration)}
                   </span>
                 </div>
               </div>
             )}
-          </Card>
+          </Panel>
 
           {/* Material */}
-          <Card className="p-5">
+          <Panel className="p-5">
             <h2 className="flex items-center gap-2 text-[15px] font-semibold">
-              <Package size={16} className="text-brand-600" /> Material
+              <Package size={16} className="text-navy-800" /> Material
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {draft.material.map((m) => (
                 <span
                   key={m}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-[13px] text-ink-700"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[13px] text-navy-700"
                 >
                   {m}
                   <button
                     onClick={() => update({ material: draft.material.filter((x) => x !== m) })}
-                    className="text-ink-300 transition-colors hover:text-danger"
+                    className="text-navy-300 transition-colors hover:text-bad"
                     aria-label={`Quitar ${m}`}
                   >
                     <X size={13} />
@@ -448,19 +438,19 @@ export default function SessionBuilder() {
                     (e.target as HTMLInputElement).value = '';
                   }
                 }}
-                className="rounded-lg border border-dashed border-ink-300 px-2.5 py-1.5 text-[13px] outline-none placeholder:text-ink-400 focus:border-brand-400"
+                className="rounded-lg border border-dashed border-navy-300 px-2.5 py-1.5 text-[13px] outline-none placeholder:text-navy-400 focus:border-navy-400"
               />
             </div>
-          </Card>
+          </Panel>
         </div>
 
         {/* Biblioteca de ejercicios */}
-        <Card className="h-fit overflow-hidden xl:sticky xl:top-24">
-          <div className="border-b border-ink-100 p-4">
+        <Panel className="h-fit overflow-hidden xl:sticky xl:top-24">
+          <div className="border-b border-navy-100 p-4">
             <h2 className="text-[15px] font-semibold">Biblioteca de ejercicios</h2>
-            <p className="mt-0.5 text-[12.5px] text-ink-500">Arrástralos a la línea o pulsa para añadir al final.</p>
+            <p className="mt-0.5 text-[12.5px] text-muted">Arrástralos a la línea o pulsa para añadir al final.</p>
             <div className="relative mt-3">
-              <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+              <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-navy-400" />
               <Input
                 value={libraryQuery}
                 onChange={(e) => setLibraryQuery(e.target.value)}
@@ -473,7 +463,7 @@ export default function SessionBuilder() {
                 onClick={() => setLibraryTag('todas')}
                 className={cn(
                   'rounded-lg px-2 py-1 text-[12px] font-medium transition-colors',
-                  libraryTag === 'todas' ? 'bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-200' : 'text-ink-500 hover:bg-ink-100',
+                  libraryTag === 'todas' ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200' : 'text-muted hover:bg-navy-100',
                 )}
               >
                 Todas
@@ -484,7 +474,7 @@ export default function SessionBuilder() {
                   onClick={() => setLibraryTag(t)}
                   className={cn(
                     'rounded-lg px-2 py-1 text-[12px] font-medium transition-colors',
-                    libraryTag === t ? 'bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-200' : 'text-ink-500 hover:bg-ink-100',
+                    libraryTag === t ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200' : 'text-muted hover:bg-navy-100',
                   )}
                 >
                   {t}
@@ -495,7 +485,7 @@ export default function SessionBuilder() {
 
           <div className="max-h-[540px] overflow-y-auto p-2 pb-16">
             {drills.length === 0 ? (
-              <p className="px-3 py-8 text-center text-[13px] text-ink-500">
+              <p className="px-3 py-8 text-center text-[13px] text-muted">
                 Ningún ejercicio coincide con el filtro.
               </p>
             ) : (
@@ -505,205 +495,23 @@ export default function SessionBuilder() {
                   draggable
                   onDragStart={(e) => e.dataTransfer.setData('drill-id', d.id)}
                   onClick={() => addDrill(d)}
-                  className="group flex w-full cursor-grab items-start gap-2.5 rounded-xl p-2.5 text-left transition-colors hover:bg-brand-50/60 active:cursor-grabbing"
+                  className="group flex w-full cursor-grab items-start gap-2.5 rounded-xl p-2.5 text-left transition-colors hover:bg-navy-50/60 active:cursor-grabbing"
                 >
-                  <GripVertical size={15} className="mt-0.5 shrink-0 text-ink-300 group-hover:text-brand-400" />
+                  <GripVertical size={15} className="mt-0.5 shrink-0 text-navy-300 group-hover:text-navy-400" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13.5px] font-medium text-ink-800">{d.name}</span>
-                    <span className="mt-0.5 block truncate text-[12px] text-ink-500">{d.tags.join(' · ')}</span>
+                    <span className="block truncate text-[13.5px] font-medium text-navy-800">{d.name}</span>
+                    <span className="mt-0.5 block truncate text-[12px] text-muted">{d.tags.join(' · ')}</span>
                   </span>
-                  <span className="shrink-0 rounded-md bg-ink-100 px-1.5 py-0.5 text-[11.5px] font-medium text-ink-600 tabular-nums">
+                  <span className="shrink-0 rounded-md bg-navy-100 px-1.5 py-0.5 text-[11.5px] font-medium text-navy-600 tabular-nums">
                     {d.duration}′
                   </span>
                 </button>
               ))
             )}
           </div>
-        </Card>
+        </Panel>
       </div>
 
-      <AIGeneratorModal
-        open={aiOpen}
-        onClose={() => setAiOpen(false)}
-        defaultTeamId={draft.teamId}
-        onGenerated={(s) => {
-          setDraft({ ...s, id: draft.id, date: draft.date, start: draft.start, venue: draft.venue });
-          setAiOpen(false);
-          toast.success('Sesión generada ✓', 'Revísala y ajusta lo que quieras antes de guardar.');
-        }}
-      />
     </>
-  );
-}
-
-/* ─────────────────────── Generador de sesiones con IA ────────────────────── */
-
-function AIGeneratorModal({
-  open, onClose, defaultTeamId, onGenerated,
-}: {
-  open: boolean;
-  onClose: () => void;
-  defaultTeamId: string;
-  onGenerated: (s: TrainingSession) => void;
-}) {
-  const { data } = useClub();
-  const teams = visibleTeams(data);
-
-  const [form, setForm] = useState({
-    teamId: defaultTeamId,
-    objective: 'Presión tras pérdida',
-    duration: 90,
-    players: 20,
-    level: 'Desarrollo' as 'Iniciación' | 'Desarrollo' | 'Rendimiento',
-    material: 'Balones, conos, petos',
-  });
-  const [busy, setBusy] = useState(false);
-  const [preview, setPreview] = useState<TrainingSession | null>(null);
-
-  useEffect(() => {
-    if (open) {
-      setPreview(null);
-      setForm((f) => ({ ...f, teamId: defaultTeamId }));
-    }
-  }, [open, defaultTeamId]);
-
-  const generate = async () => {
-    setBusy(true);
-    await new Promise((r) => setTimeout(r, 900));
-    const s = ai.generateSession(
-      {
-        teamId: form.teamId,
-        objective: form.objective,
-        duration: form.duration,
-        players: form.players,
-        level: form.level,
-        material: form.material.split(',').map((m) => m.trim()).filter(Boolean),
-      },
-      data.drills,
-    );
-    setPreview(s);
-    setBusy(false);
-  };
-
-  return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      size="lg"
-      title="Crear entrenamiento con IA"
-      subtitle="Describe qué quieres trabajar y el asistente monta la sesión completa."
-      footer={
-        preview ? (
-          <>
-            <Button variant="ghost" onClick={() => setPreview(null)}>
-              Cambiar parámetros
-            </Button>
-            <Button variant="outline" icon={<Sparkles size={15} />} onClick={generate} loading={busy}>
-              Regenerar
-            </Button>
-            <Button onClick={() => onGenerated(preview)}>Usar esta sesión</Button>
-          </>
-        ) : (
-          <>
-            <Button variant="ghost" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button onClick={generate} loading={busy} icon={<Sparkles size={16} />}>
-              Generar entrenamiento
-            </Button>
-          </>
-        )
-      }
-    >
-      {!preview ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Equipo">
-            <Select value={form.teamId} onChange={(e) => setForm({ ...form, teamId: e.target.value })}>
-              {teams.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Nivel">
-            <Select value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value as typeof form.level })}>
-              <option>Iniciación</option>
-              <option>Desarrollo</option>
-              <option>Rendimiento</option>
-            </Select>
-          </Field>
-          <Field label="Objetivo" className="sm:col-span-2" hint="Ej.: presión tras pérdida, salida de balón, finalización…">
-            <Input
-              value={form.objective}
-              onChange={(e) => setForm({ ...form, objective: e.target.value })}
-              placeholder="¿Qué quieres trabajar?"
-            />
-          </Field>
-          <Field label="Duración (minutos)">
-            <Input
-              type="number"
-              step={5}
-              value={form.duration}
-              onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })}
-            />
-          </Field>
-          <Field label="Número de jugadoras">
-            <Input
-              type="number"
-              value={form.players}
-              onChange={(e) => setForm({ ...form, players: Number(e.target.value) })}
-            />
-          </Field>
-          <Field label="Material disponible" className="sm:col-span-2">
-            <Input
-              value={form.material}
-              onChange={(e) => setForm({ ...form, material: e.target.value })}
-              placeholder="Balones, conos, petos, miniporterías…"
-            />
-          </Field>
-
-          <div className="rounded-xl border border-ink-200 bg-ink-50/60 p-3.5 text-[12.5px] leading-relaxed text-ink-500 sm:col-span-2">
-            El asistente construye la sesión con ejercicios reales de la biblioteca del club y reparte la carga en
-            calentamiento, parte principal, juego y vuelta a la calma. Todo es editable después.
-          </div>
-        </div>
-      ) : (
-        <div>
-          <div className="flex items-start justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50/50 p-4">
-            <div className="min-w-0">
-              <p className="text-[15px] font-semibold text-ink-900">{preview.title}</p>
-              <p className="mt-0.5 text-[13px] text-ink-500">{preview.objective}</p>
-            </div>
-            <Badge tone="brand">{minutesToLabel(preview.duration)}</Badge>
-          </div>
-
-          <ol className="mt-4 divide-y divide-ink-100 overflow-hidden rounded-xl border border-ink-200">
-            {preview.blocks.map((b, i) => (
-              <li key={b.id} className="flex items-center gap-3 px-4 py-2.5">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-ink-100 text-[11px] font-semibold text-ink-500 tabular-nums">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13.5px] text-ink-800">{b.title}</span>
-                  {b.series && <span className="block text-[11.5px] text-ink-400">{b.series}</span>}
-                </span>
-                <span className="shrink-0 text-[12.5px] font-medium text-ink-500 tabular-nums">{b.duration}′</span>
-              </li>
-            ))}
-          </ol>
-
-          <p className="mt-3 text-[12.5px] text-ink-500">
-            <span className="font-medium text-ink-600">Material:</span> {preview.material.join(' · ')}
-          </p>
-
-          {busy && (
-            <p className="mt-4 flex items-center gap-2 text-[13px] text-ink-500">
-              <Loader2 size={14} className="animate-spin" /> Regenerando…
-            </p>
-          )}
-        </div>
-      )}
-    </Modal>
   );
 }

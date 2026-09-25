@@ -4,8 +4,8 @@
 
 @layer base {
   :root {
-    --header-h: 64px;
-    --sidebar-w: 264px;
+    --header-h: 56px;
+    --sidebar-w: 236px;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 
@@ -14,83 +14,114 @@
   }
 
   body {
-    @apply bg-white text-ink-800 font-sans antialiased;
-    text-rendering: optimizeLegibility;
+    @apply bg-surface text-navy-900 font-sans antialiased;
+    font-size: 14px;
   }
 
-  /* Tipografía del producto: títulos oscuros, cuerpo gris medio */
+  /* Jerarquía contenida: nada de titulares enormes dentro de la aplicación. */
   h1, h2, h3, h4 {
-    @apply text-ink-900 font-semibold tracking-[-0.011em];
+    @apply text-navy-900 font-semibold;
+    letter-spacing: -0.006em;
   }
 
   ::selection {
-    @apply bg-brand-100 text-brand-800;
+    @apply bg-navy-900 text-white;
   }
 
-  /* Scrollbars discretas */
   * {
     scrollbar-width: thin;
-    scrollbar-color: #E2E1E8 transparent;
+    scrollbar-color: #C5CDD8 transparent;
   }
   *::-webkit-scrollbar { width: 10px; height: 10px; }
   *::-webkit-scrollbar-thumb {
-    background-color: #E2E1E8;
+    background-color: #C5CDD8;
     border-radius: 999px;
     border: 3px solid transparent;
     background-clip: content-box;
   }
-  *::-webkit-scrollbar-thumb:hover { background-color: #C0BECA; }
+  *::-webkit-scrollbar-thumb:hover { background-color: #A7B2C1; }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-brand-400/60 ring-offset-2 ring-offset-white rounded-lg;
+    @apply outline-none ring-2 ring-navy-900/35 ring-offset-1 ring-offset-white;
+    border-radius: 4px;
+  }
+
+  /* Los campos nativos heredan la tipografía de la interfaz */
+  input, select, textarea, button {
+    font-family: inherit;
+    font-size: inherit;
   }
 }
 
 @layer components {
-  .card {
-    @apply bg-white border border-ink-200/70 rounded-2xl shadow-card;
+  .panel {
+    @apply bg-white border border-line rounded-lg;
   }
 
-  .card-hover {
-    @apply transition-[box-shadow,transform,border-color] duration-200 hover:shadow-pop hover:border-brand-200 hover:-translate-y-[1px];
+  .panel-hover {
+    @apply transition-colors duration-150 hover:border-navy-300;
   }
 
   .label {
-    @apply block text-[13px] font-medium text-ink-700 mb-1.5;
+    @apply block text-xs font-medium text-navy-700 mb-1.5;
   }
 
   .field {
-    @apply w-full rounded-xl border border-ink-200 bg-white px-3.5 py-2.5 text-[14px] text-ink-900
-           placeholder:text-ink-400 transition-colors
-           focus:border-brand-400 focus:ring-4 focus:ring-brand-100 focus:outline-none;
+    @apply w-full rounded-md border border-line bg-white px-3 py-2 text-base text-navy-900
+           placeholder:text-navy-400 transition-colors
+           focus:border-navy-600 focus:outline-none focus:ring-1 focus:ring-navy-600
+           disabled:bg-surface disabled:text-navy-400;
   }
 
-  .section-title {
-    @apply text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-400;
+  .eyebrow {
+    @apply text-2xs font-semibold uppercase tracking-[0.07em] text-muted;
   }
 
-  .divider {
-    @apply h-px bg-ink-200/70;
+  .hairline {
+    @apply h-px bg-line;
   }
 
-  /* Skeletons */
+  /* Tablas de trabajo: densas y legibles */
+  .grid-table {
+    @apply w-full text-base;
+  }
+  .grid-table thead th {
+    @apply border-b border-line bg-surface px-3 py-2 text-left text-2xs font-semibold uppercase tracking-[0.06em] text-muted;
+  }
+  .grid-table tbody td {
+    @apply border-b border-line px-3 py-2 align-middle;
+  }
+  .grid-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  .grid-table tbody tr:hover {
+    @apply bg-surface;
+  }
+
   .skeleton {
-    @apply relative overflow-hidden rounded-lg bg-ink-100;
+    @apply relative overflow-hidden rounded bg-navy-100;
   }
   .skeleton::after {
     content: '';
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
-    animation: sheen 1.4s infinite;
+    background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+    animation: sweep 1.4s infinite;
   }
-  @keyframes sheen {
+  @keyframes sweep {
     100% { transform: translateX(100%); }
   }
 
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* La pizarra no debe seleccionar texto al arrastrar */
+  .board-surface {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

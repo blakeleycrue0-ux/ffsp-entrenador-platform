@@ -1,22 +1,29 @@
 /**
  * Acceso a la plataforma — Supabase Auth (correo y contraseña).
- * Tres modos en la misma pantalla: entrar, crear cuenta y recuperar contraseña.
+ * Entrar, crear cuenta, recuperar contraseña y aceptar una invitación.
+ *
+ * No hay proveedores sociales: no hay ninguno configurado, así que no se
+ * ofrecen botones que no funcionarían.
  */
 
-import { useState } from 'react';
-import { Link, Navigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Mail, ShieldCheck, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useClub } from '@/store/store';
 import { auth } from '@/services/auth';
 import { humanError } from '@/services/supabase';
-import { Button, Field, Input } from '@/components/ui';
-import { Crest, Wordmark } from '@/components/ui/Brand';
+import {
+  ACCEPT_ERROR, CLUB_ROLE_LABEL, invitations, type InvitationPeek,
+} from '@/services/invitations';
+import { Button, Field, Input, Tag } from '@/components/ui';
+import { Mark, Wordmark } from '@/components/ui/Brand';
 
 type Mode = 'entrar' | 'registro' | 'recuperar';
 
 export default function Login() {
-  const { userId, loading } = useClub();
+  const { userId, loading, actions } = useClub();
   const location = useLocation() as { state?: { from?: string } };
+  const [params] = useSearchParams();
+  const token = params.get('invitacion');
 
   const [mode, setMode] = useState<Mode>('entrar');
   const [email, setEmail] = useState('');
@@ -26,7 +33,44 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  if (userId && !loading) return <Navigate to={location.state?.from ?? '/app'} replace />;
+  const [invite, setInvite] = useState<InvitationPeek | null>(null);
+  const [accepted, setAccepted] = useState(false);
+
+  /* Qué hay detrás del enlace de invitación, antes de pedir nada. */
+  useEffect(() => {
+    if (!token) return;
+    invitations
+      .peek(token)
+      .then((i) => {
+        setInvite(i);
+        if (i.found && i.email) setEmail(i.email);
+        if (i.found && !i.accepted && !i.expired && !i.revoked) setMode('registro');
+      })
+      .catch((e) => setError(humanError(e)));
+  }, [token]);
+
+  /* Con sesión abierta y una invitación válida, se acepta y se entra. */
+  useEffect(() => {
+    if (!token || !userId || accepted || !invite?.found) return;
+    setBusy(true);
+    invitations
+      .accept(token)
+      .then(async (res) => {
+        if (res.ok) {
+          setAccepted(true);
+          await actions.refresh();
+        } else {
+          setError(ACCEPT_ERROR[res.error ?? ''] ?? 'No hemos podido aceptar la invitación.');
+          setAccepted(true);
+        }
+      })
+      .catch((e) => setError(humanError(e)))
+      .finally(() => setBusy(false));
+  }, [token, userId, accepted, invite, actions]);
+
+  if (userId && !loading && (!token || accepted)) {
+    return <Navigate to={location.state?.from ?? '/app'} replace />;
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,14 +87,11 @@ export default function Login() {
     try {
       if (mode === 'entrar') {
         await auth.signIn(email, password);
-        // El cambio de sesión lo detecta el store y redirige solo.
       } else if (mode === 'registro') {
         const result = await auth.signUp(email, password, fullName);
-        if (result.session) {
-          setNotice('Cuenta creada. Entrando…');
-        } else {
+        if (!result.session) {
           setNotice(
-            'Cuenta creada. Te hemos enviado un correo de confirmación: ábrelo y después vuelve a entrar aquí.',
+            'Cuenta creada. Te hemos enviado un correo de confirmación: ábrelo y vuelve aquí para entrar.',
           );
           setMode('entrar');
         }
@@ -69,164 +110,199 @@ export default function Login() {
   const titles: Record<Mode, { title: string; sub: string; cta: string }> = {
     entrar: {
       title: 'Entrar',
-      sub: 'Accede con el correo con el que te dio de alta la coordinadora del club.',
+      sub: 'Accede con el correo con el que te dieron de alta en tu club.',
       cta: 'Entrar',
     },
     registro: {
-      title: 'Crear cuenta',
-      sub: 'Crea tu acceso. La coordinadora te asignará después tu equipo.',
+      title: token ? 'Crear tu cuenta' : 'Crear cuenta',
+      sub: token
+        ? 'Crea tu acceso con el correo al que se envió la invitación.'
+        : 'Crea tu acceso y, al entrar, tu club. Si te han invitado a uno, abre su enlace.',
       cta: 'Crear cuenta',
     },
     recuperar: {
       title: 'Recuperar contraseña',
-      sub: 'Te enviaremos un enlace para que puedas elegir una contraseña nueva.',
+      sub: 'Te enviaremos un enlace para elegir una contraseña nueva.',
       cta: 'Enviar enlace',
     },
   };
   const t = titles[mode];
 
+  const inviteBlocked =
+    invite?.found && (invite.expired || invite.revoked || invite.accepted);
+
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="grid min-h-screen bg-white lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
       {/* Marca */}
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-brand-50/50 p-12 lg:flex">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand-100/50 blur-3xl" />
-        <Link
-          to="/"
-          className="relative inline-flex items-center gap-1.5 text-[14px] font-medium text-ink-600 transition-colors hover:text-brand-800"
-        >
-          <ArrowLeft size={16} /> Volver
+      <div className="hidden flex-col justify-between border-r border-line bg-surface p-10 lg:flex">
+        <Link to="/" className="text-sm font-medium text-navy-600 transition-colors hover:text-navy-900">
+          Volver a la página principal
         </Link>
 
-        <div className="relative">
-          <Crest size={110} />
-          <h1 className="mt-9 max-w-md text-[38px] font-semibold leading-[1.12] tracking-[-0.02em] text-ink-900">
-            El centro de operaciones de la entrenadora.
+        <div>
+          <Mark size={52} />
+          <h1 className="mt-7 max-w-sm text-3xl font-semibold leading-tight tracking-[-0.015em]">
+La herramienta de tu club: plantilla, entrenamientos, partidos y pizarra táctica.
           </h1>
-          <p className="mt-5 max-w-sm text-[16px] leading-relaxed text-ink-500">
-            Planifica, gestiona, comunica y mejora desde un único lugar.
+          <p className="mt-4 max-w-sm text-md leading-relaxed text-navy-700">
+            Menos gestión. Más tiempo para entrenar.
           </p>
 
-          <div className="mt-10 flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-4 py-3">
-            <ShieldCheck size={18} className="shrink-0 text-brand-600" />
-            <p className="text-[13px] leading-relaxed text-ink-600">
-              Cada entrenadora ve únicamente los equipos que tiene asignados. Los datos de las jugadoras son privados.
-            </p>
-          </div>
+          <p className="mt-8 max-w-sm rounded-md border border-line bg-white px-4 py-3 text-sm leading-relaxed text-navy-700">
+            Cada persona del cuerpo técnico ve únicamente los equipos que tiene asignados. El permiso
+            lo aplica el servidor, no la pantalla.
+          </p>
         </div>
 
-        <p className="relative text-[13px] text-ink-400">FFSP · Santa Ponsa CF</p>
+        <p className="text-sm text-navy-400">Cada club, con sus datos separados de los demás.</p>
       </div>
 
       {/* Formulario */}
-      <div className="flex flex-col justify-center px-5 py-12 sm:px-12">
+      <div className="flex flex-col justify-center px-5 py-10 sm:px-12">
         <div className="mx-auto w-full max-w-md">
           <div className="lg:hidden">
-            <Link to="/" className="mb-8 inline-flex items-center gap-2 text-[14px] font-medium text-ink-600">
-              <ArrowLeft size={16} /> Volver
-            </Link>
             <Wordmark size="lg" />
           </div>
 
-          <div className="mt-8 lg:mt-0">
-            <h2 className="text-[24px] font-semibold leading-tight">{t.title}</h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-ink-500">{t.sub}</p>
+          {/* Invitación */}
+          {token && (
+            <div className="mb-6 mt-6 rounded-md border border-line bg-surface p-4 lg:mt-0">
+              {invite === null ? (
+                <p className="text-base text-muted">Comprobando la invitación…</p>
+              ) : !invite.found ? (
+                <p className="text-base leading-relaxed text-navy-800">
+                  Ese enlace de invitación no existe. Pide uno nuevo a quien administra el club.
+                </p>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-base font-medium text-navy-900">
+                      Invitación {invite.clubName ? `de ${invite.clubName}` : 'al club'}
+                    </p>
+                    {invite.accepted && <Tag tone="neutral" size="sm">Ya aceptada</Tag>}
+                    {invite.revoked && <Tag tone="bad" size="sm">Anulada</Tag>}
+                    {invite.expired && !invite.accepted && <Tag tone="warn" size="sm">Caducada</Tag>}
+                  </div>
+                  <p className="mt-1.5 text-sm leading-relaxed text-navy-700">
+                    Para <strong>{invite.email}</strong>
+                    {invite.role && ` · ${CLUB_ROLE_LABEL[invite.role]}`}
+                    {invite.teamName && ` · ${invite.teamName}`}
+                  </p>
+                  {inviteBlocked && (
+                    <p className="mt-2 text-sm leading-relaxed text-muted">
+                      Esta invitación ya no se puede usar. Pide una nueva al club.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          <div className={token ? '' : 'mt-8 lg:mt-0'}>
+            <h2 className="text-2xl font-semibold leading-tight">{t.title}</h2>
+            <p className="mt-1.5 text-base leading-relaxed text-muted">{t.sub}</p>
           </div>
 
-          <form onSubmit={submit} className="mt-7 space-y-4">
+          <form onSubmit={submit} className="mt-6 space-y-3.5">
             {mode === 'registro' && (
-              <Field label="Nombre y apellidos">
-                <div className="relative">
-                  <User size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
-                  <Input
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Nombre y apellidos"
-                    autoComplete="name"
-                    className="pl-10"
-                  />
-                </div>
+              <Field label="Nombre y apellidos" required>
+                <Input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  autoComplete="name"
+                />
               </Field>
             )}
 
-            <Field label="Correo electrónico">
-              <div className="relative">
-                <Mail size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nombre@correo.com"
-                  autoComplete="email"
-                  className="pl-10"
-                />
-              </div>
+            <Field label="Correo electrónico" required>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="nombre@correo.com"
+                autoComplete="email"
+                readOnly={!!(token && invite?.found && invite.email)}
+              />
             </Field>
 
             {mode !== 'recuperar' && (
-              <Field
-                label="Contraseña"
-                hint={mode === 'registro' ? 'Mínimo 6 caracteres.' : undefined}
-              >
-                <div className="relative">
-                  <Lock size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
-                    className="pl-10"
-                  />
-                </div>
+              <Field label="Contraseña" hint={mode === 'registro' ? 'Mínimo 6 caracteres.' : undefined} required>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
+                />
               </Field>
             )}
 
             {error && (
-              <p className="rounded-xl border border-danger/25 bg-danger/5 px-3.5 py-2.5 text-[13px] leading-relaxed text-[#A63B34]">
+              <p className="rounded-md border border-bad/30 bg-bad/5 px-3 py-2 text-sm leading-relaxed text-bad">
                 {error}
               </p>
             )}
             {notice && (
-              <p className="flex items-start gap-2 rounded-xl border border-pitch/25 bg-pitch/5 px-3.5 py-2.5 text-[13px] leading-relaxed text-[#1F6B44]">
-                <CheckCircle2 size={15} className="mt-0.5 shrink-0" />
+              <p className="rounded-md border border-ok/30 bg-ok/5 px-3 py-2 text-sm leading-relaxed text-ok">
                 {notice}
               </p>
             )}
 
-            <Button type="submit" block size="lg" loading={busy} icon={!busy ? <ArrowRight size={18} /> : undefined}>
+            <Button type="submit" block size="lg" loading={busy}>
               {t.cta}
             </Button>
           </form>
 
-          <div className="mt-6 space-y-2 text-[13.5px]">
+          <div className="mt-5 space-y-1.5 text-sm">
             {mode === 'entrar' && (
               <>
-                <p className="text-ink-500">
+                <p className="text-muted">
                   ¿Has olvidado la contraseña?{' '}
-                  <button onClick={() => { setMode('recuperar'); setError(null); }} className="font-medium text-brand-700 hover:text-brand-800">
+                  <button
+                    onClick={() => {
+                      setMode('recuperar');
+                      setError(null);
+                    }}
+                    className="font-medium text-navy-900 underline underline-offset-2"
+                  >
                     Recupérala
                   </button>
                 </p>
-                <p className="text-ink-500">
-                  ¿Aún no tienes cuenta?{' '}
-                  <button onClick={() => { setMode('registro'); setError(null); }} className="font-medium text-brand-700 hover:text-brand-800">
-                    Crear cuenta
-                  </button>
-                </p>
+                {!token && (
+                  <p className="text-muted">
+                    ¿Aún no tienes cuenta?{' '}
+                    <button
+                      onClick={() => {
+                        setMode('registro');
+                        setError(null);
+                      }}
+                      className="font-medium text-navy-900 underline underline-offset-2"
+                    >
+                      Crear cuenta
+                    </button>
+                  </p>
+                )}
               </>
             )}
             {mode !== 'entrar' && (
-              <button onClick={() => { setMode('entrar'); setError(null); }} className="font-medium text-brand-700 hover:text-brand-800">
-                ← Volver a entrar
+              <button
+                onClick={() => {
+                  setMode('entrar');
+                  setError(null);
+                }}
+                className="font-medium text-navy-900 underline underline-offset-2"
+              >
+                Ya tengo cuenta, entrar
               </button>
             )}
           </div>
 
-          <p className="mt-8 flex items-start gap-2 text-[12.5px] leading-relaxed text-ink-400">
-            <Lock size={14} className="mt-0.5 shrink-0" />
-            La primera persona que cree una cuenta queda como coordinadora del club y podrá crear los equipos y asignar
-            al resto del cuerpo técnico.
-          </p>
+          {!token && (
+            <p className="mt-7 text-xs leading-relaxed text-muted">
+              Al entrar por primera vez creas tu club y quedas como su administración: desde ahí
+              creas los equipos e invitas al resto del cuerpo técnico. Los datos de cada club están
+              separados de los de cualquier otro.
+            </p>
+          )}
         </div>
       </div>
     </div>

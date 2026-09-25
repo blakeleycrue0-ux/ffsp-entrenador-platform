@@ -26,9 +26,9 @@ interface ToastApi {
 const ToastContext = createContext<ToastApi | null>(null);
 
 const ICONS: Record<ToastTone, React.ReactNode> = {
-  success: <CheckCircle2 size={18} className="text-pitch" />,
-  error: <AlertCircle size={18} className="text-danger" />,
-  info: <Info size={18} className="text-brand-600" />,
+  success: <CheckCircle2 size={16} className="text-ok" />,
+  error: <AlertCircle size={16} className="text-bad" />,
+  info: <Info size={16} className="text-info" />,
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -57,26 +57,26 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] flex flex-col items-center gap-2 p-4 pb-[calc(80px+var(--safe-bottom))] sm:items-end lg:pb-4">
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] flex flex-col items-center gap-2 p-4 pb-[calc(88px+var(--safe-bottom))] sm:items-end lg:pb-4">
         {items.map((t) => (
           <div
             key={t.id}
             className={cn(
-              'pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-xl border bg-white p-3.5 shadow-pop animate-fade-up',
-              t.tone === 'error' ? 'border-danger/25' : 'border-ink-200',
+              'pointer-events-auto flex w-full max-w-md items-start gap-2.5 rounded-lg border bg-white p-3 shadow-pop animate-fade-up',
+              t.tone === 'error' ? 'border-bad/30' : 'border-line',
             )}
           >
             <span className="mt-0.5 shrink-0">{ICONS[t.tone]}</span>
             <div className="min-w-0 flex-1">
-              <p className="text-[14px] font-medium leading-snug text-ink-900">{t.title}</p>
-              {t.description && <p className="mt-0.5 text-[13px] leading-relaxed text-ink-500">{t.description}</p>}
+              <p className="text-base font-medium leading-snug text-navy-900">{t.title}</p>
+              {t.description && <p className="mt-0.5 text-sm leading-relaxed text-muted">{t.description}</p>}
               {t.action && (
                 <button
                   onClick={() => {
                     t.action!.onClick();
                     remove(t.id);
                   }}
-                  className="mt-2 text-[13px] font-semibold text-brand-700 hover:text-brand-800"
+                  className="mt-2 text-sm font-semibold text-navy-900 underline underline-offset-2"
                 >
                   {t.action.label}
                 </button>
@@ -84,7 +84,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             </div>
             <button
               onClick={() => remove(t.id)}
-              className="-mr-1 -mt-1 rounded-lg p-1.5 text-ink-300 transition-colors hover:bg-ink-100 hover:text-ink-600"
+              className="-mr-1 -mt-1 rounded p-1.5 text-navy-300 transition-colors hover:bg-surface hover:text-navy-700"
               aria-label="Cerrar aviso"
             >
               <X size={15} />

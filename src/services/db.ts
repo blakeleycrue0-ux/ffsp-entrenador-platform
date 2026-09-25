@@ -12,7 +12,7 @@
 
 import { supabase } from './supabase';
 import type {
-  ActivityItem, AttendanceRecord, Callup, ClubData, CoachTask, Drill, Match, MessageTemplate,
+  ActivityItem, AttendanceMark, AttendanceRecord, Callup, Club, ClubData, CoachTask, Drill, Match,
   MessageThread, Notification, Player, Staff, Team, TeamStaffLink, TrainingSession,
 } from '@/types';
 import { EMPTY_CLUB_DATA } from '@/types';
@@ -78,6 +78,7 @@ const toPlayer = (r: Row): Player => ({
   stats: (r.stats as Player['stats']) ?? { matches: 0, minutes: 0, goals: 0, assists: 0, yellow: 0, red: 0 },
   notes: (r.notes as string) ?? undefined,
   joinedAt: (r.joined_at as string) ?? '',
+  archivedAt: (r.archived_at as string) ?? undefined,
 });
 
 const fromPlayer = (p: Player) => ({
@@ -101,6 +102,7 @@ const fromPlayer = (p: Player) => ({
   stats: p.stats,
   notes: p.notes || null,
   joined_at: p.joinedAt || new Date().toISOString().slice(0, 10),
+  archived_at: p.archivedAt || null,
 });
 
 const toDrill = (r: Row, favorites: Set<string>): Drill => ({
@@ -115,6 +117,7 @@ const toDrill = (r: Row, favorites: Set<string>): Drill => ({
   description: (r.description as string) ?? '',
   progressions: (r.progressions as string[]) ?? [],
   tactic: (r.tactic as Drill['tactic']) ?? [],
+  animation: r.animation ?? undefined,
   favorite: favorites.has(r.id as string),
   createdBy: (r.created_by as string) ?? undefined,
 });
@@ -131,6 +134,7 @@ const fromDrill = (d: Drill, userId?: string) => ({
   description: d.description,
   progressions: d.progressions,
   tactic: d.tactic,
+  animation: d.animation ?? null,
   created_by: d.createdBy ?? userId ?? null,
 });
 
@@ -234,12 +238,40 @@ const fromCallup = (c: Callup) => ({
   sent_at: c.sentAt || null,
 });
 
+/**
+ * Las marcas guardadas antes de ampliar los estados usaban «pendiente» para
+ * decir «nadie ha pasado lista». Se traduce al leer, sin tocar lo guardado:
+ * los registros antiguos siguen siendo válidos y significan lo mismo.
+ */
+const MARCAS_ANTIGUAS: Record<string, AttendanceMark> = {
+  pendiente: 'sin_registrar',
+};
+
+const MARCAS_VALIDAS: AttendanceMark[] = [
+  'presente', 'tarde', 'justificada', 'lesionada', 'ausente', 'sin_registrar',
+];
+
+const toMarks = (raw: unknown): AttendanceRecord['marks'] => {
+  const entries = Object.entries((raw as AttendanceRecord['marks']) ?? {});
+  const out: AttendanceRecord['marks'] = {};
+  for (const [playerId, value] of entries) {
+    const mark = value?.mark as string;
+    out[playerId] = {
+      ...value,
+      mark: MARCAS_ANTIGUAS[mark] ?? (MARCAS_VALIDAS.includes(mark as AttendanceMark)
+        ? (mark as AttendanceMark)
+        : 'sin_registrar'),
+    };
+  }
+  return out;
+};
+
 const toAttendance = (r: Row): AttendanceRecord => ({
   id: r.id as string,
   sessionId: r.session_id as string,
   teamId: r.team_id as string,
   date: r.date as string,
-  marks: (r.marks as AttendanceRecord['marks']) ?? {},
+  marks: toMarks(r.marks),
   savedAt: (r.saved_at as string) ?? undefined,
 });
 
@@ -287,15 +319,6 @@ const fromMessage = (m: MessageThread, userId?: string) => ({
   responses: m.responses ?? null,
   simulated: m.simulated,
   created_by: userId ?? null,
-});
-
-const toTemplate = (r: Row): MessageTemplate => ({
-  id: r.id as string,
-  kind: r.kind as MessageTemplate['kind'],
-  name: r.name as string,
-  description: (r.description as string) ?? '',
-  body: r.body as string,
-  variables: (r.variables as string[]) ?? [],
 });
 
 const toTask = (r: Row): CoachTask => ({
@@ -352,19 +375,40 @@ const unwrap = <T,>(res: { data: T | null; error: unknown }): T => {
  * tiene equipos asignados, las consultas devuelven listas vacías.
  */
 export async function loadWorkspace(userId: string): Promise<ClubData> {
-  const [profileRes, staffRes, teamsRes, teamStaffRes, templatesRes, tasksRes, notifsRes] =
+  const [profileRes, staffRes, teamsRes, teamStaffRes, clubRes, tasksRes, notifsRes] =
     await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
       supabase.from('profiles').select('*'),
       supabase.from('teams').select('*').order('name'),
       supabase.from('team_staff').select('*'),
-      supabase.from('message_templates').select('*').order('name'),
+      // El club de quien entra. RLS ya limita la consulta a los suyos.
+      supabase
+        .from('club_members')
+        .select('role, clubs(id, name, short_name, city, season, crest_url)')
+        .eq('profile_id', userId)
+        .order('created_at')
+        .limit(1)
+        .maybeSingle(),
       supabase.from('tasks').select('*').order('created_at', { ascending: false }),
       supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(40),
     ]);
 
   if (profileRes.error) throw profileRes.error;
   if (teamsRes.error) throw teamsRes.error;
+
+  const clubRow = clubRes.data as Row | null;
+  const clubData = (clubRow?.clubs ?? null) as Row | null;
+  const club: Club | null = clubData
+    ? {
+        id: clubData.id as string,
+        name: clubData.name as string,
+        shortName: (clubData.short_name as string) || (clubData.name as string),
+        city: (clubData.city as string) ?? undefined,
+        season: (clubData.season as string) ?? undefined,
+        crestUrl: (clubData.crest_url as string) ?? undefined,
+        role: (clubRow?.role as Club['role']) ?? undefined,
+      }
+    : null;
 
   const teamStaffRows = (teamStaffRes.data ?? []) as Row[];
   const teamStaff: TeamStaffLink[] = teamStaffRows.map((r) => ({
@@ -390,11 +434,11 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
     return {
       ...EMPTY_CLUB_DATA,
       profile,
+      club,
       staff,
       teams,
       teamStaff,
       drills: ((drillsRes.data ?? []) as Row[]).map((r) => toDrill(r, favorites)),
-      templates: ((templatesRes.data ?? []) as Row[]).map(toTemplate),
       tasks: ((tasksRes.data ?? []) as Row[]).map(toTask),
       notifications: ((notifsRes.data ?? []) as Row[]).map(toNotification),
     };
@@ -418,6 +462,7 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
   return {
     ...EMPTY_CLUB_DATA,
     profile,
+    club,
     staff,
     teams,
     teamStaff,
@@ -429,7 +474,6 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
     messages: unwrap<Row[]>(messagesRes).map(toMessage),
     activity: unwrap<Row[]>(activityRes).map(toActivity),
     drills: unwrap<Row[]>(drillsRes).map((r) => toDrill(r, favorites)),
-    templates: ((templatesRes.data ?? []) as Row[]).map(toTemplate),
     tasks: ((tasksRes.data ?? []) as Row[]).map(toTask),
     notifications: ((notifsRes.data ?? []) as Row[]).map(toNotification),
   };

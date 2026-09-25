@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { visibleTeams } from '@/store/selectors';
-import { Button, Card, Field, Input, PageHeader, Select, Textarea } from '@/components/ui';
+import { clubShortName, visibleTeams } from '@/store/selectors';
+import { Button, Panel, Field, Input, PageHeader, Select, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { CLUB_NAME, cn, toISODate, today } from '@/lib/utils';
+import { cn, toISODate, today } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
 import type { Match } from '@/types';
 
@@ -26,6 +26,7 @@ export default function MatchEditor() {
   const navigate = useNavigate();
   const toast = useToast();
   const { data, teamId, actions } = useClub();
+  const ownName = clubShortName(data);
   const teams = visibleTeams(data);
   const [busy, setBusy] = useState(false);
   const activeTeam = teams.find((t) => t.id === teamId) ?? teams[0];
@@ -57,7 +58,7 @@ export default function MatchEditor() {
           : `Has creado el partido contra ${saved.opponent}.`,
         link: `/app/partidos/${saved.id}`,
       });
-      toast.success(existing ? 'Partido actualizado ✓' : 'Partido creado ✓', 'Ya aparece en el calendario del equipo.');
+      toast.success(existing ? 'Partido actualizado' : 'Partido creado', 'Ya aparece en el calendario del equipo.');
       navigate(`/app/partidos/${saved.id}`);
     } catch (e) {
       toast.error('No hemos podido guardar el partido', humanError(e));
@@ -70,7 +71,7 @@ export default function MatchEditor() {
     <>
       <Link
         to="/app/partidos"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-ink-500 transition-colors hover:text-brand-800"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
       >
         <ArrowLeft size={15} /> Partidos
       </Link>
@@ -91,7 +92,7 @@ export default function MatchEditor() {
       />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        <Card className="p-5 sm:p-6">
+        <Panel className="p-5 sm:p-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Equipo">
               <Select
@@ -151,8 +152,8 @@ export default function MatchEditor() {
                     className={cn(
                       'flex-1 rounded-xl border px-4 py-2.5 text-[14px] font-medium transition-all',
                       form.home === o.v
-                        ? 'border-brand-400 bg-brand-50 text-brand-800 ring-2 ring-brand-100'
-                        : 'border-ink-200 text-ink-600 hover:border-brand-200',
+                        ? 'border-navy-400 bg-navy-50 text-navy-900 ring-2 ring-navy-100'
+                        : 'border-line text-navy-600 hover:border-navy-200',
                     )}
                   >
                     {o.label}
@@ -170,39 +171,39 @@ export default function MatchEditor() {
               />
             </Field>
           </div>
-        </Card>
+        </Panel>
 
         <div className="space-y-4">
-          <Card className="p-5">
+          <Panel className="p-5">
             <h2 className="text-[14.5px] font-semibold">Vista previa</h2>
-            <div className="mt-4 rounded-xl border border-ink-200 p-4">
-              <p className="text-[12px] font-medium text-brand-700">
+            <div className="mt-4 rounded-xl border border-line p-4">
+              <p className="text-[12px] font-medium text-navy-900">
                 {teams.find((t) => t.id === form.teamId)?.name}
               </p>
               <div className="mt-2.5 flex items-center gap-3">
-                <span className="flex-1 text-right text-[14px] font-semibold text-ink-900">
-                  {form.home ? CLUB_NAME : form.opponent || 'Rival'}
+                <span className="flex-1 text-right text-[14px] font-semibold text-navy-900">
+                  {form.home ? ownName : form.opponent || 'Rival'}
                 </span>
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-50 text-[10.5px] font-semibold text-brand-700">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-navy-50 text-[10.5px] font-semibold text-navy-900">
                   vs
                 </span>
-                <span className="flex-1 text-[14px] font-semibold text-ink-900">
-                  {form.home ? form.opponent || 'Rival' : CLUB_NAME}
+                <span className="flex-1 text-[14px] font-semibold text-navy-900">
+                  {form.home ? form.opponent || 'Rival' : ownName}
                 </span>
               </div>
-              <p className="mt-3 text-center text-[12.5px] text-ink-500">
+              <p className="mt-3 text-center text-[12.5px] text-muted">
                 {form.date} · {form.start}
               </p>
-              <p className="mt-0.5 text-center text-[12px] text-ink-400">{form.venue}</p>
+              <p className="mt-0.5 text-center text-[12px] text-navy-400">{form.venue}</p>
             </div>
-          </Card>
+          </Panel>
 
-          <Card className="bg-brand-50/40 p-5">
-            <p className="text-[12.5px] leading-relaxed text-ink-600">
+          <Panel className="bg-navy-50/40 p-5">
+            <p className="text-[12.5px] leading-relaxed text-navy-600">
               Al guardar, el partido aparecerá en el calendario y en el panel de todos tus equipos. Desde su ficha
-              podrás crear la convocatoria y enviarla por WhatsApp.
+              podrás crear la convocatoria y compartirla con el equipo.
             </p>
-          </Card>
+          </Panel>
         </div>
       </div>
     </>

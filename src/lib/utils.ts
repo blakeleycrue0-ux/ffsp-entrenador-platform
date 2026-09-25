@@ -1,8 +1,5 @@
 import clsx, { type ClassValue } from 'clsx';
 
-/** Nombre del club, usado en mensajes y cabeceras. */
-export const CLUB_NAME = 'Santa Ponsa CF';
-
 export const cn = (...inputs: ClassValue[]) => clsx(inputs);
 
 /* ──────────────────────────────── Fechas ─────────────────────────────────── */
@@ -70,6 +67,12 @@ export const relativeDay = (iso: string): string => {
 export const longDate = (iso: string): string => {
   const d = parseISO(iso);
   return `${cap(DAYS[d.getDay()])} ${d.getDate()} de ${MONTHS[d.getMonth()]}`;
+};
+
+/** La misma fecha, en minúscula, para incrustarla dentro de una frase. */
+export const longDateInline = (iso: string): string => {
+  const d = longDate(iso);
+  return d.charAt(0).toLowerCase() + d.slice(1);
 };
 
 export const shortDate = (iso: string): string => {

@@ -1,248 +1,88 @@
-import { useState } from 'react';
-import {
-  AlertTriangle, Bell, CalendarDays, CheckCircle2, MessageSquare, Shield, Sparkles,
-} from 'lucide-react';
-import { useClub } from '@/store/store';
-import { currentStaff, visibleTeams } from '@/store/selectors';
-import { ROLE_LABEL, auth, isCoordinator } from '@/services/auth';
-import { humanError } from '@/services/supabase';
-import { whatsapp } from '@/services/whatsapp';
-import { Badge, Button, Card, Input, Modal, PageHeader, Tabs, Toggle } from '@/components/ui';
-import { useToast } from '@/components/ui/Toast';
-import { cn } from '@/lib/utils';
-import type { IntegrationId } from '@/types';
+/**
+ * Ajustes y ayuda.
+ * Sin integraciones inventadas: sólo lo que la plataforma hace de verdad.
+ */
 
-const INTEGRATION_ICON: Record<IntegrationId, typeof MessageSquare> = {
-  whatsapp: MessageSquare,
-  ia: Sparkles,
-  calendario: CalendarDays,
-};
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useClub } from '@/store/store';
+import { currentStaff, isClubAdmin, visibleTeams } from '@/store/selectors';
+import { ROLE_LABEL, auth } from '@/services/auth';
+import { humanError, supabase } from '@/services/supabase';
+import {
+  Button, Field, Figure, Input, PageHeader, Panel, PanelHeader, ScoreInput, Tabs, Tag, Textarea,
+} from '@/components/ui';
+import { useToast } from '@/components/ui/Toast';
 
 export default function SettingsPage() {
-  const { data, actions } = useClub();
+  const { data, userId, actions } = useClub();
   const toast = useToast();
   const staff = currentStaff(data);
   const teams = visibleTeams(data);
   const [newPassword, setNewPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
-  const [tab, setTab] = useState('integraciones');
-  const [connecting, setConnecting] = useState<IntegrationId | null>(null);
-  const [reason, setReason] = useState<string | null>(null);
+  const [tab, setTab] = useState('cuenta');
 
-  const [prefs, setPrefs] = useState({
-    pendientes: true,
-    entrenamientos: true,
-    respuestas: true,
-    resumenSemanal: false,
-  });
+  // Comentarios privados para el club: no son reseñas públicas.
+  const [feedback, setFeedback] = useState('');
+  const [score, setScore] = useState<number | null>(null);
+  const [sendingFeedback, setSendingFeedback] = useState(false);
 
-  const connect = async (id: IntegrationId) => {
-    setConnecting(id);
-    if (id === 'whatsapp') {
-      const res = await whatsapp.connect();
-      setConnecting(null);
-      if (!res.ok) {
-        setReason(res.reason ?? 'No se ha podido completar la conexión.');
-        return;
-      }
+  const sendFeedback = async () => {
+    if (feedback.trim().length < 5) {
+      toast.error('Escribe un poco más', 'Cuéntanos qué te ha pasado o qué echas en falta.');
       return;
     }
-    await new Promise((r) => setTimeout(r, 600));
-    setConnecting(null);
-    setReason(
-      id === 'ia'
-        ? 'Para conectar un modelo real hace falta una clave de API del proveedor elegido en la configuración del servidor. Hasta entonces el asistente funciona con el motor local de demostración, que consulta los datos reales del club.'
-        : 'La sincronización bidireccional con Google Calendar o Apple Calendar requiere autorizar la cuenta del club. Mientras tanto puedes exportar la agenda en formato .ics desde el calendario.',
-    );
+    setSendingFeedback(true);
+    try {
+      const { error } = await supabase.from('app_feedback').insert({
+        profile_id: userId,
+        message: feedback.trim(),
+        score,
+      });
+      if (error) throw error;
+      setFeedback('');
+      setScore(null);
+      toast.success('Gracias', 'Lo hemos recibido. No se publica en ningún sitio.');
+    } catch (e) {
+      toast.error('No hemos podido guardarlo', humanError(e));
+    } finally {
+      setSendingFeedback(false);
+    }
   };
 
   return (
     <>
       <PageHeader
-        title="Configuración"
-        description="Integraciones, notificaciones, permisos y datos de la plataforma."
+        title="Ajustes y ayuda"
+        description="Tu cuenta, lo que puedes hacer en la plataforma y cómo contarnos un problema."
       />
 
       <Tabs
-        className="mb-6"
+        className="mb-5"
         value={tab}
         onChange={setTab}
         tabs={[
-          { id: 'integraciones', label: 'Integraciones' },
-          { id: 'notificaciones', label: 'Notificaciones' },
-          { id: 'permisos', label: 'Permisos' },
           { id: 'cuenta', label: 'Cuenta' },
+          { id: 'permisos', label: 'Permisos' },
+          { id: 'ayuda', label: 'Ayuda' },
         ]}
       />
 
-      {tab === 'integraciones' && (
-        <div className="space-y-4">
-          {data.integrations.map((i) => {
-            const Icon = INTEGRATION_ICON[i.id];
-            return (
-              <Card key={i.id} className="p-5">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <span
-                      className={cn(
-                        'grid h-11 w-11 shrink-0 place-items-center rounded-xl',
-                        i.connected ? 'bg-pitch/10 text-pitch' : 'bg-ink-100 text-ink-500',
-                      )}
-                    >
-                      <Icon size={20} />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-[15.5px] font-semibold">{i.name}</h3>
-                        <Badge tone={i.connected ? 'success' : 'warning'} size="sm" dot>
-                          {i.connected ? 'Conectado' : 'Sin conectar'}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-[13px] text-ink-500">{i.provider}</p>
-                      <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-ink-500">{i.detail}</p>
-                    </div>
-                  </div>
-
-                  <Button
-                    variant={i.connected ? 'outline' : 'primary'}
-                    size="sm"
-                    loading={connecting === i.id}
-                    onClick={() => connect(i.id)}
-                  >
-                    {i.connected ? 'Desconectar' : `Conectar ${i.name.split(' ')[0]}`}
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
-
-          <Card className="border-ink-200 bg-ink-50/60 p-5">
-            <h3 className="flex items-center gap-2 text-[14.5px] font-semibold">
-              <AlertTriangle size={16} className="text-[#B87C1C]" /> Sobre las integraciones en esta versión
-            </h3>
-            <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-ink-600">
-              La aplicación está construida con la capa de integración lista, pero ninguna conexión externa está
-              activa. Por eso cualquier mensaje se marca como no enviado y el asistente indica que usa el motor local.
-              Preferimos que la plataforma diga la verdad antes que aparentar algo que todavía no existe.
-            </p>
-          </Card>
-        </div>
-      )}
-
-      {tab === 'notificaciones' && (
-        <Card className="p-5 sm:p-6">
-          <h2 className="flex items-center gap-2 text-[15px] font-semibold">
-            <Bell size={16} className="text-brand-600" /> Qué quieres que te avisemos
-          </h2>
-          <div className="mt-5 space-y-1">
-            {[
-              ['pendientes', 'Confirmaciones pendientes', 'Cuando falten respuestas en una convocatoria a menos de 48 h del partido.'],
-              ['entrenamientos', 'Recordatorio de entrenamiento', 'Un aviso el día antes de cada sesión planificada.'],
-              ['respuestas', 'Respuestas de las familias', 'Cada vez que alguien confirme o rechace una convocatoria.'],
-              ['resumenSemanal', 'Resumen semanal del equipo', 'Los domingos, con asistencia, lesiones y agenda de la semana.'],
-            ].map(([key, title, desc]) => (
-              <div
-                key={key}
-                className="flex items-start justify-between gap-4 border-b border-ink-100 py-4 last:border-0"
-              >
-                <div className="min-w-0">
-                  <p className="text-[14px] font-medium text-ink-800">{title}</p>
-                  <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink-500">{desc}</p>
-                </div>
-                <Toggle
-                  checked={prefs[key as keyof typeof prefs]}
-                  onChange={(v) => {
-                    setPrefs((p) => ({ ...p, [key]: v }));
-                    toast.success('Preferencia actualizada ✓');
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {tab === 'permisos' && (
-        <div className="space-y-4">
-          <Card className="p-5">
-            <h2 className="flex items-center gap-2 text-[15px] font-semibold">
-              <Shield size={16} className="text-brand-600" /> Tu perfil y tus accesos
-            </h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="section-title">Rol</p>
-                <p className="mt-1.5 text-[14.5px] font-medium text-ink-800">
-                  {staff ? ROLE_LABEL[staff.role] : '—'}
-                </p>
-                <p className="mt-1 text-[12.5px] text-ink-500">{staff?.licence ?? 'Sin licencia registrada'}</p>
-              </div>
-              <div>
-                <p className="section-title">Equipos asignados</p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {teams.map((t) => (
-                    <Badge key={t.id} tone="brand" size="sm">
-                      {t.name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <p className="section-title">Qué puedes hacer</p>
-              <div className="mt-2.5 grid gap-1.5 sm:grid-cols-2">
-                {(isCoordinator(staff)
-                  ? [
-                      'Crear equipos y asignar cuerpo técnico',
-                      'Ver todos los equipos del club',
-                      'Gestionar jugadoras, sesiones y partidos',
-                      'Enviar mensajes y convocatorias',
-                      'Ver los datos personales de las jugadoras',
-                    ]
-                  : [
-                      'Gestionar tus equipos asignados',
-                      'Dar de alta y editar jugadoras',
-                      'Planificar entrenamientos y partidos',
-                      'Registrar asistencia y convocatorias',
-                      'Enviar mensajes a tu equipo',
-                    ]
-                ).map((p) => (
-                  <span key={p} className="flex items-center gap-2 text-[13px] text-ink-600">
-                    <CheckCircle2 size={14} className="shrink-0 text-pitch" />
-                    {p}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-5">
-            <h3 className="text-[14.5px] font-semibold">Privacidad de los datos de las jugadoras</h3>
-            <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-ink-500">
-              Los datos personales de las jugadoras y sus familias son privados. Sólo se muestran dentro de la ficha
-              individual y nunca en listados, búsquedas ni exportaciones. El servidor aplica seguridad por filas: cada
-              entrenadora sólo puede leer y escribir en los equipos que tiene asignados, aunque manipule la aplicación.
-            </p>
-          </Card>
-        </div>
-      )}
-
       {tab === 'cuenta' && (
-        <div className="space-y-4">
-          <Card className="p-5">
-            <h2 className="text-[15px] font-semibold">Contraseña</h2>
-            <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-ink-500">
-              Cambia tu contraseña de acceso. Se aplicará la próxima vez que entres.
-            </p>
-            <div className="mt-4 flex max-w-md flex-col gap-3 sm:flex-row">
-              <Input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Nueva contraseña (mínimo 6 caracteres)"
-              />
+        <div className="grid gap-3 lg:grid-cols-2">
+          <Panel>
+            <PanelHeader title="Contraseña" description="Se aplica la próxima vez que entres." />
+            <div className="space-y-3 p-4">
+              <Field label="Nueva contraseña" hint="Mínimo 6 caracteres.">
+                <Input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+              </Field>
               <Button
-                size="md"
                 loading={changingPassword}
                 onClick={async () => {
                   if (newPassword.length < 6) {
@@ -253,7 +93,7 @@ export default function SettingsPage() {
                   try {
                     await auth.updatePassword(newPassword);
                     setNewPassword('');
-                    toast.success('Contraseña actualizada ✓');
+                    toast.success('Contraseña actualizada');
                   } catch (e) {
                     toast.error('No hemos podido cambiarla', humanError(e));
                   } finally {
@@ -261,48 +101,170 @@ export default function SettingsPage() {
                   }
                 }}
               >
-                Cambiar
+                Cambiar contraseña
               </Button>
             </div>
-          </Card>
+          </Panel>
 
-          <Card className="p-5">
-            <h2 className="text-[15px] font-semibold">Tus datos en la plataforma</h2>
-            <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-ink-500">
-              Esto es lo que hay ahora mismo en los equipos a los que tienes acceso.
-            </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              {[
-                ['Equipos', data.teams.length],
-                ['Jugadoras', data.players.length],
-                ['Ejercicios', data.drills.length],
-                ['Entrenamientos', data.sessions.length],
-                ['Partidos', data.matches.length],
-                ['Mensajes', data.messages.length],
-              ].map(([l, n]) => (
-                <div key={l as string} className="rounded-xl bg-ink-50 px-4 py-3">
-                  <p className="text-[19px] font-semibold text-ink-900 tabular-nums">{n as number}</p>
-                  <p className="mt-0.5 text-[12px] text-ink-500">{l as string}</p>
-                </div>
-              ))}
+          <Panel>
+            <PanelHeader
+              title="Lo que hay en tus equipos"
+              description="Cifras reales de lo que has registrado."
+              actions={
+                <Button variant="secondary" size="sm" onClick={() => void actions.refresh()}>
+                  Recargar
+                </Button>
+              }
+            />
+            <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3">
+              <Figure label="Equipos" value={data.teams.length} />
+              <Figure label="Jugadoras" value={data.players.filter((p) => !p.archivedAt).length} />
+              <Figure label="Ejercicios" value={data.drills.length} />
+              <Figure label="Entrenamientos" value={data.sessions.length} />
+              <Figure label="Partidos" value={data.matches.length} />
+              <Figure label="Asistencias" value={data.attendance.length} />
             </div>
-            <Button variant="outline" size="sm" className="mt-5" onClick={() => void actions.refresh()}>
-              Recargar desde el servidor
-            </Button>
-          </Card>
+          </Panel>
         </div>
       )}
 
-      {/* Motivo por el que no se puede conectar todavía */}
-      <Modal
-        open={!!reason}
-        onClose={() => setReason(null)}
-        title="Integración pendiente de credenciales"
-        footer={<Button onClick={() => setReason(null)}>Entendido</Button>}
-      >
-        <p className="text-[14px] leading-relaxed text-ink-600">{reason}</p>
-      </Modal>
+      {tab === 'permisos' && (
+        <div className="space-y-3">
+          <Panel>
+            <PanelHeader title="Tu perfil" />
+            <div className="grid gap-4 p-4 sm:grid-cols-2">
+              <div>
+                <p className="eyebrow">Rol</p>
+                <p className="mt-1 text-base font-medium text-navy-900">
+                  {staff ? ROLE_LABEL[staff.role] : '—'}
+                </p>
+                {staff?.licence && <p className="mt-0.5 text-sm text-muted">{staff.licence}</p>}
+              </div>
+              <div>
+                <p className="eyebrow">Equipos asignados</p>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {teams.length === 0 ? (
+                    <p className="text-sm text-muted">Ninguno todavía.</p>
+                  ) : (
+                    teams.map((t) => (
+                      <Tag key={t.id} size="sm">
+                        {t.name}
+                      </Tag>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </Panel>
 
+          <Panel>
+            <PanelHeader title="Qué puedes hacer" />
+            <ul className="space-y-1.5 p-4 text-base text-navy-700">
+              {(isClubAdmin(data)
+                ? [
+                    'Crear equipos y asignar al cuerpo técnico',
+                    'Ver todos los equipos del club',
+                    'Gestionar plantillas, entrenamientos y partidos',
+                    'Ver los datos personales y de contacto de las jugadoras',
+                  ]
+                : [
+                    'Trabajar en los equipos que tienes asignados',
+                    'Dar de alta y editar jugadoras',
+                    'Planificar entrenamientos y partidos',
+                    'Registrar asistencia y convocatorias',
+                  ]
+              ).map((p) => (
+                <li key={p} className="flex gap-2">
+                  <span aria-hidden className="text-navy-300">
+                    ·
+                  </span>
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
+          <Panel>
+            <PanelHeader title="Cómo se protegen los datos" />
+            <div className="space-y-3 p-4 text-base leading-relaxed text-navy-700">
+              <p>
+                Los permisos no dependen de lo que se ve en pantalla: los aplica el servidor. Cada
+                consulta pasa por las políticas de acceso de la base de datos, así que una entrenadora
+                no puede leer ni escribir en un equipo que no tiene asignado aunque manipule la
+                aplicación en su navegador.
+              </p>
+              <p>
+                Los datos de contacto de jugadoras y familias sólo aparecen dentro de la ficha
+                individual, nunca en listados ni exportaciones.
+              </p>
+              <p className="text-sm text-muted">
+                <Link to="/privacidad" className="underline underline-offset-2 hover:text-navy-900">
+                  Política de privacidad
+                </Link>
+                {' · '}
+                <Link to="/aviso-legal" className="underline underline-offset-2 hover:text-navy-900">
+                  Aviso legal
+                </Link>
+              </p>
+            </div>
+          </Panel>
+        </div>
+      )}
+
+      {tab === 'ayuda' && (
+        <div className="grid gap-3 lg:grid-cols-2">
+          <Panel>
+            <PanelHeader
+              title="Cuéntanos un problema"
+              description="Va directo a quien mantiene la plataforma. No se publica."
+            />
+            <div className="space-y-3 p-4">
+              <Field label="Qué ha pasado">
+                <Textarea
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                  placeholder="Qué estabas haciendo, qué esperabas y qué ha ocurrido."
+                />
+              </Field>
+              <Field label="Cómo te está funcionando" hint="Opcional.">
+                <ScoreInput value={score} onChange={setScore} name="Valoración de la plataforma" />
+              </Field>
+              <Button loading={sendingFeedback} onClick={sendFeedback}>
+                Enviar
+              </Button>
+            </div>
+          </Panel>
+
+          <Panel>
+            <PanelHeader title="Preguntas frecuentes" />
+            <dl className="divide-y divide-line">
+              {[
+                [
+                  '¿Por qué no veo ningún equipo?',
+                  'Porque todavía no te han asignado ninguno. Quien administra el club lo hace desde Equipo técnico.',
+                ],
+                [
+                  '¿La plataforma envía mensajes a las familias?',
+                  'No. Prepara las listas y los textos, y tú los compartes por donde ya habléis con el equipo.',
+                ],
+                [
+                  '¿Qué pasa si una jugadora deja el equipo?',
+                  'Se archiva, no se borra: su historial de asistencia y de partidos se conserva.',
+                ],
+                [
+                  '¿Se guarda solo lo que escribo?',
+                  'Cada pantalla indica cuándo ha guardado. Si el servidor rechaza un cambio, se avisa y no se da por guardado.',
+                ],
+              ].map(([q, a]) => (
+                <div key={q} className="px-4 py-3">
+                  <dt className="text-base font-medium text-navy-900">{q}</dt>
+                  <dd className="mt-1 text-base leading-relaxed text-muted">{a}</dd>
+                </div>
+              ))}
+            </dl>
+          </Panel>
+        </div>
+      )}
     </>
   );
 }

@@ -46,7 +46,7 @@ export function humanError(error: unknown): string {
     return 'La base de datos todavía no tiene las tablas creadas. Ejecuta el fichero supabase/migrations/0001_esquema_inicial.sql en el editor SQL de Supabase.';
   }
   if (code === '42501' || /row-level security/i.test(raw)) {
-    return 'No tienes permiso para hacer eso. Si crees que es un error, pídeselo a la coordinadora del club.';
+    return 'No tienes permiso para hacer eso. Si crees que es un error, pídeselo a quien administra el club.';
   }
   if (code === '23505') return 'Ese registro ya existe.';
   if (/Failed to fetch|NetworkError|fetch failed/i.test(raw)) {
