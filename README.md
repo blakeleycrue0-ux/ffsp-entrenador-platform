@@ -24,8 +24,9 @@ En el panel de Supabase → **SQL Editor** → **New query**, pega y ejecuta, po
 3. `supabase/migrations/0003_aislamiento_por_club.sql`
 4. `supabase/migrations/0004_cerrar_funciones_publicas.sql`
 5. `supabase/migrations/0005_ver_el_equipo_recien_creado.sql`
+6. `supabase/migrations/0006_planes_y_suscripciones.sql`
 
-Las cinco son **idempotentes y aditivas**: se pueden ejecutar más de una vez, no borran tablas, no
+Las seis son **idempotentes y aditivas**: se pueden ejecutar más de una vez, no borran tablas, no
 vacían registros y no reinician nada.
 
 - La **0002** añade clubes, invitaciones, lesiones, valoraciones, asistencia por filas y jugadas de
@@ -37,6 +38,12 @@ vacían registros y no reinician nada.
   cambia permisos, no toca datos.
 - La **0005** arregla que crear un equipo fallara siempre. Sólo redefine políticas de `teams`,
   diciendo lo mismo que antes pero leyéndolo de la fila. Ver abajo.
+- La **0006** añade los planes (`plans`) y la suscripción de cada club (`subscriptions`), y hace
+  que el límite de equipos lo imponga la base de datos, no la pantalla. `subscriptions` **no tiene
+  ninguna política de escritura**: nadie puede ascenderse a sí mismo desde el navegador, ni con la
+  sesión de quien administra el club. Sólo la escribe el webhook de Stripe, que corre en el
+  servidor con la clave de servicio. Los planes se crean sin precio a propósito: mientras no haya
+  uno decidido, la aplicación no enseña ninguna cifra ni deja contratar.
 
 > **Una política no debe consultar su propia tabla.** Guardar con `.select()` es `RETURNING`, y
 > devolver la fila recién escrita exige pasar la política de SELECT. Si esa política llama a una
@@ -78,6 +85,36 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # compilación de producción
 ```
+
+### Paso 5 — Cobros (sólo si se va a cobrar)
+
+Sin estas variables la aplicación funciona entera en plan gratuito: un equipo por club. No se cae
+ni avisa de nada raro; simplemente no se puede contratar.
+
+En **Netlify → Site configuration → Environment variables**:
+
+| Variable | Para qué |
+|---|---|
+| `STRIPE_SECRET_KEY` | Crear la sesión de pago y abrir el portal. |
+| `STRIPE_WEBHOOK_SECRET` | Comprobar que el aviso de Stripe es de Stripe y no de cualquiera. |
+| `SUPABASE_URL` | Proyecto sobre el que escribe el webhook. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Escribir `subscriptions`, que nadie más puede tocar. |
+
+Las cuatro son **de servidor**. Ninguna lleva el prefijo `VITE_`, y ésa es toda la diferencia: Vite
+sólo mete en el navegador lo que empieza por `VITE_`. La clave de servicio salta la seguridad por
+filas entera, así que si aparece alguna vez en el navegador hay que rotarla, no taparla.
+
+Después, en Stripe:
+
+1. Crear el producto **Pro** con dos precios, mensual y anual, **con el importe que se decida**.
+2. Guardar sus identificadores en la tabla `plans`:
+   `update plans set stripe_price_monthly = 'price_…', stripe_price_yearly = 'price_…',
+   price_monthly = <céntimos>, price_yearly = <céntimos> where tier = 'pro';`
+3. Apuntar el webhook a `https://<dominio>/.netlify/functions/stripe-webhook` con los eventos
+   `checkout.session.completed` y `customer.subscription.*`.
+
+Hasta que el paso 2 esté hecho, la pantalla de plan dice «Precio por decidir» y no deja pagar. Es
+deliberado: preferimos eso a enseñar una cifra inventada.
 
 ---
 
@@ -170,7 +207,9 @@ Está aquí porque preferimos decirlo antes de que se descubra usándola:
 - **No convierte en ceros los datos que faltan.** Si no hay dato, dice que no hay dato.
 - **No exporta la animación en vídeo**, sólo imagen.
 - **No permite subir el escudo como archivo**: se pega la dirección de una imagen pública.
-- **No tiene planes de pago ni pasarela**: no están decididos.
+- **Todavía no se puede contratar el plan Pro**: la pasarela está montada y probada, pero **no hay
+  precio decidido**. Hasta que lo haya, la aplicación no enseña ninguna cifra y el botón de
+  contratar está desactivado. No hay ningún importe de ejemplo escondido en el código.
 
 Las páginas legales están redactadas pero **marcadas como pendientes de revisión**: los datos del
 titular (razón social, identificación fiscal, dirección, plazos de conservación) los debe aportar el

@@ -11,6 +11,7 @@
  */
 
 import { supabase } from './supabase';
+import { billing, parsePlan } from './billing';
 import type {
   ActivityItem, AttendanceMark, AttendanceRecord, Callup, Club, ClubData, CoachTask, Drill, Match,
   MessageThread, Notification, Player, Staff, Team, TeamStaffLink, TrainingSession,
@@ -378,7 +379,7 @@ const unwrap = <T,>(res: { data: T | null; error: unknown }): T => {
  * tiene equipos asignados, las consultas devuelven listas vacías.
  */
 export async function loadWorkspace(userId: string): Promise<ClubData> {
-  const [profileRes, staffRes, teamsRes, teamStaffRes, clubRes, tasksRes, notifsRes] =
+  const [profileRes, staffRes, teamsRes, teamStaffRes, clubRes, tasksRes, notifsRes, plansRes] =
     await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
       supabase.from('profiles').select('*'),
@@ -394,6 +395,9 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
         .maybeSingle(),
       supabase.from('tasks').select('*').order('created_at', { ascending: false }),
       supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(40),
+      // Los planes son públicos; la suscripción se pide aparte, cuando ya se
+      // sabe de qué club hablamos.
+      supabase.from('plans').select('*').order('tier'),
     ]);
 
   if (profileRes.error) throw profileRes.error;
@@ -412,6 +416,12 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
         role: (clubRow?.role as Club['role']) ?? undefined,
       }
     : null;
+
+  /* La suscripción se pide ahora, ya sabiendo el club. Si falla no se tumba la
+     carga entera: sin ella la aplicación se comporta como plan gratuito, que
+     es lo que el servidor va a aplicar de todas formas. */
+  const plans = ((plansRes.data ?? []) as Row[]).map(parsePlan);
+  const subscription = club ? await billing.suscripcion(club.id).catch(() => null) : null;
 
   const teamStaffRows = (teamStaffRes.data ?? []) as Row[];
   const teamStaff: TeamStaffLink[] = teamStaffRows.map((r) => ({
@@ -438,6 +448,10 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
       ...EMPTY_CLUB_DATA,
       profile,
       club,
+      /* Un club sin ningún equipo todavía es justo el caso del plan gratuito:
+         aquí es donde más falta hace saber cuántos equipos permite. */
+      plans,
+      subscription,
       staff,
       teams,
       teamStaff,
@@ -466,6 +480,8 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
     ...EMPTY_CLUB_DATA,
     profile,
     club,
+    plans,
+    subscription,
     staff,
     teams,
     teamStaff,

@@ -13,6 +13,7 @@ import {
   Button, Field, Figure, Input, PageHeader, Panel, PanelHeader, ScoreInput, Tabs, Tag, Textarea,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { PlanPanel } from '@/features/billing/PlanPanel';
 
 export default function SettingsPage() {
   const { data, userId, actions } = useClub();
@@ -71,6 +72,8 @@ export default function SettingsPage() {
 
       {tab === 'cuenta' && (
         <div className="grid gap-3 lg:grid-cols-2">
+          <PlanPanel />
+
           <Panel>
             <PanelHeader title="Contraseña" description="Se aplica la próxima vez que entres." />
             <div className="space-y-3 p-4">

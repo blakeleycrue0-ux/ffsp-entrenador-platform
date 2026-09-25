@@ -8,6 +8,7 @@ import type {
   AttendanceMark, AttendanceRecord, Callup, ClubData, Match, Player, Staff, Team, TrainingSession,
 } from '@/types';
 import { normalize, pct, shortDate, toISODate, today } from '@/lib/utils';
+import { planEfectivo, type PlanTier } from '@/services/billing';
 
 export const currentStaff = (data: ClubData): Staff | null => data.profile;
 
@@ -294,3 +295,23 @@ export function globalSearch(data: ClubData, query: string): SearchHit[] {
 
   return hits;
 }
+
+/* ────────────────────────────── Plan del club ─────────────────────────────── */
+
+/**
+ * Lo que se enseña aquí es un REFLEJO del plan, para poder avisar antes de
+ * intentar guardar. Quien decide de verdad es la base de datos: estas funciones
+ * no autorizan nada, sólo evitan que alguien rellene un formulario entero para
+ * que el servidor se lo rechace al final.
+ */
+export const planActual = (data: ClubData): PlanTier => planEfectivo(data.subscription);
+
+/** Equipos que permite su plan. `null` es sin límite. */
+export const limiteDeEquipos = (data: ClubData): number | null =>
+  data.plans.find((p) => p.tier === planActual(data))?.maxTeams ?? null;
+
+/** ¿Le cabe un equipo más? */
+export const cabeOtroEquipo = (data: ClubData): boolean => {
+  const limite = limiteDeEquipos(data);
+  return limite === null || data.teams.length < limite;
+};
