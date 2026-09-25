@@ -29,6 +29,25 @@
   status = 200
 
 # ── Cabeceras ───────────────────────────────────────────────────────────────
+#
+# CUIDADO CON ESTO. Netlify decide las cabeceras por la ruta que PIDE el
+# navegador, no por el archivo que acaba sirviendo. Como la regla de arriba
+# reescribe cualquier ruta a /index.html, una regla escrita `for = "/index.html"`
+# sólo se aplicaba a quien pidiera literalmente esa dirección: nadie. Quien
+# entraba en «/» o en «/app/...» recibía el índice sin instrucción de caché, se
+# lo quedaba guardado, y seguía ejecutando la versión anterior durante horas
+# aunque ya estuviera publicada otra. Costó una tarde entera de depuración.
+#
+# Por eso ahora la norma general es no guardar nada, y se hacen excepciones
+# para lo que sí se puede. El orden importa: las reglas posteriores mandan
+# sobre las anteriores cuando ambas encajan.
+
+# Norma general: revalidar siempre. Cubre el índice llegue por donde llegue.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+
 # Los archivos de `assets` llevan un identificador en el nombre: cuando cambia
 # el contenido, cambia el nombre. Por eso pueden guardarse indefinidamente.
 [[headers]]
@@ -36,8 +55,8 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# El índice, en cambio, nunca se guarda: es lo que apunta a la versión nueva.
+# Las capturas e imágenes de la página pública cambian poco y pesan.
 [[headers]]
-  for = "/index.html"
+  for = "/producto/*"
   [headers.values]
-    Cache-Control = "no-cache"
+    Cache-Control = "public, max-age=604800"

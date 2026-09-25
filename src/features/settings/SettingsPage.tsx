@@ -263,6 +263,13 @@ export default function SettingsPage() {
               ))}
             </dl>
           </Panel>
+
+          {/* Saber qué versión se está ejecutando evita confundir un fallo con
+              una copia antigua guardada por el navegador. */}
+          <p className="px-1 text-sm text-muted">
+            Versión <span className="tabular-nums">{__VERSION__}</span>. Si algo no se comporta como
+            se acaba de decir, recarga la página y comprueba que esta referencia cambia.
+          </p>
         </div>
       )}
     </>
