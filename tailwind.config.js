@@ -5,6 +5,9 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        // Sólo para la marca y los titulares de la página pública. Dentro de la
+        // aplicación manda la información, no la tipografía.
+        display: ['Archivo', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         // Navy mate. Sin brillos ni degradados: el 900 es el color de marca.
@@ -24,6 +27,19 @@ export default {
         line: '#DCE2E8',
         muted: '#647184',
         surface: '#F4F6F8',
+        // Verde de campo. Es el color de la pizarra, que es lo más
+        // reconocible del producto, y por eso es el acento de la marca.
+        pitch: {
+          50: '#E8F8F0',
+          100: '#C4EDD9',
+          400: '#3ECF8E',
+          500: '#19B877',
+          600: '#0E9A61',
+          700: '#0B7A4D',
+          900: '#20573C',
+        },
+        // Navy más profundo, para las bandas oscuras de la página pública
+        night: '#08111C',
         // Colores funcionales: sólo cuando transmiten información
         ok: '#1F7A4D',
         warn: '#9A6712',
@@ -55,6 +71,9 @@ export default {
         '3xl': ['30px', '38px'],
         '4xl': ['38px', '46px'],
         '5xl': ['48px', '56px'],
+        '6xl': ['60px', '1.04'],
+        '7xl': ['76px', '1.01'],
+        '8xl': ['96px', '0.98'],
       },
       transitionDuration: {
         120: '120ms',
