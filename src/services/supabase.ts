@@ -87,6 +87,20 @@ export function humanError(error: unknown): string {
   if (code === '42883' || /function .* does not exist/i.test(raw)) {
     return 'A la base de datos le falta alguna función. Ejecuta la migración 0003_aislamiento_por_club.sql en el editor SQL de Supabase.';
   }
+  /**
+   * PostgreSQL responde lo mismo para «no puedes» que para «esta fila no
+   * cumple la política», y son dos cosas muy distintas. Si el rechazo es al
+   * ESCRIBIR una fila nueva, lo más probable es que le falte algún dato —el
+   * club, el equipo— y no que falte permiso: mandar a pedir permiso a quien
+   * administra el club, siendo a menudo quien lo lee, despista una tarde
+   * entera. Se distingue por el texto, que PostgREST devuelve tal cual.
+   */
+  if (/new row violates row-level security/i.test(raw)) {
+    return (
+      'El servidor ha rechazado estos datos por incompletos: normalmente falta el club o el equipo ' +
+      'al que pertenece. Recarga la página y vuelve a intentarlo; si sigue igual, es un fallo nuestro.'
+    );
+  }
   if (code === '42501' || /row-level security/i.test(raw)) {
     return 'No tienes permiso para hacer eso. Si crees que es un error, pídeselo a quien administra el club.';
   }

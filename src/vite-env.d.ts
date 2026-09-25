@@ -8,3 +8,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** Versión publicada, incrustada en la construcción. Ver vite.config.ts. */
+declare const __VERSION__: string;
