@@ -188,7 +188,7 @@ export function BoardEditor({
             <button
               key={p.kind}
               draggable
-              onDragStart={(e) => e.dataTransfer.setData('text/ffsp-objeto', p.kind)}
+              onDragStart={(e) => e.dataTransfer.setData('text/playoff360-objeto', p.kind)}
               onClick={() => onAdd(p.kind)}
               disabled={!editable}
               title={p.hint}

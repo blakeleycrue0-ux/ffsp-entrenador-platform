@@ -1,5 +1,5 @@
 /**
- * Sistema de componentes — FFSP
+ * Sistema de componentes — Playoff360
  * ---------------------------------------------------------------------------
  * Navy mate y blanco. Bordes finos, esquinas discretas, sombras mínimas.
  * Ninguna pieza conoce el dominio: todas reciben props.

@@ -1,9 +1,9 @@
 {
-  "name": "ffsp",
+  "name": "playoff360",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "FFSP — Sistema para entrenadores (Santa Ponsa CF)",
+  "description": "Playoff360 — Sistema de trabajo para el cuerpo técnico de cualquier club",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
