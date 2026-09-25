@@ -120,8 +120,10 @@ async function capturar(nombre, ruta, vp, preparar) {
   await ctx.close();
 }
 
-const escritorio = { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 };
-const movil = { viewport: { width: 390, height: 780 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
+// 1,5× es suficiente para el hueco en que se muestran (unos 700 px) y pesa la
+// mitad que 2×. La proporción 1360×860 la da por supuesta la página.
+const escritorio = { viewport: { width: 1360, height: 860 }, deviceScaleFactor: 1.5 };
+const movil = { viewport: { width: 390, height: 780 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
 
 await capturar('pizarra', '/app/pizarra', escritorio, async (page) => {
   const boton = page.getByRole('button', { name: 'Colocar mi equipo' });
@@ -149,10 +151,52 @@ await capturar('pizarra', '/app/pizarra', escritorio, async (page) => {
   await page.waitForTimeout(300);
 });
 
-await capturar('inicio', '/app', escritorio);
+await capturar('plantilla', '/app/plantilla', escritorio);
+await capturar('entrenamientos', '/app/entrenamientos', escritorio);
+await capturar('calendario', '/app/calendario', escritorio);
 await capturar('analiticas', '/app/analiticas', escritorio);
 await capturar('plantilla-movil', '/app/plantilla', movil);
 await capturar('entrenamientos-movil', '/app/entrenamientos', movil);
+
+/* ── Imagen para cuando se comparte el enlace ──────────────────────────────
+   1200×630 es la medida que esperan las redes y los mensajeros. Se compone
+   con la marca y una captura de verdad, la de la pizarra.                   */
+{
+  const ctx = await browser.newContext({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
+  const page = await ctx.newPage();
+  const png = fs.readFileSync(`${OUT}/pizarra.png`).toString('base64');
+  await page.setContent(`<!doctype html><html><head>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;800;900&display=swap" rel="stylesheet">
+    <style>
+      *{margin:0;box-sizing:border-box}
+      body{width:1200px;height:630px;background:#08111C;font-family:Archivo,sans-serif;
+           overflow:hidden;position:relative;color:#fff}
+      .luz{position:absolute;left:50%;top:-320px;width:1100px;height:660px;transform:translateX(-50%);
+           border-radius:50%;filter:blur(110px);opacity:.3;
+           background:radial-gradient(closest-side,#19B877,transparent 70%)}
+      .caja{position:relative;padding:62px 64px}
+      .marca{font-weight:800;font-size:30px;letter-spacing:-.035em}
+      .marca i{font-style:normal;color:#19B877}
+      h1{margin-top:30px;font-weight:900;font-size:78px;line-height:.95;letter-spacing:-.045em;max-width:660px}
+      h1 span{color:#3ECF8E}
+      p{margin-top:24px;font-size:23px;line-height:1.45;color:rgba(255,255,255,.62);max-width:560px;font-weight:500}
+      .foto{position:absolute;right:-150px;top:130px;width:700px;border-radius:14px;
+            border:1px solid rgba(255,255,255,.12);box-shadow:0 40px 90px -30px rgba(0,0,0,.85)}
+    </style></head><body>
+      <div class="luz"></div>
+      <img class="foto" src="data:image/png;base64,${png}">
+      <div class="caja">
+        <div class="marca">Playoff<i>360</i></div>
+        <h1>Prepara la semana.<br><span>Dibuja la jugada.</span></h1>
+        <p>El sistema de trabajo del cuerpo técnico. Para cualquier club.</p>
+      </div>
+    </body></html>`);
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: `${OUT}/og.png` });
+  console.log('✔ og (1200×630)');
+  await ctx.close();
+}
 
 await browser.close();
 console.log('\nCapturas en', OUT);

@@ -200,7 +200,14 @@ interface ClubContextValue {
 }
 
 const ClubContext = createContext<ClubContextValue | null>(null);
-const TEAM_KEY = 'ffsp:equipo-activo';
+/**
+ * Qué equipo se estaba mirando. Es una preferencia de pantalla, no un dato:
+ * los datos viven en Supabase. Se lee también la clave antigua para que a
+ * quien ya la tenga guardada no se le cambie el equipo al renombrar el
+ * producto.
+ */
+const TEAM_KEY = 'playoff360:equipo-activo';
+const TEAM_KEY_ANTIGUA = 'ffsp:equipo-activo';
 
 export function ClubProvider({ children }: { children: React.ReactNode }) {
   const [data, dispatch] = useReducer(reducer, EMPTY_CLUB_DATA);
@@ -209,7 +216,7 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [teamId, setTeamIdState] = useState<string>(() => {
     try {
-      return localStorage.getItem(TEAM_KEY) ?? '';
+      return localStorage.getItem(TEAM_KEY) ?? localStorage.getItem(TEAM_KEY_ANTIGUA) ?? '';
     } catch {
       return '';
     }

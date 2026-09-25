@@ -62,14 +62,14 @@ export function toICS(events: CalendarEvent[], clubName = 'Mi club'): string {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//FFSP//ES',
+    'PRODID:-//Playoff360//ES',
     'CALSCALE:GREGORIAN',
     `X-WR-CALNAME:${icsText(clubName)}`,
   ];
   events.forEach((e) => {
     lines.push(
       'BEGIN:VEVENT',
-      `UID:${e.id}@ffsp`,
+      `UID:${e.id}@playoff360`,
       `DTSTART:${icsDate(e.date, e.start)}`,
       `DTEND:${icsDate(e.date, e.end ?? addMinutes(e.start, 90))}`,
       `SUMMARY:${icsText(e.title)}`,

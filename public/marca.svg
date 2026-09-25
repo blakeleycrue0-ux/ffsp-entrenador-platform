@@ -1,0 +1,12 @@
+<!--
+  Marca de Playoff360.
+  La vuelta completa: un aro cerrado casi del todo y el balón entrando por el
+  hueco. Es el 360 del nombre y es un balón; no un símbolo prestado.
+-->
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="15" fill="#08111C"/>
+  <circle cx="31" cy="33" r="15.5" stroke="#19B877" stroke-width="6"
+          stroke-dasharray="83.4 13.9" stroke-linecap="round"
+          transform="rotate(-6 31 33)"/>
+  <circle cx="45.8" cy="19.6" r="6.2" fill="#3ECF8E"/>
+</svg>

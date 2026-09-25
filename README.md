@@ -1,4 +1,4 @@
-# FFSP — Sistema para entrenadores
+# Playoff360 — Sistema para entrenadores
 
 > **Menos gestión. Más tiempo para entrenar.**
 
@@ -192,13 +192,24 @@ Dos reglas:
 
 ## 8. Diseño
 
-- **Dos marcas, sin mezclarlas:** la del producto (FFSP) es igual para todos los clubes; la del
-  club cambia en cada instalación. Sin escudo subido se usan sus iniciales sobre navy, nunca un
-  escudo genérico que no es de nadie.
+- **La aplicación y la página pública no se rigen igual.** Dentro manda la información y no hay
+  adornos; fuera hay que convencer a alguien que llega por primera vez. Lo de abajo, salvo donde
+  se diga, describe la aplicación.
+- **Dos marcas, sin mezclarlas:** la del producto (Playoff360) es igual para todos los clubes y es
+  tipográfica, sin meter nada dentro de un cuadrado; la del club cambia en cada instalación y sin
+  escudo subido se usan sus iniciales sobre navy, nunca un escudo genérico que no es de nadie. El
+  símbolo suelto (`Aro`, el aro que el balón cierra) sólo se usa donde hace falta un icono
+  cuadrado de verdad: la pestaña del navegador.
 - **Color:** navy mate `#101C2D` sobre blanco y `#F4F6F8`. Bordes `#DCE2E8`, texto secundario
-  `#647184`. El color funcional (verde, ámbar, rojo) sólo cuando transmite información.
+  `#647184`. El color funcional (verde, ámbar, rojo) sólo cuando transmite información. El verde de
+  campo (`pitch`) es el acento de la marca y la página pública lo usa como tal.
 - **Sin adornos:** ni emojis, ni iconos decorativos por tarjeta, ni degradados, ni sombras
-  exageradas, ni tarjetas gigantes redondeadas. Los iconos acompañan acciones, no decoran.
+  exageradas, ni tarjetas gigantes redondeadas. Los iconos acompañan acciones, no decoran. La
+  página pública sí usa fondos oscuros, resplandores y titulares grandes: es lo único del producto
+  que tiene que llamar la atención.
+- **La página pública no inventa nada:** sus capturas son pantallas reales de la aplicación, que
+  genera `herramientas/capturas.mjs` con un club de ejemplo. No hay testimonios, escudos de
+  clientes, cifras de uso ni precios, porque nada de eso existe.
 - **Tipografía contenida:** dentro de la aplicación no hay titulares enormes; manda la información.
 - **Móvil:** navegación inferior con cuatro destinos y una hoja «Más» con todas las secciones.
 - **Atajos:** `⌘K` búsqueda global · `⌘I` menú Crear · en la pizarra, espacio reproduce y las flechas

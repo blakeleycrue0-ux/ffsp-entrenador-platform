@@ -158,7 +158,7 @@ export function BoardStage({
       onDrop={(e) => {
         if (!onDropNew) return;
         e.preventDefault();
-        const kind = e.dataTransfer.getData('text/ffsp-objeto') as ObjectKind;
+        const kind = e.dataTransfer.getData('text/playoff360-objeto') as ObjectKind;
         const at = toPitch(e.clientX, e.clientY);
         if (kind && at) onDropNew(kind, at);
       }}

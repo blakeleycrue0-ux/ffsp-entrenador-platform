@@ -1,5 +1,5 @@
 /**
- * FFSP — Modelo de dominio
+ * Playoff360 — Modelo de dominio
  * ---------------------------------------------------------------------------
  * Contrato único entre la base de datos (Supabase), los servicios y la interfaz.
  * Los valores de los estados coinciden exactamente con los tipos `enum` de
