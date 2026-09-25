@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { useClub } from '@/store/store';
 import { isClubAdmin } from '@/store/selectors';
-import { Mark } from '@/components/ui/Brand';
+import { Wordmark } from '@/components/ui/Brand';
 
 // Rutas con carga diferida: la primera pantalla llega antes y cada módulo
 // (pizarra, analíticas, constructor de sesiones…) se descarga sólo si se usa.
@@ -41,7 +41,7 @@ function Booting() {
   return (
     <div className="grid min-h-screen place-items-center bg-white">
       <div className="flex flex-col items-center gap-4">
-        <Mark size={40} />
+        <Wordmark size="lg" showSubtitle={false} />
         <div className="h-0.5 w-24 overflow-hidden rounded-full bg-navy-100">
           <div className="skeleton h-full w-full" />
         </div>

@@ -18,9 +18,12 @@
     font-size: 14px;
   }
 
-  /* Jerarquía contenida: nada de titulares enormes dentro de la aplicación. */
+  /* Jerarquía contenida: nada de titulares enormes dentro de la aplicación.
+     El color NO se fija aquí: se hereda, para que un titular sobre fondo
+     oscuro no acabe siendo navy sobre navy. */
   h1, h2, h3, h4 {
-    @apply text-navy-900 font-semibold;
+    @apply font-semibold;
+    color: inherit;
     letter-spacing: -0.006em;
   }
 
@@ -115,6 +118,25 @@
 
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Los deslizadores nativos salen en azul del sistema: se traen al navy */
+  input[type='range'] {
+    @apply h-6 w-full cursor-pointer appearance-none bg-transparent p-0;
+  }
+  input[type='range']::-webkit-slider-runnable-track {
+    @apply h-1 rounded-full bg-navy-200;
+  }
+  input[type='range']::-webkit-slider-thumb {
+    @apply h-4 w-4 appearance-none rounded-full border-2 border-white bg-navy-900;
+    margin-top: -6px;
+    box-shadow: 0 1px 3px rgba(16, 28, 45, 0.3);
+  }
+  input[type='range']::-moz-range-track {
+    @apply h-1 rounded-full bg-navy-200;
+  }
+  input[type='range']::-moz-range-thumb {
+    @apply h-4 w-4 rounded-full border-2 border-white bg-navy-900;
+  }
 
   /* La pizarra no debe seleccionar texto al arrastrar */
   .board-surface {

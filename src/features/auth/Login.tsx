@@ -10,12 +10,12 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useClub } from '@/store/store';
 import { auth } from '@/services/auth';
-import { humanError } from '@/services/supabase';
+import { compruebaConexion, humanError } from '@/services/supabase';
 import {
   ACCEPT_ERROR, CLUB_ROLE_LABEL, invitations, type InvitationPeek,
 } from '@/services/invitations';
 import { Button, Field, Input, Tag } from '@/components/ui';
-import { Mark, Wordmark } from '@/components/ui/Brand';
+import { Wordmark } from '@/components/ui/Brand';
 
 type Mode = 'entrar' | 'registro' | 'recuperar';
 
@@ -35,6 +35,18 @@ export default function Login() {
 
   const [invite, setInvite] = useState<InvitationPeek | null>(null);
   const [accepted, setAccepted] = useState(false);
+  /** Si el servidor no responde conviene decirlo antes de pedir la contraseña. */
+  const [sinConexion, setSinConexion] = useState<string | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    void compruebaConexion().then((r) => {
+      if (vivo && !r.ok) setSinConexion(r.motivo ?? null);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, []);
 
   /* Qué hay detrás del enlace de invitación, antes de pedir nada. */
   useEffect(() => {
@@ -140,7 +152,7 @@ export default function Login() {
         </Link>
 
         <div>
-          <Mark size={52} />
+          <Wordmark size="xl" showSubtitle={false} />
           <h1 className="mt-7 max-w-sm text-3xl font-semibold leading-tight tracking-[-0.015em]">
 La herramienta de tu club: plantilla, entrenamientos, partidos y pizarra táctica.
           </h1>
@@ -236,6 +248,11 @@ La herramienta de tu club: plantilla, entrenamientos, partidos y pizarra táctic
               </Field>
             )}
 
+            {sinConexion && !error && (
+              <p className="rounded-md border border-warn/40 bg-warn/8 px-3 py-2 text-sm leading-relaxed text-warn">
+                {sinConexion}
+              </p>
+            )}
             {error && (
               <p className="rounded-md border border-bad/30 bg-bad/5 px-3 py-2 text-sm leading-relaxed text-bad">
                 {error}

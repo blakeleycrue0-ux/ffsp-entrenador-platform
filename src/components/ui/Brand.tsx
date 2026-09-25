@@ -3,54 +3,59 @@
  * ---------------------------------------------------------------------------
  * Hay dos marcas y no conviene mezclarlas:
  *
- *  · La del **producto** (`Wordmark`, `Mark`), que es la misma para todos los
- *    clubes y aparece en el acceso, la página pública y la barra lateral.
- *  · La del **club** (`ClubCrest`), que cambia en cada instalación. Como no
- *    todos los clubes suben un escudo, la alternativa son sus iniciales sobre
- *    navy: sobria y siempre disponible, nunca un escudo genérico que no es
- *    de nadie.
+ *  · La del **producto** (`Wordmark`), igual para todos los clubes. Es
+ *    tipográfica: el nombre escrito con peso y una barra de acento. Un símbolo
+ *    genérico dentro de un cuadrado no dice nada y se ve como un hueco sin
+ *    resolver, así que no lo hay.
+ *  · La del **club** (`ClubCrest`), que cambia en cada instalación. Sin escudo
+ *    subido, sus iniciales sobre navy: sobria y siempre disponible, nunca un
+ *    escudo prestado que no es de nadie.
  */
 
 import { cn } from '@/lib/utils';
 
-/** Marca del producto: campo visto desde arriba, reducido a lo esencial. */
-export function Mark({ size = 28, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 32 32"
-      className={cn('shrink-0', className)}
-      role="img"
-      aria-label="FFSP"
-    >
-      <rect width="32" height="32" rx="7" fill="#101C2D" />
-      {/* Línea de medio campo y círculo central: a 20 px sigue leyéndose. */}
-      <g stroke="#FFFFFF" strokeWidth="2" fill="none" strokeLinecap="round">
-        <line x1="16" y1="5" x2="16" y2="27" />
-        <circle cx="16" cy="16" r="6" />
-      </g>
-    </svg>
-  );
-}
-
 export function Wordmark({
-  size = 'md', showSubtitle = true, className,
-}: { size?: 'sm' | 'md' | 'lg'; showSubtitle?: boolean; className?: string }) {
-  const mark = { sm: 24, md: 28, lg: 36 }[size];
-  const title = { sm: 'text-[15px]', md: 'text-[17px]', lg: 'text-[21px]' }[size];
+  size = 'md', showSubtitle = true, tone = 'dark', className,
+}: {
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  showSubtitle?: boolean;
+  /** `dark`: letras navy sobre claro. `light`: letras blancas sobre oscuro. */
+  tone?: 'dark' | 'light';
+  className?: string;
+}) {
+  const tipo = {
+    sm: 'text-[19px] tracking-[-0.045em]',
+    md: 'text-[23px] tracking-[-0.045em]',
+    lg: 'text-[30px] tracking-[-0.05em]',
+    xl: 'text-[40px] tracking-[-0.055em]',
+  }[size];
+  const barra = { sm: 'h-[3px]', md: 'h-[3px]', lg: 'h-1', xl: 'h-1.5' }[size];
+  const pie = { sm: 'text-[8.5px]', md: 'text-[9px]', lg: 'text-[10px]', xl: 'text-[11px]' }[size];
 
   return (
-    <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <Mark size={mark} />
-      <span className="flex flex-col leading-none">
-        <span className={cn('font-semibold tracking-[-0.02em] text-navy-900', title)}>FFSP</span>
-        {showSubtitle && (
-          <span className="mt-1 whitespace-nowrap text-[9.5px] font-medium uppercase tracking-[0.11em] text-muted">
-            Sistema para entrenadores
-          </span>
+    <span className={cn('inline-flex flex-col leading-none', className)} aria-label="FFSP">
+      <span
+        className={cn(
+          'font-display font-black',
+          tipo,
+          tone === 'light' ? 'text-white' : 'text-navy-900',
         )}
+      >
+        FFSP
       </span>
+      {/* La barra es el único elemento gráfico de la marca: el verde del campo. */}
+      <span className={cn('mt-[3px] w-full rounded-full bg-pitch-500', barra)} />
+      {showSubtitle && (
+        <span
+          className={cn(
+            'mt-1.5 whitespace-nowrap font-medium uppercase tracking-[0.14em]',
+            pie,
+            tone === 'light' ? 'text-white/55' : 'text-muted',
+          )}
+        >
+          Sistema para entrenadores
+        </span>
+      )}
     </span>
   );
 }
@@ -84,7 +89,7 @@ export function ClubCrest({
     <span
       aria-hidden
       className={cn(
-        'grid shrink-0 place-items-center rounded-md bg-navy-900 font-bold leading-none text-white',
+        'grid shrink-0 place-items-center rounded-md bg-navy-900 font-display font-bold leading-none text-white',
         className,
       )}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}
