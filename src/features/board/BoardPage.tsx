@@ -6,7 +6,7 @@
  * que comparte con la ficha de un ejercicio.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, Trash2 } from 'lucide-react';
 import {
@@ -15,7 +15,7 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useClub } from '@/store/store';
-import { visibleTeams } from '@/store/selectors';
+import { squadOf, visibleTeams } from '@/store/selectors';
 import { plays, type Play as SavedPlay, type PlaySummary } from '@/services/plays';
 import { humanError } from '@/services/supabase';
 import { BoardEditor, useBoardHistory } from './BoardEditor';
@@ -44,6 +44,21 @@ export default function BoardPage() {
 
   const playback = usePlayback(scene.durationMs);
   const svgRef = useRef<SVGSVGElement>(null);
+
+  /**
+   * La plantilla del equipo de la jugada, para poder colocar a las jugadoras
+   * de verdad y no once círculos numerados del 1 al 11.
+   */
+  const squad = useMemo(
+    () =>
+      squadOf(data, playTeam || teamId).map((p) => ({
+        id: p.id,
+        name: p.shortName || p.name,
+        number: p.number,
+        isKeeper: /porter/i.test(p.position ?? ''),
+      })),
+    [data, playTeam, teamId],
+  );
 
   const setSceneDirty = useCallback((s: Scene) => {
     setScene(s);
@@ -187,6 +202,7 @@ export default function BoardPage() {
           playback={playback}
           history={history}
           svgRef={svgRef}
+          squad={squad}
           onExportImage={() =>
             void exportSceneImage(svgRef.current, name).catch(() =>
               toast.error('No hemos podido generar la imagen en este navegador.'),
