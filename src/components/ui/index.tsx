@@ -18,10 +18,22 @@ import { cn } from '@/lib/utils';
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'quiet';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
+/**
+ * El botón principal es VERDE, no casi negro.
+ * ---------------------------------------------------------------------------
+ * Un `bg-navy-900` para la acción principal es lo que hace que un producto
+ * parezca el panel de administración de cualquier cosa: el color de la marca
+ * no aparece por ningún lado y la acción importante pesa lo mismo que el
+ * texto. Aquí el verde es el color de la pizarra, que es lo más reconocible
+ * del producto, y es el que marca qué hay que pulsar.
+ *
+ * Es el 700 y no el 600 porque el 600 con texto blanco se queda en 3,9 de
+ * contraste y hace falta 4,5.
+ */
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-navy-900 text-white border border-navy-900 hover:bg-navy-800 hover:border-navy-800 ' +
-    'disabled:bg-navy-400 disabled:border-navy-400',
+    'bg-pitch-700 text-white border border-pitch-700 hover:bg-pitch-800 hover:border-pitch-800 ' +
+    'disabled:bg-navy-300 disabled:border-navy-300',
   secondary:
     'bg-white text-navy-900 border border-line hover:border-navy-400 hover:bg-surface',
   ghost: 'bg-transparent text-navy-700 border border-transparent hover:bg-navy-100',
@@ -160,6 +172,35 @@ export function Dot({ tone = 'neutral', className }: { tone?: Tone; className?: 
 
 /* ─────────────────────────────────── Avatar ──────────────────────────────── */
 
+/**
+ * Ocho parejas de color para los avatares sin foto.
+ * ---------------------------------------------------------------------------
+ * Una lista de jugadoras con dieciséis círculos grises idénticos no se lee:
+ * hay que ir letra a letra. Con un color estable por persona, la vista
+ * distingue filas antes de leer, y la misma jugadora se reconoce igual en la
+ * plantilla, en la convocatoria y en la asistencia.
+ *
+ * El color sale del NOMBRE, no de la posición en la lista: si sale del orden,
+ * cambia al ordenar de otra forma y deja de servir para reconocer a nadie.
+ * Todos los tonos están calculados para leerse sobre su propio fondo.
+ */
+const COLORES_DE_AVATAR = [
+  'bg-[#E7EEFB] text-[#1F4E9C]',
+  'bg-[#E6F6EE] text-[#046C43]',
+  'bg-[#FBEDE4] text-[#9C4A11]',
+  'bg-[#F1EAFB] text-[#61339E]',
+  'bg-[#FBE9EC] text-[#A32B3C]',
+  'bg-[#E4F4F6] text-[#0D6473]',
+  'bg-[#F6F1E2] text-[#7A5C15]',
+  'bg-[#EBEDF2] text-[#3B4A63]',
+];
+
+const colorDe = (name: string) => {
+  let h = 0;
+  for (let i = 0; i < name.length; i += 1) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return COLORES_DE_AVATAR[h % COLORES_DE_AVATAR.length];
+};
+
 export function Avatar({
   name, src, size = 32, badge, className,
 }: { name: string; src?: string; size?: number; badge?: React.ReactNode; className?: string }) {
@@ -174,7 +215,10 @@ export function Avatar({
   return (
     <span className={cn('relative inline-flex shrink-0', className)}>
       <span
-        className="grid place-items-center overflow-hidden rounded-full bg-navy-100 font-semibold text-navy-700"
+        className={cn(
+          'grid place-items-center overflow-hidden rounded-full font-semibold',
+          src ? 'bg-navy-100' : colorDe(name),
+        )}
         style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}
       >
         {src ? <img src={src} alt="" className="h-full w-full object-cover" /> : initials || '—'}

@@ -16,15 +16,20 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
   const activeTeam = teams.find((t) => t.id === teamId) ?? teams[0];
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar-w)] flex-col border-r border-line bg-white lg:flex">
+    /* La barra va en oscuro y el contenido en claro.
+       Con todo blanco, la aplicación no tiene marco: el menú y la pantalla
+       pesan lo mismo y la vista no sabe dónde empieza cada cosa. En oscuro, la
+       barra sujeta el conjunto y el trabajo destaca por contraste, que es lo
+       que tiene que destacar. */
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar-w)] flex-col bg-navy-900 text-navy-100 lg:flex">
       {/* El club de quien trabaja aquí, no la marca del producto */}
-      <div className="flex items-center gap-2.5 border-b border-line px-4 py-3">
+      <div className="flex items-center gap-2.5 border-b border-white/10 px-4 py-3">
         <ClubCrest name={clubName(data)} src={data.club?.crestUrl} size={30} />
         <div className="min-w-0">
-          <p className="truncate text-base font-semibold leading-tight text-navy-900">
+          <p className="truncate text-base font-semibold leading-tight text-white">
             {clubName(data)}
           </p>
-          {data.club?.season && <p className="text-xs text-muted">{data.club.season}</p>}
+          {data.club?.season && <p className="text-xs text-navy-300">{data.club.season}</p>}
         </div>
       </div>
 
@@ -34,16 +39,16 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
           align="left"
           className="w-[212px]"
           trigger={
-            <button className="flex w-full items-center gap-2 rounded-md border border-line bg-white px-2.5 py-2 text-left transition-colors hover:border-navy-400">
+            <button className="flex w-full items-center gap-2 rounded-md border border-white/15 bg-white/5 px-2.5 py-2 text-left transition-colors hover:border-white/30 hover:bg-white/10">
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold text-navy-900">
+                <span className="block truncate text-sm font-semibold text-white">
                   {activeTeam?.name ?? 'Sin equipo'}
                 </span>
-                <span className="block truncate text-xs text-muted">
+                <span className="block truncate text-xs text-navy-300">
                   {activeTeam?.season || 'Pendiente de asignación'}
                 </span>
               </span>
-              <ChevronsUpDown size={14} className="shrink-0 text-navy-400" />
+              <ChevronsUpDown size={14} className="shrink-0 text-navy-300" />
             </button>
           }
         >
@@ -81,7 +86,7 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
       <div className="px-3 pb-2">
         <button
           onClick={onCreate}
-          className="flex h-9 w-full items-center justify-center gap-2 rounded-md bg-navy-900 px-3 text-base font-medium text-white transition-colors hover:bg-navy-800"
+          className="flex h-9 w-full items-center justify-center gap-2 rounded-md bg-pitch-600 px-3 text-base font-semibold text-white transition-colors hover:bg-pitch-500"
         >
           <Plus size={16} strokeWidth={2.2} />
           Crear
@@ -91,7 +96,11 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
       <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
         {NAV.map((group) => (
           <div key={group.id} className="mb-0.5">
-            {group.label && <p className="eyebrow px-2.5 pb-1 pt-4">{group.label}</p>}
+            {group.label && (
+              <p className="px-2.5 pb-1 pt-4 text-2xs font-semibold uppercase tracking-[0.07em] text-navy-400">
+                {group.label}
+              </p>
+            )}
             <ul className="space-y-px">
               {group.items.map((item) => {
                 const active = isActive(pathname, item);
@@ -102,16 +111,24 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
                       to={item.to}
                       aria-current={active ? 'page' : undefined}
                       className={cn(
-                        'flex items-center gap-2.5 rounded px-2.5 py-1.5 text-base transition-colors',
+                        'relative flex items-center gap-2.5 rounded-md px-2.5 py-2 text-base transition-colors',
                         active
-                          ? 'bg-navy-900 font-medium text-white'
-                          : 'text-navy-700 hover:bg-surface hover:text-navy-900',
+                          ? 'bg-white/10 font-semibold text-white'
+                          : 'text-navy-200 hover:bg-white/[0.06] hover:text-white',
                       )}
                     >
+                      {/* La sección abierta se marca también con una barra
+                          verde: el color de fondo solo no se distingue bien en
+                          una pantalla a pleno sol, que es donde se usa esto. */}
+                      {active && (
+                        <span
+                          aria-hidden
+                          className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-pitch-400"
+                        />
+                      )}
                       <Icon
-                        size={16}
-                        strokeWidth={1.9}
-                        className={cn('shrink-0', active ? 'text-white' : 'text-navy-400')}
+                        size={17}
+                        className={cn('shrink-0', active ? 'text-pitch-300' : 'text-navy-400')}
                       />
                       <span className="truncate">{item.label}</span>
                     </Link>
@@ -123,18 +140,18 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
         ))}
       </nav>
 
-      <div className="border-t border-line p-2.5">
+      <div className="border-t border-white/10 p-2.5">
         <Dropdown
           align="left"
           className="bottom-full mb-2 w-[212px]"
           trigger={
-            <button className="flex w-full items-center gap-2.5 rounded px-1.5 py-1.5 text-left transition-colors hover:bg-surface">
+            <button className="flex w-full items-center gap-2.5 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-white/[0.06]">
               <Avatar name={staff?.name ?? '—'} size={30} />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold text-navy-900">{staff?.name}</span>
-                <span className="block truncate text-xs text-muted">{staff ? ROLE_LABEL[staff.role] : ''}</span>
+                <span className="block truncate text-sm font-semibold text-white">{staff?.name}</span>
+                <span className="block truncate text-xs text-navy-300">{staff ? ROLE_LABEL[staff.role] : ''}</span>
               </span>
-              <ChevronsUpDown size={14} className="shrink-0 text-navy-400" />
+              <ChevronsUpDown size={14} className="shrink-0 text-navy-300" />
             </button>
           }
         >

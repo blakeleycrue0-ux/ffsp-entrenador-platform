@@ -29,14 +29,33 @@ export default {
         surface: '#F4F6F8',
         // Verde de campo. Es el color de la pizarra, que es lo más
         // reconocible del producto, y por eso es el acento de la marca.
+        //
+        // La escala llega hasta el 800 por una razón concreta: el 600 sobre
+        // texto blanco no llega al contraste mínimo para leerse bien (queda en
+        // 3,9 y hace falta 4,5). Los botones usan el 700, que sí llega. Un
+        // verde bonito que no se lee no sirve de nada.
         pitch: {
-          50: '#E8F8F0',
-          100: '#C4EDD9',
-          400: '#3ECF8E',
-          500: '#19B877',
-          600: '#0E9A61',
-          700: '#0B7A4D',
-          900: '#20573C',
+          50: '#ECFDF3',
+          100: '#D1FADF',
+          200: '#A6F4C5',
+          300: '#6CE9A6',
+          400: '#32D583',
+          500: '#12B76A',
+          600: '#039855',
+          700: '#027A48',
+          800: '#05603A',
+          900: '#054F31',
+        },
+
+        /* Color CON SIGNIFICADO, que es el único que se permite de adorno:
+           cada línea del campo tiene el suyo, así una plantilla se lee de un
+           vistazo sin tener que ir leyendo la columna «posición». No se usa
+           nunca como única información: siempre acompaña a la palabra. */
+        pos: {
+          portera: '#B25E09',
+          defensa: '#1F63B8',
+          medio: '#047A4E',
+          delantera: '#B3372C',
         },
         // Navy más profundo, para las bandas oscuras de la página pública
         night: '#08111C',
@@ -51,6 +70,8 @@ export default {
         card: '0 1px 2px rgba(16, 28, 45, 0.05)',
         raised: '0 2px 8px rgba(16, 28, 45, 0.08)',
         pop: '0 8px 28px -12px rgba(16, 28, 45, 0.28)',
+        // Para lo que de verdad manda en la pantalla, no para todo
+        lift: '0 1px 2px rgba(16,28,45,.06), 0 8px 20px -10px rgba(16,28,45,.18)',
       },
       borderRadius: {
         DEFAULT: '4px',

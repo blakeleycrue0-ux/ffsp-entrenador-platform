@@ -66,6 +66,42 @@ export const AvailabilityDot = ({ status, className }: { status: AvailabilitySta
   <span className={cn('inline-block h-2 w-2 shrink-0 rounded-full', disponibilidad(status).dot, className)} />
 );
 
+/* ─────────────────────────────── Posiciones ──────────────────────────────── */
+
+/**
+ * La línea del campo a la que pertenece cada posición, con su color.
+ * ---------------------------------------------------------------------------
+ * Una plantilla de veinte nombres con la posición escrita en gris se lee
+ * nombre a nombre. Agrupada por color, se ve de un vistazo cuántas porteras
+ * hay y si falta gente atrás. Es color CON SIGNIFICADO, que es el único que
+ * merece la pena: nunca sustituye a la palabra, la acompaña.
+ */
+export type Linea = 'porteria' | 'defensa' | 'medio' | 'ataque';
+
+const LINEA_DE: Record<string, Linea> = {
+  Portera: 'porteria',
+  Central: 'defensa',
+  'Lateral derecha': 'defensa',
+  'Lateral izquierda': 'defensa',
+  Pivote: 'medio',
+  Interior: 'medio',
+  Mediapunta: 'medio',
+  'Extremo derecha': 'ataque',
+  'Extremo izquierda': 'ataque',
+  Delantera: 'ataque',
+};
+
+export const LINEA: Record<Linea, { label: string; chip: string; dot: string }> = {
+  porteria: { label: 'Portería', chip: 'bg-[#FBEDE4] text-[#8A480F] border-[#E9CDB6]', dot: 'bg-[#B25E09]' },
+  defensa: { label: 'Defensa', chip: 'bg-[#E7EEFB] text-[#1B5099] border-[#C4D5F2]', dot: 'bg-[#1F63B8]' },
+  medio: { label: 'Medio', chip: 'bg-[#E6F6EE] text-[#046040] border-[#BDE4D2]', dot: 'bg-[#047A4E]' },
+  ataque: { label: 'Ataque', chip: 'bg-[#FBE9EC] text-[#93262F] border-[#EEC6CC]', dot: 'bg-[#B3372C]' },
+};
+
+/** Sin posición asignada no se inventa ninguna línea: se dice que no la hay. */
+export const lineaDe = (position: string | undefined | null): Linea | null =>
+  (position && LINEA_DE[position]) || null;
+
 /* ─────────────────────────────── Asistencia ──────────────────────────────── */
 
 export const ATTENDANCE: Record<
