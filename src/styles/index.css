@@ -14,7 +14,7 @@
   }
 
   body {
-    @apply bg-surface text-navy-900 font-sans antialiased;
+    @apply bg-surface text-ink-900 font-sans antialiased;
     font-size: 14px;
   }
 
@@ -28,25 +28,30 @@
   }
 
   ::selection {
-    @apply bg-navy-900 text-white;
+    @apply bg-ink-900 text-ink-0;
   }
+
+  /* El navegador pinta en claro los controles nativos (fechas, horas,
+     desplegables, la barra de desplazamiento) salvo que se le diga que la
+     página es oscura. Sin esto salen recuadros blancos sueltos. */
+  :root { color-scheme: dark; }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: #C5CDD8 transparent;
+    scrollbar-color: #3C3C41 transparent;
   }
   *::-webkit-scrollbar { width: 10px; height: 10px; }
   *::-webkit-scrollbar-thumb {
-    background-color: #C5CDD8;
+    background-color: #3C3C41;
     border-radius: 999px;
     border: 3px solid transparent;
     background-clip: content-box;
   }
-  *::-webkit-scrollbar-thumb:hover { background-color: #A7B2C1; }
+  *::-webkit-scrollbar-thumb:hover { background-color: #56565D; }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-navy-900/35 ring-offset-1 ring-offset-white;
-    border-radius: 4px;
+    @apply outline-none ring-2 ring-ink-900/60 ring-offset-2 ring-offset-surface;
+    border-radius: 12px;
   }
 
   /* Los campos nativos heredan la tipografía de la interfaz */
@@ -57,23 +62,28 @@
 }
 
 @layer components {
+  /* Una tarjeta se separa del fondo por ser MÁS CLARA, no por tener un
+     borde. Sobre negro, una caja con línea alrededor parece una hoja de
+     cálculo; sin línea, parece una capa. */
   .panel {
-    @apply bg-white border border-line rounded-lg;
+    @apply bg-panel rounded-xl;
   }
 
   .panel-hover {
-    @apply transition-colors duration-150 hover:border-navy-300;
+    @apply transition-colors duration-150 hover:bg-raised;
   }
 
   .label {
-    @apply block text-xs font-medium text-navy-700 mb-1.5;
+    @apply block text-sm font-medium text-ink-700 mb-2;
   }
 
+  /* Campos altos, en cápsula y sin borde, como en la referencia. El foco se
+     marca con un aro claro, no cambiando el borde de sitio. */
   .field {
-    @apply w-full rounded-md border border-line bg-white px-3 py-2 text-base text-navy-900
-           placeholder:text-navy-400 transition-colors
-           focus:border-navy-600 focus:outline-none focus:ring-1 focus:ring-navy-600
-           disabled:bg-surface disabled:text-navy-400;
+    @apply w-full rounded-2xl border-0 bg-raised px-4 py-3.5 text-md text-ink-900
+           placeholder:text-ink-500 transition-shadow
+           focus:outline-none focus:ring-2 focus:ring-ink-600
+           disabled:bg-panel disabled:text-ink-400;
   }
 
   .eyebrow {
@@ -89,7 +99,7 @@
     @apply w-full text-base;
   }
   .grid-table thead th {
-    @apply border-b border-line bg-surface px-3 py-2 text-left text-2xs font-semibold uppercase tracking-[0.06em] text-muted;
+    @apply border-b border-line px-3 py-2 text-left text-2xs font-semibold uppercase tracking-[0.06em] text-muted;
   }
   .grid-table tbody td {
     @apply border-b border-line px-3 py-2 align-middle;
@@ -98,18 +108,18 @@
     @apply border-b-0;
   }
   .grid-table tbody tr:hover {
-    @apply bg-surface;
+    @apply bg-raised;
   }
 
   .skeleton {
-    @apply relative overflow-hidden rounded bg-navy-100;
+    @apply relative overflow-hidden rounded bg-ink-200;
   }
   .skeleton::after {
     content: '';
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+    background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09), transparent);
     animation: sweep 1.4s infinite;
   }
   @keyframes sweep {
@@ -124,18 +134,18 @@
     @apply h-6 w-full cursor-pointer appearance-none bg-transparent p-0;
   }
   input[type='range']::-webkit-slider-runnable-track {
-    @apply h-1 rounded-full bg-navy-200;
+    @apply h-1 rounded-full bg-ink-300;
   }
   input[type='range']::-webkit-slider-thumb {
-    @apply h-4 w-4 appearance-none rounded-full border-2 border-white bg-navy-900;
+    @apply h-4 w-4 appearance-none rounded-full border-0 bg-ink-900;
     margin-top: -6px;
-    box-shadow: 0 1px 3px rgba(16, 28, 45, 0.3);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   }
   input[type='range']::-moz-range-track {
-    @apply h-1 rounded-full bg-navy-200;
+    @apply h-1 rounded-full bg-ink-300;
   }
   input[type='range']::-moz-range-thumb {
-    @apply h-4 w-4 rounded-full border-2 border-white bg-navy-900;
+    @apply h-4 w-4 rounded-full border-0 bg-ink-900;
   }
 
   /* La pizarra no debe seleccionar texto al arrastrar */

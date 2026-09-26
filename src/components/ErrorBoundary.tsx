@@ -51,12 +51,12 @@ export class ErrorBoundary extends Component<Props, State> {
 
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-6">
-        <div className="w-full max-w-lg rounded-lg border border-line bg-white p-6 shadow-card">
+        <div className="w-full max-w-lg rounded-lg border border-line bg-panel p-6 shadow-card">
           <p className="eyebrow text-bad">Fallo nuestro</p>
-          <h1 className="mt-1.5 text-xl font-semibold text-navy-900">
+          <h1 className="mt-1.5 text-xl font-semibold text-ink-900">
             Esta pantalla no se ha podido dibujar
           </h1>
-          <p className="mt-2 text-base leading-relaxed text-navy-700">
+          <p className="mt-2 text-base leading-relaxed text-ink-700">
             No has hecho nada mal y no se ha perdido nada de lo que tengas guardado
             {this.props.donde ? ` en ${this.props.donde}` : ''}. Vuelve a intentarlo; si sigue
             igual, cuéntanoslo desde <strong>Ajustes → Ayuda</strong> y pega el detalle de abajo.
@@ -65,23 +65,23 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="mt-4 flex flex-wrap gap-2">
             <button
               onClick={() => this.setState({ error: null })}
-              className="rounded-md bg-navy-900 px-3.5 py-2 text-base font-medium text-white transition-colors hover:bg-navy-800"
+              className="rounded-md bg-ink-900 px-3.5 py-2 text-base font-medium text-ink-0 transition-colors hover:bg-ink-800"
             >
               Volver a intentarlo
             </button>
             <button
               onClick={() => window.location.assign('/app')}
-              className="rounded-md border border-line px-3.5 py-2 text-base font-medium text-navy-800 transition-colors hover:bg-surface"
+              className="rounded-md border border-line px-3.5 py-2 text-base font-medium text-ink-800 transition-colors hover:bg-surface"
             >
               Ir al inicio
             </button>
           </div>
 
           <details className="mt-4">
-            <summary className="cursor-pointer text-sm text-muted hover:text-navy-900">
+            <summary className="cursor-pointer text-sm text-muted hover:text-ink-900">
               Detalle técnico
             </summary>
-            <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-surface p-3 text-xs leading-relaxed text-navy-700">
+            <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-surface p-3 text-xs leading-relaxed text-ink-700">
               {error.message}
               {error.stack ? `\n\n${error.stack}` : ''}
             </pre>

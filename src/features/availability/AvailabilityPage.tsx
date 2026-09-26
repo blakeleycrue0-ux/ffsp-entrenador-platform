@@ -224,7 +224,7 @@ export default function AvailabilityPage() {
                     className="flex w-full flex-wrap items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface"
                   >
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-base font-medium text-navy-900">
+                      <span className="block truncate text-base font-medium text-ink-900">
                         {playerName(r.playerId)}
                       </span>
                       <span className="mt-0.5 block text-sm text-muted">
@@ -353,13 +353,13 @@ export default function AvailabilityPage() {
             {detail.description && (
               <div>
                 <p className="eyebrow mb-1">Qué ha pasado</p>
-                <p className="text-base leading-relaxed text-navy-700">{detail.description}</p>
+                <p className="text-base leading-relaxed text-ink-700">{detail.description}</p>
               </div>
             )}
             {detail.restrictions && (
               <div>
                 <p className="eyebrow mb-1">Limitaciones</p>
-                <p className="text-base leading-relaxed text-navy-700">{detail.restrictions}</p>
+                <p className="text-base leading-relaxed text-ink-700">{detail.restrictions}</p>
               </div>
             )}
 
@@ -386,7 +386,7 @@ export default function AvailabilityPage() {
                 <ul className="space-y-2">
                   {updates.map((u) => (
                     <li key={u.id} className="border-l-2 border-line pl-3">
-                      <p className="text-base leading-relaxed text-navy-800">{u.note}</p>
+                      <p className="text-base leading-relaxed text-ink-800">{u.note}</p>
                       <p className="mt-0.5 text-xs text-muted">{longDate(u.notedOn)}</p>
                     </li>
                   ))}
@@ -396,7 +396,7 @@ export default function AvailabilityPage() {
 
             <Link
               to={`/app/plantilla/${detail.playerId}`}
-              className="inline-block text-sm text-navy-700 underline underline-offset-2 hover:text-navy-900"
+              className="inline-block text-sm text-ink-700 underline underline-offset-2 hover:text-ink-900"
             >
               Ver la ficha completa
             </Link>

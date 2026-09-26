@@ -100,17 +100,17 @@ export default function ClubAdminPage() {
                 <Panel key={team.id} className="p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="flex items-start gap-3.5">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy-900 text-[13px] font-bold text-white">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-ink-900 text-[13px] font-bold text-ink-0">
                         {team.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || '—'}
                       </span>
                       <div className="min-w-0">
-                        <Link to={`/app/equipo-tecnico/${team.id}`} className="text-[16px] font-semibold hover:text-navy-900">
+                        <Link to={`/app/equipo-tecnico/${team.id}`} className="text-[16px] font-semibold hover:text-ink-900">
                           {team.name}
                         </Link>
                         <p className="mt-0.5 text-[12.5px] text-muted">
                           {[team.category, team.competition, team.season].filter(Boolean).join(' · ') || 'Sin detalles'}
                         </p>
-                        <p className="mt-1 text-[12.5px] text-navy-400">
+                        <p className="mt-1 text-[12.5px] text-ink-400">
                           {squadOf(data, team.id).length} jugadoras
                         </p>
                       </div>
@@ -126,7 +126,7 @@ export default function ClubAdminPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 border-t border-navy-100 pt-3">
+                  <div className="mt-4 border-t border-ink-100 pt-3">
                     {people.length === 0 ? (
                       <p className="text-[13px] text-muted">
                         Sin cuerpo técnico asignado. Nadie ve este equipo todavía.
@@ -139,8 +139,8 @@ export default function ClubAdminPage() {
                             className="inline-flex items-center gap-2 rounded-xl border border-line py-1.5 pl-1.5 pr-2.5"
                           >
                             <Avatar name={staff!.name} size={26} />
-                            <span className="text-[13px] text-navy-700">{staff!.name}</span>
-                            <span className="text-[11.5px] text-navy-400">{ROLE_LABEL[role]}</span>
+                            <span className="text-[13px] text-ink-700">{staff!.name}</span>
+                            <span className="text-[11.5px] text-ink-400">{ROLE_LABEL[role]}</span>
                             <button
                               onClick={async () => {
                                 try {
@@ -150,7 +150,7 @@ export default function ClubAdminPage() {
                                   toast.error('No hemos podido retirarla', humanError(e));
                                 }
                               }}
-                              className="text-navy-300 transition-colors hover:text-bad"
+                              className="text-ink-300 transition-colors hover:text-bad"
                               aria-label={`Quitar a ${staff!.name}`}
                             >
                               <X size={14} />
@@ -178,7 +178,7 @@ export default function ClubAdminPage() {
 
           <Panel className="p-4">
             <h3 className="text-base font-semibold">Cómo se da de alta a una entrenadora</h3>
-            <ol className="mt-2 space-y-1.5 text-sm leading-relaxed text-navy-700">
+            <ol className="mt-2 space-y-1.5 text-sm leading-relaxed text-ink-700">
               <li>1. Le creas una invitación desde la pestaña «Invitaciones».</li>
               <li>2. Le pasas el enlace por donde habléis habitualmente.</li>
               <li>3. Ella crea su cuenta con ese correo y la invitación se acepta sola.</li>
@@ -224,7 +224,7 @@ function StaffRow({ person }: { person: Staff }) {
     <Panel className="flex flex-wrap items-center gap-4 p-4">
       <Avatar name={person.name} size={42} />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[14.5px] font-medium text-navy-900">{person.name}</p>
+        <p className="truncate text-[14.5px] font-medium text-ink-900">{person.name}</p>
         <p className="truncate text-[12.5px] text-muted">{person.email}</p>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {teams.length === 0 ? (
@@ -306,7 +306,7 @@ function AssignModal({ teamId, onClose }: { teamId: string | null; onClose: () =
       }
     >
       {candidates.length === 0 ? (
-        <p className="text-[14px] leading-relaxed text-navy-600">
+        <p className="text-[14px] leading-relaxed text-ink-600">
           Ya están asignadas todas las personas registradas. Cuando alguien nuevo cree su cuenta, aparecerá aquí.
         </p>
       ) : (
@@ -491,7 +491,7 @@ function InvitationsTab() {
               return (
                 <li key={i.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-base font-medium text-navy-900">{i.email}</span>
+                    <span className="block truncate text-base font-medium text-ink-900">{i.email}</span>
                     <span className="mt-0.5 block text-sm text-muted">
                       {CLUB_ROLE_LABEL[i.role]}
                       {state === 'pendiente' && ` · caduca el ${longDate(i.expiresAt.slice(0, 10))}`}
@@ -635,13 +635,13 @@ function ClubDataTab() {
           <div className="flex items-center gap-2.5">
             <ClubCrest name={name} src={crestUrl || undefined} size={34} />
             <div className="min-w-0">
-              <p className="truncate text-base font-semibold text-navy-900">{name || 'Tu club'}</p>
+              <p className="truncate text-base font-semibold text-ink-900">{name || 'Tu club'}</p>
               {season && <p className="text-xs text-muted">{season}</p>}
             </div>
           </div>
           <div>
             <p className="eyebrow mb-1.5">En un marcador</p>
-            <p className="text-base text-navy-800">
+            <p className="text-base text-ink-800">
               {shortName || name || 'Tu club'} <span className="text-muted">vs</span> Rival
             </p>
           </div>

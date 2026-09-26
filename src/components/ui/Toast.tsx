@@ -62,13 +62,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={cn(
-              'pointer-events-auto flex w-full max-w-md items-start gap-2.5 rounded-lg border bg-white p-3 shadow-pop animate-fade-up',
+              'pointer-events-auto flex w-full max-w-md items-start gap-2.5 rounded-lg border bg-panel p-3 shadow-pop animate-fade-up',
               t.tone === 'error' ? 'border-bad/30' : 'border-line',
             )}
           >
             <span className="mt-0.5 shrink-0">{ICONS[t.tone]}</span>
             <div className="min-w-0 flex-1">
-              <p className="text-base font-medium leading-snug text-navy-900">{t.title}</p>
+              <p className="text-base font-medium leading-snug text-ink-900">{t.title}</p>
               {t.description && <p className="mt-0.5 text-sm leading-relaxed text-muted">{t.description}</p>}
               {t.action && (
                 <button
@@ -76,7 +76,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     t.action!.onClick();
                     remove(t.id);
                   }}
-                  className="mt-2 text-sm font-semibold text-navy-900 underline underline-offset-2"
+                  className="mt-2 text-sm font-semibold text-ink-900 underline underline-offset-2"
                 >
                   {t.action.label}
                 </button>
@@ -84,7 +84,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             </div>
             <button
               onClick={() => remove(t.id)}
-              className="-mr-1 -mt-1 rounded p-1.5 text-navy-300 transition-colors hover:bg-surface hover:text-navy-700"
+              className="-mr-1 -mt-1 rounded p-1.5 text-ink-300 transition-colors hover:bg-surface hover:text-ink-700"
               aria-label="Cerrar aviso"
             >
               <X size={15} />

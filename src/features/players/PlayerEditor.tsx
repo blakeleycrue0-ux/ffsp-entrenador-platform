@@ -111,7 +111,7 @@ export default function PlayerEditor() {
       <>
         <PageHeader title="Nueva jugadora" />
         <Panel className="p-8 text-center">
-          <p className="text-[14px] text-navy-600">
+          <p className="text-[14px] text-ink-600">
             Todavía no tienes ningún equipo asignado. Pídeselo a quien administra el club.
           </p>
         </Panel>
@@ -123,7 +123,7 @@ export default function PlayerEditor() {
     <>
       <Link
         to={existing ? `/app/plantilla/${existing.id}` : '/app/plantilla'}
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> {existing ? existing.shortName : 'Jugadoras'}
       </Link>
@@ -235,7 +235,7 @@ export default function PlayerEditor() {
 
               <div className="mt-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[14px] font-medium text-navy-800">Familia o tutores</h3>
+                  <h3 className="text-[14px] font-medium text-ink-800">Familia o tutores</h3>
                   <Button
                     variant="secondary"
                     size="sm"
@@ -277,7 +277,7 @@ export default function PlayerEditor() {
                         </div>
                         <button
                           onClick={() => patch({ guardians: form.guardians.filter((_, k) => k !== i) })}
-                          className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-navy-400 transition-colors hover:text-bad"
+                          className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-ink-400 transition-colors hover:text-bad"
                         >
                           <X size={13} /> Quitar contacto
                         </button>
@@ -301,8 +301,8 @@ export default function PlayerEditor() {
                   className={cn(
                     'flex items-center gap-2 rounded-xl border px-3 py-2 text-[13px] font-medium transition-all',
                     form.availability.status === s
-                      ? 'border-navy-400 bg-navy-50 text-navy-900 ring-2 ring-navy-100'
-                      : 'border-line text-navy-600 hover:border-navy-200',
+                      ? 'border-ink-400 bg-ink-50 text-ink-900 ring-2 ring-ink-100'
+                      : 'border-line text-ink-600 hover:border-ink-200',
                   )}
                 >
                   <span className={cn('h-2 w-2 rounded-full', AVAILABILITY[s].dot)} />
@@ -357,7 +357,7 @@ export default function PlayerEditor() {
           </>
         }
       >
-        <p className="text-[14px] leading-relaxed text-navy-600">
+        <p className="text-[14px] leading-relaxed text-ink-600">
           Si sólo se ha marchado temporalmente, es mejor cambiar su disponibilidad a «Ausente» en lugar de eliminarla:
           así conservas su historial.
         </p>

@@ -138,7 +138,7 @@ export default function SettingsPage() {
             <div className="grid gap-4 p-4 sm:grid-cols-2">
               <div>
                 <p className="eyebrow">Rol</p>
-                <p className="mt-1 text-base font-medium text-navy-900">
+                <p className="mt-1 text-base font-medium text-ink-900">
                   {staff ? ROLE_LABEL[staff.role] : '—'}
                 </p>
                 {staff?.licence && <p className="mt-0.5 text-sm text-muted">{staff.licence}</p>}
@@ -162,7 +162,7 @@ export default function SettingsPage() {
 
           <Panel>
             <PanelHeader title="Qué puedes hacer" />
-            <ul className="space-y-1.5 p-4 text-base text-navy-700">
+            <ul className="space-y-1.5 p-4 text-base text-ink-700">
               {(isClubAdmin(data)
                 ? [
                     'Crear equipos y asignar al cuerpo técnico',
@@ -178,7 +178,7 @@ export default function SettingsPage() {
                   ]
               ).map((p) => (
                 <li key={p} className="flex gap-2">
-                  <span aria-hidden className="text-navy-300">
+                  <span aria-hidden className="text-ink-300">
                     ·
                   </span>
                   {p}
@@ -189,7 +189,7 @@ export default function SettingsPage() {
 
           <Panel>
             <PanelHeader title="Cómo se protegen los datos" />
-            <div className="space-y-3 p-4 text-base leading-relaxed text-navy-700">
+            <div className="space-y-3 p-4 text-base leading-relaxed text-ink-700">
               <p>
                 Los permisos no dependen de lo que se ve en pantalla: los aplica el servidor. Cada
                 consulta pasa por las políticas de acceso de la base de datos, así que una entrenadora
@@ -201,11 +201,11 @@ export default function SettingsPage() {
                 individual, nunca en listados ni exportaciones.
               </p>
               <p className="text-sm text-muted">
-                <Link to="/privacidad" className="underline underline-offset-2 hover:text-navy-900">
+                <Link to="/privacidad" className="underline underline-offset-2 hover:text-ink-900">
                   Política de privacidad
                 </Link>
                 {' · '}
-                <Link to="/aviso-legal" className="underline underline-offset-2 hover:text-navy-900">
+                <Link to="/aviso-legal" className="underline underline-offset-2 hover:text-ink-900">
                   Aviso legal
                 </Link>
               </p>
@@ -260,7 +260,7 @@ export default function SettingsPage() {
                 ],
               ].map(([q, a]) => (
                 <div key={q} className="px-4 py-3">
-                  <dt className="text-base font-medium text-navy-900">{q}</dt>
+                  <dt className="text-base font-medium text-ink-900">{q}</dt>
                   <dd className="mt-1 text-base leading-relaxed text-muted">{a}</dd>
                 </div>
               ))}

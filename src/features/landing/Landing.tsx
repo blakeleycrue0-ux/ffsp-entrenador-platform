@@ -108,7 +108,7 @@ function Telefono({ src, alt, className }: { src: string; alt: string; className
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-[2.1rem] border-[7px] border-navy-900 bg-navy-900',
+        'overflow-hidden rounded-[2.1rem] border-[7px] border-ink-900 bg-ink-900',
         'shadow-[0_28px_60px_-24px_rgba(16,28,45,0.5)]',
         className,
       )}
@@ -248,7 +248,7 @@ export default function Landing() {
   const cap = CAPACIDADES[activa]!;
 
   return (
-    <div className="bg-white">
+    <div className="bg-panel">
       {/* ── Navegación ─────────────────────────────────────────────────── */}
       {/* Arriba del todo va transparente sobre la portada; al bajar se cierra
           con un cristal oscuro para que el texto no se pise con el contenido. */}
@@ -260,7 +260,7 @@ export default function Landing() {
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-8 px-5">
           <a href="#" className="flex items-center gap-2.5" aria-label="Playoff360, inicio">
-            <Aro size={26} className="text-pitch-500" />
+            <Aro size={26} className="text-accent-500" />
             <Wordmark tone="light" />
           </a>
 
@@ -288,7 +288,7 @@ export default function Landing() {
             </Link>
             <Link
               to="/entrar"
-              className="inline-flex h-10 items-center rounded-full bg-pitch-500 px-5 text-base font-semibold text-night transition-colors hover:bg-pitch-400"
+              className="inline-flex h-10 items-center rounded-full bg-accent-500 px-5 text-base font-semibold text-night transition-colors hover:bg-accent-400"
             >
               Crear mi club
             </Link>
@@ -318,8 +318,8 @@ export default function Landing() {
 
           <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-16 text-center lg:pt-24">
             <Revelar>
-              <p className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/15 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium uppercase tracking-[0.12em] text-pitch-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-pitch-400" />
+              <p className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/15 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium uppercase tracking-[0.12em] text-accent-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent-400" />
                 Para el cuerpo técnico<span className="hidden sm:inline">&nbsp;de cualquier club</span>
               </p>
             </Revelar>
@@ -328,7 +328,7 @@ export default function Landing() {
               <h1 className="mx-auto mt-7 max-w-4xl font-display text-[clamp(2.2rem,8.6vw,5.25rem)] font-black leading-[0.94] tracking-[-0.045em] text-white">
                 Prepara la semana.
                 <br />
-                <span className="bg-gradient-to-br from-pitch-400 to-pitch-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-br from-accent-400 to-accent-600 bg-clip-text text-transparent">
                   Dibuja la jugada.
                 </span>
               </h1>
@@ -345,7 +345,7 @@ export default function Landing() {
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link
                   to="/entrar"
-                  className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-pitch-500 px-7 py-3.5 text-md font-semibold text-night transition-colors hover:bg-pitch-400 sm:w-auto"
+                  className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent-500 px-7 py-3.5 text-md font-semibold text-night transition-colors hover:bg-accent-400 sm:w-auto"
                 >
                   Crear mi club
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
@@ -386,19 +386,19 @@ export default function Landing() {
         </section>
 
         {/* ── Tres cosas que la definen ────────────────────────────────── */}
-        <section className="border-b border-line bg-white">
+        <section className="border-b border-line bg-panel">
           <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 md:grid-cols-3 md:gap-10 lg:py-16">
             {PILARES.map((p, i) => (
               <Revelar key={p.titulo} delay={i * 80}>
                 <div className="flex gap-4">
-                  <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-pitch-50 text-pitch-700">
+                  <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent-50 text-accent-700">
                     <p.icono size={19} strokeWidth={2.2} />
                   </span>
                   <div>
-                    <h3 className="font-display text-lg font-bold tracking-[-0.01em] text-navy-900">
+                    <h3 className="font-display text-lg font-bold tracking-[-0.01em] text-ink-900">
                       {p.titulo}
                     </h3>
-                    <p className="mt-1.5 text-base leading-relaxed text-navy-600">{p.texto}</p>
+                    <p className="mt-1.5 text-base leading-relaxed text-ink-600">{p.texto}</p>
                   </div>
                 </div>
               </Revelar>
@@ -407,16 +407,16 @@ export default function Landing() {
         </section>
 
         {/* ── Qué hace, con pantallas reales ───────────────────────────── */}
-        <section id="producto" className="scroll-mt-16 bg-white">
+        <section id="producto" className="scroll-mt-16 bg-panel">
           <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
             <Revelar>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-pitch-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-accent-600">
                 El producto
               </p>
-              <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-navy-900 sm:text-5xl">
+              <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-ink-900 sm:text-5xl">
                 Lo que ves aquí es la aplicación, no un montaje.
               </h2>
-              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-navy-600">
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-600">
                 Todas las capturas están hechas con la aplicación de verdad, rellenada con un club
                 de ejemplo. Ni un pixel dibujado a mano.
               </p>
@@ -438,8 +438,8 @@ export default function Landing() {
                         className={cn(
                           'shrink-0 whitespace-nowrap rounded-full border px-4 py-2 font-display text-base font-bold transition-colors',
                           activa === i
-                            ? 'border-navy-900 bg-navy-900 text-white'
-                            : 'border-line text-navy-700',
+                            ? 'border-ink-900 bg-ink-900 text-ink-0'
+                            : 'border-line text-ink-700',
                         )}
                       >
                         {c.titulo}
@@ -454,7 +454,7 @@ export default function Landing() {
                         key={c.clave}
                         className={cn(
                           'border-l-2 pl-5 transition-colors',
-                          activa === i ? 'border-pitch-500' : 'border-line',
+                          activa === i ? 'border-accent-500' : 'border-line',
                         )}
                       >
                         <button
@@ -466,7 +466,7 @@ export default function Landing() {
                           <span
                             className={cn(
                               'block font-display text-lg font-bold tracking-[-0.015em] transition-colors',
-                              activa === i ? 'text-navy-900' : 'text-navy-500 hover:text-navy-800',
+                              activa === i ? 'text-ink-900' : 'text-ink-500 hover:text-ink-800',
                             )}
                           >
                             {c.titulo}
@@ -479,14 +479,14 @@ export default function Landing() {
                           )}
                         >
                           <div className="overflow-hidden">
-                            <p className="pb-4 text-base leading-relaxed text-navy-600">{c.texto}</p>
+                            <p className="pb-4 text-base leading-relaxed text-ink-600">{c.texto}</p>
                             <ul className="flex flex-wrap gap-1.5 pb-5">
                               {c.detalles.map((d) => (
                                 <li
                                   key={d}
-                                  className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-sm font-medium text-navy-700"
+                                  className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-sm font-medium text-ink-700"
                                 >
-                                  <Check size={12} strokeWidth={3} className="text-pitch-600" />
+                                  <Check size={12} strokeWidth={3} className="text-accent-600" />
                                   {d}
                                 </li>
                               ))}
@@ -524,14 +524,14 @@ export default function Landing() {
 
                   {/* En móvil la explicación va debajo de la captura */}
                   <div className="lg:hidden">
-                    <p className="mt-6 text-md leading-relaxed text-navy-700">{cap.texto}</p>
+                    <p className="mt-6 text-md leading-relaxed text-ink-700">{cap.texto}</p>
                     <ul className="mt-4 flex flex-wrap gap-2">
                       {cap.detalles.map((d) => (
                         <li
                           key={d}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-sm font-medium text-navy-700"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-sm font-medium text-ink-700"
                         >
-                          <Check size={13} strokeWidth={3} className="text-pitch-600" />
+                          <Check size={13} strokeWidth={3} className="text-accent-600" />
                           {d}
                         </li>
                       ))}
@@ -547,13 +547,13 @@ export default function Landing() {
         <section className="border-y border-line bg-surface">
           <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 py-20 lg:grid-cols-2 lg:gap-16 lg:py-28">
             <Revelar>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-pitch-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-accent-600">
                 En el campo
               </p>
-              <h2 className="mt-4 font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-navy-900 sm:text-5xl">
+              <h2 className="mt-4 font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-ink-900 sm:text-5xl">
                 De pie, con prisa y con guantes.
               </h2>
-              <p className="mt-5 max-w-lg text-lg leading-relaxed text-navy-600">
+              <p className="mt-5 max-w-lg text-lg leading-relaxed text-ink-600">
                 Pasar lista son dos toques: todas presentes y corriges las excepciones. La
                 plantilla, el entrenamiento del día y la convocatoria caben en el bolsillo, sin
                 instalar nada.
@@ -564,8 +564,8 @@ export default function Landing() {
                   'Sin instalar ninguna aplicación: se abre y ya está',
                   'Cada quien ve sólo los equipos que tiene asignados',
                 ].map((t) => (
-                  <li key={t} className="flex items-start gap-3 text-md text-navy-800">
-                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-pitch-500 text-night">
+                  <li key={t} className="flex items-start gap-3 text-md text-ink-800">
+                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent-500 text-night">
                       <Check size={13} strokeWidth={3} />
                     </span>
                     {t}
@@ -592,24 +592,24 @@ export default function Landing() {
         </section>
 
         {/* ── Cómo se empieza ──────────────────────────────────────────── */}
-        <section className="bg-white">
+        <section className="bg-panel">
           <div className="mx-auto max-w-6xl px-5 py-20 lg:py-24">
             <Revelar>
-              <h2 className="max-w-2xl font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-navy-900 sm:text-5xl">
+              <h2 className="max-w-2xl font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-ink-900 sm:text-5xl">
                 Tres pasos y estás dentro.
               </h2>
             </Revelar>
             <div className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
               {PASOS.map(([titulo, texto], i) => (
                 <Revelar key={titulo} delay={i * 90}>
-                  <div className="border-t-2 border-navy-900 pt-5">
-                    <span className="font-display text-sm font-bold tracking-[0.1em] text-pitch-600">
+                  <div className="border-t-2 border-ink-900 pt-5">
+                    <span className="font-display text-sm font-bold tracking-[0.1em] text-accent-600">
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <h3 className="mt-2 font-display text-xl font-bold tracking-[-0.015em] text-navy-900">
+                    <h3 className="mt-2 font-display text-xl font-bold tracking-[-0.015em] text-ink-900">
                       {titulo}
                     </h3>
-                    <p className="mt-2 text-base leading-relaxed text-navy-600">{texto}</p>
+                    <p className="mt-2 text-base leading-relaxed text-ink-600">{texto}</p>
                   </div>
                 </Revelar>
               ))}
@@ -627,7 +627,7 @@ export default function Landing() {
           <div className="relative mx-auto max-w-6xl px-5 py-20 lg:py-28">
             <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20">
               <Revelar>
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-pitch-400">
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-accent-400">
                   Honestidad
                 </p>
                 <h2 className="mt-4 font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-white sm:text-5xl">
@@ -657,10 +657,10 @@ export default function Landing() {
         </section>
 
         {/* ── Preguntas ────────────────────────────────────────────────── */}
-        <section id="preguntas" className="scroll-mt-16 bg-white">
+        <section id="preguntas" className="scroll-mt-16 bg-panel">
           <div className="mx-auto max-w-3xl px-5 py-20 lg:py-28">
             <Revelar>
-              <h2 className="font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-navy-900 sm:text-5xl">
+              <h2 className="font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-ink-900 sm:text-5xl">
                 Preguntas que nos harías.
               </h2>
             </Revelar>
@@ -675,11 +675,11 @@ export default function Landing() {
                         aria-expanded={abierta === i}
                         className="flex w-full items-center justify-between gap-6 py-5 text-left"
                       >
-                        <span className="text-lg font-semibold leading-snug text-navy-900">{q}</span>
+                        <span className="text-lg font-semibold leading-snug text-ink-900">{q}</span>
                         <span
                           className={cn(
-                            'grid h-7 w-7 shrink-0 place-items-center rounded-full border border-line text-navy-700 transition-transform duration-200',
-                            abierta === i && 'rotate-45 border-navy-900 bg-navy-900 text-white',
+                            'grid h-7 w-7 shrink-0 place-items-center rounded-full border border-line text-ink-700 transition-transform duration-200',
+                            abierta === i && 'rotate-45 border-ink-900 bg-ink-900 text-ink-0',
                           )}
                           aria-hidden
                         >
@@ -694,7 +694,7 @@ export default function Landing() {
                       )}
                     >
                       <div className="overflow-hidden">
-                        <p className="max-w-2xl pb-6 text-md leading-relaxed text-navy-700">{a}</p>
+                        <p className="max-w-2xl pb-6 text-md leading-relaxed text-ink-700">{a}</p>
                       </div>
                     </dd>
                   </div>
@@ -705,7 +705,7 @@ export default function Landing() {
         </section>
 
         {/* ── Llamada final ────────────────────────────────────────────── */}
-        <section className="bg-white px-5 pb-20 lg:pb-28">
+        <section className="bg-panel px-5 pb-20 lg:pb-28">
           <Revelar>
             <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-night px-6 py-16 text-center ring-1 ring-inset ring-white/10 sm:px-12 lg:py-24">
               {/* El verde sube desde abajo. Un degradado en porcentajes se
@@ -733,7 +733,7 @@ export default function Landing() {
                 </p>
                 <Link
                   to="/entrar"
-                  className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-pitch-500 px-8 py-4 text-md font-semibold text-night transition-colors hover:bg-pitch-400"
+                  className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-accent-500 px-8 py-4 text-md font-semibold text-night transition-colors hover:bg-accent-400"
                 >
                   Empezar
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
@@ -745,45 +745,45 @@ export default function Landing() {
       </main>
 
       {/* ── Pie ────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-line bg-white">
+      <footer className="border-t border-line bg-panel">
         <div className="mx-auto max-w-6xl px-5 py-14">
           <div className="grid gap-10 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
             <div>
               <div className="flex items-center gap-2.5">
-                <Aro size={24} className="text-pitch-500" />
+                <Aro size={24} className="text-accent-500" />
                 <Wordmark />
               </div>
-              <p className="mt-4 max-w-xs text-base leading-relaxed text-navy-600">
+              <p className="mt-4 max-w-xs text-base leading-relaxed text-ink-600">
                 El sistema de trabajo del cuerpo técnico. Para cualquier club.
               </p>
             </div>
 
-            <nav className="flex flex-col gap-3 text-base text-navy-700">
+            <nav className="flex flex-col gap-3 text-base text-ink-700">
               <span className="text-sm font-semibold uppercase tracking-[0.1em] text-muted">
                 Producto
               </span>
-              <a href="#producto" onClick={irA('producto')} className="hover:text-navy-900">
+              <a href="#producto" onClick={irA('producto')} className="hover:text-ink-900">
                 Qué hace
               </a>
-              <a href="#limites" onClick={irA('limites')} className="hover:text-navy-900">
+              <a href="#limites" onClick={irA('limites')} className="hover:text-ink-900">
                 Qué no hace
               </a>
-              <a href="#preguntas" onClick={irA('preguntas')} className="hover:text-navy-900">
+              <a href="#preguntas" onClick={irA('preguntas')} className="hover:text-ink-900">
                 Preguntas
               </a>
             </nav>
 
-            <nav className="flex flex-col gap-3 text-base text-navy-700">
+            <nav className="flex flex-col gap-3 text-base text-ink-700">
               <span className="text-sm font-semibold uppercase tracking-[0.1em] text-muted">
                 Cuenta y legal
               </span>
-              <Link to="/entrar" className="inline-flex items-center gap-1 hover:text-navy-900">
+              <Link to="/entrar" className="inline-flex items-center gap-1 hover:text-ink-900">
                 Entrar <ArrowUpRight size={14} />
               </Link>
-              <Link to="/aviso-legal" className="hover:text-navy-900">
+              <Link to="/aviso-legal" className="hover:text-ink-900">
                 Aviso legal
               </Link>
-              <Link to="/privacidad" className="hover:text-navy-900">
+              <Link to="/privacidad" className="hover:text-ink-900">
                 Privacidad
               </Link>
             </nav>

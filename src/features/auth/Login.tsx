@@ -144,10 +144,10 @@ export default function Login() {
     invite?.found && (invite.expired || invite.revoked || invite.accepted);
 
   return (
-    <div className="grid min-h-screen bg-white lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
+    <div className="grid min-h-screen bg-panel lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
       {/* Marca */}
       <div className="hidden flex-col justify-between border-r border-line bg-surface p-10 lg:flex">
-        <Link to="/" className="text-sm font-medium text-navy-600 transition-colors hover:text-navy-900">
+        <Link to="/" className="text-sm font-medium text-ink-600 transition-colors hover:text-ink-900">
           Volver a la página principal
         </Link>
 
@@ -156,17 +156,17 @@ export default function Login() {
           <h1 className="mt-7 max-w-sm text-3xl font-semibold leading-tight tracking-[-0.015em]">
 La herramienta de tu club: plantilla, entrenamientos, partidos y pizarra táctica.
           </h1>
-          <p className="mt-4 max-w-sm text-md leading-relaxed text-navy-700">
+          <p className="mt-4 max-w-sm text-md leading-relaxed text-ink-700">
             Menos gestión. Más tiempo para entrenar.
           </p>
 
-          <p className="mt-8 max-w-sm rounded-md border border-line bg-white px-4 py-3 text-sm leading-relaxed text-navy-700">
+          <p className="mt-8 max-w-sm rounded-md border border-line bg-panel px-4 py-3 text-sm leading-relaxed text-ink-700">
             Cada persona del cuerpo técnico ve únicamente los equipos que tiene asignados. El permiso
             lo aplica el servidor, no la pantalla.
           </p>
         </div>
 
-        <p className="text-sm text-navy-400">Cada club, con sus datos separados de los demás.</p>
+        <p className="text-sm text-ink-400">Cada club, con sus datos separados de los demás.</p>
       </div>
 
       {/* Formulario */}
@@ -182,20 +182,20 @@ La herramienta de tu club: plantilla, entrenamientos, partidos y pizarra táctic
               {invite === null ? (
                 <p className="text-base text-muted">Comprobando la invitación…</p>
               ) : !invite.found ? (
-                <p className="text-base leading-relaxed text-navy-800">
+                <p className="text-base leading-relaxed text-ink-800">
                   Ese enlace de invitación no existe. Pide uno nuevo a quien administra el club.
                 </p>
               ) : (
                 <>
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-base font-medium text-navy-900">
+                    <p className="text-base font-medium text-ink-900">
                       Invitación {invite.clubName ? `de ${invite.clubName}` : 'al club'}
                     </p>
                     {invite.accepted && <Tag tone="neutral" size="sm">Ya aceptada</Tag>}
                     {invite.revoked && <Tag tone="bad" size="sm">Anulada</Tag>}
                     {invite.expired && !invite.accepted && <Tag tone="warn" size="sm">Caducada</Tag>}
                   </div>
-                  <p className="mt-1.5 text-sm leading-relaxed text-navy-700">
+                  <p className="mt-1.5 text-sm leading-relaxed text-ink-700">
                     Para <strong>{invite.email}</strong>
                     {invite.role && ` · ${CLUB_ROLE_LABEL[invite.role]}`}
                     {invite.teamName && ` · ${invite.teamName}`}
@@ -279,7 +279,7 @@ La herramienta de tu club: plantilla, entrenamientos, partidos y pizarra táctic
                       setMode('recuperar');
                       setError(null);
                     }}
-                    className="font-medium text-navy-900 underline underline-offset-2"
+                    className="font-medium text-ink-900 underline underline-offset-2"
                   >
                     Recupérala
                   </button>
@@ -292,7 +292,7 @@ La herramienta de tu club: plantilla, entrenamientos, partidos y pizarra táctic
                         setMode('registro');
                         setError(null);
                       }}
-                      className="font-medium text-navy-900 underline underline-offset-2"
+                      className="font-medium text-ink-900 underline underline-offset-2"
                     >
                       Crear cuenta
                     </button>
@@ -306,7 +306,7 @@ La herramienta de tu club: plantilla, entrenamientos, partidos y pizarra táctic
                   setMode('entrar');
                   setError(null);
                 }}
-                className="font-medium text-navy-900 underline underline-offset-2"
+                className="font-medium text-ink-900 underline underline-offset-2"
               >
                 Ya tengo cuenta, entrar
               </button>

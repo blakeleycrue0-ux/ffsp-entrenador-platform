@@ -66,7 +66,7 @@ export default function DrillEditor() {
     <>
       <Link
         to="/app/ejercicios"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Ejercicios
       </Link>
@@ -123,8 +123,8 @@ export default function DrillEditor() {
                     className={cn(
                       'rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
                       form.tags.includes(t)
-                        ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200'
-                        : 'text-muted ring-1 ring-inset ring-line hover:bg-navy-50',
+                        ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200'
+                        : 'text-muted ring-1 ring-inset ring-line hover:bg-ink-50',
                     )}
                   >
                     {t}
@@ -167,12 +167,12 @@ export default function DrillEditor() {
               {form.material.map((m) => (
                 <span
                   key={m}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[13px] text-navy-700"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[13px] text-ink-700"
                 >
                   {m}
                   <button
                     onClick={() => patch({ material: form.material.filter((x) => x !== m) })}
-                    className="text-navy-300 transition-colors hover:text-bad"
+                    className="text-ink-300 transition-colors hover:text-bad"
                     aria-label={`Quitar ${m}`}
                   >
                     <X size={13} />
@@ -188,7 +188,7 @@ export default function DrillEditor() {
                     (e.target as HTMLInputElement).value = '';
                   }
                 }}
-                className="rounded-lg border border-dashed border-navy-300 px-2.5 py-1.5 text-[13px] outline-none placeholder:text-navy-400 focus:border-navy-400"
+                className="rounded-lg border border-dashed border-ink-300 px-2.5 py-1.5 text-[13px] outline-none placeholder:text-ink-400 focus:border-ink-400"
               />
             </div>
           </Panel>
@@ -199,7 +199,7 @@ export default function DrillEditor() {
             <ul className="mt-3 space-y-2">
               {(form.progressions ?? []).map((p, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="mt-2 grid h-5 w-5 shrink-0 place-items-center rounded bg-navy-50 text-[10.5px] font-bold text-navy-900">
+                  <span className="mt-2 grid h-5 w-5 shrink-0 place-items-center rounded bg-ink-50 text-[10.5px] font-bold text-ink-900">
                     {i + 1}
                   </span>
                   <input
@@ -209,11 +209,11 @@ export default function DrillEditor() {
                       next[i] = e.target.value;
                       patch({ progressions: next });
                     }}
-                    className="flex-1 rounded-lg border border-line px-2.5 py-1.5 text-[13px] outline-none focus:border-navy-400"
+                    className="flex-1 rounded-lg border border-line px-2.5 py-1.5 text-[13px] outline-none focus:border-ink-400"
                   />
                   <button
                     onClick={() => patch({ progressions: (form.progressions ?? []).filter((_, k) => k !== i) })}
-                    className="mt-1.5 text-navy-300 transition-colors hover:text-bad"
+                    className="mt-1.5 text-ink-300 transition-colors hover:text-bad"
                     aria-label="Quitar progresión"
                   >
                     <X size={14} />

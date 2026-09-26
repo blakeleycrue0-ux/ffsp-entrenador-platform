@@ -71,7 +71,7 @@ export default function MatchEditor() {
     <>
       <Link
         to="/app/partidos"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Partidos
       </Link>
@@ -152,8 +152,8 @@ export default function MatchEditor() {
                     className={cn(
                       'flex-1 rounded-xl border px-4 py-2.5 text-[14px] font-medium transition-all',
                       form.home === o.v
-                        ? 'border-navy-400 bg-navy-50 text-navy-900 ring-2 ring-navy-100'
-                        : 'border-line text-navy-600 hover:border-navy-200',
+                        ? 'border-ink-400 bg-ink-50 text-ink-900 ring-2 ring-ink-100'
+                        : 'border-line text-ink-600 hover:border-ink-200',
                     )}
                   >
                     {o.label}
@@ -177,29 +177,29 @@ export default function MatchEditor() {
           <Panel className="p-5">
             <h2 className="text-[14.5px] font-semibold">Vista previa</h2>
             <div className="mt-4 rounded-xl border border-line p-4">
-              <p className="text-[12px] font-medium text-navy-900">
+              <p className="text-[12px] font-medium text-ink-900">
                 {teams.find((t) => t.id === form.teamId)?.name}
               </p>
               <div className="mt-2.5 flex items-center gap-3">
-                <span className="flex-1 text-right text-[14px] font-semibold text-navy-900">
+                <span className="flex-1 text-right text-[14px] font-semibold text-ink-900">
                   {form.home ? ownName : form.opponent || 'Rival'}
                 </span>
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-navy-50 text-[10.5px] font-semibold text-navy-900">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-ink-50 text-[10.5px] font-semibold text-ink-900">
                   vs
                 </span>
-                <span className="flex-1 text-[14px] font-semibold text-navy-900">
+                <span className="flex-1 text-[14px] font-semibold text-ink-900">
                   {form.home ? form.opponent || 'Rival' : ownName}
                 </span>
               </div>
               <p className="mt-3 text-center text-[12.5px] text-muted">
                 {form.date} · {form.start}
               </p>
-              <p className="mt-0.5 text-center text-[12px] text-navy-400">{form.venue}</p>
+              <p className="mt-0.5 text-center text-[12px] text-ink-400">{form.venue}</p>
             </div>
           </Panel>
 
-          <Panel className="bg-navy-50/40 p-5">
-            <p className="text-[12.5px] leading-relaxed text-navy-600">
+          <Panel className="bg-ink-50/40 p-5">
+            <p className="text-[12.5px] leading-relaxed text-ink-600">
               Al guardar, el partido aparecerá en el calendario y en el panel de todos tus equipos. Desde su ficha
               podrás crear la convocatoria y compartirla con el equipo.
             </p>

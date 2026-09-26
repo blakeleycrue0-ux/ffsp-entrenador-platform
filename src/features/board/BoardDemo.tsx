@@ -91,11 +91,11 @@ export function BoardDemo({
     <div
       className={cn(
         'overflow-hidden rounded-lg border',
-        oscuro ? 'border-white/10 bg-white/[0.04]' : 'border-line bg-white',
+        oscuro ? 'border-white/10 bg-white/[0.04]' : 'border-line bg-panel',
         className,
       )}
     >
-      <div className={cn('p-2', oscuro ? 'bg-black/20' : 'bg-navy-900/5')}>
+      <div className={cn('p-2', oscuro ? 'bg-black/20' : 'bg-ink-900/5')}>
         <div className="w-full overflow-hidden rounded">
           <BoardStage
             scene={scene}
@@ -118,8 +118,8 @@ export function BoardDemo({
           className={cn(
             'inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors',
             oscuro
-              ? 'bg-pitch-500 text-night hover:bg-pitch-400'
-              : 'bg-navy-900 text-white hover:bg-navy-800',
+              ? 'bg-accent-500 text-night hover:bg-accent-400'
+              : 'bg-ink-900 text-ink-0 hover:bg-ink-800',
           )}
         >
           {playback.playing ? <Pause size={14} /> : <Play size={14} />}
@@ -132,7 +132,7 @@ export function BoardDemo({
             'inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-sm transition-colors',
             oscuro
               ? 'border-white/20 text-white/70 hover:border-white/50'
-              : 'border-line text-navy-700 hover:border-navy-400',
+              : 'border-line text-ink-700 hover:border-ink-400',
           )}
         >
           <RotateCcw size={14} />

@@ -68,7 +68,7 @@ export function DrillBoardViewer({ value, className }: { value: unknown; classNa
 
   return (
     <div className={cn('overflow-hidden rounded-md border border-line', className)}>
-      <div className="bg-navy-900/5 p-2">
+      <div className="bg-ink-900/5 p-2">
         <BoardStage
           scene={scene}
           playback={playback}

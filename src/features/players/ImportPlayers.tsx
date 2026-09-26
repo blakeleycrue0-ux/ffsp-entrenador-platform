@@ -282,7 +282,7 @@ export function ImportPlayers({
     >
       {resultado ? (
         <div className="space-y-3">
-          <p className="text-base leading-relaxed text-navy-800">
+          <p className="text-base leading-relaxed text-ink-800">
             Se han añadido <strong>{resultado.ok}</strong>{' '}
             {resultado.ok === 1 ? 'jugadora' : 'jugadoras'} a la plantilla.
           </p>
@@ -291,7 +291,7 @@ export function ImportPlayers({
               <p className="text-base font-medium text-bad">
                 {resultado.fallos.length} no se han podido guardar
               </p>
-              <ul className="mt-1.5 space-y-1 text-sm leading-relaxed text-navy-700">
+              <ul className="mt-1.5 space-y-1 text-sm leading-relaxed text-ink-700">
                 {resultado.fallos.map((f) => (
                   <li key={f}>{f}</li>
                 ))}
@@ -393,18 +393,18 @@ export function ImportPlayers({
                         }
                       />
                     </td>
-                    <td className="font-medium text-navy-900">{f.name || <span className="text-navy-300">—</span>}</td>
+                    <td className="font-medium text-ink-900">{f.name || <span className="text-ink-300">—</span>}</td>
                     <td className="text-right tabular-nums">
-                      {f.number ?? <span className="text-navy-300">auto</span>}
+                      {f.number ?? <span className="text-ink-300">auto</span>}
                     </td>
-                    <td>{f.position || <span className="text-navy-300">—</span>}</td>
+                    <td>{f.position || <span className="text-ink-300">—</span>}</td>
                     <td className="text-sm">
                       {f.error ? (
                         <span className="text-bad">{f.error}</span>
                       ) : f.avisos.length > 0 ? (
                         <span className="text-warn">{f.avisos.join(' · ')}</span>
                       ) : (
-                        <span className="text-navy-300">Todo correcto</span>
+                        <span className="text-ink-300">Todo correcto</span>
                       )}
                     </td>
                   </tr>

@@ -42,12 +42,12 @@ export function BottomNav() {
       <button
         onClick={() => setSheet('create')}
         aria-label="Crear"
-        className="fixed bottom-[calc(72px+var(--safe-bottom))] right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-navy-900 text-white shadow-raised transition-transform active:scale-95 lg:hidden"
+        className="fixed bottom-[calc(72px+var(--safe-bottom))] right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-ink-900 text-ink-0 shadow-raised transition-transform active:scale-95 lg:hidden"
       >
         <Plus size={22} strokeWidth={2.2} />
       </button>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white pb-[var(--safe-bottom)] lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-panel pb-[var(--safe-bottom)] lg:hidden">
         <div className="flex h-[58px] items-stretch">
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -59,9 +59,9 @@ export function BottomNav() {
                 aria-current={on ? 'page' : undefined}
                 className="relative flex flex-1 flex-col items-center justify-center gap-1"
               >
-                {on && <span className="absolute top-0 h-0.5 w-8 bg-navy-900" />}
-                <Icon size={19} strokeWidth={on ? 2.1 : 1.8} className={on ? 'text-navy-900' : 'text-navy-400'} />
-                <span className={cn('text-[10px] font-medium', on ? 'text-navy-900' : 'text-muted')}>
+                {on && <span className="absolute top-0 h-0.5 w-8 bg-ink-900" />}
+                <Icon size={19} strokeWidth={on ? 2.1 : 1.8} className={on ? 'text-ink-900' : 'text-ink-400'} />
+                <span className={cn('text-[10px] font-medium', on ? 'text-ink-900' : 'text-muted')}>
                   {tab.short ?? tab.label}
                 </span>
               </Link>
@@ -71,22 +71,22 @@ export function BottomNav() {
             onClick={() => setSheet('more')}
             className="relative flex flex-1 flex-col items-center justify-center gap-1"
           >
-            {moreActive && <span className="absolute top-0 h-0.5 w-8 bg-navy-900" />}
-            <MoreHorizontal size={19} strokeWidth={moreActive ? 2.1 : 1.8} className={moreActive ? 'text-navy-900' : 'text-navy-400'} />
-            <span className={cn('text-[10px] font-medium', moreActive ? 'text-navy-900' : 'text-muted')}>Más</span>
+            {moreActive && <span className="absolute top-0 h-0.5 w-8 bg-ink-900" />}
+            <MoreHorizontal size={19} strokeWidth={moreActive ? 2.1 : 1.8} className={moreActive ? 'text-ink-900' : 'text-ink-400'} />
+            <span className={cn('text-[10px] font-medium', moreActive ? 'text-ink-900' : 'text-muted')}>Más</span>
           </button>
         </div>
       </nav>
 
       {sheet && (
         <div className="fixed inset-0 z-[60] lg:hidden">
-          <div className="absolute inset-0 bg-navy-900/35 animate-fade-in" onClick={() => setSheet(null)} />
-          <div className="absolute inset-x-0 bottom-0 max-h-[82vh] overflow-y-auto rounded-t-xl border-t border-line bg-white pb-[calc(1rem+var(--safe-bottom))] shadow-pop animate-slide-up">
-            <div className="sticky top-0 flex items-center justify-between border-b border-line bg-white px-4 py-3">
+          <div className="absolute inset-0 bg-ink-900/35 animate-fade-in" onClick={() => setSheet(null)} />
+          <div className="absolute inset-x-0 bottom-0 max-h-[82vh] overflow-y-auto rounded-t-xl border-t border-line bg-panel pb-[calc(1rem+var(--safe-bottom))] shadow-pop animate-slide-up">
+            <div className="sticky top-0 flex items-center justify-between border-b border-line bg-panel px-4 py-3">
               <p className="text-md font-semibold">{sheet === 'create' ? 'Crear' : 'Todas las secciones'}</p>
               <button
                 onClick={() => setSheet(null)}
-                className="-mr-1 rounded p-1.5 text-navy-400 hover:bg-surface hover:text-navy-900"
+                className="-mr-1 rounded p-1.5 text-ink-400 hover:bg-surface hover:text-ink-900"
                 aria-label="Cerrar"
               >
                 <X size={17} />
@@ -103,8 +103,8 @@ export function BottomNav() {
                       onClick={() => go(q.to)}
                       className="flex w-full items-center gap-3 rounded px-3 py-3 text-left transition-colors active:bg-surface"
                     >
-                      <Icon size={17} className="text-navy-400" />
-                      <span className="text-base font-medium text-navy-900">{q.label}</span>
+                      <Icon size={17} className="text-ink-400" />
+                      <span className="text-base font-medium text-ink-900">{q.label}</span>
                     </button>
                   );
                 })}
@@ -121,10 +121,10 @@ export function BottomNav() {
                           onClick={() => go(m.to)}
                           className={cn(
                             'flex w-full items-center gap-3 rounded px-3 py-2.5 text-left text-base transition-colors',
-                            on ? 'bg-navy-900 font-medium text-white' : 'text-navy-800 active:bg-surface',
+                            on ? 'bg-ink-900 font-medium text-ink-0' : 'text-ink-800 active:bg-surface',
                           )}
                         >
-                          <Icon size={17} className={on ? 'text-white' : 'text-navy-400'} />
+                          <Icon size={17} className={on ? 'text-white' : 'text-ink-400'} />
                           {m.label}
                         </button>
                       </li>
@@ -139,10 +139,10 @@ export function BottomNav() {
                   >
                     <Avatar name={staff?.name ?? '—'} size={34} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-base font-medium text-navy-900">{staff?.name}</span>
+                      <span className="block truncate text-base font-medium text-ink-900">{staff?.name}</span>
                       <span className="block text-xs text-muted">{staff ? ROLE_LABEL[staff.role] : ''}</span>
                     </span>
-                    <UserRound size={16} className="text-navy-300" />
+                    <UserRound size={16} className="text-ink-300" />
                   </button>
                   <button
                     onClick={() => void signOut()}

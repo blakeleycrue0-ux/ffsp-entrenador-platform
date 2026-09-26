@@ -164,22 +164,22 @@ export default function Dashboard() {
                 </Tag>
               </div>
 
-              <p className="mt-3 text-[13px] font-medium text-navy-900">
+              <p className="mt-3 text-[13px] font-medium text-ink-900">
                 {data.teams.find((t) => t.id === session0.teamId)?.name}
               </p>
               <h3 className="mt-0.5 text-[19px] font-semibold leading-tight">{session0.title}</h3>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px] text-navy-600">
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px] text-ink-600">
                 <span className="flex items-center gap-1.5">
-                  <Clock size={15} className="text-navy-400" />
+                  <Clock size={15} className="text-ink-400" />
                   {session0.start} · {minutesToLabel(session0.duration)}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <MapPin size={15} className="text-navy-400" />
+                  <MapPin size={15} className="text-ink-400" />
                   {session0.venue}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Users size={15} className="text-navy-400" />
+                  <Users size={15} className="text-ink-400" />
                   {session0.expectedPlayers} jugadoras
                 </span>
               </div>
@@ -190,12 +190,12 @@ export default function Dashboard() {
                   <div
                     key={b.id}
                     title={`${b.title} · ${b.duration}′`}
-                    className="h-1.5 rounded-full bg-navy-200 transition-colors hover:bg-navy-700"
+                    className="h-1.5 rounded-full bg-ink-200 transition-colors hover:bg-ink-700"
                     style={{ flex: b.duration }}
                   />
                 ))}
               </div>
-              <p className="mt-2 text-[12px] text-navy-400">{session0.blocks.length} bloques · {session0.objective}</p>
+              <p className="mt-2 text-[12px] text-ink-400">{session0.blocks.length} bloques · {session0.objective}</p>
 
               <div className="mt-5 flex flex-wrap gap-2">
                 <LinkButton to={`/app/entrenamientos/${session0.id}`} size="sm">
@@ -230,39 +230,39 @@ export default function Dashboard() {
                 </Tag>
               </div>
 
-              <p className="mt-3 text-[13px] font-medium text-navy-900">
+              <p className="mt-3 text-[13px] font-medium text-ink-900">
                 {data.teams.find((t) => t.id === match0.teamId)?.name} · {match0.competition}
               </p>
 
               <div className="mt-3 flex items-center gap-4">
                 <div className="flex-1 text-right">
-                  <p className="text-[16px] font-semibold leading-tight text-navy-900">
+                  <p className="text-[16px] font-semibold leading-tight text-ink-900">
                     {match0.home ? ownName : match0.opponent}
                   </p>
-                  <p className="mt-0.5 text-[11.5px] text-navy-400">{match0.home ? 'Local' : 'Visitante'}</p>
+                  <p className="mt-0.5 text-[11.5px] text-ink-400">{match0.home ? 'Local' : 'Visitante'}</p>
                 </div>
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-navy-50 text-[12px] font-semibold text-navy-900">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink-50 text-[12px] font-semibold text-ink-900">
                   vs
                 </span>
                 <div className="flex-1">
-                  <p className="text-[16px] font-semibold leading-tight text-navy-900">
+                  <p className="text-[16px] font-semibold leading-tight text-ink-900">
                     {match0.home ? match0.opponent : ownName}
                   </p>
-                  <p className="mt-0.5 text-[11.5px] text-navy-400">{match0.home ? 'Visitante' : 'Local'}</p>
+                  <p className="mt-0.5 text-[11.5px] text-ink-400">{match0.home ? 'Visitante' : 'Local'}</p>
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px] text-navy-600">
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px] text-ink-600">
                 <span className="flex items-center gap-1.5">
-                  <CalendarClock size={15} className="text-navy-400" />
+                  <CalendarClock size={15} className="text-ink-400" />
                   {longDate(match0.date)}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock size={15} className="text-navy-400" />
+                  <Clock size={15} className="text-ink-400" />
                   {match0.start}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <MapPin size={15} className="text-navy-400" />
+                  <MapPin size={15} className="text-ink-400" />
                   {match0.venue}
                 </span>
               </div>
@@ -298,7 +298,7 @@ export default function Dashboard() {
         <Panel className="p-5">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Asistencia</span>
-            <Link to="/app/entrenamientos" className="text-[12.5px] font-medium text-navy-900 hover:text-navy-900">
+            <Link to="/app/entrenamientos" className="text-[12.5px] font-medium text-ink-900 hover:text-ink-900">
               Ver asistencia
             </Link>
           </div>
@@ -306,7 +306,7 @@ export default function Dashboard() {
           <div className="mt-4 flex items-center gap-5">
             <Ring value={overviews.find((o) => o.team.id === activeTeam?.id)?.attendanceRate ?? 0} size={80} label="media" />
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold text-navy-900">{squad.length} jugadoras</p>
+              <p className="text-[15px] font-semibold text-ink-900">{squad.length} jugadoras</p>
               <p className="mt-0.5 text-[12.5px] text-muted">
                 {activeTeam?.name} ·{' '}
                 {lastAttendance ? `último registro ${relativeDay(lastAttendance.date).toLowerCase()}` : 'sin registros'}
@@ -322,14 +322,14 @@ export default function Dashboard() {
                   ]}
                 />
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
-                  <span className="flex items-center gap-1.5 text-navy-600">
+                  <span className="flex items-center gap-1.5 text-ink-600">
                     <span className="h-2 w-2 rounded-full bg-ok" /> {attCounts.present} presentes
                   </span>
-                  <span className="flex items-center gap-1.5 text-navy-600">
+                  <span className="flex items-center gap-1.5 text-ink-600">
                     <span className="h-2 w-2 rounded-full bg-warn" /> {attCounts.justified + attCounts.injured}{' '}
                     justificadas
                   </span>
-                  <span className="flex items-center gap-1.5 text-navy-600">
+                  <span className="flex items-center gap-1.5 text-ink-600">
                     <span className="h-2 w-2 rounded-full bg-bad" /> {attCounts.absent}{' '}
                     {attCounts.absent === 1 ? 'ausente' : 'ausentes'}
                   </span>
@@ -344,7 +344,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Convocatoria</span>
             {match0 && (
-              <Link to={`/app/partidos/${match0.id}`} className="text-[12.5px] font-medium text-navy-900 hover:text-navy-900">
+              <Link to={`/app/partidos/${match0.id}`} className="text-[12.5px] font-medium text-ink-900 hover:text-ink-900">
                 Gestionar
               </Link>
             )}
@@ -353,8 +353,8 @@ export default function Dashboard() {
           {callup ? (
             <>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-[30px] font-semibold leading-none text-navy-900 tabular-nums">{confirmed}</span>
-                <span className="text-[16px] text-navy-400">/ {selected.length} confirmadas</span>
+                <span className="text-[30px] font-semibold leading-none text-ink-900 tabular-nums">{confirmed}</span>
+                <span className="text-[16px] text-ink-400">/ {selected.length} confirmadas</span>
               </div>
               <p className="mt-1 text-[12.5px] text-muted">
                 {match0?.opponent} · {relativeDay(match0!.date).toLowerCase()} {match0?.start}
@@ -368,7 +368,7 @@ export default function Dashboard() {
                   { n: pendingCallup, l: 'Pendientes', c: 'text-[#9A6412]' },
                   { n: declined, l: 'No pueden', c: 'text-bad' },
                 ].map((x) => (
-                  <div key={x.l} className="rounded-xl bg-navy-50 py-2.5">
+                  <div key={x.l} className="rounded-xl bg-ink-50 py-2.5">
                     <p className={cn('text-[18px] font-semibold leading-none tabular-nums', x.c)}>{x.n}</p>
                     <p className="mt-1 text-[11.5px] text-muted">{x.l}</p>
                   </div>
@@ -411,7 +411,7 @@ export default function Dashboard() {
         <Panel className="p-5 lg:col-span-2">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Tareas pendientes</span>
-            <span className="text-[12.5px] text-navy-400">{openTasks.length} abiertas</span>
+            <span className="text-[12.5px] text-ink-400">{openTasks.length} abiertas</span>
           </div>
 
           {data.tasks.length === 0 ? (
@@ -447,16 +447,16 @@ export default function Dashboard() {
           <ul className="mt-4 space-y-3.5">
             {data.activity.slice(0, 6).map((a) => (
               <li key={a.id} className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-navy-300" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-300" />
                 <div className="min-w-0 flex-1">
                   {a.link ? (
-                    <Link to={a.link} className="text-[13.5px] leading-snug text-navy-700 hover:text-navy-900">
+                    <Link to={a.link} className="text-[13.5px] leading-snug text-ink-700 hover:text-ink-900">
                       {a.text}
                     </Link>
                   ) : (
-                    <p className="text-[13.5px] leading-snug text-navy-700">{a.text}</p>
+                    <p className="text-[13.5px] leading-snug text-ink-700">{a.text}</p>
                   )}
-                  <p className="mt-0.5 text-[11.5px] text-navy-400">{relativeTime(a.at)}</p>
+                  <p className="mt-0.5 text-[11.5px] text-ink-400">{relativeTime(a.at)}</p>
                 </div>
               </li>
             ))}
@@ -469,7 +469,7 @@ export default function Dashboard() {
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-[17px] font-semibold">Mis equipos</h2>
-          <Link to="/app/equipo-tecnico" className="flex items-center gap-1 text-[13px] font-medium text-navy-900 hover:text-navy-900">
+          <Link to="/app/equipo-tecnico" className="flex items-center gap-1 text-[13px] font-medium text-ink-900 hover:text-ink-900">
             Ver todos <ArrowRight size={14} />
           </Link>
         </div>
@@ -479,36 +479,36 @@ export default function Dashboard() {
             <Link key={o.team.id} to={`/app/equipo-tecnico/${o.team.id}`} className="panel panel-hover block p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate text-[15px] font-semibold text-navy-900">{o.team.name}</p>
-                  <p className="mt-0.5 text-[12px] text-navy-400">{o.squadSize} jugadoras</p>
+                  <p className="truncate text-[15px] font-semibold text-ink-900">{o.team.name}</p>
+                  <p className="mt-0.5 text-[12px] text-ink-400">{o.squadSize} jugadoras</p>
                 </div>
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-navy-50 text-[11px] font-bold text-navy-900">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink-50 text-[11px] font-bold text-ink-900">
                   {o.attendanceRate}%
                 </span>
               </div>
 
               <div className="mt-3.5 space-y-2 text-[12.5px]">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-navy-400">Entrenamiento</span>
-                  <span className="truncate font-medium text-navy-700">
+                  <span className="text-ink-400">Entrenamiento</span>
+                  <span className="truncate font-medium text-ink-700">
                     {o.nextSession ? `${relativeDay(o.nextSession.date)} ${o.nextSession.start}` : '—'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-navy-400">Partido</span>
-                  <span className="truncate font-medium text-navy-700">
+                  <span className="text-ink-400">Partido</span>
+                  <span className="truncate font-medium text-ink-700">
                     {o.nextMatch ? `${relativeDay(o.nextMatch.date)} ${o.nextMatch.start}` : '—'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-navy-400">Convocatoria</span>
-                  <span className="font-medium text-navy-700">
+                  <span className="text-ink-400">Convocatoria</span>
+                  <span className="font-medium text-ink-700">
                     {o.callup ? `${o.confirmed} confirmados` : 'Sin crear'}
                   </span>
                 </div>
               </div>
 
-              <div className="mt-3.5 flex items-center justify-between border-t border-navy-100 pt-3">
+              <div className="mt-3.5 flex items-center justify-between border-t border-ink-100 pt-3">
                 <span className="flex items-center gap-1.5 text-[12px]">
                   {o.unavailable > 0 ? (
                     <>
@@ -522,7 +522,7 @@ export default function Dashboard() {
                     </>
                   )}
                 </span>
-                <ChevronRight size={15} className="text-navy-300" />
+                <ChevronRight size={15} className="text-ink-300" />
               </div>
             </Link>
           ))}
@@ -538,22 +538,22 @@ function TaskRow({ task, onToggle }: { task: CoachTask; onToggle: () => void }) 
   const overdue = task.dueDate && !task.done && daysFromToday(task.dueDate) < 0;
   return (
     <li>
-      <div className="group flex items-start gap-3 rounded-lg px-1.5 py-2 transition-colors hover:bg-navy-50">
+      <div className="group flex items-start gap-3 rounded-lg px-1.5 py-2 transition-colors hover:bg-ink-50">
         <span className="mt-0.5">
           <Checkbox checked={task.done} onChange={onToggle} />
         </span>
         <div className="min-w-0 flex-1">
           {task.link && !task.done ? (
-            <Link to={task.link} className="block text-[13.5px] leading-snug text-navy-700 hover:text-navy-900">
+            <Link to={task.link} className="block text-[13.5px] leading-snug text-ink-700 hover:text-ink-900">
               {task.title}
             </Link>
           ) : (
-            <p className={cn('text-[13.5px] leading-snug', task.done ? 'text-navy-400 line-through' : 'text-navy-700')}>
+            <p className={cn('text-[13.5px] leading-snug', task.done ? 'text-ink-400 line-through' : 'text-ink-700')}>
               {task.title}
             </p>
           )}
           {task.dueDate && !task.done && (
-            <p className={cn('mt-0.5 text-[11.5px]', overdue ? 'text-bad' : 'text-navy-400')}>
+            <p className={cn('mt-0.5 text-[11.5px]', overdue ? 'text-bad' : 'text-ink-400')}>
               {overdue ? 'Vencida · ' : ''}
               {relativeDay(task.dueDate)}
             </p>

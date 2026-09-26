@@ -66,9 +66,9 @@ export default function TeamsPage() {
         <div className="grid gap-4 lg:grid-cols-2">
           {overviews.map((o) => (
             <Link key={o.team.id} to={`/app/equipo-tecnico/${o.team.id}`} className="panel panel-hover block overflow-hidden">
-              <div className="flex items-start justify-between gap-4 border-b border-navy-100 p-5">
+              <div className="flex items-start justify-between gap-4 border-b border-ink-100 p-5">
                 <div className="flex items-start gap-3.5">
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-navy-900 text-[14px] font-bold text-white">
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-ink-900 text-[14px] font-bold text-ink-0">
                     {o.team.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase()}
                   </span>
                   <div className="min-w-0">
@@ -89,41 +89,41 @@ export default function TeamsPage() {
                 <Ring value={o.attendanceRate} size={62} stroke={6} label="asist." />
               </div>
 
-              <div className="grid grid-cols-3 divide-x divide-navy-100">
+              <div className="grid grid-cols-3 divide-x divide-ink-100">
                 <div className="p-4">
-                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-navy-400">
+                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-ink-400">
                     <CalendarClock size={12} /> Entrenamiento
                   </p>
-                  <p className="mt-1.5 text-[13.5px] font-medium text-navy-800">
+                  <p className="mt-1.5 text-[13.5px] font-medium text-ink-800">
                     {o.nextSession ? relativeDay(o.nextSession.date) : '—'}
                   </p>
-                  <p className="text-[12px] text-navy-400">{o.nextSession?.start ?? 'sin planificar'}</p>
+                  <p className="text-[12px] text-ink-400">{o.nextSession?.start ?? 'sin planificar'}</p>
                 </div>
                 <div className="p-4">
-                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-navy-400">
+                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-ink-400">
                     <Swords size={12} /> Partido
                   </p>
-                  <p className="mt-1.5 truncate text-[13.5px] font-medium text-navy-800">
+                  <p className="mt-1.5 truncate text-[13.5px] font-medium text-ink-800">
                     {o.nextMatch ? relativeDay(o.nextMatch.date) : '—'}
                   </p>
-                  <p className="truncate text-[12px] text-navy-400">{o.nextMatch?.opponent ?? 'sin programar'}</p>
+                  <p className="truncate text-[12px] text-ink-400">{o.nextMatch?.opponent ?? 'sin programar'}</p>
                 </div>
                 <div className="p-4">
-                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-navy-400">
+                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-ink-400">
                     <Users size={12} /> Convocatoria
                   </p>
-                  <p className="mt-1.5 text-[13.5px] font-medium text-navy-800">
+                  <p className="mt-1.5 text-[13.5px] font-medium text-ink-800">
                     {o.callup ? `${o.confirmed} / ${o.callup.slots}` : '—'}
                   </p>
-                  <p className="text-[12px] text-navy-400">
+                  <p className="text-[12px] text-ink-400">
                     {o.callup ? `${o.pending} pendientes` : 'sin crear'}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between border-t border-navy-100 bg-navy-50/40 px-5 py-2.5">
+              <div className="flex items-center justify-between border-t border-ink-100 bg-ink-50/40 px-5 py-2.5">
                 <span className="text-[12.5px] text-muted">{o.team.venue}</span>
-                <ChevronRight size={16} className="text-navy-300" />
+                <ChevronRight size={16} className="text-ink-300" />
               </div>
             </Link>
           ))}
