@@ -10,7 +10,7 @@ import {
   Plus, Send, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { callupOfMatch, clubShortName, currentStaff, isClubAdmin, nextMatch, nextSession, squadOf, summarizeRecord, teamOverview, visibleTeams } from '@/store/selectors';
+import { callupOfMatch, clubShortName, currentStaff, isClubAdmin, nextMatch, nextSession, nombreReal, squadOf, summarizeRecord, teamOverview, visibleTeams } from '@/store/selectors';
 
 import { humanError } from '@/services/supabase';
 import { useToast } from '@/components/ui/Toast';
@@ -65,11 +65,9 @@ export default function Dashboard() {
   const declined = selected.filter((e) => e.response === 'rechazada').length;
 
   const openTasks = data.tasks.filter((t) => !t.done);
-  /* Sin nombre en el perfil, `name` cae en el correo, y saludar con
-     «Hola, marta.vives@gmail.com» es peor que no saludar con nombre. Una
-     dirección no es un nombre por mucho que ocupe su sitio. */
-  const tieneNombre = Boolean(staff?.name && staff.name !== staff.email);
-  const firstName = tieneNombre ? staff!.name.split(' ')[0] : '';
+  /* Saludar con «Hola, marta.vives@gmail.com» es peor que no saludar con
+     nombre. Qué cuenta como nombre de verdad lo decide `nombreReal`. */
+  const firstName = nombreReal(staff)?.split(' ')[0] ?? '';
 
   if (loading) {
     return (

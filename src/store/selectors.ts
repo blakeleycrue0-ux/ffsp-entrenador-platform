@@ -13,6 +13,20 @@ import { NIVELES, planEfectivo, type PlanTier } from '@/services/billing';
 export const currentStaff = (data: ClubData): Staff | null => data.profile;
 
 /**
+ * El nombre de verdad de una persona, o `null` si no lo ha puesto.
+ * ---------------------------------------------------------------------------
+ * `Staff.name` cae en el correo cuando el perfil no tiene nombre, porque en un
+ * listado es mejor eso que una fila en blanco. Pero fuera de un listado, tratar
+ * esa dirección como un nombre da cosas como «Hola, marta@gmail.com» o,
+ * peor, guardarla como nombre real. Quien necesite el nombre DE VERDAD
+ * pregunta por aquí, y esa regla vive en un solo sitio.
+ */
+export const nombreReal = (staff: Staff | null): string | null => {
+  if (!staff?.name) return null;
+  return staff.name === staff.email ? null : staff.name;
+};
+
+/**
  * Nombre del club para los marcadores y las convocatorias. Hasta que exista un
  * club, se dice «Nuestro equipo»: es preferible a inventarse un nombre.
  */
