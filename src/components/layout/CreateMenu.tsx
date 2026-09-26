@@ -31,11 +31,11 @@ export function CreateMenu({ open, onClose }: { open: boolean; onClose: () => vo
                 navigate(o.to);
                 onClose();
               }}
-              className="flex items-start gap-2.5 rounded-md border border-line p-3 text-left transition-colors hover:border-navy-400"
+              className="flex items-start gap-2.5 rounded-md border border-line p-3 text-left transition-colors hover:border-ink-400"
             >
-              <Icon size={16} className="mt-0.5 shrink-0 text-navy-400" />
+              <Icon size={16} className="mt-0.5 shrink-0 text-ink-400" />
               <span className="min-w-0">
-                <span className="block text-base font-medium text-navy-900">{o.label}</span>
+                <span className="block text-base font-medium text-ink-900">{o.label}</span>
                 <span className="mt-0.5 block text-sm leading-snug text-muted">{o.hint}</span>
               </span>
             </button>

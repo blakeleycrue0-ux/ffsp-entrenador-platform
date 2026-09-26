@@ -70,7 +70,7 @@ export default function SessionDetail() {
     <>
       <Link
         to="/app/entrenamientos"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Planificaciones
       </Link>
@@ -78,8 +78,8 @@ export default function SessionDetail() {
       <PageHeader
         eyebrow={
           <>
-            <span className="font-medium text-navy-900">{team?.name}</span>
-            <span className="text-navy-300">·</span>
+            <span className="font-medium text-ink-900">{team?.name}</span>
+            <span className="text-ink-300">·</span>
             <span>{longDate(s.date)}</span>
             <Tag tone={relativeDay(s.date) === 'Hoy' ? 'solid' : 'neutral'} size="sm">
               {relativeDay(s.date)}
@@ -117,13 +117,13 @@ export default function SessionDetail() {
           [<Target key="4" size={16} />, 'Bloques', `${s.blocks.length}`, `${s.material.length} materiales`],
         ].map(([icon, label, value, hint], i) => (
           <Panel key={i} className="flex items-start gap-3.5 p-4">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-navy-50 text-navy-900">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-ink-50 text-ink-900">
               {icon as React.ReactNode}
             </span>
             <div className="min-w-0">
-              <p className="text-[11.5px] uppercase tracking-wide text-navy-400">{label as string}</p>
-              <p className="mt-0.5 truncate text-[15px] font-semibold text-navy-900">{value as string}</p>
-              <p className="truncate text-[12px] text-navy-400">{hint as string}</p>
+              <p className="text-[11.5px] uppercase tracking-wide text-ink-400">{label as string}</p>
+              <p className="mt-0.5 truncate text-[15px] font-semibold text-ink-900">{value as string}</p>
+              <p className="truncate text-[12px] text-ink-400">{hint as string}</p>
             </div>
           </Panel>
         ))}
@@ -132,14 +132,14 @@ export default function SessionDetail() {
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         {/* Línea de tiempo */}
         <Panel className="overflow-hidden lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-navy-100 px-5 py-4">
+          <div className="flex items-center justify-between border-b border-ink-100 px-5 py-4">
             <div>
               <h2 className="text-[15px] font-semibold">Estructura de la sesión</h2>
               <p className="mt-0.5 text-[12.5px] text-muted">
                 {minutesToLabel(s.duration)} en {s.blocks.length} bloques
               </p>
             </div>
-            <span className="text-[13px] font-medium text-navy-400 tabular-nums">
+            <span className="text-[13px] font-medium text-ink-400 tabular-nums">
               {s.start} – {addMinutes(s.start, s.duration)}
             </span>
           </div>
@@ -148,21 +148,21 @@ export default function SessionDetail() {
             {timeline.map(({ block, start, end }, i) => {
               const drill = data.drills.find((d) => d.id === block.drillId);
               return (
-                <li key={block.id} className="relative flex gap-4 border-b border-navy-100 px-5 py-4 last:border-0">
+                <li key={block.id} className="relative flex gap-4 border-b border-ink-100 px-5 py-4 last:border-0">
                   {/* Guía vertical */}
                   {i < timeline.length - 1 && (
                     <span className="absolute left-[38px] top-14 h-[calc(100%-2.5rem)] w-px bg-line" />
                   )}
                   <div className="relative z-10 flex w-7 shrink-0 flex-col items-center">
-                    <span className="grid h-7 w-7 place-items-center rounded-lg bg-navy-50 text-[11px] font-bold text-navy-900 tabular-nums">
+                    <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink-50 text-[11px] font-bold text-ink-900 tabular-nums">
                       {String(i + 1).padStart(2, '0')}
                     </span>
                   </div>
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <h3 className="text-[14.5px] font-medium text-navy-900">{block.title}</h3>
-                      <span className="text-[12.5px] text-navy-400 tabular-nums">
+                      <h3 className="text-[14.5px] font-medium text-ink-900">{block.title}</h3>
+                      <span className="text-[12.5px] text-ink-400 tabular-nums">
                         {start} – {end}
                       </span>
                     </div>
@@ -183,7 +183,7 @@ export default function SessionDetail() {
                       {drill && (
                         <Link
                           to={`/app/ejercicios/${drill.id}`}
-                          className="ml-1 text-[12px] font-medium text-navy-900 hover:text-navy-900"
+                          className="ml-1 text-[12px] font-medium text-ink-900 hover:text-ink-900"
                         >
                           Ver ejercicio
                         </Link>
@@ -191,7 +191,7 @@ export default function SessionDetail() {
                     </div>
                   </div>
 
-                  <span className="shrink-0 self-start rounded-lg bg-navy-50 px-2 py-1 text-[12.5px] font-semibold text-navy-600 tabular-nums">
+                  <span className="shrink-0 self-start rounded-lg bg-ink-50 px-2 py-1 text-[12.5px] font-semibold text-ink-600 tabular-nums">
                     {block.duration}′
                   </span>
                 </li>
@@ -200,7 +200,7 @@ export default function SessionDetail() {
           </ol>
 
           {/* Barra proporcional */}
-          <div className="border-t border-navy-100 p-5">
+          <div className="border-t border-ink-100 p-5">
             <div className="flex gap-1">
               {s.blocks.map((b, i) => (
                 <div
@@ -208,13 +208,13 @@ export default function SessionDetail() {
                   title={`${b.title} · ${b.duration}′`}
                   className={cn(
                     'h-2 rounded-full transition-colors',
-                    i === 0 ? 'bg-navy-200' : i === s.blocks.length - 1 ? 'bg-navy-200' : 'bg-navy-700',
+                    i === 0 ? 'bg-ink-200' : i === s.blocks.length - 1 ? 'bg-ink-200' : 'bg-ink-700',
                   )}
                   style={{ flex: b.duration }}
                 />
               ))}
             </div>
-            <p className="mt-2 text-[12px] text-navy-400">
+            <p className="mt-2 text-[12px] text-ink-400">
               Calentamiento y vuelta a la calma en tono claro; parte principal en tono intenso.
             </p>
           </div>
@@ -224,12 +224,12 @@ export default function SessionDetail() {
         <div className="space-y-4">
           <Panel className="p-5">
             <h3 className="flex items-center gap-2 text-[14.5px] font-semibold">
-              <Package size={16} className="text-navy-800" /> Material necesario
+              <Package size={16} className="text-ink-800" /> Material necesario
             </h3>
             <ul className="mt-3 space-y-2">
               {s.material.map((m) => (
-                <li key={m} className="flex items-center gap-2.5 text-[13.5px] text-navy-700">
-                  <span className="h-1.5 w-1.5 rounded-full bg-navy-300" />
+                <li key={m} className="flex items-center gap-2.5 text-[13.5px] text-ink-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-ink-300" />
                   {m}
                 </li>
               ))}
@@ -239,7 +239,7 @@ export default function SessionDetail() {
           {s.notes && (
             <Panel className="p-5">
               <h3 className="text-[14.5px] font-semibold">Observaciones</h3>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-navy-600">{s.notes}</p>
+              <p className="mt-2 text-[13.5px] leading-relaxed text-ink-600">{s.notes}</p>
             </Panel>
           )}
 

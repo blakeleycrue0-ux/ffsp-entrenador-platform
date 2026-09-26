@@ -40,8 +40,8 @@ export function Wordmark({
       aria-label="Playoff360"
     >
       <span className={cn('font-display font-extrabold tracking-[-0.035em]', tipo)}>
-        <span className={tone === 'light' ? 'text-white' : 'text-navy-900'}>Playoff</span>
-        <span className="text-pitch-500">360</span>
+        <span className={tone === 'light' ? 'text-white' : 'text-ink-900'}>Playoff</span>
+        <span className="text-accent-500">360</span>
       </span>
       {showSubtitle && (
         <span
@@ -113,7 +113,7 @@ export function ClubCrest({
     <span
       aria-hidden
       className={cn(
-        'grid shrink-0 place-items-center rounded-md bg-navy-900 font-display font-bold leading-none text-white',
+        'grid shrink-0 place-items-center rounded-md bg-ink-900 font-display font-bold leading-none text-ink-0',
         className,
       )}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}

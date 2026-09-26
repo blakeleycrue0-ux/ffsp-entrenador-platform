@@ -21,7 +21,7 @@ export default function LegalPage() {
   const privacy = pathname.includes('privacidad');
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-panel">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
           <Link to="/">
@@ -29,7 +29,7 @@ export default function LegalPage() {
           </Link>
           <Link
             to={privacy ? '/aviso-legal' : '/privacidad'}
-            className="text-sm text-navy-700 underline underline-offset-2 hover:text-navy-900"
+            className="text-sm text-ink-700 underline underline-offset-2 hover:text-ink-900"
           >
             {privacy ? 'Aviso legal' : 'Privacidad'}
           </Link>
@@ -44,14 +44,14 @@ export default function LegalPage() {
           <Tag tone="warn">Pendiente de revisión</Tag>
         </div>
 
-        <div className="rounded-md border border-warn/30 bg-warn/6 px-4 py-3 text-base leading-relaxed text-navy-800">
+        <div className="rounded-md border border-warn/30 bg-warn/6 px-4 py-3 text-base leading-relaxed text-ink-800">
           Este texto está redactado pero <strong>no está completo ni revisado</strong>. Los datos
           marcados en amarillo los debe aportar el club antes de publicar la web, y el conjunto debe
           revisarlo alguien con criterio jurídico. Hasta entonces no puede considerarse un documento
           legal válido.
         </div>
 
-        <div className="mt-8 space-y-7 text-base leading-relaxed text-navy-800 [&_h2]:text-lg [&_h2]:font-semibold">
+        <div className="mt-8 space-y-7 text-base leading-relaxed text-ink-800 [&_h2]:text-lg [&_h2]:font-semibold">
           <section>
             <h2>Titular</h2>
             <ul className="mt-2 space-y-1.5">

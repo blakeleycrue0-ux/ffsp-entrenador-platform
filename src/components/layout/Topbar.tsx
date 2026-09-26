@@ -28,14 +28,14 @@ export function Topbar({ onSearch, onCreate }: { onSearch: () => void; onCreate:
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-[var(--header-h)] items-center gap-3 border-b border-line bg-white px-4 lg:px-6">
+    <header className="sticky top-0 z-30 flex h-[var(--header-h)] items-center gap-3 border-b border-line bg-panel px-4 lg:px-6">
       <Link to="/app" className="lg:hidden">
         <Wordmark size="sm" showSubtitle={false} />
       </Link>
 
       <button
         onClick={onSearch}
-        className="ml-auto flex h-8 items-center gap-2 rounded-md border border-line bg-white px-2.5 text-sm text-navy-400 transition-colors hover:border-navy-400 lg:ml-0 lg:mr-auto lg:w-[300px]"
+        className="ml-auto flex h-8 items-center gap-2 rounded-md border border-line bg-panel px-2.5 text-sm text-ink-400 transition-colors hover:border-ink-400 lg:ml-0 lg:mr-auto lg:w-[300px]"
       >
         <Search size={15} className="shrink-0" />
         <span className="hidden lg:inline">Buscar jugadora, sesión, partido…</span>
@@ -56,12 +56,12 @@ export function Topbar({ onSearch, onCreate }: { onSearch: () => void; onCreate:
           className="w-[340px] max-w-[calc(100vw-2rem)] p-0"
           trigger={
             <button
-              className="relative grid h-8 w-8 place-items-center rounded-md text-navy-500 transition-colors hover:bg-surface hover:text-navy-900"
+              className="relative grid h-8 w-8 place-items-center rounded-md text-ink-500 transition-colors hover:bg-surface hover:text-ink-900"
               aria-label={unread > 0 ? `Notificaciones, ${unread} sin leer` : 'Notificaciones'}
             >
               <Bell size={17} />
               {unread > 0 && (
-                <span className="absolute right-1 top-1 grid h-3.5 min-w-[14px] place-items-center rounded-full bg-navy-900 px-1 text-[9px] font-bold tabular-nums text-white ring-2 ring-white">
+                <span className="absolute right-1 top-1 grid h-3.5 min-w-[14px] place-items-center rounded-full bg-ink-900 px-1 text-[9px] font-bold tabular-nums text-ink-0 ring-2 ring-white">
                   {unread}
                 </span>
               )}
@@ -75,7 +75,7 @@ export function Topbar({ onSearch, onCreate }: { onSearch: () => void; onCreate:
                 {unread > 0 && (
                   <button
                     onClick={() => void actions.readAllNotifications()}
-                    className="flex items-center gap-1.5 text-xs font-medium text-navy-700 hover:text-navy-900"
+                    className="flex items-center gap-1.5 text-xs font-medium text-ink-700 hover:text-ink-900"
                   >
                     <CheckCheck size={13} /> Marcar todas
                   </button>
@@ -96,11 +96,11 @@ export function Topbar({ onSearch, onCreate }: { onSearch: () => void; onCreate:
                     >
                       <Dot tone={NOTIF_TONE[n.icon]} className="mt-1.5" />
                       <span className="min-w-0 flex-1">
-                        <span className={cn('block text-sm leading-snug', n.read ? 'text-navy-700' : 'font-medium text-navy-900')}>
+                        <span className={cn('block text-sm leading-snug', n.read ? 'text-ink-700' : 'font-medium text-ink-900')}>
                           {n.title}
                         </span>
                         {n.detail && <span className="mt-0.5 block truncate text-xs text-muted">{n.detail}</span>}
-                        <span className="mt-0.5 block text-2xs text-navy-400">{relativeTime(n.createdAt)}</span>
+                        <span className="mt-0.5 block text-2xs text-ink-400">{relativeTime(n.createdAt)}</span>
                       </span>
                     </button>
                   ))

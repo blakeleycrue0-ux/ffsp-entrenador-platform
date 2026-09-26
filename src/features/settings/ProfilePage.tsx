@@ -37,18 +37,18 @@ export default function ProfilePage() {
 
               <dl className="mt-5 space-y-2.5 text-[13.5px]">
                 <div className="flex items-center gap-2.5">
-                  <Mail size={15} className="shrink-0 text-navy-400" />
-                  <dd className="text-navy-700">{staff.email}</dd>
+                  <Mail size={15} className="shrink-0 text-ink-400" />
+                  <dd className="text-ink-700">{staff.email}</dd>
                 </div>
                 {staff.phone && (
                   <div className="flex items-center gap-2.5">
-                    <Phone size={15} className="shrink-0 text-navy-400" />
-                    <dd className="text-navy-700">{staff.phone}</dd>
+                    <Phone size={15} className="shrink-0 text-ink-400" />
+                    <dd className="text-ink-700">{staff.phone}</dd>
                   </div>
                 )}
                 <div className="flex items-center gap-2.5">
-                  <Shield size={15} className="shrink-0 text-navy-400" />
-                  <dd className="text-navy-700">
+                  <Shield size={15} className="shrink-0 text-ink-400" />
+                  <dd className="text-ink-700">
                     {teams.length === 0
                       ? 'Sin equipos asignados todavía'
                       : `${categories.join(' · ') || teams.map((t) => t.name).join(' · ')}${
@@ -94,9 +94,9 @@ export default function ProfilePage() {
             <Link key={t.id} to={`/app/equipo-tecnico/${t.id}`} className="panel panel-hover flex items-center gap-4 p-4">
               <Ring value={o.attendanceRate} size={54} stroke={5} />
               <div className="min-w-0">
-                <p className="truncate text-[14.5px] font-semibold text-navy-900">{t.name}</p>
+                <p className="truncate text-[14.5px] font-semibold text-ink-900">{t.name}</p>
                 <p className="mt-0.5 text-[12.5px] text-muted">{o.squadSize} jugadoras</p>
-                <p className="mt-1 truncate text-[12px] text-navy-400">
+                <p className="mt-1 truncate text-[12px] text-ink-400">
                   {o.nextSession ? `Entrena ${relativeDay(o.nextSession.date).toLowerCase()}` : 'Sin sesión planificada'}
                 </p>
               </div>

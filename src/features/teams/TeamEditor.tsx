@@ -100,7 +100,7 @@ export default function TeamEditor() {
     <>
       <Link
         to="/app/equipo-tecnico"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Equipos
       </Link>
@@ -206,7 +206,7 @@ export default function TeamEditor() {
                   />
                   <button
                     onClick={() => patch({ trainingSlots: form.trainingSlots.filter((_, k) => k !== i) })}
-                    className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-navy-400 transition-colors hover:text-bad"
+                    className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-ink-400 transition-colors hover:text-bad"
                   >
                     <X size={13} /> Quitar horario
                   </button>
@@ -233,7 +233,7 @@ export default function TeamEditor() {
           </>
         }
       >
-        <p className="text-[14px] leading-relaxed text-navy-600">
+        <p className="text-[14px] leading-relaxed text-ink-600">
           Esta acción no se puede deshacer. Si el equipo simplemente ha terminado la temporada, es preferible dejarlo
           como está y crear uno nuevo para la temporada siguiente.
         </p>

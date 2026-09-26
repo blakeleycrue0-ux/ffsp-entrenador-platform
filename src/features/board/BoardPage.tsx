@@ -177,7 +177,7 @@ export default function BoardPage() {
               setSaveState('idle');
             }}
             aria-label="Nombre de la jugada"
-            className="w-full max-w-xl rounded border border-transparent bg-transparent px-1 py-0.5 text-xl font-semibold leading-tight outline-none transition-colors hover:border-line focus:border-navy-600 sm:text-2xl"
+            className="w-full max-w-xl rounded border border-transparent bg-transparent px-1 py-0.5 text-xl font-semibold leading-tight outline-none transition-colors hover:border-line focus:border-ink-600 sm:text-2xl"
           />
         }
         actions={
@@ -321,7 +321,7 @@ export default function BoardPage() {
                   className="flex w-full items-center gap-3 px-1 py-2.5 text-left transition-colors hover:bg-surface"
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-base font-medium text-navy-900">{p.name}</span>
+                    <span className="block truncate text-base font-medium text-ink-900">{p.name}</span>
                     {p.description && (
                       <span className="mt-0.5 block truncate text-sm text-muted">{p.description}</span>
                     )}

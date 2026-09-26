@@ -145,7 +145,7 @@ export default function AttendancePage() {
             action={
               <Link
                 to="/app/entrenamientos/nuevo"
-                className="inline-flex h-9 items-center rounded-lg bg-navy-900 px-4 text-[13px] font-medium text-white"
+                className="inline-flex h-9 items-center rounded-lg bg-ink-900 px-4 text-[13px] font-medium text-ink-0"
               >
                 Crear entrenamiento
               </Link>
@@ -201,7 +201,7 @@ export default function AttendancePage() {
         {session && (
           <p className="mt-3 text-[12.5px] text-muted">
             {longDate(session.date)} · {session.start} · {session.venue}
-            {existing?.savedAt && <span className="ml-2 text-navy-400">· ya registrada, puedes corregirla</span>}
+            {existing?.savedAt && <span className="ml-2 text-ink-400">· ya registrada, puedes corregirla</span>}
           </p>
         )}
       </Panel>
@@ -238,7 +238,7 @@ export default function AttendancePage() {
 
       {/* Lista de marcado */}
       <Panel className="overflow-hidden">
-        <ul className="divide-y divide-navy-100">
+        <ul className="divide-y divide-ink-100">
           {squad.map((p) => {
             const current = marks[p.id]?.mark ?? 'pendiente';
             return (
@@ -246,12 +246,12 @@ export default function AttendancePage() {
                 <Link to={`/app/plantilla/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3.5">
                   <Avatar name={p.name} size={38} badge={p.number} />
                   <span className="min-w-0">
-                    <span className="block truncate text-[14px] font-medium text-navy-900">{p.shortName}</span>
+                    <span className="block truncate text-[14px] font-medium text-ink-900">{p.shortName}</span>
                     <span className="mt-0.5 flex items-center gap-1.5 text-[12.5px] text-muted">
                       <AvailabilityDot status={p.availability.status} />
                       {p.position}
                       {p.availability.status !== 'disponible' && (
-                        <span className="text-navy-400">· {disponibilidad(p.availability.status).label}</span>
+                        <span className="text-ink-400">· {disponibilidad(p.availability.status).label}</span>
                       )}
                     </span>
                   </span>
@@ -275,8 +275,8 @@ export default function AttendancePage() {
                                 ? 'border-warn bg-warn/10 text-[#9A6412]'
                                 : m === 'ausente'
                                   ? 'border-bad bg-bad/8 text-[#A63B34]'
-                                  : 'border-navy-300 bg-navy-100 text-navy-600'
-                            : 'border-line text-navy-400 hover:border-navy-300 hover:text-navy-600',
+                                  : 'border-ink-300 bg-ink-100 text-ink-600'
+                            : 'border-line text-ink-400 hover:border-ink-300 hover:text-ink-600',
                         )}
                       >
                         <span className={cn('h-2 w-2 rounded-full', active ? a.bg : 'bg-line')} />

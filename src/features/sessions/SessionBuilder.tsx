@@ -165,7 +165,7 @@ export default function SessionBuilder() {
     <>
       <Link
         to="/app/entrenamientos"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Planificaciones
       </Link>
@@ -231,12 +231,12 @@ export default function SessionBuilder() {
                 />
               </Field>
               <Field label="Duración total" hint="Se calcula sola a partir de los bloques.">
-                <div className="flex h-[42px] items-center gap-2 rounded-xl border border-line bg-navy-50 px-3.5">
-                  <Clock size={16} className="text-navy-800" />
-                  <span className="text-[15px] font-semibold text-navy-900 tabular-nums">
+                <div className="flex h-[42px] items-center gap-2 rounded-xl border border-line bg-ink-50 px-3.5">
+                  <Clock size={16} className="text-ink-800" />
+                  <span className="text-[15px] font-semibold text-ink-900 tabular-nums">
                     {minutesToLabel(totalDuration)}
                   </span>
-                  <span className="text-[12.5px] text-navy-400">
+                  <span className="text-[12.5px] text-ink-400">
                     {draft.start} – {addMinutes(draft.start, totalDuration)}
                   </span>
                 </div>
@@ -254,7 +254,7 @@ export default function SessionBuilder() {
 
           {/* Línea de sesión */}
           <Panel className="overflow-hidden">
-            <div className="flex items-center justify-between border-b border-navy-100 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-ink-100 px-5 py-4">
               <div>
                 <h2 className="text-[15px] font-semibold">Línea de la sesión</h2>
                 <p className="mt-0.5 text-[12.5px] text-muted">
@@ -277,7 +277,7 @@ export default function SessionBuilder() {
                 }}
                 className="m-5 rounded-2xl border-2 border-dashed border-line py-14 text-center"
               >
-                <p className="text-[14px] font-medium text-navy-700">Arrastra aquí tu primer ejercicio</p>
+                <p className="text-[14px] font-medium text-ink-700">Arrastra aquí tu primer ejercicio</p>
                 <p className="mx-auto mt-1.5 max-w-xs text-[13px] leading-relaxed text-muted">
                   Cógelos de la biblioteca de la derecha o crea un bloque propio.
                 </p>
@@ -310,14 +310,14 @@ export default function SessionBuilder() {
                         dragBlock.current = null;
                       }}
                       className={cn(
-                        'group flex items-start gap-3 border-b border-navy-100 px-4 py-3.5 transition-colors last:border-0',
-                        dragOver === i && 'bg-navy-50/60',
+                        'group flex items-start gap-3 border-b border-ink-100 px-4 py-3.5 transition-colors last:border-0',
+                        dragOver === i && 'bg-ink-50/60',
                       )}
                     >
-                      <span className="mt-1 cursor-grab text-navy-300 transition-colors group-hover:text-muted active:cursor-grabbing">
+                      <span className="mt-1 cursor-grab text-ink-300 transition-colors group-hover:text-muted active:cursor-grabbing">
                         <GripVertical size={17} />
                       </span>
-                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-navy-50 text-[11px] font-bold text-navy-900 tabular-nums">
+                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-ink-50 text-[11px] font-bold text-ink-900 tabular-nums">
                         {String(i + 1).padStart(2, '0')}
                       </span>
 
@@ -325,13 +325,13 @@ export default function SessionBuilder() {
                         <input
                           value={block.title}
                           onChange={(e) => patchBlock(block.id, { title: e.target.value })}
-                          className="w-full rounded-md bg-transparent px-1 py-0.5 text-[14.5px] font-medium text-navy-900 outline-none transition-colors hover:bg-navy-50 focus:bg-navy-50"
+                          className="w-full rounded-md bg-transparent px-1 py-0.5 text-[14.5px] font-medium text-ink-900 outline-none transition-colors hover:bg-ink-50 focus:bg-ink-50"
                         />
                         <input
                           value={block.series ?? ''}
                           onChange={(e) => patchBlock(block.id, { series: e.target.value })}
                           placeholder="Series y descansos (ej.: 4 x 4′ / 90″)"
-                          className="mt-0.5 w-full rounded-md bg-transparent px-1 py-0.5 text-[12.5px] text-muted outline-none transition-colors placeholder:text-navy-300 hover:bg-navy-50 focus:bg-navy-50"
+                          className="mt-0.5 w-full rounded-md bg-transparent px-1 py-0.5 text-[12.5px] text-muted outline-none transition-colors placeholder:text-ink-300 hover:bg-ink-50 focus:bg-ink-50"
                         />
                         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 px-1">
                           {block.tags.slice(0, 3).map((t) => (
@@ -339,7 +339,7 @@ export default function SessionBuilder() {
                               {t}
                             </Tag>
                           ))}
-                          <span className="text-[11.5px] text-navy-400 tabular-nums">
+                          <span className="text-[11.5px] text-ink-400 tabular-nums">
                             {cursor} – {addMinutes(cursor, block.duration)}
                           </span>
                         </div>
@@ -349,17 +349,17 @@ export default function SessionBuilder() {
                         <div className="flex items-center rounded-lg border border-line">
                           <button
                             onClick={() => patchBlock(block.id, { duration: Math.max(5, block.duration - 5) })}
-                            className="px-2 py-1.5 text-navy-400 transition-colors hover:text-navy-900"
+                            className="px-2 py-1.5 text-ink-400 transition-colors hover:text-ink-900"
                             aria-label="Menos tiempo"
                           >
                             −
                           </button>
-                          <span className="w-10 text-center text-[13px] font-semibold text-navy-800 tabular-nums">
+                          <span className="w-10 text-center text-[13px] font-semibold text-ink-800 tabular-nums">
                             {block.duration}′
                           </span>
                           <button
                             onClick={() => patchBlock(block.id, { duration: block.duration + 5 })}
-                            className="px-2 py-1.5 text-navy-400 transition-colors hover:text-navy-900"
+                            className="px-2 py-1.5 text-ink-400 transition-colors hover:text-ink-900"
                             aria-label="Más tiempo"
                           >
                             +
@@ -367,14 +367,14 @@ export default function SessionBuilder() {
                         </div>
                         <button
                           onClick={() => duplicateBlock(block.id)}
-                          className="rounded-lg p-2 text-navy-300 transition-colors hover:bg-navy-100 hover:text-navy-600"
+                          className="rounded-lg p-2 text-ink-300 transition-colors hover:bg-ink-100 hover:text-ink-600"
                           aria-label="Duplicar bloque"
                         >
                           <Copy size={15} />
                         </button>
                         <button
                           onClick={() => removeBlock(block.id)}
-                          className="rounded-lg p-2 text-navy-300 transition-colors hover:bg-bad/8 hover:text-bad"
+                          className="rounded-lg p-2 text-ink-300 transition-colors hover:bg-bad/8 hover:text-bad"
                           aria-label="Eliminar bloque"
                         >
                           <Trash2 size={15} />
@@ -387,20 +387,20 @@ export default function SessionBuilder() {
             )}
 
             {draft.blocks.length > 0 && (
-              <div className="border-t border-navy-100 bg-navy-50/50 px-5 py-4">
+              <div className="border-t border-ink-100 bg-ink-50/50 px-5 py-4">
                 <div className="flex gap-1">
                   {draft.blocks.map((b) => (
                     <div
                       key={b.id}
                       title={`${b.title} · ${b.duration}′`}
-                      className="h-2 rounded-full bg-navy-400"
+                      className="h-2 rounded-full bg-ink-400"
                       style={{ flex: b.duration }}
                     />
                   ))}
                 </div>
                 <div className="mt-2.5 flex items-center justify-between">
                   <span className="text-[12.5px] text-muted">Duración total</span>
-                  <span className="text-[15px] font-semibold text-navy-900 tabular-nums">
+                  <span className="text-[15px] font-semibold text-ink-900 tabular-nums">
                     {minutesToLabel(totalDuration)}
                   </span>
                 </div>
@@ -411,18 +411,18 @@ export default function SessionBuilder() {
           {/* Material */}
           <Panel className="p-5">
             <h2 className="flex items-center gap-2 text-[15px] font-semibold">
-              <Package size={16} className="text-navy-800" /> Material
+              <Package size={16} className="text-ink-800" /> Material
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {draft.material.map((m) => (
                 <span
                   key={m}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[13px] text-navy-700"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-panel px-2.5 py-1.5 text-[13px] text-ink-700"
                 >
                   {m}
                   <button
                     onClick={() => update({ material: draft.material.filter((x) => x !== m) })}
-                    className="text-navy-300 transition-colors hover:text-bad"
+                    className="text-ink-300 transition-colors hover:text-bad"
                     aria-label={`Quitar ${m}`}
                   >
                     <X size={13} />
@@ -438,7 +438,7 @@ export default function SessionBuilder() {
                     (e.target as HTMLInputElement).value = '';
                   }
                 }}
-                className="rounded-lg border border-dashed border-navy-300 px-2.5 py-1.5 text-[13px] outline-none placeholder:text-navy-400 focus:border-navy-400"
+                className="rounded-lg border border-dashed border-ink-300 px-2.5 py-1.5 text-[13px] outline-none placeholder:text-ink-400 focus:border-ink-400"
               />
             </div>
           </Panel>
@@ -446,11 +446,11 @@ export default function SessionBuilder() {
 
         {/* Biblioteca de ejercicios */}
         <Panel className="h-fit overflow-hidden xl:sticky xl:top-24">
-          <div className="border-b border-navy-100 p-4">
+          <div className="border-b border-ink-100 p-4">
             <h2 className="text-[15px] font-semibold">Biblioteca de ejercicios</h2>
             <p className="mt-0.5 text-[12.5px] text-muted">Arrástralos a la línea o pulsa para añadir al final.</p>
             <div className="relative mt-3">
-              <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-navy-400" />
+              <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
               <Input
                 value={libraryQuery}
                 onChange={(e) => setLibraryQuery(e.target.value)}
@@ -463,7 +463,7 @@ export default function SessionBuilder() {
                 onClick={() => setLibraryTag('todas')}
                 className={cn(
                   'rounded-lg px-2 py-1 text-[12px] font-medium transition-colors',
-                  libraryTag === 'todas' ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200' : 'text-muted hover:bg-navy-100',
+                  libraryTag === 'todas' ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200' : 'text-muted hover:bg-ink-100',
                 )}
               >
                 Todas
@@ -474,7 +474,7 @@ export default function SessionBuilder() {
                   onClick={() => setLibraryTag(t)}
                   className={cn(
                     'rounded-lg px-2 py-1 text-[12px] font-medium transition-colors',
-                    libraryTag === t ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200' : 'text-muted hover:bg-navy-100',
+                    libraryTag === t ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200' : 'text-muted hover:bg-ink-100',
                   )}
                 >
                   {t}
@@ -495,14 +495,14 @@ export default function SessionBuilder() {
                   draggable
                   onDragStart={(e) => e.dataTransfer.setData('drill-id', d.id)}
                   onClick={() => addDrill(d)}
-                  className="group flex w-full cursor-grab items-start gap-2.5 rounded-xl p-2.5 text-left transition-colors hover:bg-navy-50/60 active:cursor-grabbing"
+                  className="group flex w-full cursor-grab items-start gap-2.5 rounded-xl p-2.5 text-left transition-colors hover:bg-ink-50/60 active:cursor-grabbing"
                 >
-                  <GripVertical size={15} className="mt-0.5 shrink-0 text-navy-300 group-hover:text-navy-400" />
+                  <GripVertical size={15} className="mt-0.5 shrink-0 text-ink-300 group-hover:text-ink-400" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13.5px] font-medium text-navy-800">{d.name}</span>
+                    <span className="block truncate text-[13.5px] font-medium text-ink-800">{d.name}</span>
                     <span className="mt-0.5 block truncate text-[12px] text-muted">{d.tags.join(' · ')}</span>
                   </span>
-                  <span className="shrink-0 rounded-md bg-navy-100 px-1.5 py-0.5 text-[11.5px] font-medium text-navy-600 tabular-nums">
+                  <span className="shrink-0 rounded-md bg-ink-100 px-1.5 py-0.5 text-[11.5px] font-medium text-ink-600 tabular-nums">
                     {d.duration}′
                   </span>
                 </button>

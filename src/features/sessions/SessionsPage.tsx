@@ -86,7 +86,7 @@ export default function SessionsPage() {
             <Link key={s.id} to={`/app/entrenamientos/${s.id}`} className="panel panel-hover block p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[12.5px] font-medium text-navy-900">
+                  <p className="text-[12.5px] font-medium text-ink-900">
                     {data.teams.find((t) => t.id === s.teamId)?.name}
                   </p>
                   <h3 className="mt-0.5 text-[16px] font-semibold leading-tight">{s.title}</h3>
@@ -102,13 +102,13 @@ export default function SessionsPage() {
 
               <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12.5px] text-muted">
                 <span className="flex items-center gap-1.5">
-                  <CalendarClock size={13} className="text-navy-400" /> {relativeDay(s.date)}
+                  <CalendarClock size={13} className="text-ink-400" /> {relativeDay(s.date)}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock size={13} className="text-navy-400" /> {s.start} · {minutesToLabel(s.duration)}
+                  <Clock size={13} className="text-ink-400" /> {s.start} · {minutesToLabel(s.duration)}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <MapPin size={13} className="text-navy-400" /> {s.venue}
+                  <MapPin size={13} className="text-ink-400" /> {s.venue}
                 </span>
               </div>
 
@@ -118,15 +118,15 @@ export default function SessionsPage() {
                   <div
                     key={b.id}
                     title={`${b.title} · ${b.duration}′`}
-                    className={cn('h-1.5 rounded-full', b.tags.includes('Calentamiento') ? 'bg-navy-200' : 'bg-navy-400')}
+                    className={cn('h-1.5 rounded-full', b.tags.includes('Calentamiento') ? 'bg-ink-200' : 'bg-ink-400')}
                     style={{ flex: b.duration }}
                   />
                 ))}
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <span className="text-[12px] text-navy-400">{s.blocks.length} bloques · {s.expectedPlayers} jugadoras</span>
-                <ChevronRight size={15} className="text-navy-300" />
+                <span className="text-[12px] text-ink-400">{s.blocks.length} bloques · {s.expectedPlayers} jugadoras</span>
+                <ChevronRight size={15} className="text-ink-300" />
               </div>
             </Link>
           ))}

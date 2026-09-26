@@ -41,7 +41,7 @@ export default function TeamDetail() {
     <>
       <Link
         to="/app/equipo-tecnico"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-navy-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Mis equipos
       </Link>
@@ -50,14 +50,14 @@ export default function TeamDetail() {
         eyebrow={
           <>
             <span>{team.competition}</span>
-            <span className="text-navy-300">·</span>
+            <span className="text-ink-300">·</span>
             <span>{team.season}</span>
           </>
         }
         title={team.name}
         description={
           <span className="flex items-center gap-1.5">
-            <MapPin size={14} className="text-navy-400" /> {team.venue}
+            <MapPin size={14} className="text-ink-400" /> {team.venue}
           </span>
         }
         actions={
@@ -139,7 +139,7 @@ export default function TeamDetail() {
                       <Link to={`/app/plantilla/${p.id}`} className="flex items-start gap-3 group">
                         <Avatar name={p.name} size={34} badge={p.number} />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13.5px] font-medium text-navy-800 group-hover:text-navy-900">
+                          <p className="truncate text-[13.5px] font-medium text-ink-800 group-hover:text-ink-900">
                             {p.shortName}
                           </p>
                           <p className="mt-0.5 flex items-center gap-1.5 text-[12px] text-muted">
@@ -148,7 +148,7 @@ export default function TeamDetail() {
                             {p.availability.until && ` · vuelve ${shortDate(p.availability.until)}`}
                           </p>
                           {p.availability.note && (
-                            <p className="mt-0.5 truncate text-[12px] text-navy-400">{p.availability.note}</p>
+                            <p className="mt-0.5 truncate text-[12px] text-ink-400">{p.availability.note}</p>
                           )}
                         </div>
                       </Link>
@@ -161,7 +161,7 @@ export default function TeamDetail() {
             <Panel className="p-5 lg:col-span-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-[15px] font-semibold">Jugadoras con menor asistencia</h3>
-                <Link to="/app/analiticas" className="text-[12.5px] font-medium text-navy-900 hover:text-navy-900">
+                <Link to="/app/analiticas" className="text-[12.5px] font-medium text-ink-900 hover:text-ink-900">
                   Ver analíticas
                 </Link>
               </div>
@@ -174,12 +174,12 @@ export default function TeamDetail() {
                     <Link
                       key={r.player.id}
                       to={`/app/plantilla/${r.player.id}`}
-                      className="flex items-center gap-3 rounded-xl border border-line p-3 transition-colors hover:border-navy-300 hover:bg-navy-50/40"
+                      className="flex items-center gap-3 rounded-xl border border-line p-3 transition-colors hover:border-ink-300 hover:bg-ink-50/40"
                     >
                       <Avatar name={r.player.name} size={34} badge={r.player.number} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13.5px] font-medium text-navy-800">{r.player.shortName}</p>
-                        <p className="text-[12px] text-navy-400">{r.player.position}</p>
+                        <p className="truncate text-[13.5px] font-medium text-ink-800">{r.player.shortName}</p>
+                        <p className="text-[12px] text-ink-400">{r.player.position}</p>
                       </div>
                       <span
                         className={cn(
@@ -198,26 +198,26 @@ export default function TeamDetail() {
 
         {tab === 'plantilla' && (
           <Panel className="overflow-hidden">
-            <div className="divide-y divide-navy-100">
+            <div className="divide-y divide-ink-100">
               {squad.map((p) => {
                 const row = rows.find((r) => r.player.id === p.id);
                 return (
                   <Link
                     key={p.id}
                     to={`/app/plantilla/${p.id}`}
-                    className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-navy-50/40 sm:px-5"
+                    className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-ink-50/40 sm:px-5"
                   >
                     <Avatar name={p.name} size={38} badge={p.number} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14px] font-medium text-navy-900">{p.name}</p>
+                      <p className="truncate text-[14px] font-medium text-ink-900">{p.name}</p>
                       <p className="mt-0.5 text-[12.5px] text-muted">
                         {p.position}
                         {p.secondaryPosition && ` · ${p.secondaryPosition}`}
                       </p>
                     </div>
                     <div className="hidden w-24 text-right sm:block">
-                      <p className="text-[13.5px] font-medium text-navy-700 tabular-nums">{row?.rate ?? 0}%</p>
-                      <p className="text-[11.5px] text-navy-400">asistencia</p>
+                      <p className="text-[13.5px] font-medium text-ink-700 tabular-nums">{row?.rate ?? 0}%</p>
+                      <p className="text-[11.5px] text-ink-400">asistencia</p>
                     </div>
                     <div className="hidden w-28 sm:block">
                       <Tag tone={disponibilidad(p.availability.status).tone} size="sm" dot>
@@ -225,7 +225,7 @@ export default function TeamDetail() {
                       </Tag>
                     </div>
                     <AvailabilityDot status={p.availability.status} className="sm:hidden" />
-                    <ChevronRight size={16} className="shrink-0 text-navy-300" />
+                    <ChevronRight size={16} className="shrink-0 text-ink-300" />
                   </Link>
                 );
               })}
@@ -236,9 +236,9 @@ export default function TeamDetail() {
         {tab === 'agenda' && (
           <div className="grid gap-4 lg:grid-cols-2">
             <Panel className="overflow-hidden">
-              <div className="border-b border-navy-100 px-5 py-3.5">
+              <div className="border-b border-ink-100 px-5 py-3.5">
                 <h3 className="flex items-center gap-2 text-[14.5px] font-semibold">
-                  <CalendarClock size={16} className="text-navy-800" /> Próximos entrenamientos
+                  <CalendarClock size={16} className="text-ink-800" /> Próximos entrenamientos
                 </h3>
               </div>
               {sessions.length === 0 ? (
@@ -249,17 +249,17 @@ export default function TeamDetail() {
                   action={<LinkButton to="/app/entrenamientos/nuevo" size="sm">Crear entrenamiento</LinkButton>}
                 />
               ) : (
-                <ul className="divide-y divide-navy-100">
+                <ul className="divide-y divide-ink-100">
                   {sessions.map((s) => (
                     <li key={s.id}>
-                      <Link to={`/app/entrenamientos/${s.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-navy-50/40">
+                      <Link to={`/app/entrenamientos/${s.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-ink-50/40">
                         <span className="w-16 shrink-0">
-                          <span className="block text-[13px] font-semibold text-navy-900">{relativeDay(s.date)}</span>
-                          <span className="block text-[11.5px] text-navy-400">{s.start}</span>
+                          <span className="block text-[13px] font-semibold text-ink-900">{relativeDay(s.date)}</span>
+                          <span className="block text-[11.5px] text-ink-400">{s.start}</span>
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13.5px] font-medium text-navy-800">{s.title}</span>
-                          <span className="block text-[12px] text-navy-400">
+                          <span className="block truncate text-[13.5px] font-medium text-ink-800">{s.title}</span>
+                          <span className="block text-[12px] text-ink-400">
                             {minutesToLabel(s.duration)} · {s.blocks.length} bloques
                           </span>
                         </span>
@@ -274,9 +274,9 @@ export default function TeamDetail() {
             </Panel>
 
             <Panel className="overflow-hidden">
-              <div className="border-b border-navy-100 px-5 py-3.5">
+              <div className="border-b border-ink-100 px-5 py-3.5">
                 <h3 className="flex items-center gap-2 text-[14.5px] font-semibold">
-                  <Swords size={16} className="text-navy-800" /> Próximos partidos
+                  <Swords size={16} className="text-ink-800" /> Próximos partidos
                 </h3>
               </div>
               {matches.length === 0 ? (
@@ -286,19 +286,19 @@ export default function TeamDetail() {
                   action={<LinkButton to="/app/partidos/nuevo" size="sm">Crear partido</LinkButton>}
                 />
               ) : (
-                <ul className="divide-y divide-navy-100">
+                <ul className="divide-y divide-ink-100">
                   {matches.map((m) => (
                     <li key={m.id}>
-                      <Link to={`/app/partidos/${m.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-navy-50/40">
+                      <Link to={`/app/partidos/${m.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-ink-50/40">
                         <span className="w-16 shrink-0">
-                          <span className="block text-[13px] font-semibold text-navy-900">{relativeDay(m.date)}</span>
-                          <span className="block text-[11.5px] text-navy-400">{m.start}</span>
+                          <span className="block text-[13px] font-semibold text-ink-900">{relativeDay(m.date)}</span>
+                          <span className="block text-[11.5px] text-ink-400">{m.start}</span>
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13.5px] font-medium text-navy-800">
+                          <span className="block truncate text-[13.5px] font-medium text-ink-800">
                             {m.home ? 'vs' : 'en'} {m.opponent}
                           </span>
-                          <span className="block truncate text-[12px] text-navy-400">{m.venue}</span>
+                          <span className="block truncate text-[12px] text-ink-400">{m.venue}</span>
                         </span>
                         <Tag tone={m.home ? 'solid' : 'neutral'} size="sm">
                           {m.home ? 'Local' : 'Visitante'}
@@ -341,7 +341,7 @@ export default function TeamDetail() {
               <Panel key={c.id} className="flex items-start gap-3.5 p-5">
                 <Avatar name={c.name} size={44} />
                 <div className="min-w-0">
-                  <p className="truncate text-[14.5px] font-medium text-navy-900">{c.name}</p>
+                  <p className="truncate text-[14.5px] font-medium text-ink-900">{c.name}</p>
                   <p className="mt-0.5 text-[12.5px] text-muted">{ROLE_LABEL[c.role]}</p>
                   {c.licence && (
                     <Tag tone="solid" size="sm" className="mt-2">
@@ -353,7 +353,7 @@ export default function TeamDetail() {
             ))}
             <Panel className="grid place-items-center border-dashed p-5">
               <div className="text-center">
-                <Users size={22} className="mx-auto text-navy-300" />
+                <Users size={22} className="mx-auto text-ink-300" />
                 <p className="mt-2 text-[13px] text-muted">
                   Los cambios en el cuerpo técnico los gestiona quien administra el club.
                 </p>

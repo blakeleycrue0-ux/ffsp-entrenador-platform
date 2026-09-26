@@ -35,7 +35,7 @@ export const AVAILABILITY: Record<
   lesionada: { label: 'Lesionada', tone: 'bad', dot: 'bg-bad' },
   enferma: { label: 'Enferma', tone: 'bad', dot: 'bg-bad' },
   sancionada: { label: 'Sancionada', tone: 'bad', dot: 'bg-bad' },
-  ausente: { label: 'Ausente', tone: 'neutral', dot: 'bg-navy-400' },
+  ausente: { label: 'Ausente', tone: 'neutral', dot: 'bg-ink-400' },
 };
 
 export const AVAILABILITY_ORDER: AvailabilityStatus[] = [
@@ -44,7 +44,7 @@ export const AVAILABILITY_ORDER: AvailabilityStatus[] = [
 
 /** Lo que se enseña cuando la base dice algo que esta versión no conoce. */
 const DISPONIBILIDAD_DESCONOCIDA = {
-  label: 'Sin estado', tone: 'neutral', dot: 'bg-navy-300',
+  label: 'Sin estado', tone: 'neutral', dot: 'bg-ink-300',
 } as const;
 
 /** Siempre por aquí, nunca `AVAILABILITY[x]` a pelo. */
@@ -91,11 +91,13 @@ const LINEA_DE: Record<string, Linea> = {
   Delantera: 'ataque',
 };
 
+/* Sobre negro el mismo tono no vale: hace falta un fondo tintado oscuro y el
+   texto claro, o la etiqueta se convierte en una mancha pálida. */
 export const LINEA: Record<Linea, { label: string; chip: string; dot: string }> = {
-  porteria: { label: 'Portería', chip: 'bg-[#FBEDE4] text-[#8A480F] border-[#E9CDB6]', dot: 'bg-[#B25E09]' },
-  defensa: { label: 'Defensa', chip: 'bg-[#E7EEFB] text-[#1B5099] border-[#C4D5F2]', dot: 'bg-[#1F63B8]' },
-  medio: { label: 'Medio', chip: 'bg-[#E6F6EE] text-[#046040] border-[#BDE4D2]', dot: 'bg-[#047A4E]' },
-  ataque: { label: 'Ataque', chip: 'bg-[#FBE9EC] text-[#93262F] border-[#EEC6CC]', dot: 'bg-[#B3372C]' },
+  porteria: { label: 'Portería', chip: 'bg-pos-portera/15 text-pos-portera border-transparent', dot: 'bg-pos-portera' },
+  defensa: { label: 'Defensa', chip: 'bg-pos-defensa/15 text-pos-defensa border-transparent', dot: 'bg-pos-defensa' },
+  medio: { label: 'Medio', chip: 'bg-pos-medio/15 text-pos-medio border-transparent', dot: 'bg-pos-medio' },
+  ataque: { label: 'Ataque', chip: 'bg-pos-delantera/15 text-pos-delantera border-transparent', dot: 'bg-pos-delantera' },
 };
 
 /** Sin posición asignada no se inventa ninguna línea: se dice que no la hay. */
@@ -113,7 +115,7 @@ export const ATTENDANCE: Record<
   justificada: { label: 'Justificada', short: 'J', tone: 'warn', bg: 'bg-warn', text: 'text-warn' },
   lesionada: { label: 'Lesionada', short: 'L', tone: 'bad', bg: 'bg-bad', text: 'text-bad' },
   ausente: { label: 'Ausente', short: 'A', tone: 'bad', bg: 'bg-bad', text: 'text-bad' },
-  sin_registrar: { label: 'Sin registrar', short: '—', tone: 'neutral', bg: 'bg-navy-300', text: 'text-navy-400' },
+  sin_registrar: { label: 'Sin registrar', short: '—', tone: 'neutral', bg: 'bg-ink-300', text: 'text-ink-400' },
 };
 
 /** Orden en el que se ofrecen las marcas al pasar lista. */
@@ -165,24 +167,28 @@ export const MESSAGE_STATUS: Record<
 /* ────────────────────────────── Tipos de evento ──────────────────────────── */
 
 export const EVENT_KIND: Record<EventKind, { label: string; bar: string; chip: string; dot: string }> = {
+  /* Entrenamiento y partido se distinguían por dos tonos de gris que, sobre
+     negro, acaban siendo el mismo punto blanco. El partido es lo que de
+     verdad marca la semana, así que se queda el blanco; el entrenamiento
+     baja a gris medio, que sí se diferencia. */
   entrenamiento: {
     label: 'Entrenamiento',
-    bar: 'bg-navy-800',
-    chip: 'bg-navy-50 text-navy-900 border-navy-200/70',
-    dot: 'bg-navy-800',
+    bar: 'bg-ink-500',
+    chip: 'bg-ink-100 text-ink-700 border-transparent',
+    dot: 'bg-ink-500',
   },
   partido: {
     label: 'Partido',
-    bar: 'bg-navy-900',
-    chip: 'bg-navy-100 text-navy-900 border-navy-300/70',
-    dot: 'bg-navy-900',
+    bar: 'bg-ink-900',
+    chip: 'bg-ink-900 text-ink-0 border-transparent',
+    dot: 'bg-ink-900',
   },
   convocatoria: {
     label: 'Convocatoria',
     bar: 'bg-warn',
-    chip: 'bg-warn/10 text-warn border-warn/30',
+    chip: 'bg-warn/15 text-warn border-transparent',
     dot: 'bg-warn',
   },
-  reunion: { label: 'Reunión', bar: 'bg-info', chip: 'bg-info/10 text-info border-info/25', dot: 'bg-info' },
-  evento: { label: 'Evento', bar: 'bg-navy-400', chip: 'bg-navy-100 text-navy-600 border-line', dot: 'bg-navy-400' },
+  reunion: { label: 'Reunión', bar: 'bg-info', chip: 'bg-info/15 text-info border-transparent', dot: 'bg-info' },
+  evento: { label: 'Evento', bar: 'bg-ink-300', chip: 'bg-ink-100 text-ink-600 border-transparent', dot: 'bg-ink-300' },
 };

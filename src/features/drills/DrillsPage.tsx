@@ -49,7 +49,7 @@ export default function DrillsPage() {
 
       <Panel className="mb-5 p-4">
         <div className="relative">
-          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-400" />
+          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -63,7 +63,7 @@ export default function DrillsPage() {
             onClick={() => setOnlyFav((f) => !f)}
             className={cn(
               'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
-              onlyFav ? 'bg-warn/10 text-[#9A6412] ring-1 ring-inset ring-warn/30' : 'text-muted hover:bg-navy-100',
+              onlyFav ? 'bg-warn/10 text-[#9A6412] ring-1 ring-inset ring-warn/30' : 'text-muted hover:bg-ink-100',
             )}
           >
             <Bookmark size={14} className={onlyFav ? 'fill-current' : ''} /> Guardados
@@ -76,8 +76,8 @@ export default function DrillsPage() {
               className={cn(
                 'rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
                 active.includes(t)
-                  ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200'
-                  : 'text-muted hover:bg-navy-100',
+                  ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200'
+                  : 'text-muted hover:bg-ink-100',
               )}
             >
               {t}
@@ -90,12 +90,12 @@ export default function DrillsPage() {
                 setOnlyFav(false);
                 setQuery('');
               }}
-              className="ml-1 text-[12.5px] font-medium text-navy-900 hover:text-navy-900"
+              className="ml-1 text-[12.5px] font-medium text-ink-900 hover:text-ink-900"
             >
               Limpiar filtros
             </button>
           )}
-          <span className="ml-auto text-[12.5px] text-navy-400">{drills.length} ejercicios</span>
+          <span className="ml-auto text-[12.5px] text-ink-400">{drills.length} ejercicios</span>
         </div>
       </Panel>
 
@@ -118,7 +118,7 @@ export default function DrillsPage() {
             <Panel key={d.id} className="flex flex-col p-5">
               <div className="flex items-start justify-between gap-3">
                 <Link to={`/app/ejercicios/${d.id}`} className="min-w-0 flex-1">
-                  <h3 className="text-[15.5px] font-semibold leading-tight text-navy-900 hover:text-navy-900">
+                  <h3 className="text-[15.5px] font-semibold leading-tight text-ink-900 hover:text-ink-900">
                     {d.name}
                   </h3>
                 </Link>
@@ -126,7 +126,7 @@ export default function DrillsPage() {
                   onClick={() => void actions.toggleFavorite(d)}
                   className={cn(
                     'shrink-0 rounded-lg p-1.5 transition-colors',
-                    d.favorite ? 'text-navy-900' : 'text-navy-300 hover:text-navy-700',
+                    d.favorite ? 'text-ink-900' : 'text-ink-300 hover:text-ink-700',
                   )}
                   aria-label="Guardar este ejercicio"
                 >
@@ -149,9 +149,9 @@ export default function DrillsPage() {
                 )}
               </div>
 
-              <div className="mt-4 flex items-center gap-4 border-t border-navy-100 pt-3 text-[12.5px] text-muted">
+              <div className="mt-4 flex items-center gap-4 border-t border-ink-100 pt-3 text-[12.5px] text-muted">
                 <span className="flex items-center gap-1.5">
-                  <Users size={13} className="text-navy-400" /> {d.players}
+                  <Users size={13} className="text-ink-400" /> {d.players}
                 </span>
                 <span className="tabular-nums">{d.duration}′</span>
                 <span className="truncate">{d.ageRange}</span>

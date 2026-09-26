@@ -39,10 +39,10 @@ const Onboarding = lazy(() => import('@/features/onboarding/Onboarding'));
 /** Pantalla de arranque mientras se comprueba la sesión y se cargan los datos. */
 function Booting() {
   return (
-    <div className="grid min-h-screen place-items-center bg-white">
+    <div className="grid min-h-screen place-items-center bg-panel">
       <div className="flex flex-col items-center gap-4">
         <Wordmark size="lg" showSubtitle={false} />
-        <div className="h-0.5 w-24 overflow-hidden rounded-full bg-navy-100">
+        <div className="h-0.5 w-24 overflow-hidden rounded-full bg-ink-100">
           <div className="skeleton h-full w-full" />
         </div>
       </div>

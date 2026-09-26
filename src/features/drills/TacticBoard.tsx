@@ -133,8 +133,8 @@ export function TacticBoard({
                 className={cn(
                   'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium transition-colors',
                   active
-                    ? 'bg-navy-50 text-navy-900 ring-1 ring-inset ring-navy-200'
-                    : 'text-muted hover:bg-navy-100 hover:text-navy-800',
+                    ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200'
+                    : 'text-muted hover:bg-ink-100 hover:text-ink-800',
                 )}
               >
                 <Icon
@@ -272,13 +272,13 @@ export function TacticBoard({
       {!readOnly && (
         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-muted">
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-navy-900" /> Jugadora propia
+            <span className="h-2.5 w-2.5 rounded-full bg-ink-900" /> Jugadora propia
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full border border-navy-400 bg-white" /> Rival
+            <span className="h-2.5 w-2.5 rounded-full border border-ink-400 bg-panel" /> Rival
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-0.5 w-5 bg-navy-900" /> Pase
+            <span className="h-0.5 w-5 bg-ink-900" /> Pase
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-0.5 w-5 border-t-2 border-dashed border-ok" /> Desmarque

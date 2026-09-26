@@ -26,7 +26,7 @@ import { cn, dayShort, shortDate } from '@/lib/utils';
 /** Un porcentaje que puede no existir. Nunca se dibuja como 0 %. */
 const Pct = ({ value, className }: { value: number | null; className?: string }) =>
   value === null ? (
-    <span className={cn('text-navy-400', className)}>Sin datos</span>
+    <span className={cn('text-ink-400', className)}>Sin datos</span>
   ) : (
     <span className={cn('tabular-nums', className)}>{value}%</span>
   );
@@ -172,7 +172,7 @@ export default function StatsPage() {
       </div>
 
       <Panel className="mt-3 px-4 py-3">
-        <p className="text-sm leading-relaxed text-navy-700">
+        <p className="text-sm leading-relaxed text-ink-700">
           <strong className="font-medium">Cómo se calcula.</strong> El porcentaje es «veces que vino»
           entre «veces que se pasó lista y podía venir». Las faltas justificadas, las lesiones y las
           sesiones sin lista no cuentan ni a favor ni en contra: quedan fuera del cálculo. Llegar
@@ -231,7 +231,7 @@ export default function StatsPage() {
                 >
                   <Avatar name={r.player.name} size={30} badge={r.player.number} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-base font-medium text-navy-900">
+                    <span className="block truncate text-base font-medium text-ink-900">
                       {r.player.shortName}
                     </span>
                     <span className="block text-sm text-muted">
@@ -250,7 +250,7 @@ export default function StatsPage() {
 
       {sinDatos.length > 0 && (
         <Panel className="mt-3 px-4 py-3">
-          <p className="text-sm leading-relaxed text-navy-700">
+          <p className="text-sm leading-relaxed text-ink-700">
             <strong className="font-medium">Sin datos en este periodo:</strong>{' '}
             {sinDatos.map((r) => r.player.shortName).join(', ')}. No aparecen en los porcentajes
             porque no se ha pasado lista con ellas, o porque constaban justificadas o lesionadas. No
@@ -283,14 +283,14 @@ export default function StatsPage() {
                 const s = summarizeRecord(r, squad.length);
                 return (
                   <tr key={r.id}>
-                    <td className="text-navy-700">
-                      {shortDate(r.date)} <span className="text-navy-400">· {dayShort(r.date)}</span>
+                    <td className="text-ink-700">
+                      {shortDate(r.date)} <span className="text-ink-400">· {dayShort(r.date)}</span>
                     </td>
                     <td className="text-right tabular-nums text-ok">{s.present}</td>
-                    <td className="text-right tabular-nums">{s.late || <span className="text-navy-300">—</span>}</td>
-                    <td className="text-right tabular-nums">{s.justified || <span className="text-navy-300">—</span>}</td>
+                    <td className="text-right tabular-nums">{s.late || <span className="text-ink-300">—</span>}</td>
+                    <td className="text-right tabular-nums">{s.justified || <span className="text-ink-300">—</span>}</td>
                     <td className="text-right tabular-nums text-bad">{s.absent}</td>
-                    <td className="text-right tabular-nums text-navy-400">{s.unregistered}</td>
+                    <td className="text-right tabular-nums text-ink-400">{s.unregistered}</td>
                     <td className="text-right font-semibold">
                       <Pct value={s.rate} />
                     </td>
@@ -326,10 +326,10 @@ function RankingPanel({
                 to={`/app/plantilla/${r.player.id}`}
                 className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-surface"
               >
-                <span className="w-4 text-center text-sm font-semibold tabular-nums text-navy-400">{i + 1}</span>
+                <span className="w-4 text-center text-sm font-semibold tabular-nums text-ink-400">{i + 1}</span>
                 <Avatar name={r.player.name} size={30} badge={r.player.number} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-base font-medium text-navy-900">
+                  <span className="block truncate text-base font-medium text-ink-900">
                     {r.player.shortName}
                   </span>
                   {detail ? (

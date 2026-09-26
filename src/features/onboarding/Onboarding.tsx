@@ -30,7 +30,8 @@ import { humanError } from '@/services/supabase';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { Button, Field, Input, Select } from '@/components/ui';
 import { Wordmark } from '@/components/ui/Brand';
-import { IconoCamiseta, IconoCampo, IconoSilbato } from '@/components/ui/Icons';
+import { IconoBalon, IconoCamiseta, IconoCampo, IconoSilbato } from '@/components/ui/Icons';
+import { PasoPlan } from './PasoPlan';
 import { cn } from '@/lib/utils';
 import type { Staff, TrainingSlot } from '@/types';
 
@@ -45,7 +46,8 @@ const temporadaActual = () => {
 const PASOS = [
   { id: 1, titulo: 'Quién eres', icono: IconoSilbato },
   { id: 2, titulo: 'Tu club', icono: IconoCampo },
-  { id: 3, titulo: 'Tu primer equipo', icono: IconoCamiseta },
+  { id: 3, titulo: 'Tu equipo', icono: IconoCamiseta },
+  { id: 4, titulo: 'Tu plan', icono: IconoBalon },
 ];
 
 /* Los cargos salen de la lista que ya usa el resto de la plataforma, no de
@@ -150,19 +152,21 @@ export default function Onboarding() {
         },
         userId,
       );
-      // Ahora sí: al recargar ya hay club y equipo, y esta pantalla desaparece.
-      await actions.refresh();
+      /* No se recarga todavía: falta elegir plan. Recargar aquí haría que la
+         aplicación diera el alta por terminada y se llevara por delante el
+         último paso, igual que pasaba al crear el club. */
+      setPaso(4);
     });
 
-  const saltarEquipo = () => avanzar(async () => { await actions.refresh(); });
+  const saltarEquipo = () => { setError(null); setPaso(4); };
 
   return (
-    <div className="flex min-h-screen flex-col bg-navy-900">
+    <div className="flex min-h-screen flex-col bg-surface">
       <header className="mx-auto flex w-full max-w-3xl items-center justify-between px-5 py-4">
         <Wordmark tone="light" />
         <button
           onClick={() => void signOut()}
-          className="text-sm text-navy-300 underline underline-offset-2 transition-colors hover:text-white"
+          className="text-sm text-ink-500 underline underline-offset-2 transition-colors hover:text-ink-900"
         >
           Cerrar sesión
         </button>
@@ -171,7 +175,7 @@ export default function Onboarding() {
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-5 pb-12">
         <Pasos actual={paso} />
 
-        <div className="mt-5 rounded-xl bg-white p-6 shadow-lift sm:p-8">
+        <div className="mt-6 rounded-3xl bg-panel p-6 sm:p-8">
           {paso === 1 && (
             <Bloque
               titulo="Empecemos por ti"
@@ -223,7 +227,7 @@ export default function Onboarding() {
                   maxLength={28}
                 />
               </Field>
-              <p className="rounded-md border border-line bg-surface px-3 py-2.5 text-sm leading-relaxed text-navy-700">
+              <p className="rounded-2xl bg-raised px-4 py-3 text-sm leading-relaxed text-ink-600">
                 <strong className="font-medium">¿Te han invitado a un club?</strong> Entonces no crees
                 uno nuevo: abre el enlace de invitación que te hayan pasado y entrarás directamente
                 en el que te corresponde, con tu equipo ya asignado.
@@ -261,7 +265,7 @@ export default function Onboarding() {
                     onClick={() =>
                       setHorarios((h) => [...h, { weekday: 2, start: '18:00', end: '19:30', venue: '' }])
                     }
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-pitch-700 hover:text-pitch-800"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-900 hover:text-ink-700"
                   >
                     <Plus size={14} /> Añadir
                   </button>
@@ -273,7 +277,7 @@ export default function Onboarding() {
                 ) : (
                   <div className="mt-2 space-y-2">
                     {horarios.map((h, i) => (
-                      <div key={i} className="flex flex-wrap items-center gap-2 rounded-md border border-line p-2">
+                      <div key={i} className="flex flex-wrap items-center gap-2 rounded-2xl bg-raised p-2">
                         <Select
                           className="w-auto flex-1"
                           value={h.weekday}
@@ -305,7 +309,7 @@ export default function Onboarding() {
                         />
                         <button
                           onClick={() => setHorarios((xs) => xs.filter((_, k) => k !== i))}
-                          className="rounded p-1.5 text-navy-400 transition-colors hover:bg-surface hover:text-bad"
+                          className="rounded-full p-1.5 text-ink-400 transition-colors hover:bg-ink-200 hover:text-bad"
                           aria-label={`Quitar el horario de ${WEEKDAYS[h.weekday]}`}
                         >
                           <X size={15} />
@@ -318,12 +322,15 @@ export default function Onboarding() {
             </Bloque>
           )}
 
+          {paso === 4 && <PasoPlan onTerminar={() => actions.refresh()} />}
+
           {error && (
-            <p className="mt-4 rounded-md border border-bad/30 bg-bad/5 px-3 py-2.5 text-base leading-relaxed text-bad">
+            <p className="mt-4 rounded-2xl bg-bad/12 px-4 py-3 text-base leading-relaxed text-bad">
               {error}
             </p>
           )}
 
+          {paso !== 4 && (
           <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-5">
             {paso > 1 && paso < 3 && (
               <Button variant="ghost" icon={<ArrowLeft size={15} />} onClick={() => setPaso(paso - 1)}>
@@ -344,12 +351,13 @@ export default function Onboarding() {
                 void (paso === 1 ? guardarPerfil() : paso === 2 ? crearClub() : crearEquipo())
               }
             >
-              {paso === 1 ? 'Continuar' : paso === 2 ? 'Crear el club' : 'Crear el equipo y entrar'}
+              {paso === 1 ? 'Continuar' : paso === 2 ? 'Crear el club' : 'Crear el equipo'}
             </Button>
           </div>
+          )}
         </div>
 
-        <p className="mt-4 text-center text-sm text-navy-400">
+        <p className="mt-5 text-center text-sm text-ink-500">
           Puedes cambiar todo esto después. Nada de lo que pongas aquí es definitivo.
         </p>
       </main>
@@ -362,8 +370,8 @@ function Bloque({
 }: { titulo: string; entradilla: string; children: React.ReactNode }) {
   return (
     <div className="animate-fade-up">
-      <h1 className="font-display text-2xl font-bold tracking-[-0.015em] text-navy-900">{titulo}</h1>
-      <p className="mt-1.5 max-w-xl text-base leading-relaxed text-navy-700">{entradilla}</p>
+      <h1 className="font-display text-2xl font-bold tracking-[-0.015em] text-ink-900">{titulo}</h1>
+      <p className="mt-1.5 max-w-xl text-base leading-relaxed text-ink-700">{entradilla}</p>
       <div className="mt-6 space-y-4">{children}</div>
     </div>
   );
@@ -383,10 +391,10 @@ function Pasos({ actual }: { actual: number }) {
               className={cn(
                 'grid h-9 w-9 shrink-0 place-items-center rounded-full border transition-colors',
                 hecho
-                  ? 'border-pitch-500 bg-pitch-500 text-white'
+                  ? 'border-ink-900 bg-ink-900 text-ink-0'
                   : aqui
-                    ? 'border-pitch-400 bg-white/10 text-pitch-300'
-                    : 'border-white/15 text-navy-400',
+                    ? 'border-ink-900 bg-transparent text-ink-900'
+                    : 'border-ink-300 text-ink-400',
               )}
             >
               {hecho ? <Check size={16} strokeWidth={2.6} /> : <Icono size={17} />}
@@ -394,7 +402,7 @@ function Pasos({ actual }: { actual: number }) {
             <span
               className={cn(
                 'hidden truncate text-sm sm:block',
-                aqui ? 'font-semibold text-white' : 'text-navy-300',
+                aqui ? 'font-semibold text-ink-900' : 'text-ink-500',
               )}
             >
               {p.titulo}
@@ -402,7 +410,7 @@ function Pasos({ actual }: { actual: number }) {
             {p.id !== PASOS.length && (
               <span
                 aria-hidden
-                className={cn('h-px flex-1 transition-colors', hecho ? 'bg-pitch-500' : 'bg-white/15')}
+                className={cn('h-px flex-1 transition-colors', hecho ? 'bg-ink-900' : 'bg-ink-300')}
               />
             )}
           </li>

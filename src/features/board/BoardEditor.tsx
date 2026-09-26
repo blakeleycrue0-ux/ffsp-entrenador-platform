@@ -494,7 +494,7 @@ export function BoardEditor({
                     onDragStart={(e) => e.dataTransfer.setData('text/playoff360-objeto', kind)}
                     onClick={() => onAdd(kind)}
                     disabled={!editable}
-                    className="rounded-md border border-line bg-white px-2 py-2 text-left text-sm font-medium text-navy-800 transition-colors hover:border-navy-400 disabled:opacity-50"
+                    className="rounded-md border border-line bg-panel px-2 py-2 text-left text-sm font-medium text-ink-800 transition-colors hover:border-ink-400 disabled:opacity-50"
                   >
                     {KIND_LABEL[kind]}
                   </button>
@@ -545,8 +545,8 @@ export function BoardEditor({
             className={cn(
               'grid h-8 w-8 place-items-center rounded-md border transition-colors disabled:opacity-50',
               tool === h.id
-                ? 'border-navy-900 bg-navy-900 text-white'
-                : 'border-line bg-white text-navy-700 hover:border-navy-400',
+                ? 'border-ink-900 bg-ink-900 text-ink-0'
+                : 'border-line bg-panel text-ink-700 hover:border-ink-400',
             )}
           >
             {h.icon}
@@ -614,8 +614,8 @@ export function BoardEditor({
         className={cn(
           'inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-sm font-medium transition-colors',
           playback.loop
-            ? 'border-navy-900 bg-navy-900 text-white'
-            : 'border-line bg-white text-navy-700 hover:border-navy-400',
+            ? 'border-ink-900 bg-ink-900 text-ink-0'
+            : 'border-line bg-panel text-ink-700 hover:border-ink-400',
         )}
       >
         <Repeat size={14} /> Bucle
@@ -686,7 +686,7 @@ export function BoardEditor({
             aria-pressed={playback.loop}
             className={cn(
               'inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-sm font-medium transition-colors',
-              playback.loop ? 'border-white bg-white text-night' : 'border-white/25 text-white/80',
+              playback.loop ? 'border-white bg-panel text-night' : 'border-white/25 text-white/80',
             )}
           >
             <Repeat size={14} /> Bucle
@@ -709,7 +709,7 @@ export function BoardEditor({
           {barraReproduccion}
           {barraDibujo}
 
-          <div className="bg-navy-900/5 p-2 sm:p-3">
+          <div className="bg-ink-900/5 p-2 sm:p-3">
             <div className="mx-auto w-full overflow-hidden rounded">{campo}</div>
           </div>
 
@@ -751,7 +751,7 @@ function Paleta({
           title="Color por defecto"
           className={cn(
             'grid h-7 w-7 place-items-center rounded-md border text-xs text-muted',
-            !value ? 'border-navy-900' : 'border-line',
+            !value ? 'border-ink-900' : 'border-line',
           )}
         >
           —
@@ -766,7 +766,7 @@ function Paleta({
           style={{ background: c }}
           className={cn(
             'h-7 w-7 rounded-md border transition-transform',
-            value === c ? 'border-navy-900 ring-2 ring-navy-900/20' : 'border-line',
+            value === c ? 'border-ink-900 ring-2 ring-ink-900/20' : 'border-line',
           )}
         />
       ))}
@@ -788,7 +788,7 @@ function KeyframeRow({
   return (
     <li className="rounded-md border border-line p-2">
       <div className="flex items-center justify-between gap-2">
-        <button onClick={onSeek} className="text-sm tabular-nums text-navy-800 underline-offset-2 hover:underline">
+        <button onClick={onSeek} className="text-sm tabular-nums text-ink-800 underline-offset-2 hover:underline">
           {formatSeconds(k.t)}
         </button>
         {first ? (

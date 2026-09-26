@@ -62,7 +62,7 @@ export function Timeline({
   return (
     <div className="select-none">
       <div className="mb-1.5 flex items-center justify-between text-xs text-muted">
-        <span ref={labelRef} className="tabular-nums font-medium text-navy-900">
+        <span ref={labelRef} className="tabular-nums font-medium text-ink-900">
           {formatSeconds(playback.time)}
         </span>
         <span className="tabular-nums">Duración {formatSeconds(duration)}</span>
@@ -70,7 +70,7 @@ export function Timeline({
 
       <div
         ref={barRef}
-        className="relative h-11 cursor-pointer rounded-md border border-line bg-white"
+        className="relative h-11 cursor-pointer rounded-md border border-line bg-panel"
         onPointerDown={(e) => {
           setDragging(true);
           seekFromPointer(e.clientX);
@@ -120,8 +120,8 @@ export function Timeline({
                 className={cn(
                   'absolute -translate-x-1/2 rotate-45 border transition-colors',
                   on
-                    ? 'h-2.5 w-2.5 border-navy-900 bg-navy-900'
-                    : 'h-2 w-2 border-navy-300 bg-white hover:border-navy-600',
+                    ? 'h-2.5 w-2.5 border-ink-900 bg-ink-900'
+                    : 'h-2 w-2 border-ink-300 bg-panel hover:border-ink-600',
                 )}
                 style={{ left: `${(k.t / duration) * 100}%`, top: on ? 8 : 9 }}
                 aria-label={`Fotograma de ${obj.label} en ${formatSeconds(k.t)}`}
@@ -133,10 +133,10 @@ export function Timeline({
         {/* Cabezal */}
         <div
           ref={headRef}
-          className="pointer-events-none absolute inset-y-0 w-px bg-navy-900"
+          className="pointer-events-none absolute inset-y-0 w-px bg-ink-900"
           style={{ left: `${(playback.time / duration) * 100}%` }}
         >
-          <span className="absolute -left-[3px] -top-px h-1.5 w-1.5 rounded-full bg-navy-900" />
+          <span className="absolute -left-[3px] -top-px h-1.5 w-1.5 rounded-full bg-ink-900" />
         </div>
       </div>
 

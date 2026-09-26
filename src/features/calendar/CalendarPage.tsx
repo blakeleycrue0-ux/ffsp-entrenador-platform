@@ -95,14 +95,14 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => move(-1)}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-navy-300 hover:text-navy-900"
+            className="grid h-9 w-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-ink-300 hover:text-ink-900"
             aria-label="Anterior"
           >
             <ChevronLeft size={17} />
           </button>
           <button
             onClick={() => move(1)}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-navy-300 hover:text-navy-900"
+            className="grid h-9 w-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-ink-300 hover:text-ink-900"
             aria-label="Siguiente"
           >
             <ChevronRight size={17} />
@@ -110,7 +110,7 @@ export default function CalendarPage() {
           <Button size="sm" variant="ghost" onClick={() => setCursor(today())}>
             Hoy
           </Button>
-          <p className="ml-2 text-[15px] font-semibold text-navy-900">{cap(periodLabel())}</p>
+          <p className="ml-2 text-[15px] font-semibold text-ink-900">{cap(periodLabel())}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
@@ -174,14 +174,14 @@ function DayView({ date, events, onOpen }: { date: Date; events: CalendarEvent[]
           <span className={cn('w-1.5 shrink-0', EVENT_KIND[e.kind].bar)} />
           <span className="flex flex-1 items-center gap-4 p-4">
             <span className="w-16 shrink-0 text-center">
-              <span className="block text-[17px] font-semibold text-navy-900 tabular-nums">{e.start}</span>
-              {e.end && <span className="block text-[12px] text-navy-400 tabular-nums">{e.end}</span>}
+              <span className="block text-[17px] font-semibold text-ink-900 tabular-nums">{e.start}</span>
+              {e.end && <span className="block text-[12px] text-ink-400 tabular-nums">{e.end}</span>}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[15px] font-medium text-navy-900">{e.title}</span>
+              <span className="block truncate text-[15px] font-medium text-ink-900">{e.title}</span>
               <span className="mt-0.5 block truncate text-[13px] text-muted">{e.subtitle}</span>
               {e.venue && (
-                <span className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-navy-400">
+                <span className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-ink-400">
                   <MapPin size={12} /> {e.venue}
                 </span>
               )}
@@ -211,22 +211,22 @@ function WeekView({ cursor, events, onOpen }: { cursor: Date; events: CalendarEv
           <div
             key={i}
             className={cn(
-              'rounded-2xl border bg-white p-3 transition-colors',
-              isToday ? 'border-navy-300 bg-navy-50/30' : 'border-line',
+              'rounded-2xl border bg-panel p-3 transition-colors',
+              isToday ? 'border-ink-300 bg-ink-50/30' : 'border-line',
             )}
           >
             <div className="flex items-baseline justify-between">
-              <span className={cn('text-[12px] font-medium', isToday ? 'text-navy-900' : 'text-navy-400')}>
+              <span className={cn('text-[12px] font-medium', isToday ? 'text-ink-900' : 'text-ink-400')}>
                 {DAY_LABELS[i]}
               </span>
-              <span className={cn('text-[16px] font-semibold tabular-nums', isToday ? 'text-navy-900' : 'text-navy-700')}>
+              <span className={cn('text-[16px] font-semibold tabular-nums', isToday ? 'text-ink-900' : 'text-ink-700')}>
                 {d.getDate()}
               </span>
             </div>
 
             <div className="mt-3 space-y-1.5">
               {list.length === 0 ? (
-                <p className="py-3 text-center text-[11.5px] text-navy-300">Libre</p>
+                <p className="py-3 text-center text-[11.5px] text-ink-300">Libre</p>
               ) : (
                 list.map((e) => (
                   <button
@@ -267,9 +267,9 @@ function MonthView({
 
   return (
     <Panel className="overflow-hidden">
-      <div className="grid grid-cols-7 border-b border-navy-100 bg-navy-50/60">
+      <div className="grid grid-cols-7 border-b border-ink-100 bg-ink-50/60">
         {DAY_LABELS.map((d) => (
-          <div key={d} className="py-2.5 text-center text-[11.5px] font-medium uppercase tracking-wide text-navy-400">
+          <div key={d} className="py-2.5 text-center text-[11.5px] font-medium uppercase tracking-wide text-ink-400">
             {d}
           </div>
         ))}
@@ -283,8 +283,8 @@ function MonthView({
             <div
               key={i}
               className={cn(
-                'min-h-[96px] border-b border-r border-navy-100 p-1.5 transition-colors last:border-r-0',
-                other && 'bg-navy-50/40',
+                'min-h-[96px] border-b border-r border-ink-100 p-1.5 transition-colors last:border-r-0',
+                other && 'bg-ink-50/40',
                 i % 7 === 6 && 'border-r-0',
               )}
             >
@@ -292,7 +292,7 @@ function MonthView({
                 onClick={() => onPickDay(d)}
                 className={cn(
                   'grid h-6 w-6 place-items-center rounded-full text-[12px] font-medium tabular-nums transition-colors',
-                  isToday ? 'bg-navy-900 text-white' : other ? 'text-navy-300' : 'text-navy-600 hover:bg-navy-100',
+                  isToday ? 'bg-ink-900 text-ink-0' : other ? 'text-ink-300' : 'text-ink-600 hover:bg-ink-100',
                 )}
               >
                 {d.getDate()}
@@ -308,7 +308,7 @@ function MonthView({
                   </button>
                 ))}
                 {list.length > 2 && (
-                  <button onClick={() => onPickDay(d)} className="px-1.5 text-[10.5px] text-navy-400 hover:text-navy-900">
+                  <button onClick={() => onPickDay(d)} className="px-1.5 text-[10.5px] text-ink-400 hover:text-ink-900">
                     +{list.length - 2} más
                   </button>
                 )}
@@ -350,7 +350,7 @@ function EventModal({ event, onClose }: { event: CalendarEvent | null; onClose: 
           <Link
             to={link}
             onClick={onClose}
-            className="inline-flex h-10 items-center rounded-xl bg-navy-900 px-4 text-[14px] font-medium text-white shadow-raised transition-colors hover:bg-navy-900"
+            className="inline-flex h-10 items-center rounded-xl bg-ink-900 px-4 text-[14px] font-medium text-ink-0 shadow-raised transition-colors hover:bg-ink-900"
           >
             Abrir {EVENT_KIND[event.kind].label.toLowerCase()}
           </Link>
@@ -364,10 +364,10 @@ function EventModal({ event, onClose }: { event: CalendarEvent | null; onClose: 
           [<MapPin key="m" size={16} />, 'Ubicación', event.venue ?? 'Sin definir'],
         ].map(([icon, label, value], i) => (
           <div key={i} className="flex items-start gap-3">
-            <span className="mt-0.5 text-navy-400">{icon as React.ReactNode}</span>
+            <span className="mt-0.5 text-ink-400">{icon as React.ReactNode}</span>
             <div>
-              <dt className="text-[12px] uppercase tracking-wide text-navy-400">{label as string}</dt>
-              <dd className="mt-0.5 text-[14px] text-navy-800">{value as string}</dd>
+              <dt className="text-[12px] uppercase tracking-wide text-ink-400">{label as string}</dt>
+              <dd className="mt-0.5 text-[14px] text-ink-800">{value as string}</dd>
             </div>
           </div>
         ))}

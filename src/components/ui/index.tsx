@@ -19,32 +19,33 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'quiet';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 /**
- * El botón principal es VERDE, no casi negro.
+ * Botones: cápsulas, sin borde, y el principal en BLANCO sólido.
  * ---------------------------------------------------------------------------
- * Un `bg-navy-900` para la acción principal es lo que hace que un producto
- * parezca el panel de administración de cualquier cosa: el color de la marca
- * no aparece por ningún lado y la acción importante pesa lo mismo que el
- * texto. Aquí el verde es el color de la pizarra, que es lo más reconocible
- * del producto, y es el que marca qué hay que pulsar.
+ * Sobre negro, lo que más pesa es lo más claro. El botón principal es blanco
+ * con texto negro — el contraste máximo que existe en la pantalla — y todo lo
+ * demás son grises. Así no hace falta ningún color de marca para que se vea
+ * qué hay que pulsar, que es justo lo que hace la aplicación de referencia.
  *
- * Es el 700 y no el 600 porque el 600 con texto blanco se queda en 3,9 de
- * contraste y hace falta 4,5.
+ * Ninguno lleva borde: se distinguen por el tono del relleno. Un borde sobre
+ * negro añade una línea que no informa de nada.
+ *
+ * El deshabilitado es gris medio con texto oscuro, y NO baja la opacidad: un
+ * botón traslúcido sobre negro se confunde con el fondo y deja de leerse.
  */
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-pitch-700 text-white border border-pitch-700 hover:bg-pitch-800 hover:border-pitch-800 ' +
-    'disabled:bg-navy-300 disabled:border-navy-300',
-  secondary:
-    'bg-white text-navy-900 border border-line hover:border-navy-400 hover:bg-surface',
-  ghost: 'bg-transparent text-navy-700 border border-transparent hover:bg-navy-100',
-  quiet: 'bg-surface text-navy-800 border border-transparent hover:bg-navy-100',
-  danger: 'bg-white text-bad border border-bad/35 hover:bg-bad/5',
+    'bg-ink-900 text-ink-0 hover:bg-ink-800 active:bg-ink-700 ' +
+    'disabled:bg-ink-300 disabled:text-ink-500',
+  secondary: 'bg-raised text-ink-900 hover:bg-ink-200 active:bg-ink-300',
+  ghost: 'bg-transparent text-ink-700 hover:bg-ink-100 hover:text-ink-900',
+  quiet: 'bg-panel text-ink-800 hover:bg-raised',
+  danger: 'bg-bad/12 text-bad hover:bg-bad/20',
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
-  sm: 'h-8 px-2.5 text-sm gap-1.5 rounded-md',
-  md: 'h-9 px-3.5 text-base gap-2 rounded-md',
-  lg: 'h-11 px-5 text-md gap-2 rounded-md',
+  sm: 'h-9 px-4 text-sm gap-1.5 rounded-full',
+  md: 'h-11 px-5 text-base gap-2 rounded-full',
+  lg: 'h-14 px-6 text-md gap-2 rounded-full',
 };
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -65,7 +66,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       disabled={disabled || loading}
       className={cn(
         'inline-flex select-none items-center justify-center whitespace-nowrap font-medium',
-        'transition-colors duration-120 disabled:cursor-not-allowed disabled:opacity-70',
+        'transition-colors duration-120 disabled:cursor-not-allowed',
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
         block && 'w-full',
@@ -121,10 +122,10 @@ export function PanelHeader({
   className?: string;
 }) {
   return (
-    <div className={cn('flex items-start justify-between gap-4 border-b border-line px-4 py-3', className)}>
+    <div className={cn('flex items-start justify-between gap-4 px-5 pb-1 pt-4', className)}>
       <div className="min-w-0">
-        <h3 className="text-md font-semibold leading-snug">{title}</h3>
-        {description && <p className="mt-0.5 text-sm text-muted">{description}</p>}
+        <h3 className="text-lg font-semibold leading-snug tracking-[-0.01em]">{title}</h3>
+        {description && <p className="mt-1 text-base leading-relaxed text-muted">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>
@@ -135,13 +136,15 @@ export function PanelHeader({
 
 type Tone = 'neutral' | 'ok' | 'warn' | 'bad' | 'info' | 'solid';
 
+/* Sobre negro, un relleno tenue del propio color se lee mejor que un borde
+   fino: el borde desaparece y el relleno no. */
 const TONES: Record<Tone, string> = {
-  neutral: 'bg-surface text-navy-700 border-line',
-  ok: 'bg-ok/8 text-ok border-ok/25',
-  warn: 'bg-warn/8 text-warn border-warn/25',
-  bad: 'bg-bad/8 text-bad border-bad/25',
-  info: 'bg-info/8 text-info border-info/25',
-  solid: 'bg-navy-900 text-white border-navy-900',
+  neutral: 'bg-raised text-ink-700 border-transparent',
+  ok: 'bg-ok/15 text-ok border-transparent',
+  warn: 'bg-warn/15 text-warn border-transparent',
+  bad: 'bg-bad/15 text-bad border-transparent',
+  info: 'bg-info/15 text-info border-transparent',
+  solid: 'bg-ink-900 text-ink-0 border-transparent',
 };
 
 export function Tag({
@@ -150,8 +153,8 @@ export function Tag({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 whitespace-nowrap rounded border font-medium',
-        size === 'sm' ? 'px-1.5 py-0.5 text-2xs' : 'px-2 py-0.5 text-xs',
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border font-medium',
+        size === 'sm' ? 'px-2 py-0.5 text-2xs' : 'px-2.5 py-1 text-xs',
         TONES[tone],
         className,
       )}
@@ -165,7 +168,7 @@ export function Tag({
 /** Punto de estado: el color es la única información, sin icono. */
 export function Dot({ tone = 'neutral', className }: { tone?: Tone; className?: string }) {
   const bg = {
-    neutral: 'bg-navy-400', ok: 'bg-ok', warn: 'bg-warn', bad: 'bg-bad', info: 'bg-info', solid: 'bg-navy-900',
+    neutral: 'bg-ink-400', ok: 'bg-ok', warn: 'bg-warn', bad: 'bg-bad', info: 'bg-info', solid: 'bg-ink-900',
   }[tone];
   return <span className={cn('inline-block h-1.5 w-1.5 shrink-0 rounded-full', bg, className)} />;
 }
@@ -185,14 +188,14 @@ export function Dot({ tone = 'neutral', className }: { tone?: Tone; className?: 
  * Todos los tonos están calculados para leerse sobre su propio fondo.
  */
 const COLORES_DE_AVATAR = [
-  'bg-[#E7EEFB] text-[#1F4E9C]',
-  'bg-[#E6F6EE] text-[#046C43]',
-  'bg-[#FBEDE4] text-[#9C4A11]',
-  'bg-[#F1EAFB] text-[#61339E]',
-  'bg-[#FBE9EC] text-[#A32B3C]',
-  'bg-[#E4F4F6] text-[#0D6473]',
-  'bg-[#F6F1E2] text-[#7A5C15]',
-  'bg-[#EBEDF2] text-[#3B4A63]',
+  'bg-[#16243C] text-[#7FB0FF]',
+  'bg-[#0F2A20] text-[#5ADCA0]',
+  'bg-[#2C1D10] text-[#EFA463]',
+  'bg-[#221733] text-[#B58CF0]',
+  'bg-[#2B1519] text-[#FF8F86]',
+  'bg-[#0E2529] text-[#5FCBDB]',
+  'bg-[#272113] text-[#E0C05A]',
+  'bg-[#1C1F26] text-[#A9B6CC]',
 ];
 
 const colorDe = (name: string) => {
@@ -217,7 +220,7 @@ export function Avatar({
       <span
         className={cn(
           'grid place-items-center overflow-hidden rounded-full font-semibold',
-          src ? 'bg-navy-100' : colorDe(name),
+          src ? 'bg-ink-100' : colorDe(name),
         )}
         style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}
       >
@@ -225,7 +228,7 @@ export function Avatar({
       </span>
       {badge !== undefined && (
         <span
-          className="absolute -bottom-0.5 -right-0.5 grid place-items-center rounded-full bg-navy-900 px-1 text-white"
+          className="absolute -bottom-0.5 -right-0.5 grid place-items-center rounded-full bg-ink-900 px-1 text-ink-0"
           style={{ minWidth: size * 0.44, height: size * 0.44, fontSize: Math.round(size * 0.26) }}
         >
           {badge}
@@ -280,7 +283,7 @@ export function Select({ className, children, ...rest }: React.SelectHTMLAttribu
       <select className={cn('field cursor-pointer appearance-none pr-8', className)} {...rest}>
         {children}
       </select>
-      <ChevronDown size={15} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-navy-400" aria-hidden />
+      <ChevronDown size={15} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden />
     </div>
   );
 }
@@ -298,12 +301,12 @@ export function Checkbox({
         onClick={() => onChange(!checked)}
         className={cn(
           'grid h-4 w-4 shrink-0 place-items-center rounded-[3px] border transition-colors',
-          checked ? 'border-navy-900 bg-navy-900 text-white' : 'border-navy-300 bg-white hover:border-navy-500',
+          checked ? 'border-ink-900 bg-ink-900 text-ink-0' : 'border-ink-300 bg-panel hover:border-ink-500',
         )}
       >
         {checked && <Check size={11} strokeWidth={3} aria-hidden />}
       </button>
-      {label && <span className="text-base text-navy-800">{label}</span>}
+      {label && <span className="text-base text-ink-800">{label}</span>}
     </label>
   );
 }
@@ -321,19 +324,19 @@ export function Toggle({
         onClick={() => onChange(!checked)}
         className={cn(
           'relative h-5 w-9 shrink-0 rounded-full transition-colors',
-          checked ? 'bg-navy-900' : 'bg-navy-300',
+          checked ? 'bg-ink-900' : 'bg-ink-300',
         )}
       >
         {/* `left-0` es imprescindible: sin él la bolita se coloca al final del
             botón y el desplazamiento la saca fuera, encima de la etiqueta. */}
         <span
           className={cn(
-            'absolute left-0 top-0.5 h-4 w-4 rounded-full bg-white transition-transform',
+            'absolute left-0 top-0.5 h-4 w-4 rounded-full bg-panel transition-transform',
             checked ? 'translate-x-[18px]' : 'translate-x-0.5',
           )}
         />
       </button>
-      {label && <span className="text-base text-navy-800">{label}</span>}
+      {label && <span className="text-base text-ink-800">{label}</span>}
     </label>
   );
 }
@@ -356,8 +359,8 @@ export function ScoreInput({
             className={cn(
               'h-7 w-7 rounded border text-sm font-medium tabular-nums transition-colors',
               active
-                ? 'border-navy-900 bg-navy-900 text-white'
-                : 'border-line bg-white text-navy-600 hover:border-navy-400',
+                ? 'border-ink-900 bg-ink-900 text-ink-0'
+                : 'border-line bg-panel text-ink-600 hover:border-ink-400',
             )}
           >
             {n}
@@ -368,7 +371,7 @@ export function ScoreInput({
         <button
           type="button"
           onClick={() => onChange(null)}
-          className="ml-1 self-center text-xs text-muted underline-offset-2 hover:text-navy-800 hover:underline"
+          className="ml-1 self-center text-xs text-muted underline-offset-2 hover:text-ink-800 hover:underline"
         >
           Quitar
         </button>
@@ -380,11 +383,11 @@ export function ScoreInput({
 /** Muestra una valoración ya registrada. */
 export function Score({ value, className }: { value: number | null | undefined; className?: string }) {
   if (value === null || value === undefined) {
-    return <span className={cn('text-sm text-navy-400', className)}>Sin valorar</span>;
+    return <span className={cn('text-sm text-ink-400', className)}>Sin valorar</span>;
   }
   return (
     <span className={cn('inline-flex items-baseline gap-0.5 tabular-nums', className)}>
-      <span className="text-md font-semibold text-navy-900">{value}</span>
+      <span className="text-md font-semibold text-ink-900">{value}</span>
       <span className="text-xs text-muted">/10</span>
     </span>
   );
@@ -412,12 +415,12 @@ export function Tabs({
             onClick={() => onChange(t.id)}
             className={cn(
               'relative shrink-0 px-3 py-2 text-base font-medium transition-colors',
-              active ? 'text-navy-900' : 'text-muted hover:text-navy-800',
+              active ? 'text-ink-900' : 'text-muted hover:text-ink-800',
             )}
           >
             {t.label}
-            {t.count !== undefined && <span className="ml-1.5 text-sm text-navy-400 tabular-nums">{t.count}</span>}
-            {active && <span className="absolute inset-x-1.5 -bottom-px h-0.5 bg-navy-900" />}
+            {t.count !== undefined && <span className="ml-1.5 text-sm text-ink-400 tabular-nums">{t.count}</span>}
+            {active && <span className="absolute inset-x-1.5 -bottom-px h-0.5 bg-ink-900" />}
           </button>
         );
       })}
@@ -435,7 +438,7 @@ export function Segmented<T extends string>({
   size?: 'sm' | 'md';
 }) {
   return (
-    <div className={cn('inline-flex rounded-md border border-line bg-white p-0.5', className)}>
+    <div className={cn('inline-flex rounded-md border border-line bg-panel p-0.5', className)}>
       {options.map((o) => (
         <button
           key={o.id}
@@ -445,7 +448,7 @@ export function Segmented<T extends string>({
           className={cn(
             'rounded-[4px] font-medium transition-colors',
             size === 'sm' ? 'px-2 py-1 text-xs' : 'px-2.5 py-1 text-sm',
-            value === o.id ? 'bg-navy-900 text-white' : 'text-navy-600 hover:text-navy-900',
+            value === o.id ? 'bg-ink-900 text-ink-0' : 'text-ink-600 hover:text-ink-900',
           )}
         >
           {o.label}
@@ -485,12 +488,12 @@ export function Modal({
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6">
-      <div className="absolute inset-0 bg-navy-900/35 animate-fade-in" onClick={onClose} />
+      <div className="absolute inset-0 bg-ink-900/35 animate-fade-in" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden border border-line bg-white shadow-pop',
+          'relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden border border-line bg-panel shadow-pop',
           'rounded-t-xl sm:rounded-lg animate-slide-up sm:animate-fade-up',
           width,
         )}
@@ -503,7 +506,7 @@ export function Modal({
             </div>
             <button
               onClick={onClose}
-              className="-mr-1 -mt-0.5 rounded p-1.5 text-navy-400 transition-colors hover:bg-surface hover:text-navy-800"
+              className="-mr-1 -mt-0.5 rounded p-1.5 text-ink-400 transition-colors hover:bg-surface hover:text-ink-800"
               aria-label="Cerrar"
             >
               <X size={16} />
@@ -550,7 +553,7 @@ export function ConfirmDialog({
         </>
       }
     >
-      <div className="text-base leading-relaxed text-navy-700">{description}</div>
+      <div className="text-base leading-relaxed text-ink-700">{description}</div>
     </Modal>
   );
 }
@@ -562,7 +565,7 @@ export function EmptyState({
 }: { title: string; description?: React.ReactNode; action?: React.ReactNode; className?: string }) {
   return (
     <div className={cn('px-6 py-12 text-center', className)}>
-      <h3 className="text-md font-semibold text-navy-900">{title}</h3>
+      <h3 className="text-md font-semibold text-ink-900">{title}</h3>
       {description && <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-muted">{description}</p>}
       {action && <div className="mt-5 flex justify-center gap-2">{action}</div>}
     </div>
@@ -578,7 +581,7 @@ export function ErrorState({
   return (
     <div className={cn('panel border-bad/30 bg-bad/4 px-5 py-6', className)}>
       <h3 className="text-md font-semibold text-bad">{title}</h3>
-      {description && <p className="mt-1.5 max-w-2xl text-base leading-relaxed text-navy-700">{description}</p>}
+      {description && <p className="mt-1.5 max-w-2xl text-base leading-relaxed text-ink-700">{description}</p>}
       {onRetry && (
         <Button variant="secondary" size="sm" className="mt-4" onClick={onRetry}>
           Reintentar
@@ -606,9 +609,9 @@ export function Meter({
   value, max = 100, tone = 'solid', className, height = 4,
 }: { value: number; max?: number; tone?: Tone; className?: string; height?: number }) {
   const pct = max === 0 ? 0 : Math.min(100, Math.max(0, (value / max) * 100));
-  const bg = { neutral: 'bg-navy-400', ok: 'bg-ok', warn: 'bg-warn', bad: 'bg-bad', info: 'bg-info', solid: 'bg-navy-900' }[tone];
+  const bg = { neutral: 'bg-ink-400', ok: 'bg-ok', warn: 'bg-warn', bad: 'bg-bad', info: 'bg-info', solid: 'bg-ink-900' }[tone];
   return (
-    <div className={cn('w-full overflow-hidden rounded-full bg-navy-100', className)} style={{ height }}>
+    <div className={cn('w-full overflow-hidden rounded-full bg-ink-100', className)} style={{ height }}>
       <div className={cn('h-full rounded-full transition-[width] duration-300', bg)} style={{ width: `${pct}%` }} />
     </div>
   );
@@ -618,7 +621,7 @@ export function Meter({
 export function Figure({
   label, value, hint, tone, className,
 }: { label: string; value: React.ReactNode; hint?: React.ReactNode; tone?: 'ok' | 'warn' | 'bad'; className?: string }) {
-  const color = tone ? { ok: 'text-ok', warn: 'text-warn', bad: 'text-bad' }[tone] : 'text-navy-900';
+  const color = tone ? { ok: 'text-ok', warn: 'text-warn', bad: 'text-bad' }[tone] : 'text-ink-900';
   return (
     <div className={className}>
       <p className="eyebrow">{label}</p>
@@ -661,7 +664,7 @@ export function Dropdown({
       {open && (
         <div
           className={cn(
-            'absolute z-50 mt-1 min-w-[200px] overflow-hidden rounded-md border border-line bg-white p-1 shadow-pop animate-fade-up',
+            'absolute z-50 mt-1 min-w-[200px] overflow-hidden rounded-md border border-line bg-panel p-1 shadow-pop animate-fade-up',
             align === 'right' ? 'right-0' : 'left-0',
             className,
           )}
@@ -678,11 +681,11 @@ export function MenuItem({
 }: { icon?: React.ReactNode; children: React.ReactNode; onClick?: () => void; to?: string; tone?: 'danger' }) {
   const cls = cn(
     'flex w-full items-center gap-2 rounded px-2.5 py-1.5 text-left text-base transition-colors',
-    tone === 'danger' ? 'text-bad hover:bg-bad/6' : 'text-navy-700 hover:bg-surface hover:text-navy-900',
+    tone === 'danger' ? 'text-bad hover:bg-bad/6' : 'text-ink-700 hover:bg-surface hover:text-ink-900',
   );
   const inner = (
     <>
-      {icon && <span className="text-navy-400">{icon}</span>}
+      {icon && <span className="text-ink-400">{icon}</span>}
       {children}
     </>
   );
@@ -751,7 +754,7 @@ export function Tooltip({
       <span
         role="tooltip"
         className={cn(
-          'pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded bg-navy-900 px-2 py-1 text-xs text-white opacity-0 transition-opacity duration-120 group-hover/tt:opacity-100',
+          'pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded bg-ink-900 px-2 py-1 text-xs text-ink-0 opacity-0 transition-opacity duration-120 group-hover/tt:opacity-100',
           side === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5',
         )}
       >

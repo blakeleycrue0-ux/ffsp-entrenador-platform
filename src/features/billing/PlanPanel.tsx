@@ -92,13 +92,11 @@ export function PlanPanel() {
       <PanelHeader
         title="Plan"
         description="Lo que puede hacer tu club y cómo cambiarlo."
-        actions={
-          <Tag tone={tier === 'free' ? undefined : 'ok'}>{actual?.name ?? 'Gratis'}</Tag>
-        }
+        actions={<Tag tone={tier === 'free' ? undefined : 'solid'}>{actual?.name ?? 'Gratis'}</Tag>}
       />
 
       <div className="space-y-4 p-4">
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-base text-navy-800">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-base text-ink-800">
           <span className="font-medium">
             {data.teams.length} {data.teams.length === 1 ? 'equipo' : 'equipos'}
           </span>
@@ -108,7 +106,7 @@ export function PlanPanel() {
         </div>
 
         {prueba !== null && (
-          <p className="rounded-md border border-warn/30 bg-warn/5 px-3 py-2.5 text-base leading-relaxed text-navy-800">
+          <p className="rounded-md border border-warn/30 bg-warn/5 px-3 py-2.5 text-base leading-relaxed text-ink-800">
             Te {prueba === 1 ? 'queda' : 'quedan'} <strong>{prueba} {prueba === 1 ? 'día' : 'días'}</strong> de
             prueba. Al terminar se cobrará automáticamente, salvo que lo canceles antes desde
             «Gestionar el pago».
@@ -116,7 +114,7 @@ export function PlanPanel() {
         )}
 
         {sub?.cancelAtPeriodEnd && sub.currentPeriodEnd && (
-          <p className="rounded-md border border-line bg-surface px-3 py-2.5 text-base leading-relaxed text-navy-800">
+          <p className="rounded-md border border-line bg-surface px-3 py-2.5 text-base leading-relaxed text-ink-800">
             Has cancelado la renovación. Seguirás como estás hasta el{' '}
             {new Date(sub.currentPeriodEnd).toLocaleDateString('es-ES')} y después volverás a
             Gratis. No se borra nada: los equipos de más se conservan, sólo no podrás crear otros.
@@ -124,7 +122,7 @@ export function PlanPanel() {
         )}
 
         {sub?.status === 'past_due' && (
-          <p className="rounded-md border border-bad/30 bg-bad/5 px-3 py-2.5 text-base leading-relaxed text-navy-800">
+          <p className="rounded-md border border-bad/30 bg-bad/5 px-3 py-2.5 text-base leading-relaxed text-ink-800">
             El último cobro no ha salido bien y el club está en Gratis mientras tanto. Actualiza la
             tarjeta desde «Gestionar el pago».
           </p>
@@ -210,19 +208,19 @@ function TarjetaDePlan({
     <div
       className={
         esElActual
-          ? 'rounded-lg border-2 border-pitch-600 bg-pitch-50/40 p-4'
-          : 'rounded-lg border border-line p-4'
+          ? 'rounded-2xl bg-raised p-4 ring-2 ring-ink-900'
+          : 'rounded-2xl bg-panel p-4'
       }
     >
       <div className="flex items-center justify-between gap-2">
-        <h3 className="font-display text-lg font-bold tracking-[-0.01em] text-navy-900">
+        <h3 className="font-display text-lg font-bold tracking-[-0.01em] text-ink-900">
           {plan.name}
         </h3>
-        {esElActual && <Tag tone="ok" size="sm">Tu plan</Tag>}
+        {esElActual && <Tag tone="solid" size="sm">Tu plan</Tag>}
       </div>
       <p className="mt-0.5 text-sm leading-relaxed text-muted">{ARGUMENTO[plan.tier]}</p>
 
-      <p className="mt-3 font-display text-2xl font-bold text-navy-900">
+      <p className="mt-3 font-display text-2xl font-bold text-ink-900">
         {esGratis ? (
           <>
             0 €<span className="ml-1 text-base font-normal text-muted">siempre</span>
@@ -242,13 +240,13 @@ function TarjetaDePlan({
       </p>
 
       <ul className="mt-3 space-y-1.5">
-        <li className="flex items-start gap-2 text-base font-medium text-navy-900">
-          <Check size={15} strokeWidth={2.6} className="mt-1 shrink-0 text-pitch-600" />
+        <li className="flex items-start gap-2 text-base font-medium text-ink-900">
+          <Check size={15} strokeWidth={2.6} className="mt-1 shrink-0 text-ink-900" />
           {equiposQuePermite(plan)}
         </li>
         {INCLUIDO_SIEMPRE.map((t) => (
-          <li key={t} className="flex items-start gap-2 text-sm leading-relaxed text-navy-700">
-            <Check size={14} strokeWidth={2.4} className="mt-1 shrink-0 text-navy-300" />
+          <li key={t} className="flex items-start gap-2 text-sm leading-relaxed text-ink-700">
+            <Check size={14} strokeWidth={2.4} className="mt-1 shrink-0 text-ink-400" />
             {t}
           </li>
         ))}
