@@ -25,8 +25,10 @@ En el panel de Supabase → **SQL Editor** → **New query**, pega y ejecuta, po
 4. `supabase/migrations/0004_cerrar_funciones_publicas.sql`
 5. `supabase/migrations/0005_ver_el_equipo_recien_creado.sql`
 6. `supabase/migrations/0006_planes_y_suscripciones.sql`
+7. `supabase/migrations/0007_anadir_el_nivel_max.sql` — **sola, y esperando a que termine**
+8. `supabase/migrations/0008_tres_planes.sql`
 
-Las seis son **idempotentes y aditivas**: se pueden ejecutar más de una vez, no borran tablas, no
+Las ocho son **idempotentes y aditivas**: se pueden ejecutar más de una vez, no borran tablas, no
 vacían registros y no reinician nada.
 
 - La **0002** añade clubes, invitaciones, lesiones, valoraciones, asistencia por filas y jugadas de
@@ -44,6 +46,15 @@ vacían registros y no reinician nada.
   sesión de quien administra el club. Sólo la escribe el webhook de Stripe, que corre en el
   servidor con la clave de servicio. Los planes se crean sin precio a propósito: mientras no haya
   uno decidido, la aplicación no enseña ninguna cifra ni deja contratar.
+- La **0007** va aparte por una razón de PostgreSQL, no por capricho: se puede
+  añadir un valor a un `enum` dentro de una transacción, pero **no se puede usar
+  en esa misma transacción**. Si se pegara junto con la 0008, la fila del plan
+  `max` fallaría con «unsafe use of new value of enum type».
+- La **0008** deja los tres planes: Gratis con un equipo, Pro con cinco y Max sin
+  límite. Como el límite es un dato y no código, son tres filas: la política que
+  lo impone no se toca. Un club que ya tuviera siete equipos los **conserva
+  todos** — el límite sólo se mira al crear uno nuevo, y bajar de plan no borra
+  nada.
 
 > **Una política no debe consultar su propia tabla.** Guardar con `.select()` es `RETURNING`, y
 > devolver la fila recién escrita exige pasar la política de SELECT. Si esa política llama a una
@@ -106,10 +117,12 @@ filas entera, así que si aparece alguna vez en el navegador hay que rotarla, no
 
 Después, en Stripe:
 
-1. Crear el producto **Pro** con dos precios, mensual y anual, **con el importe que se decida**.
-2. Guardar sus identificadores en la tabla `plans`:
+1. Crear los productos **Pro** y **Max**, cada uno con dos precios, mensual y anual,
+   **con los importes que se decidan**.
+2. Guardar sus identificadores en la tabla `plans`, una fila por plan:
    `update plans set stripe_price_monthly = 'price_…', stripe_price_yearly = 'price_…',
    price_monthly = <céntimos>, price_yearly = <céntimos> where tier = 'pro';`
+   (y lo mismo con `where tier = 'max'`).
 3. Apuntar el webhook a `https://<dominio>/.netlify/functions/stripe-webhook` con los eventos
    `checkout.session.completed` y `customer.subscription.*`.
 
@@ -207,8 +220,8 @@ Está aquí porque preferimos decirlo antes de que se descubra usándola:
 - **No convierte en ceros los datos que faltan.** Si no hay dato, dice que no hay dato.
 - **No exporta la animación en vídeo**, sólo imagen.
 - **No permite subir el escudo como archivo**: se pega la dirección de una imagen pública.
-- **Todavía no se puede contratar el plan Pro**: la pasarela está montada y probada, pero **no hay
-  precio decidido**. Hasta que lo haya, la aplicación no enseña ninguna cifra y el botón de
+- **Todavía no se puede contratar ningún plan de pago**: la pasarela está montada y probada, pero
+  **no hay precios decididos**. Hasta que lo haya, la aplicación no enseña ninguna cifra y el botón de
   contratar está desactivado. No hay ningún importe de ejemplo escondido en el código.
 
 Las páginas legales están redactadas pero **marcadas como pendientes de revisión**: los datos del
