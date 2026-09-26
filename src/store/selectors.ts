@@ -8,9 +8,23 @@ import type {
   AttendanceMark, AttendanceRecord, Callup, ClubData, Match, Player, Staff, Team, TrainingSession,
 } from '@/types';
 import { normalize, pct, shortDate, toISODate, today } from '@/lib/utils';
-import { planEfectivo, type PlanTier } from '@/services/billing';
+import { NIVELES, planEfectivo, type PlanTier } from '@/services/billing';
 
 export const currentStaff = (data: ClubData): Staff | null => data.profile;
+
+/**
+ * El nombre de verdad de una persona, o `null` si no lo ha puesto.
+ * ---------------------------------------------------------------------------
+ * `Staff.name` cae en el correo cuando el perfil no tiene nombre, porque en un
+ * listado es mejor eso que una fila en blanco. Pero fuera de un listado, tratar
+ * esa dirección como un nombre da cosas como «Hola, marta@gmail.com» o,
+ * peor, guardarla como nombre real. Quien necesite el nombre DE VERDAD
+ * pregunta por aquí, y esa regla vive en un solo sitio.
+ */
+export const nombreReal = (staff: Staff | null): string | null => {
+  if (!staff?.name) return null;
+  return staff.name === staff.email ? null : staff.name;
+};
 
 /**
  * Nombre del club para los marcadores y las convocatorias. Hasta que exista un
@@ -314,4 +328,18 @@ export const limiteDeEquipos = (data: ClubData): number | null =>
 export const cabeOtroEquipo = (data: ClubData): boolean => {
   const limite = limiteDeEquipos(data);
   return limite === null || data.teams.length < limite;
+};
+
+/**
+ * El primer plan que le permitiría más equipos de los que tiene ahora, por su
+ * nombre real. Se busca en los planes que haya, no en una lista escrita aquí:
+ * así el aviso sigue siendo cierto si mañana cambian los límites.
+ */
+export const siguientePlan = (data: ClubData): string | null => {
+  const actual = planActual(data);
+  const desde = NIVELES.indexOf(actual);
+  const mejor = NIVELES.slice(desde + 1)
+    .map((n) => data.plans.find((p) => p.tier === n))
+    .find((p) => p && (p.maxTeams === null || p.maxTeams > data.teams.length));
+  return mejor ? `el plan ${mejor.name}` : null;
 };

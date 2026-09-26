@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Save, Trash2, X } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { cabeOtroEquipo, limiteDeEquipos } from '@/store/selectors';
+import { cabeOtroEquipo, limiteDeEquipos, siguientePlan } from '@/store/selectors';
 import { humanError } from '@/services/supabase';
 import { Button, Panel, Field, Input, Modal, PageHeader, Select } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
@@ -58,7 +58,7 @@ export default function TeamEditor() {
       const limite = limiteDeEquipos(data);
       toast.error(
         `Tu plan permite ${limite === 1 ? 'un equipo' : `${limite} equipos`}`,
-        'Para llevar más equipos hace falta el plan Pro. Lo tienes en Ajustes.',
+        `Para llevar más hace falta ${siguientePlan(data) ?? 'otro plan'}. Lo tienes en Ajustes.`,
       );
       return;
     }

@@ -1,14 +1,23 @@
+import type { ComponentType } from 'react';
+import { CalendarDays, Home, Settings } from 'lucide-react';
 import {
-  Activity, BarChart3, CalendarDays, ClipboardList, Dumbbell, Home,
-  LayoutGrid, Settings, Swords, Users, type LucideIcon,
-} from 'lucide-react';
+  IconoAnaliticas, IconoBalon, IconoCamiseta, IconoCampo, IconoCono,
+  IconoCuerpoTecnico, IconoParteMedico, IconoSilbato,
+} from '@/components/ui/Icons';
+
+/** Vale tanto un icono de lucide como uno de los nuestros. */
+export type NavIcon = ComponentType<{
+  size?: string | number;
+  strokeWidth?: string | number;
+  className?: string;
+}>;
 
 export interface NavItem {
   to: string;
   label: string;
   /** Etiqueta corta para la barra inferior en móvil. */
   short?: string;
-  icon: LucideIcon;
+  icon: NavIcon;
   /** Coincidencia por prefijo para marcar activo el ítem en rutas de detalle. */
   match?: string;
   /** Sólo visible para quien administra el club. */
@@ -37,26 +46,28 @@ export const NAV: NavGroup[] = [
     id: 'equipo',
     label: 'Equipo',
     items: [
-      { to: '/app/plantilla', label: 'Plantilla', icon: Users },
-      { to: '/app/disponibilidad', label: 'Disponibilidad y lesiones', short: 'Disponibilidad', icon: Activity },
+      { to: '/app/plantilla', label: 'Plantilla', icon: IconoCamiseta },
+      { to: '/app/disponibilidad', label: 'Disponibilidad y lesiones', short: 'Disponibilidad', icon: IconoParteMedico },
     ],
   },
   {
     id: 'trabajo',
     label: 'Trabajo en campo',
     items: [
-      { to: '/app/entrenamientos', label: 'Entrenamientos', icon: ClipboardList },
-      { to: '/app/ejercicios', label: 'Biblioteca de ejercicios', short: 'Ejercicios', icon: Dumbbell },
-      { to: '/app/pizarra', label: 'Pizarra táctica', short: 'Pizarra', icon: LayoutGrid },
-      { to: '/app/partidos', label: 'Partidos', icon: Swords },
+      { to: '/app/entrenamientos', label: 'Entrenamientos', icon: IconoSilbato },
+      { to: '/app/ejercicios', label: 'Biblioteca de ejercicios', short: 'Ejercicios', icon: IconoCono },
+      { to: '/app/pizarra', label: 'Pizarra táctica', short: 'Pizarra', icon: IconoCampo },
+      { to: '/app/partidos', label: 'Partidos', icon: IconoBalon },
     ],
   },
   {
     id: 'club',
     label: 'Club',
     items: [
-      { to: '/app/analiticas', label: 'Analíticas', icon: BarChart3 },
-      { to: '/app/equipo-tecnico', label: 'Equipo técnico', icon: Users },
+      { to: '/app/analiticas', label: 'Analíticas', icon: IconoAnaliticas },
+      /* «Plantilla» y «Equipo técnico» llevaban EL MISMO icono de personas.
+         Dos secciones distintas con el mismo dibujo no orientan a nadie. */
+      { to: '/app/equipo-tecnico', label: 'Equipo técnico', icon: IconoCuerpoTecnico },
       { to: '/app/ajustes', label: 'Ajustes y ayuda', short: 'Ajustes', icon: Settings },
     ],
   },

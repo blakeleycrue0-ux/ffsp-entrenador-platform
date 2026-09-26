@@ -34,7 +34,7 @@ const StatsPage = lazy(() => import('@/features/stats/StatsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
 const ProfilePage = lazy(() => import('@/features/settings/ProfilePage'));
 const LegalPage = lazy(() => import('@/features/legal/LegalPage'));
-const CreateClub = lazy(() => import('@/features/onboarding/CreateClub'));
+const Onboarding = lazy(() => import('@/features/onboarding/Onboarding'));
 
 /** Pantalla de arranque mientras se comprueba la sesión y se cargan los datos. */
 function Booting() {
@@ -66,7 +66,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 function RequireClub({ children }: { children: React.ReactNode }) {
   const { data, loading } = useClub();
   if (loading) return <Booting />;
-  if (!data.club && data.teams.length === 0) return <CreateClub />;
+  if (!data.club && data.teams.length === 0) return <Onboarding />;
   return <>{children}</>;
 }
 

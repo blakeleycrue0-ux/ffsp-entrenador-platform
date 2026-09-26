@@ -7,7 +7,7 @@ import {
   Avatar, Button, EmptyState, Input, LinkButton, PageHeader, Panel, Segmented, Select, Tag,
 } from '@/components/ui';
 import { ImportPlayers } from './ImportPlayers';
-import { AVAILABILITY, AvailabilityDot } from '@/components/domain/StatusBits';
+import { AVAILABILITY, AvailabilityDot, disponibilidad, LINEA, lineaDe } from '@/components/domain/StatusBits';
 import { cn, age, normalize } from '@/lib/utils';
 import type { AvailabilityStatus, PlayerPosition } from '@/types';
 
@@ -181,8 +181,8 @@ export default function PlayersPage() {
                   </p>
                 </div>
                 <div className="hidden w-40 sm:block">
-                  <p className="truncate text-[13.5px] text-navy-700">{p.position}</p>
-                  {p.secondaryPosition && <p className="truncate text-[12px] text-navy-400">{p.secondaryPosition}</p>}
+                  <PosicionEtiqueta position={p.position} />
+                  {p.secondaryPosition && <p className="mt-0.5 truncate text-[12px] text-navy-400">{p.secondaryPosition}</p>}
                 </div>
                 <div className="hidden w-24 text-right sm:block">
                   <span
@@ -195,8 +195,8 @@ export default function PlayersPage() {
                   </span>
                 </div>
                 <div className="hidden w-32 pl-4 sm:block">
-                  <Tag tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>
-                    {AVAILABILITY[p.availability.status].label}
+                  <Tag tone={disponibilidad(p.availability.status).tone} size="sm" dot>
+                    {disponibilidad(p.availability.status).label}
                   </Tag>
                 </div>
                 <AvailabilityDot status={p.availability.status} className="sm:hidden" />
@@ -211,8 +211,8 @@ export default function PlayersPage() {
             <Link key={p.id} to={`/app/plantilla/${p.id}`} className="panel panel-hover p-4">
               <div className="flex items-start justify-between">
                 <Avatar name={p.name} size={48} badge={p.number} />
-                <Tag tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>
-                  {AVAILABILITY[p.availability.status].label}
+                <Tag tone={disponibilidad(p.availability.status).tone} size="sm" dot>
+                  {disponibilidad(p.availability.status).label}
                 </Tag>
               </div>
               <p className="mt-3 truncate text-[14.5px] font-semibold text-navy-900">{p.shortName}</p>
@@ -241,5 +241,30 @@ export default function PlayersPage() {
         ficha individual.
       </p>
     </>
+  );
+}
+
+/**
+ * La posición, con el color de su línea.
+ * ---------------------------------------------------------------------------
+ * Escrita en gris, una plantilla de veinte nombres hay que leerla entera para
+ * saber cuántas defensas hay. Con el color de la línea detrás, se ve sin leer.
+ * El color nunca va solo: siempre acompaña a la palabra, porque una etiqueta
+ * que sólo es un color no la puede usar quien no distingue esos tonos.
+ */
+function PosicionEtiqueta({ position }: { position: string }) {
+  const linea = lineaDe(position);
+  if (!position) return <p className="truncate text-[13px] text-navy-400">Sin posición</p>;
+  if (!linea) return <p className="truncate text-[13.5px] text-navy-700">{position}</p>;
+  return (
+    <span
+      className={cn(
+        'inline-flex max-w-full items-center gap-1.5 truncate rounded border px-1.5 py-0.5 text-[12px] font-medium',
+        LINEA[linea].chip,
+      )}
+    >
+      <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', LINEA[linea].dot)} aria-hidden />
+      <span className="truncate">{position}</span>
+    </span>
   );
 }

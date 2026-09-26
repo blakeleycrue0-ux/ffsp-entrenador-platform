@@ -17,7 +17,7 @@ import {
   Avatar, Button, Field, Figure, Input, LinkButton, Modal, PageHeader, Panel, Tabs, Tag, Textarea,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { AVAILABILITY, AvailabilityDot, CALLUP_RESPONSE } from '@/components/domain/StatusBits';
+import { AvailabilityDot, disponibilidad, respuesta } from '@/components/domain/StatusBits';
 import { cn, longDate, relativeDay, relativeTime } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
 import type { Callup } from '@/types';
@@ -267,11 +267,11 @@ export default function MatchDetail() {
                           <span className="shrink-0">
                             {blocked ? (
                               <Tag tone="bad" size="sm">
-                                {AVAILABILITY[p.availability.status].label}
+                                {disponibilidad(p.availability.status).label}
                               </Tag>
                             ) : entry?.selected ? (
-                              <Tag tone={CALLUP_RESPONSE[entry.response].tone} size="sm">
-                                {CALLUP_RESPONSE[entry.response].label}
+                              <Tag tone={respuesta(entry.response).tone} size="sm">
+                                {respuesta(entry.response).label}
                               </Tag>
                             ) : (
                               <span className="text-[12.5px] text-navy-400">No convocada</span>

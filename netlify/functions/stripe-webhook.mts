@@ -15,7 +15,7 @@
  */
 
 import type Stripe from 'stripe';
-import { admin, error, json, stripe } from './_comun.mts';
+import { admin, error, json, NIVELES_DE_PAGO, stripe } from './_comun.mts';
 
 /** Los estados de Stripe, tal cual, para poder cuadrarlos con su panel. */
 const ESTADOS = new Set([
@@ -37,13 +37,21 @@ async function guardar(sub: Stripe.Subscription, clubDeRespaldo?: string) {
   const estado = ESTADOS.has(sub.status) ? sub.status : 'incomplete';
   const item = sub.items.data[0] as (Stripe.SubscriptionItem & { current_period_end?: number }) | undefined;
 
+  /* Qué plan ha contratado. Lo dijimos nosotros al abrir el pago y viaja en la
+     suscripción, así que no hay que deducirlo del precio. Si faltara, se
+     supone el más bajo de los de pago: equivocarse a la baja deja al club con
+     menos de lo que pagó, que se arregla; a la alta le regala lo que no ha
+     pagado, que no se entera nadie. */
+  const pedido = sub.metadata?.nivel;
+  const nivel = (NIVELES_DE_PAGO as readonly string[]).includes(pedido ?? '') ? pedido! : 'pro';
+
   const { error: e } = await admin()
     .from('subscriptions')
     .upsert(
       {
         club_id: clubId,
         // El plan lo decide que la suscripción exista, no lo que diga nadie.
-        tier: estado === 'canceled' || estado === 'unpaid' ? 'free' : 'pro',
+        tier: estado === 'canceled' || estado === 'unpaid' ? 'free' : nivel,
         status: estado,
         trial_ends_at: enSegundos(sub.trial_end),
         current_period_end: enSegundos(item?.current_period_end),

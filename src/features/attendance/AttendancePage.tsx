@@ -18,7 +18,7 @@ import {
   Avatar, Tag, Button, Panel, EmptyState, PageHeader, Select, Figure,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { ATTENDANCE, AVAILABILITY, AvailabilityDot } from '@/components/domain/StatusBits';
+import { AvailabilityDot, asistencia, disponibilidad } from '@/components/domain/StatusBits';
 import { SplitBar } from '@/components/domain/Charts';
 import { cn, longDate, relativeDay, toISODate, today } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
@@ -64,7 +64,7 @@ export default function AttendancePage() {
             ? 'justificada'
             : 'sin_registrar',
         reason: ['lesionada', 'enferma', 'sancionada'].includes(p.availability.status)
-          ? AVAILABILITY[p.availability.status].label
+          ? disponibilidad(p.availability.status).label
           : undefined,
       };
     });
@@ -251,7 +251,7 @@ export default function AttendancePage() {
                       <AvailabilityDot status={p.availability.status} />
                       {p.position}
                       {p.availability.status !== 'disponible' && (
-                        <span className="text-navy-400">· {AVAILABILITY[p.availability.status].label}</span>
+                        <span className="text-navy-400">· {disponibilidad(p.availability.status).label}</span>
                       )}
                     </span>
                   </span>
@@ -260,7 +260,7 @@ export default function AttendancePage() {
                 {/* Botonera de estados — grande y con buen área táctil */}
                 <div className="grid shrink-0 grid-cols-4 gap-1.5 sm:flex">
                   {MARKS.map((m) => {
-                    const a = ATTENDANCE[m];
+                    const a = asistencia(m);
                     const active = current === m;
                     return (
                       <button

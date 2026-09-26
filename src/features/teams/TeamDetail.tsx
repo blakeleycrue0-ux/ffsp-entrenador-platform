@@ -8,7 +8,7 @@ import { attendanceTrend, callupOfMatch, isClubAdmin, nextMatch, nextSession, pl
 import { ROLE_LABEL } from '@/services/auth';
 import { Avatar, Tag, Panel, EmptyState, LinkButton, PageHeader, Figure, Tabs } from '@/components/ui';
 import { LineTrend, Ring } from '@/components/domain/Charts';
-import { AvailabilityDot, AVAILABILITY } from '@/components/domain/StatusBits';
+import { AvailabilityDot, disponibilidad } from '@/components/domain/StatusBits';
 import { cn, longDate, minutesToLabel, relativeDay, shortDate } from '@/lib/utils';
 
 export default function TeamDetail() {
@@ -144,7 +144,7 @@ export default function TeamDetail() {
                           </p>
                           <p className="mt-0.5 flex items-center gap-1.5 text-[12px] text-muted">
                             <AvailabilityDot status={p.availability.status} />
-                            {AVAILABILITY[p.availability.status].label}
+                            {disponibilidad(p.availability.status).label}
                             {p.availability.until && ` · vuelve ${shortDate(p.availability.until)}`}
                           </p>
                           {p.availability.note && (
@@ -220,8 +220,8 @@ export default function TeamDetail() {
                       <p className="text-[11.5px] text-navy-400">asistencia</p>
                     </div>
                     <div className="hidden w-28 sm:block">
-                      <Tag tone={AVAILABILITY[p.availability.status].tone} size="sm" dot>
-                        {AVAILABILITY[p.availability.status].label}
+                      <Tag tone={disponibilidad(p.availability.status).tone} size="sm" dot>
+                        {disponibilidad(p.availability.status).label}
                       </Tag>
                     </div>
                     <AvailabilityDot status={p.availability.status} className="sm:hidden" />

@@ -10,7 +10,7 @@ import {
   Plus, Send, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { callupOfMatch, clubShortName, currentStaff, isClubAdmin, nextMatch, nextSession, squadOf, summarizeRecord, teamOverview, visibleTeams } from '@/store/selectors';
+import { callupOfMatch, clubShortName, currentStaff, isClubAdmin, nextMatch, nextSession, nombreReal, squadOf, summarizeRecord, teamOverview, visibleTeams } from '@/store/selectors';
 
 import { humanError } from '@/services/supabase';
 import { useToast } from '@/components/ui/Toast';
@@ -65,7 +65,9 @@ export default function Dashboard() {
   const declined = selected.filter((e) => e.response === 'rechazada').length;
 
   const openTasks = data.tasks.filter((t) => !t.done);
-  const firstName = staff?.name.split(' ')[0] ?? '';
+  /* Saludar con «Hola, marta.vives@gmail.com» es peor que no saludar con
+     nombre. Qué cuenta como nombre de verdad lo decide `nombreReal`. */
+  const firstName = nombreReal(staff)?.split(' ')[0] ?? '';
 
   if (loading) {
     return (
@@ -433,6 +435,15 @@ export default function Dashboard() {
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Actividad reciente</span>
           </div>
+          {/* Una lista vacía dejaba media tarjeta en blanco, sin decir siquiera
+              qué va a aparecer ahí. Un hueco mudo no es sobriedad: es que
+              todavía no se ha escrito el texto. */}
+          {data.activity.length === 0 ? (
+            <EmptyState
+              title="Todavía no hay movimiento"
+              description="Aquí irá apareciendo lo que hagáis: altas de jugadoras, entrenamientos planificados, partidos y listas pasadas. Tuyo y del resto del cuerpo técnico."
+            />
+          ) : (
           <ul className="mt-4 space-y-3.5">
             {data.activity.slice(0, 6).map((a) => (
               <li key={a.id} className="flex gap-3">
@@ -450,6 +461,7 @@ export default function Dashboard() {
               </li>
             ))}
           </ul>
+          )}
         </Panel>
       </div>
 
