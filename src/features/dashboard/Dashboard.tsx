@@ -145,7 +145,9 @@ export default function Dashboard() {
             {firstName ? `Hola, ${firstName}` : 'Hola'}
           </h1>
         </div>
-        <div className="flex items-center gap-2">
+        {/* En móvil ya está el botón flotante encima del dique: dos botones
+            de crear en la misma pantalla compiten sin motivo. */}
+        <div className="hidden items-center gap-2 lg:flex">
           <Button icon={<Plus size={17} strokeWidth={2.3} />} onClick={() => setCreateOpen(true)}>
             Crear
           </Button>

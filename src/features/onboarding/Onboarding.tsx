@@ -155,7 +155,7 @@ export default function Onboarding() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
-      <header className="mx-auto flex w-full max-w-3xl items-center justify-between px-5 py-4">
+      <header className="mx-auto flex w-full max-w-[460px] items-center justify-between px-5 pb-1 pt-5">
         <Wordmark tone="light" />
         <button
           onClick={() => void signOut()}
@@ -165,10 +165,12 @@ export default function Onboarding() {
         </button>
       </header>
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-5 pb-12">
+      {/* Sin caja: la PANTALLA es la interfaz. Un rectángulo gigante alrededor
+          de todo es lo que hace que una aplicación parezca una página web. */}
+      <main className="mx-auto flex w-full max-w-[460px] flex-1 flex-col px-5 pb-10 pt-6">
         <Progreso actual={paso} />
 
-        <div className="mt-6 rounded-3xl bg-panel p-6 sm:p-8">
+        <div className="mt-7">
           {paso === 1 && (
             <Bloque paso={1} titulo="¿Quién eres?">
               <Field label="Tu nombre y apellidos" required>
@@ -214,11 +216,12 @@ export default function Onboarding() {
                   maxLength={28}
                 />
               </Field>
-              <p className="rounded-2xl bg-raised px-4 py-3 text-sm leading-relaxed text-ink-600">
-                <strong className="font-medium">¿Te han invitado a un club?</strong> Entonces no crees
-                uno nuevo: abre el enlace de invitación que te hayan pasado y entrarás directamente
-                en el que te corresponde, con tu equipo ya asignado.
-              </p>
+              <div className="cristal rounded-2xl px-4 py-3">
+                <p className="text-sm font-semibold text-ink-900">¿Te han invitado?</p>
+                <p className="mt-0.5 text-sm leading-relaxed text-ink-500">
+                  Usa el enlace que te envió tu club, no crees uno nuevo.
+                </p>
+              </div>
             </Bloque>
           )}
 
@@ -244,7 +247,7 @@ export default function Onboarding() {
 
               <div>
                 <div className="flex items-center justify-between">
-                  <p className="label mb-0">Horarios de entrenamiento</p>
+                  <p className="label mb-0">Horarios</p>
                   <button
                     onClick={() =>
                       setHorarios((h) => [...h, { weekday: 2, start: '18:00', end: '19:30', venue: '' }])
@@ -256,7 +259,7 @@ export default function Onboarding() {
                 </div>
                 {horarios.length === 0 ? (
                   <p className="mt-1.5 text-sm leading-relaxed text-muted">
-                    Sin horarios fijos. Si los pones, aparecen solos en el calendario cada semana.
+                    Si los pones, aparecen solos en el calendario.
                   </p>
                 ) : (
                   <div className="mt-2 space-y-2">
@@ -309,13 +312,13 @@ export default function Onboarding() {
           {paso === 4 && <PasoPlan onTerminar={() => actions.refresh()} />}
 
           {error && (
-            <p className="mt-4 rounded-2xl bg-bad/12 px-4 py-3 text-base leading-relaxed text-bad">
+            <p className="mt-4 rounded-2xl bg-bad/12 px-4 py-2.5 text-base leading-relaxed text-bad">
               {error}
             </p>
           )}
 
           {paso !== 4 && (
-          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-line pt-5">
+          <div className="mt-7 flex flex-wrap items-center gap-2">
             {paso > 1 && paso < 3 && (
               <Button variant="ghost" icon={<ArrowLeft size={15} />} onClick={() => setPaso(paso - 1)}>
                 Atrás
@@ -341,9 +344,7 @@ export default function Onboarding() {
           )}
         </div>
 
-        <p className="mt-5 text-center text-sm text-ink-500">
-          Puedes cambiar todo esto después. Nada de lo que pongas aquí es definitivo.
-        </p>
+        <p className="mt-6 text-sm text-ink-500">Puedes cambiarlo todo después.</p>
       </main>
     </div>
   );
@@ -356,10 +357,12 @@ export default function Onboarding() {
  */
 function Bloque({ paso, titulo, children }: { paso: number; titulo: string; children: React.ReactNode }) {
   return (
-    <div className="animate-fade-up">
+    /* `key` por paso: al cambiar, React monta un nodo nuevo y la animación de
+       entrada se dispara sola. Sin esto el contenido cambiaría de golpe. */
+    <div key={paso} className="animate-paso">
       <p className="rotulo">Paso {paso} de {TOTAL}</p>
-      <h1 className="cifra mt-2 text-4xl">{titulo}</h1>
-      <div className="mt-7 space-y-5">{children}</div>
+      <h1 className="cifra mt-1.5 text-3xl">{titulo}</h1>
+      <div className="mt-6 space-y-4">{children}</div>
     </div>
   );
 }
@@ -378,10 +381,10 @@ function Progreso({ actual }: { actual: number }) {
       aria-valuemax={TOTAL}
       aria-valuenow={actual}
       aria-label={`Paso ${actual} de ${TOTAL}`}
-      className="h-[3px] w-full overflow-hidden rounded-full bg-ink-200"
+      className="h-[3px] w-full overflow-hidden rounded-full bg-white/10"
     >
       <div
-        className="h-full rounded-full bg-ink-900 transition-[width] duration-500 ease-out"
+        className="h-full rounded-full bg-azul-600 shadow-azul transition-[width] duration-[450ms] ease-[cubic-bezier(.22,1,.36,1)]"
         style={{ width: `${(actual / TOTAL) * 100}%` }}
       />
     </div>

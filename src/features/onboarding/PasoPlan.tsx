@@ -27,7 +27,7 @@ const LIMITE: Record<PlanTier, string> = {
 };
 
 /** Lo que llevan los tres. Se dice una vez. */
-const SIEMPRE = 'Plantilla, asistencia, entrenamientos, partidos, pizarra táctica y todo el cuerpo técnico.';
+const SIEMPRE = 'Plantilla, asistencia, entrenamientos, partidos, pizarra y cuerpo técnico. Sólo cambia cuántos equipos caben.';
 
 export function PasoPlan({ onTerminar }: { onTerminar: () => Promise<void> }) {
   const [planes, setPlanes] = useState<Plan[]>([]);
@@ -63,11 +63,14 @@ export function PasoPlan({ onTerminar }: { onTerminar: () => Promise<void> }) {
   return (
     <div className="animate-fade-up">
       <p className="rotulo">Paso 4 de 4</p>
-      <h1 className="cifra mt-2 text-4xl">Tu plan</h1>
+      <h1 className="cifra mt-1.5 text-3xl">Tu plan</h1>
 
-      <div className="mt-7 space-y-2">
+      {/* Filas separadas por una línea, no tres cajas. Lo que agrupa aquí es
+          el espacio y la tipografía; una caja por plan sólo añade tres bordes
+          que no informan de nada. */}
+      <div className="mt-6 divide-y divide-line">
         {ordenados.length === 0 && (
-          <p className="rounded-2xl bg-panel px-5 py-4 text-md text-ink-600">
+          <p className="py-4 text-base text-ink-500">
             No hemos podido cargar los planes. Puedes seguir y verlos en Ajustes.
           </p>
         )}
@@ -76,12 +79,11 @@ export function PasoPlan({ onTerminar }: { onTerminar: () => Promise<void> }) {
         ))}
       </div>
 
-      <p className="mt-4 text-base leading-relaxed text-ink-500">
-        <span className="font-medium text-ink-700">Los tres planes lo llevan todo.</span> {SIEMPRE} Lo
-        único que cambia es cuántos equipos puedes tener.
+      <p className="mt-5 text-sm leading-relaxed text-ink-500">
+        <span className="font-medium text-ink-700">Los tres lo llevan todo.</span> {SIEMPRE}
       </p>
 
-      <div className="mt-8">
+      <div className="mt-7">
         <Button size="lg" block loading={saliendo} onClick={() => void terminar()}>
           {elegido === 'free' ? 'Empezar' : 'Entrar y configurar el pago'}
         </Button>
@@ -97,39 +99,48 @@ export function PasoPlan({ onTerminar }: { onTerminar: () => Promise<void> }) {
 function FilaPlan({ plan, elegido, onElegir }: { plan: Plan; elegido: boolean; onElegir: () => void }) {
   const esGratis = plan.tier === 'free';
   const mensual = importe(plan.priceMonthly, plan.currency);
+  const contratable = esGratis || Boolean(plan.contratable && mensual);
 
   return (
     <button
       type="button"
-      onClick={onElegir}
+      onClick={() => contratable && onElegir()}
+      disabled={!contratable}
       aria-pressed={elegido}
       className={cn(
-        'flex w-full items-center gap-4 rounded-2xl px-5 py-5 text-left transition-all duration-150 active:scale-[0.99]',
-        elegido ? 'bg-raised ring-2 ring-ink-900' : 'bg-panel hover:bg-raised',
+        'flex w-full items-baseline gap-3 py-4 text-left transition-colors',
+        contratable ? 'active:opacity-70' : 'cursor-default',
       )}
-      style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.055)' }}
     >
       <span className="min-w-0 flex-1">
-        <span className="block text-lg font-semibold tracking-[-0.01em] text-ink-900">{plan.name}</span>
+        <span className="flex items-center gap-2">
+          <span className={cn('text-lg font-semibold tracking-[-0.01em]', elegido ? 'text-ink-900' : 'text-ink-800')}>
+            {plan.name}
+          </span>
+          {elegido && (
+            <span className="rounded-full bg-azul-600/18 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-azul-400">
+              Actual
+            </span>
+          )}
+        </span>
         <span className="mt-0.5 block text-base text-ink-500">{LIMITE[plan.tier]}</span>
       </span>
 
       <span className="shrink-0 text-right">
         {esGratis ? (
           <>
-            <span className="cifra block text-3xl">0 €</span>
-            <span className="mt-1 block text-sm text-ink-500">para siempre</span>
+            <span className="cifra block text-2xl">0 €</span>
+            <span className="mt-0.5 block text-sm text-ink-500">para siempre</span>
           </>
         ) : mensual ? (
           <>
-            <span className="cifra block text-3xl">{mensual}</span>
-            <span className="mt-1 block text-sm text-ink-500">al mes</span>
+            <span className="cifra block text-2xl">{mensual}</span>
+            <span className="mt-0.5 block text-sm text-ink-500">al mes</span>
           </>
         ) : (
-          <>
-            <span className="cifra block text-3xl text-ink-400">—</span>
-            <span className="mt-1 block text-sm text-ink-500">sin precio aún</span>
-          </>
+          /* Sin precio decidido no se enseña una cifra falsa ni un botón que
+             no puede cobrar: se dice que aún no está. */
+          <span className="block text-base font-medium text-ink-500">Próximamente</span>
         )}
       </span>
     </button>
@@ -144,20 +155,20 @@ function Oferta({ plan, onCerrar, onAceptar }: { plan: Plan; onCerrar: () => voi
       <button
         aria-label="Cerrar"
         onClick={onCerrar}
-        className="absolute inset-0 animate-fade-in bg-black/75 backdrop-blur-md"
+        className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm"
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-oferta"
-        className="relative w-full max-w-md animate-sheet-in rounded-t-3xl bg-panel px-6 pb-8 pt-7 sm:rounded-3xl sm:pb-6"
+        className="cristal relative w-full max-w-[420px] animate-sheet-in rounded-t-4xl px-5 pb-7 pt-6 sm:rounded-4xl sm:pb-5"
         style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.07)' }}
       >
         {/* El tirador de la hoja: dice que esto ha subido desde abajo. */}
-        <span aria-hidden className="absolute left-1/2 top-3 h-1 w-10 -translate-x-1/2 rounded-full bg-ink-300 sm:hidden" />
+        <span aria-hidden className="absolute left-1/2 top-2.5 h-1 w-10 -translate-x-1/2 rounded-full bg-white/25 sm:hidden" />
 
         <p className="rotulo">Antes de empezar</p>
-        <h2 id="titulo-oferta" className="cifra mt-2 text-3xl">
+        <h2 id="titulo-oferta" className="cifra mt-1.5 text-2xl">
           {dias ? `${dias} días de ${plan.name}` : plan.name}
         </h2>
         <p className="mt-3 text-md leading-relaxed text-ink-600">

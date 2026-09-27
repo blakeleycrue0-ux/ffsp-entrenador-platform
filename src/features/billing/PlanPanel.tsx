@@ -104,7 +104,8 @@ export function PlanPanel() {
           </div>
         )}
 
-        <div className="space-y-2">
+        {/* Filas separadas por una línea, no tres cajas dentro de otra caja. */}
+        <div className="divide-y divide-line">
           {planes.map((p) => (
             <FilaPlan
               key={p.tier}
@@ -175,18 +176,18 @@ function FilaPlan({
   const conPrueba = Boolean(plan.trialDays) && !yaFueCliente;
 
   return (
-    <div
-      className={cn(
-        'rounded-2xl px-5 py-4 transition-colors',
-        esElActual ? 'bg-raised ring-2 ring-ink-900' : 'bg-panel',
-      )}
-      style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.055)' }}
-    >
-      <div className="flex items-center gap-4">
+    <div className="py-4">
+      <div className="flex items-baseline gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold tracking-[-0.01em] text-ink-900">{plan.name}</span>
-            {esElActual && <Tag tone="solid" size="sm">Tu plan</Tag>}
+            <span className={cn('text-lg font-semibold tracking-[-0.01em]', esElActual ? 'text-ink-900' : 'text-ink-800')}>
+              {plan.name}
+            </span>
+            {esElActual && (
+              <span className="rounded-full bg-azul-600/18 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-azul-400">
+                Actual
+              </span>
+            )}
           </div>
           <p className="mt-0.5 text-base text-ink-500">{LIMITE[plan.tier]}</p>
         </div>
@@ -203,22 +204,17 @@ function FilaPlan({
               <span className="mt-0.5 block text-sm text-ink-500">{periodo === 'anual' ? 'al año' : 'al mes'}</span>
             </>
           ) : (
-            <>
-              <span className="cifra block text-2xl text-ink-400">—</span>
-              <span className="mt-0.5 block text-sm text-ink-500">sin precio aún</span>
-            </>
+            <span className="block text-base font-medium text-ink-500">Próximamente</span>
           )}
         </div>
       </div>
 
-      {!esElActual && !esGratis && (
-        <div className="mt-4">
-          <Button size="sm" variant={sePuede ? 'primary' : 'secondary'} disabled={!sePuede || !admin} loading={yendo} onClick={onContratar}>
+      {!esElActual && sePuede && (
+        <div className="mt-3">
+          <Button size="sm" disabled={!admin} loading={yendo} onClick={onContratar}>
             {conPrueba ? `Probar ${plan.trialDays} días` : `Cambiar a ${plan.name}`}
           </Button>
-          {sePuede && conPrueba && (
-            <p className="mt-2 text-sm text-ink-500">Pide tarjeta. Se cobra al terminar si no cancelas.</p>
-          )}
+          {conPrueba && <p className="mt-2 text-sm text-ink-500">Pide tarjeta. Se cobra al terminar si no cancelas.</p>}
         </div>
       )}
     </div>

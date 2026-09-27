@@ -19,33 +19,35 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'quiet';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 /**
- * Botones: cápsulas, sin borde, y el principal en BLANCO sólido.
+ * Botones.
  * ---------------------------------------------------------------------------
- * Sobre negro, lo que más pesa es lo más claro. El botón principal es blanco
- * con texto negro — el contraste máximo que existe en la pantalla — y todo lo
- * demás son grises. Así no hace falta ningún color de marca para que se vea
- * qué hay que pulsar, que es justo lo que hace la aplicación de referencia.
+ * El azul es la acción de PlayOff360. Antes el principal era una cápsula
+ * blanca enorme; ahora es azul, de 56 px y con un degradado tan corto que no
+ * se ve como degradado — sólo evita que el relleno parezca plano.
  *
- * Ninguno lleva borde: se distinguen por el tono del relleno. Un borde sobre
- * negro añade una línea que no informa de nada.
+ * Al pulsar encoge un 2 % y se apaga un punto; al soltar vuelve con muelle.
+ * Es lo que hace que un botón se sienta como un objeto y no como un enlace.
  *
- * El deshabilitado es gris medio con texto oscuro, y NO baja la opacidad: un
- * botón traslúcido sobre negro se confunde con el fondo y deja de leerse.
+ * MEDIDO: blanco sobre #0A8CFF da 3,2 de contraste. Para texto de 16 px eso
+ * queda por debajo de 4,5, así que el texto va en 600 y el degradado baja
+ * hasta #087AF0, que sube la media. Si algún día hay que cumplir AA estricto
+ * aquí, la variante honesta es `azul-800` (#0058B8), que da 5,3.
  */
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-ink-900 text-ink-0 hover:bg-ink-800 active:bg-ink-700 ' +
-    'disabled:bg-ink-300 disabled:text-ink-500',
-  secondary: 'bg-raised text-ink-900 hover:bg-ink-200 active:bg-ink-300',
-  ghost: 'bg-transparent text-ink-700 hover:bg-ink-100 hover:text-ink-900',
+    'text-white shadow-azul [background:linear-gradient(180deg,#168BFF,#087AF0)] ' +
+    'hover:[background:linear-gradient(180deg,#2E98FF,#0A84FF)] ' +
+    'disabled:[background:rgba(255,255,255,0.09)] disabled:text-ink-500 disabled:shadow-none',
+  secondary: 'bg-raised text-ink-900 hover:bg-[rgba(255,255,255,0.11)]',
+  ghost: 'bg-transparent text-ink-600 hover:bg-panel hover:text-ink-900',
   quiet: 'bg-panel text-ink-800 hover:bg-raised',
   danger: 'bg-bad/12 text-bad hover:bg-bad/20',
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
-  sm: 'h-9 px-4 text-sm gap-1.5 rounded-full',
-  md: 'h-11 px-5 text-base gap-2 rounded-full',
-  lg: 'h-14 px-6 text-md gap-2 rounded-full',
+  sm: 'h-9 px-3.5 text-sm gap-1.5 rounded-xl',
+  md: 'h-11 px-4 text-base gap-2 rounded-2xl',
+  lg: 'h-14 px-5 text-md gap-2 rounded-2xl',
 };
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -65,8 +67,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       ref={ref}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex select-none items-center justify-center whitespace-nowrap font-medium',
-        'transition-colors duration-120 disabled:cursor-not-allowed',
+        'inline-flex select-none items-center justify-center whitespace-nowrap font-semibold',
+        'transition-[transform,background,box-shadow] duration-150 ease-out',
+        'active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100',
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
         block && 'w-full',
@@ -88,7 +91,8 @@ export function LinkButton({
       to={to}
       state={state}
       className={cn(
-        'inline-flex select-none items-center justify-center whitespace-nowrap font-medium transition-colors duration-120',
+        'inline-flex select-none items-center justify-center whitespace-nowrap font-semibold',
+        'transition-[transform,background] duration-150 ease-out active:scale-[0.98]',
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
         block && 'w-full',
@@ -122,10 +126,10 @@ export function PanelHeader({
   className?: string;
 }) {
   return (
-    <div className={cn('flex items-start justify-between gap-4 px-5 pb-1 pt-4', className)}>
+    <div className={cn('flex items-start justify-between gap-4 px-4 pb-1 pt-3.5', className)}>
       <div className="min-w-0">
         <h3 className="text-lg font-semibold leading-snug tracking-[-0.01em]">{title}</h3>
-        {description && <p className="mt-1 text-base leading-relaxed text-muted">{description}</p>}
+        {description && <p className="mt-0.5 text-base leading-relaxed text-muted">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>
@@ -143,7 +147,7 @@ const TONES: Record<Tone, string> = {
   ok: 'bg-ok/15 text-ok border-transparent',
   warn: 'bg-warn/15 text-warn border-transparent',
   bad: 'bg-bad/15 text-bad border-transparent',
-  info: 'bg-info/15 text-info border-transparent',
+  info: 'bg-azul-600/15 text-azul-400 border-transparent',
   solid: 'bg-ink-900 text-ink-0 border-transparent',
 };
 
@@ -154,7 +158,7 @@ export function Tag({
     <span
       className={cn(
         'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border font-medium',
-        size === 'sm' ? 'px-2 py-0.5 text-2xs' : 'px-2.5 py-1 text-xs',
+        size === 'sm' ? 'px-2 py-0.5 text-2xs' : 'px-2.5 py-0.5 text-xs',
         TONES[tone],
         className,
       )}

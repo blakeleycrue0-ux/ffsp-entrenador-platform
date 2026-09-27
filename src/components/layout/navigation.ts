@@ -38,7 +38,7 @@ export const NAV: NavGroup[] = [
     id: 'hoy',
     items: [
       { to: '/app', label: 'Inicio' },
-      { to: '/app/calendario', label: 'Calendario' },
+      { to: '/app/calendario', label: 'Calendario', short: 'Agenda' },
     ],
   },
   {
@@ -53,7 +53,7 @@ export const NAV: NavGroup[] = [
     id: 'trabajo',
     label: 'Trabajo en campo',
     items: [
-      { to: '/app/entrenamientos', label: 'Entrenamientos' },
+      { to: '/app/entrenamientos', label: 'Entrenamientos', short: 'Entrenos' },
       { to: '/app/ejercicios', label: 'Biblioteca de ejercicios', short: 'Ejercicios' },
       { to: '/app/pizarra', label: 'Pizarra táctica', short: 'Pizarra' },
       { to: '/app/partidos', label: 'Partidos' },

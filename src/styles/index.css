@@ -44,10 +44,14 @@
     z-index: 0;
   }
 
+  /* La luz de la pantalla. Arriba a la derecha, AZUL y al 10 %: a ese nivel
+     no se lee como un degradado de colores, se lee como que la pantalla está
+     encendida. En cuanto se sube, deja de parecer un producto y parece una
+     plantilla con gradiente. */
   body::before {
     background:
-      radial-gradient(120% 70% at 50% -10%, rgba(255, 255, 255, 0.075), transparent 60%),
-      radial-gradient(80% 50% at 85% 8%, rgba(255, 255, 255, 0.035), transparent 55%);
+      radial-gradient(90% 55% at 82% -5%, rgba(10, 140, 255, 0.10), transparent 58%),
+      radial-gradient(120% 70% at 50% -12%, rgba(255, 255, 255, 0.045), transparent 60%);
   }
 
   body::after {
@@ -99,7 +103,8 @@
   *::-webkit-scrollbar-thumb:hover { background-color: #56565D; }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-ink-900/60 ring-offset-2 ring-offset-surface;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(10, 140, 255, 0.35);
     border-radius: 12px;
   }
 
@@ -114,12 +119,33 @@
   /* Una tarjeta se separa del fondo por ser MÁS CLARA, no por tener un
      borde. Sobre negro, una caja con línea alrededor parece una hoja de
      cálculo; sin línea, parece una capa. */
-  /* Una superficie se separa del fondo por ser más clara Y por tener una
-     línea de luz en el borde de arriba, como un objeto físico iluminado
-     desde arriba. Es un píxel y es la diferencia entre «caja» y «material». */
+  /* ── TRES NIVELES DE SUPERFICIE ───────────────────────────────────────────
+     NIVEL 0  el fondo (#050506)
+     NIVEL 1  `.panel` — blanco al 4,5 %. Casi desaparece en el fondo, que es
+              lo que tiene que hacer: agrupa sin recortar.
+     NIVEL 2  `.cristal` — SÓLO para lo que flota. Desenfoca lo de detrás y
+              lo satura un poco, de modo que coge su color en vez de quedarse
+              en un rectángulo gris.
+     Un cristal que no deja ver nada detrás no es cristal, es una caja opaca
+     con un nombre bonito. */
   .panel {
-    @apply relative rounded-2xl bg-panel;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+    @apply relative rounded-2xl border border-line bg-panel;
+  }
+
+  .cristal {
+    background: rgba(20, 20, 24, 0.60);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  /* Cuando el navegador no sabe desenfocar, el cristal se vuelve opaco: más
+     vale una superficie sólida legible que una transparente ilegible. */
+  @supports not (backdrop-filter: blur(1px)) {
+    .cristal { background: #16161A; }
   }
 
   .panel-hover {
@@ -132,12 +158,22 @@
 
   /* Campos altos, en cápsula y sin borde, como en la referencia. El foco se
      marca con un aro claro, no cambiando el borde de sitio. */
+  /* Campos de 56 px, radio contenido y foco AZUL en vez de un aro blanco de
+     tres píxeles. En reposo son callados; al enfocarlos se encienden. */
   .field {
-    @apply w-full rounded-2xl border-0 bg-raised px-4 py-3.5 text-md text-ink-900
-           placeholder:text-ink-500 transition-shadow
-           focus:outline-none focus:ring-2 focus:ring-ink-600
-           disabled:bg-panel disabled:text-ink-400;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    @apply h-14 w-full rounded-2xl px-4 text-md text-ink-900 placeholder:text-ink-500
+           transition-[border-color,box-shadow] duration-150
+           focus:outline-none disabled:text-ink-400;
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+  textarea.field { @apply h-auto py-3.5; }
+  select.field { @apply pr-10; }
+
+  .field:focus,
+  .field:focus-visible {
+    border-color: rgba(10, 140, 255, 0.8);
+    box-shadow: 0 0 0 3px rgba(10, 140, 255, 0.10);
   }
 
   /* ── CIFRAS ───────────────────────────────────────────────────────────────
@@ -145,8 +181,9 @@
      una tarjeta. Van grandes, muy apretados y sin nada alrededor: la
      tipografía sustituye al contenedor. */
   .cifra {
-    @apply font-display font-bold text-ink-900;
-    letter-spacing: -0.035em;
+    @apply font-display text-ink-900;
+    font-weight: 680;
+    letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
     line-height: 0.95;
   }
@@ -154,11 +191,14 @@
   /* El rótulo que acompaña a una cifra. Pequeño, en mayúsculas y apagado:
      la cifra es lo que se lee, esto es lo que la explica. */
   .rotulo {
-    @apply text-2xs font-semibold uppercase tracking-[0.1em] text-ink-500;
+    @apply text-2xs font-semibold uppercase tracking-[0.11em] text-ink-500;
   }
 
+  /* Separador de sección: una línea, no otra tarjeta. */
+  .separador { @apply h-px w-full bg-line; }
+
   .eyebrow {
-    @apply text-2xs font-semibold uppercase tracking-[0.07em] text-muted;
+    @apply text-2xs font-semibold uppercase tracking-[0.11em] text-ink-500;
   }
 
   .hairline {
