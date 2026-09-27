@@ -3,9 +3,9 @@
  * en pantalla pequeña no se esconde ninguna sección.
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ClipboardList, Dumbbell, LogOut, MoreHorizontal, Plus, Swords, UserRound, Users, X } from 'lucide-react';
+import { ClipboardList, Dumbbell, LogOut, Plus, Swords, UserRound, Users, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useClub } from '@/store/store';
 import { currentStaff } from '@/store/selectors';
@@ -37,18 +37,54 @@ export function BottomNav() {
     setSheet(null);
   };
 
+  /* El dique se comprime al bajar y vuelve al subir. Es lo único que hace
+     falta para que se note que flota por encima del contenido y no forma
+     parte de la página. */
+  const [compacto, setCompacto] = useState(false);
+  const ultimo = useRef(0);
+  useEffect(() => {
+    const alScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - ultimo.current) > 8) {
+        setCompacto(y > ultimo.current && y > 40);
+        ultimo.current = y;
+      }
+    };
+    window.addEventListener('scroll', alScroll, { passive: true });
+    return () => window.removeEventListener('scroll', alScroll);
+  }, []);
+
   return (
     <>
+      {/* Acción rápida: pequeña, azul y justo encima del dique. */}
       <button
         onClick={() => setSheet('create')}
         aria-label="Crear"
-        className="fixed bottom-[calc(72px+var(--safe-bottom))] right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-ink-900 text-ink-0 shadow-raised transition-transform active:scale-95 lg:hidden"
+        className={cn(
+          'fixed right-4 z-40 grid h-[52px] w-[52px] place-items-center rounded-full text-white',
+          'shadow-azul [background:linear-gradient(180deg,#168BFF,#087AF0)]',
+          'transition-[transform,bottom] duration-300 ease-out active:scale-95 lg:hidden',
+          compacto ? 'bottom-[calc(76px+var(--safe-bottom))]' : 'bottom-[calc(88px+var(--safe-bottom))]',
+        )}
       >
-        <Plus size={22} strokeWidth={2.2} />
+        <Plus size={23} strokeWidth={2.2} />
       </button>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-panel pb-[var(--safe-bottom)] lg:hidden">
-        <div className="flex h-[58px] items-stretch">
+      {/* ── EL DIQUE ──────────────────────────────────────────────────────────
+          Flota: separado de los bordes y por encima del área segura, para no
+          chocar nunca con los controles del navegador ni con la barra del
+          iPhone. Es cristal de verdad — desenfoca lo que pasa por debajo — y
+          lo activo se marca con un punto azul, no pintando el dique entero. */}
+      <nav
+        className={cn(
+          'cristal fixed inset-x-3 z-40 rounded-3xl transition-[transform,bottom,height] duration-300 lg:hidden',
+          'ease-[cubic-bezier(.22,1,.36,1)]',
+          compacto
+            ? 'bottom-[calc(8px+var(--safe-bottom))] h-[56px]'
+            : 'bottom-[calc(12px+var(--safe-bottom))] h-[64px]',
+        )}
+      >
+        <div className="flex h-full items-stretch">
           {TABS.map((tab) => {
             const on = isActive(pathname, tab);
             return (
@@ -56,10 +92,21 @@ export function BottomNav() {
                 key={tab.to}
                 to={tab.to}
                 aria-current={on ? 'page' : undefined}
-                className="relative flex flex-1 flex-col items-center justify-center gap-1"
+                className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1"
               >
-                {on && <span className="absolute top-0 h-0.5 w-10 rounded-full bg-ink-900" />}
-                <span className={cn('text-[13px]', on ? 'font-semibold text-ink-900' : 'font-medium text-ink-500')}>
+                <span
+                  aria-hidden
+                  className={cn(
+                    'h-1.5 w-1.5 rounded-full transition-all duration-200',
+                    on ? 'bg-azul-600 shadow-azul' : 'bg-transparent',
+                  )}
+                />
+                <span
+                  className={cn(
+                    'max-w-full truncate text-[11px] transition-colors',
+                    on ? 'font-semibold text-white' : 'font-medium text-white/45',
+                  )}
+                >
                   {tab.short ?? tab.label}
                 </span>
               </Link>
@@ -67,11 +114,18 @@ export function BottomNav() {
           })}
           <button
             onClick={() => setSheet('more')}
-            className="relative flex flex-1 flex-col items-center justify-center gap-1"
+            className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1"
           >
-            {moreActive && <span className="absolute top-0 h-0.5 w-8 bg-ink-900" />}
-            <MoreHorizontal size={19} strokeWidth={moreActive ? 2.1 : 1.8} className={moreActive ? 'text-ink-900' : 'text-ink-400'} />
-            <span className={cn('text-[10px] font-medium', moreActive ? 'text-ink-900' : 'text-muted')}>Más</span>
+            <span
+              aria-hidden
+              className={cn(
+                'h-1.5 w-1.5 rounded-full transition-all duration-200',
+                moreActive ? 'bg-azul-600 shadow-azul' : 'bg-transparent',
+              )}
+            />
+            <span className={cn('text-[11px] transition-colors', moreActive ? 'font-semibold text-white' : 'font-medium text-white/45')}>
+              Más
+            </span>
           </button>
         </div>
       </nav>
@@ -79,8 +133,11 @@ export function BottomNav() {
       {sheet && (
         <div className="fixed inset-0 z-[60] lg:hidden">
           <div className="absolute inset-0 bg-ink-900/35 animate-fade-in" onClick={() => setSheet(null)} />
-          <div className="absolute inset-x-0 bottom-0 max-h-[82vh] overflow-y-auto rounded-t-xl border-t border-line bg-panel pb-[calc(1rem+var(--safe-bottom))] shadow-pop animate-slide-up">
-            <div className="sticky top-0 flex items-center justify-between border-b border-line bg-panel px-4 py-3">
+          {/* Hoja de cristal, con su tirador. Sube desde abajo, no aparece
+              en el centro como un cuadro de diálogo de escritorio. */}
+          <div className="cristal absolute inset-x-0 bottom-0 max-h-[82vh] animate-sheet-in overflow-y-auto rounded-t-4xl pb-[calc(1rem+var(--safe-bottom))]">
+            <span aria-hidden className="absolute left-1/2 top-2.5 h-1 w-10 -translate-x-1/2 rounded-full bg-white/25" />
+            <div className="flex items-center justify-between px-5 pb-2 pt-6">
               <p className="text-md font-semibold">{sheet === 'create' ? 'Crear' : 'Todas las secciones'}</p>
               <button
                 onClick={() => setSheet(null)}
