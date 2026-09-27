@@ -26,8 +26,9 @@ import {
   DRAW_COLORS, DRAW_LABEL, KIND_LABEL, MOVE_LABEL, MOVES, PITCH_OPTIONS, RESIZABLE, ROTATABLE,
   type DrawKind, type Keyframe, type ObjectKind, type PitchKind, type Point, type Scene, type Surface,
   addDrawing, addObject, duplicateObject, layoutSquad, layoutTeam, moveObject, patchDrawing,
-  patchKeyframe, patchObject, removeDrawing, removeKeyframe, removeObject,
+  patchKeyframe, patchObject, putRuta, removeDrawing, removeKeyframe, removeObject,
 } from './scene';
+import { largo as largoTrazo, procesaTrazo } from './trazo';
 import { cn } from '@/lib/utils';
 
 /** Lo que se puede poner en el campo, por grupos. */
@@ -40,6 +41,7 @@ const PALETTE: { grupo: string; kinds: ObjectKind[] }[] = [
 const HERRAMIENTAS: { id: Tool; label: string; icon: React.ReactNode }[] = [
   { id: null, label: 'Seleccionar', icon: <MousePointer2 size={15} /> },
   { id: 'mano', label: 'Desplazar', icon: <Hand size={15} /> },
+  { id: 'movimiento', label: 'Movimiento', icon: <Spline size={15} /> },
   { id: 'linea', label: 'Línea', icon: <Slash size={15} /> },
   { id: 'flecha', label: 'Flecha', icon: <ArrowUpRight size={15} /> },
   { id: 'discontinua', label: 'Discontinua', icon: <Minus size={15} /> },
@@ -137,6 +139,38 @@ export function BoardEditor({
 
   const onMove = useCallback(
     (id: string, at: Point) => commit(moveObject(scene, id, Math.round(playback.time), at)),
+    [commit, scene, playback.time],
+  );
+
+  /**
+   * Una trayectoria dibujada con el dedo se convierte en UN fotograma que
+   * guarda, además del destino, el recorrido entero.
+   *
+   * CUÁNTO DURA NO SE PREGUNTA, SE DEDUCE del largo del trazo: unos siete
+   * metros por segundo, que es el ritmo al que se recorre un campo en una
+   * jugada de pizarra. Pedir la duración en un cuadro de diálogo justo después
+   * de dibujar rompe el gesto, y casi siempre se acepta lo que venga puesto.
+   * Se puede afinar después en el panel de la ficha.
+   *
+   * Si el movimiento se sale de la jugada, la jugada se alarga: es más
+   * probable que se quiera ver entero a que se quiera cortado.
+   */
+  const onTrazo = useCallback(
+    (id: string, crudos: Point[]) => {
+      const ruta = procesaTrazo(crudos);
+      if (ruta.length < 2) return;
+
+      const desde = Math.round(playback.time);
+      const metros = largoTrazo(ruta);
+      const duracion = Math.max(500, Math.min(12000, Math.round((metros / 7) * 1000)));
+      const hasta = desde + duracion;
+
+      let next = putRuta(scene, id, desde, hasta, ruta);
+      if (hasta > next.durationMs) next = { ...next, durationMs: hasta + 500 };
+
+      commit(next);
+      setTool(null);
+    },
     [commit, scene, playback.time],
   );
 
@@ -657,6 +691,7 @@ export function BoardEditor({
         commit(addDrawing(scene, d));
         setTool(null);
       }}
+      onTrazo={onTrazo}
       selectedDrawing={selectedDrawing}
       onSelectDrawing={setSelectedDrawing}
       view={vista.view}
