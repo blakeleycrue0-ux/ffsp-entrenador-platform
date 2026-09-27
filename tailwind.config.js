@@ -3,11 +3,18 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      /* UNA SOLA FAMILIA para todo: Schibsted Grotesk.
+         Antes había dos (Inter para la interfaz, Archivo para titulares) y
+         mezclar dos grotescas parecidas no se nota como intención, se nota
+         como descuido. Con una sola, la jerarquía la hace el TAMAÑO y el
+         PESO, que es lo que de verdad se ve.
+
+         Se elige ésta por sus cifras: los números grandes son la mitad de
+         este producto —una hora, un porcentaje, un dorsal— y aquí salen
+         limpios y de ancho constante. */
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
-        // Sólo para la marca y los titulares de la página pública. Dentro de la
-        // aplicación manda la información, no la tipografía.
-        display: ['Archivo', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Schibsted Grotesk', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        display: ['Schibsted Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
         /* ────────────────────────────────────────────────────────────────────

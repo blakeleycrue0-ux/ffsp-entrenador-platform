@@ -15,8 +15,57 @@
 
   body {
     @apply bg-surface text-ink-900 font-sans antialiased;
-    font-size: 14px;
+    font-size: 15px;
+    /* Las cifras de ancho constante son media interfaz aquí: una hora, un
+       porcentaje, un dorsal. Sin esto, «18:30» baila al actualizarse. */
+    font-variant-numeric: tabular-nums;
   }
+
+  /* ── ATMÓSFERA ────────────────────────────────────────────────────────────
+     Un negro plano y uniforme es lo que hace que una pantalla oscura parezca
+     apagada. Debajo de todo van dos capas fijas, que no se tocan ni capturan
+     el ratón:
+
+     1. Una luz gris muy tenue arriba, que cae hacia abajo. Da la sensación de
+        que la pantalla está iluminada desde algún sitio en vez de ser un
+        agujero negro.
+     2. Grano. Es ruido generado en el propio SVG, sin ninguna imagen que
+        descargar, al 3,5 % de opacidad y con una deriva lentísima. A ese
+        nivel no se «ve»: se nota. Es lo que quita el aspecto de plástico.
+
+     Nada de esto brilla ni tiene color. En cuanto un fondo oscuro tiene un
+     halo de color, deja de parecer caro y parece una plantilla. */
+  body::before,
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::before {
+    background:
+      radial-gradient(120% 70% at 50% -10%, rgba(255, 255, 255, 0.075), transparent 60%),
+      radial-gradient(80% 50% at 85% 8%, rgba(255, 255, 255, 0.035), transparent 55%);
+  }
+
+  body::after {
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23r)'/%3E%3C/svg%3E");
+    animation: deriva 14s steps(4, end) infinite;
+  }
+
+  @keyframes deriva {
+    0%   { transform: translate3d(0, 0, 0); }
+    25%  { transform: translate3d(-2%, 1%, 0); }
+    50%  { transform: translate3d(1%, -2%, 0); }
+    75%  { transform: translate3d(2%, 1%, 0); }
+    100% { transform: translate3d(0, 0, 0); }
+  }
+
+  /* El contenido va por encima de las dos capas. */
+  #root { position: relative; z-index: 1; }
 
   /* Jerarquía contenida: nada de titulares enormes dentro de la aplicación.
      El color NO se fija aquí: se hereda, para que un titular sobre fondo
@@ -65,8 +114,12 @@
   /* Una tarjeta se separa del fondo por ser MÁS CLARA, no por tener un
      borde. Sobre negro, una caja con línea alrededor parece una hoja de
      cálculo; sin línea, parece una capa. */
+  /* Una superficie se separa del fondo por ser más clara Y por tener una
+     línea de luz en el borde de arriba, como un objeto físico iluminado
+     desde arriba. Es un píxel y es la diferencia entre «caja» y «material». */
   .panel {
-    @apply bg-panel rounded-xl;
+    @apply relative rounded-2xl bg-panel;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
   }
 
   .panel-hover {
@@ -84,6 +137,24 @@
            placeholder:text-ink-500 transition-shadow
            focus:outline-none focus:ring-2 focus:ring-ink-600
            disabled:bg-panel disabled:text-ink-400;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* ── CIFRAS ───────────────────────────────────────────────────────────────
+     Una hora, un porcentaje o un dorsal son el dato, no un adorno dentro de
+     una tarjeta. Van grandes, muy apretados y sin nada alrededor: la
+     tipografía sustituye al contenedor. */
+  .cifra {
+    @apply font-display font-bold text-ink-900;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+    line-height: 0.95;
+  }
+
+  /* El rótulo que acompaña a una cifra. Pequeño, en mayúsculas y apagado:
+     la cifra es lo que se lee, esto es lo que la explica. */
+  .rotulo {
+    @apply text-2xs font-semibold uppercase tracking-[0.1em] text-ink-500;
   }
 
   .eyebrow {

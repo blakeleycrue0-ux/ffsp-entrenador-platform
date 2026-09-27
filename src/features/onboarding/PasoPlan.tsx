@@ -1,64 +1,55 @@
 /**
- * Último paso del alta: elegir plan.
+ * Elegir plan.
  * ---------------------------------------------------------------------------
- * Aquí es donde alguien decide si paga, así que hay dos cosas que no se hacen:
+ * Dos decisiones de fondo:
  *
- *  · NO SE INVENTA NINGÚN PRECIO. Los importes salen de la base de datos.
- *    Mientras no haya uno decidido, el plan se enseña igual — para que se vea
- *    que existe — pero dice «Precio por decidir» y no se puede contratar.
+ * 1. LO ÚNICO QUE CAMBIA ENTRE PLANES ES CUÁNTOS EQUIPOS CABEN. Todo lo demás
+ *    —plantilla, entrenamientos, partidos, pizarra, cuerpo técnico— está en
+ *    los tres. Repetir las mismas cuatro líneas debajo de cada plan no
+ *    informa: obliga a leer tres veces lo mismo para descubrir que son
+ *    idénticas. Se dice una vez, abajo, y cada plan enseña sólo su diferencia.
  *
- *  · NO SE INVENTA NINGÚN DESCUENTO. Cuando alguien elige Gratis aparece una
- *    oferta a los cuatro segundos, y lo que ofrece sale también de los datos:
- *    hoy son los días de prueba, que están decididos y son reales. El día que
- *    haya un descuento de verdad configurado, se enseña ése. Un «50 % sólo
- *    hoy» escrito a mano en el código sería mentira desde el primer día.
- *
- * La oferta se puede cerrar, no vuelve a salir, y no bloquea nada: quien
- * quiera seguir en Gratis sigue en Gratis con un clic.
+ * 2. NO SE INVENTA NINGÚN PRECIO. Los importes salen de la base de datos.
+ *    Mientras no haya uno decidido, el plan se ve —para que se sepa que
+ *    existe— pero dice que falta el precio y no se puede contratar.
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Check, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { billing, importe, NIVELES, type Plan, type PlanTier } from '@/services/billing';
 import { cn } from '@/lib/utils';
 
-const ARGUMENTO: Record<PlanTier, string> = {
-  free: 'Un equipo. Para empezar.',
-  pro: 'Hasta cinco equipos.',
-  max: 'Todos los equipos del club.',
+/** La diferencia de cada plan, en una línea corta. */
+const LIMITE: Record<PlanTier, string> = {
+  free: '1 equipo',
+  pro: '5 equipos',
+  max: 'Equipos sin límite',
 };
 
-const equiposQuePermite = (p: Plan) =>
-  p.maxTeams === null ? 'Equipos sin límite' : p.maxTeams === 1 ? 'Un equipo' : `Hasta ${p.maxTeams} equipos`;
+/** Lo que llevan los tres. Se dice una vez. */
+const SIEMPRE = 'Plantilla, asistencia, entrenamientos, partidos, pizarra táctica y todo el cuerpo técnico.';
 
 export function PasoPlan({ onTerminar }: { onTerminar: () => Promise<void> }) {
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [elegido, setElegido] = useState<PlanTier>('free');
-  const [ofertaVisible, setOfertaVisible] = useState(false);
+  const [oferta, setOferta] = useState(false);
   const [ofertaGastada, setOfertaGastada] = useState(false);
   const [saliendo, setSaliendo] = useState(false);
-  const temporizador = useRef<number | null>(null);
+  const reloj = useRef<number | null>(null);
 
   useEffect(() => {
-    /* Si la consulta falla no se tumba el alta: se sigue sin enseñar planes,
-       que es mejor que dejar a alguien atrapado en el último paso. */
+    // Si falla, se sigue sin planes: mejor que dejar a alguien atrapado aquí.
     billing.planes().then(setPlanes).catch(() => setPlanes([]));
   }, []);
 
-  /* Los cuatro segundos. El reloj arranca al elegir Gratis y se cancela si
-     cambia de idea antes, si ya se enseñó una vez, o si se va de la pantalla:
-     un temporizador que sobrevive al componente acaba pintando sobre algo que
-     ya no existe. */
   useEffect(() => {
     if (elegido !== 'free' || ofertaGastada) return;
-    temporizador.current = window.setTimeout(() => {
-      setOfertaVisible(true);
+    reloj.current = window.setTimeout(() => {
+      setOferta(true);
       setOfertaGastada(true);
     }, 4000);
-    return () => {
-      if (temporizador.current) window.clearTimeout(temporizador.current);
-    };
+    // Un temporizador que sobrevive al componente acaba pintando sobre nada.
+    return () => { if (reloj.current) window.clearTimeout(reloj.current); };
   }, [elegido, ofertaGastada]);
 
   const ordenados = NIVELES.map((n) => planes.find((p) => p.tier === n)).filter((p): p is Plan => Boolean(p));
@@ -66,50 +57,44 @@ export function PasoPlan({ onTerminar }: { onTerminar: () => Promise<void> }) {
 
   const terminar = async () => {
     setSaliendo(true);
-    try {
-      await onTerminar();
-    } finally {
-      setSaliendo(false);
-    }
+    try { await onTerminar(); } finally { setSaliendo(false); }
   };
 
   return (
     <div className="animate-fade-up">
-      <h1 className="font-display text-2xl font-bold tracking-[-0.015em] text-ink-900">Elige tu plan</h1>
-      <p className="mt-1.5 max-w-xl text-base leading-relaxed text-ink-600">
-        Puedes empezar gratis y cambiar cuando quieras. No se te cobra nada sin que lo pidas tú.
-      </p>
+      <p className="rotulo">Paso 4 de 4</p>
+      <h1 className="cifra mt-2 text-4xl">Tu plan</h1>
 
-      <div className="mt-6 space-y-2.5">
+      <div className="mt-7 space-y-2">
         {ordenados.length === 0 && (
-          <p className="rounded-2xl bg-panel px-4 py-3.5 text-base text-ink-600">
-            No hemos podido cargar los planes. Puedes seguir y verlos luego en Ajustes.
+          <p className="rounded-2xl bg-panel px-5 py-4 text-md text-ink-600">
+            No hemos podido cargar los planes. Puedes seguir y verlos en Ajustes.
           </p>
         )}
         {ordenados.map((p) => (
-          <TarjetaPlan
-            key={p.tier}
-            plan={p}
-            elegido={elegido === p.tier}
-            onElegir={() => setElegido(p.tier)}
-          />
+          <FilaPlan key={p.tier} plan={p} elegido={elegido === p.tier} onElegir={() => setElegido(p.tier)} />
         ))}
       </div>
 
-      <div className="mt-6 border-t border-line pt-5">
-        <Button size="lg" block loading={saliendo} icon={<ArrowRight size={17} />} onClick={() => void terminar()}>
-          {elegido === 'free' ? 'Empezar gratis' : 'Entrar y configurar el pago'}
+      <p className="mt-4 text-base leading-relaxed text-ink-500">
+        <span className="font-medium text-ink-700">Los tres planes lo llevan todo.</span> {SIEMPRE} Lo
+        único que cambia es cuántos equipos puedes tener.
+      </p>
+
+      <div className="mt-8">
+        <Button size="lg" block loading={saliendo} onClick={() => void terminar()}>
+          {elegido === 'free' ? 'Empezar' : 'Entrar y configurar el pago'}
         </Button>
       </div>
 
-      {ofertaVisible && laOferta && (
-        <Oferta plan={laOferta} onCerrar={() => setOfertaVisible(false)} onAceptar={() => setElegido(laOferta.tier)} />
+      {oferta && laOferta && (
+        <Oferta plan={laOferta} onCerrar={() => setOferta(false)} onAceptar={() => setElegido(laOferta.tier)} />
       )}
     </div>
   );
 }
 
-function TarjetaPlan({ plan, elegido, onElegir }: { plan: Plan; elegido: boolean; onElegir: () => void }) {
+function FilaPlan({ plan, elegido, onElegir }: { plan: Plan; elegido: boolean; onElegir: () => void }) {
   const esGratis = plan.tier === 'free';
   const mensual = importe(plan.priceMonthly, plan.currency);
 
@@ -119,120 +104,82 @@ function TarjetaPlan({ plan, elegido, onElegir }: { plan: Plan; elegido: boolean
       onClick={onElegir}
       aria-pressed={elegido}
       className={cn(
-        'flex w-full items-center gap-3.5 rounded-2xl px-4 py-4 text-left transition-colors',
+        'flex w-full items-center gap-4 rounded-2xl px-5 py-5 text-left transition-all duration-150 active:scale-[0.99]',
         elegido ? 'bg-raised ring-2 ring-ink-900' : 'bg-panel hover:bg-raised',
       )}
+      style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.055)' }}
     >
-      <span
-        className={cn(
-          'grid h-6 w-6 shrink-0 place-items-center rounded-full transition-colors',
-          elegido ? 'bg-ink-900 text-ink-0' : 'border-2 border-ink-300',
-        )}
-      >
-        {elegido && <Check size={14} strokeWidth={3} />}
-      </span>
-
       <span className="min-w-0 flex-1">
-        <span className="block text-md font-semibold text-ink-900">{plan.name}</span>
-        <span className="block text-sm text-ink-500">{ARGUMENTO[plan.tier]}</span>
+        <span className="block text-lg font-semibold tracking-[-0.01em] text-ink-900">{plan.name}</span>
+        <span className="mt-0.5 block text-base text-ink-500">{LIMITE[plan.tier]}</span>
       </span>
 
       <span className="shrink-0 text-right">
         {esGratis ? (
-          <span className="block text-md font-semibold text-ink-900">0 €</span>
+          <>
+            <span className="cifra block text-3xl">0 €</span>
+            <span className="mt-1 block text-sm text-ink-500">para siempre</span>
+          </>
         ) : mensual ? (
           <>
-            <span className="block text-md font-semibold text-ink-900">{mensual}</span>
-            <span className="block text-xs text-ink-500">al mes</span>
+            <span className="cifra block text-3xl">{mensual}</span>
+            <span className="mt-1 block text-sm text-ink-500">al mes</span>
           </>
         ) : (
-          <span className="block text-sm text-ink-500">Precio por decidir</span>
+          <>
+            <span className="cifra block text-3xl text-ink-400">—</span>
+            <span className="mt-1 block text-sm text-ink-500">sin precio aún</span>
+          </>
         )}
       </span>
     </button>
   );
 }
 
-/**
- * La oferta. Aparece sola a los cuatro segundos de quedarse en Gratis.
- * Lo que ofrece sale del plan, no de aquí: si no hay días de prueba
- * configurados, no se inventa ninguno y se limita a decir qué se lleva.
- */
 function Oferta({ plan, onCerrar, onAceptar }: { plan: Plan; onCerrar: () => void; onAceptar: () => void }) {
   const dias = plan.trialDays;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <button
-        aria-label="Cerrar la oferta"
+        aria-label="Cerrar"
         onClick={onCerrar}
-        className="absolute inset-0 animate-fade-in bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 animate-fade-in bg-black/75 backdrop-blur-md"
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-oferta"
-        className="relative w-full max-w-md animate-sheet-in rounded-t-3xl bg-panel p-6 pb-8 sm:rounded-3xl sm:pb-6"
+        className="relative w-full max-w-md animate-sheet-in rounded-t-3xl bg-panel px-6 pb-8 pt-7 sm:rounded-3xl sm:pb-6"
+        style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.07)' }}
       >
-        <button
-          onClick={onCerrar}
-          aria-label="Cerrar"
-          className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-raised text-ink-500 transition-colors hover:text-ink-900"
-        >
-          <X size={17} />
-        </button>
+        {/* El tirador de la hoja: dice que esto ha subido desde abajo. */}
+        <span aria-hidden className="absolute left-1/2 top-3 h-1 w-10 -translate-x-1/2 rounded-full bg-ink-300 sm:hidden" />
 
-        <span className="grid h-14 w-14 animate-pop-in place-items-center rounded-2xl bg-ink-900 text-ink-0">
-          <Sparkles size={26} strokeWidth={2} />
-        </span>
-
-        <h2 id="titulo-oferta" className="mt-4 font-display text-2xl font-bold tracking-[-0.015em] text-ink-900">
-          {dias ? `Antes de irte: ${dias} días de ${plan.name} gratis` : `Echa un vistazo a ${plan.name}`}
+        <p className="rotulo">Antes de empezar</p>
+        <h2 id="titulo-oferta" className="cifra mt-2 text-3xl">
+          {dias ? `${dias} días de ${plan.name}` : plan.name}
         </h2>
-
-        <p className="mt-2 text-base leading-relaxed text-ink-600">
-          {dias ? (
-            <>
-              Puedes probar <strong className="text-ink-900">{plan.name}</strong> durante {dias} días sin
-              pagar nada. Si no te convence, lo cancelas antes de que termine y no se te cobra.
-            </>
-          ) : (
-            <>
-              Con <strong className="text-ink-900">{plan.name}</strong> puedes llevar{' '}
-              {plan.maxTeams === null ? 'todos los equipos del club' : `hasta ${plan.maxTeams} equipos`}.
-            </>
-          )}
+        <p className="mt-3 text-md leading-relaxed text-ink-600">
+          {dias
+            ? `Gratis. Si no te convence, lo cancelas antes de que terminen y no se cobra nada.`
+            : `Sin límite de equipos, mismo producto.`}
         </p>
 
-        <ul className="mt-4 space-y-2">
-          {[equiposQuePermite(plan), 'Todo el cuerpo técnico que haga falta', 'Cancelas cuando quieras'].map((t) => (
-            <li key={t} className="flex items-start gap-2.5 text-base text-ink-700">
-              <Check size={16} strokeWidth={2.6} className="mt-0.5 shrink-0 text-ink-900" />
-              {t}
-            </li>
-          ))}
-        </ul>
+        <p className="mt-5 text-base text-ink-700">{LIMITE[plan.tier]}</p>
 
         <div className="mt-6 space-y-2">
-          <Button
-            size="lg"
-            block
-            onClick={() => {
-              onAceptar();
-              onCerrar();
-            }}
-          >
-            {dias ? `Probar ${dias} días` : `Ver ${plan.name}`}
+          <Button size="lg" block onClick={() => { onAceptar(); onCerrar(); }}>
+            {dias ? `Probar ${dias} días` : `Elegir ${plan.name}`}
           </Button>
           <Button size="lg" block variant="ghost" onClick={onCerrar}>
-            No, gracias
+            Seguir en Gratis
           </Button>
         </div>
 
-        {/* Dicho antes de aceptar, no en letra pequeña después. */}
         {Boolean(dias) && (
-          <p className="mt-3 text-center text-xs leading-relaxed text-ink-500">
-            La prueba pide tarjeta y, si no la cancelas, se cobra al terminar.
+          <p className="mt-4 text-center text-sm text-ink-500">
+            Pide tarjeta. Se cobra al terminar si no cancelas.
           </p>
         )}
       </div>

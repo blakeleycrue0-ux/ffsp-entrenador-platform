@@ -103,17 +103,18 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
             <ul className="space-y-px">
               {group.items.map((item) => {
                 const active = isActive(pathname, item);
-                const Icon = item.icon;
                 return (
                   <li key={item.to}>
                     <Link
                       to={item.to}
                       aria-current={active ? 'page' : undefined}
                       className={cn(
-                        'relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-base transition-colors',
+                        /* Sin icono, lo que marca la sección abierta es el
+                           peso del texto y la barra de la izquierda. */
+                        'relative flex items-center rounded-2xl py-2.5 pl-4 pr-3 text-md transition-colors',
                         active
                           ? 'bg-panel font-semibold text-ink-900'
-                          : 'text-ink-600 hover:bg-panel hover:text-ink-900',
+                          : 'font-medium text-ink-500 hover:bg-panel/60 hover:text-ink-900',
                       )}
                     >
                       {/* La sección abierta se marca también con una barra
@@ -122,13 +123,9 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
                       {active && (
                         <span
                           aria-hidden
-                          className="absolute inset-y-2.5 left-0 w-[3px] rounded-full bg-ink-900"
+                          className="absolute inset-y-3 left-0 w-[2px] rounded-full bg-ink-900"
                         />
                       )}
-                      <Icon
-                        size={17}
-                        className={cn('shrink-0', active ? 'text-ink-900' : 'text-ink-400')}
-                      />
                       <span className="truncate">{item.label}</span>
                     </Link>
                   </li>

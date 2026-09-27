@@ -1,23 +1,22 @@
-import type { ComponentType } from 'react';
-import { CalendarDays, Home, Settings } from 'lucide-react';
-import {
-  IconoAnaliticas, IconoBalon, IconoCamiseta, IconoCampo, IconoCono,
-  IconoCuerpoTecnico, IconoParteMedico, IconoSilbato,
-} from '@/components/ui/Icons';
-
-/** Vale tanto un icono de lucide como uno de los nuestros. */
-export type NavIcon = ComponentType<{
-  size?: string | number;
-  strokeWidth?: string | number;
-  className?: string;
-}>;
+/**
+ * Las secciones NO LLEVAN ICONO, y es una decisión.
+ * ---------------------------------------------------------------------------
+ * Un icono sólo se gana su sitio si se reconoce más rápido que la palabra.
+ * «Plantilla», «Entrenamientos» o «Pizarra táctica» no tienen un dibujo
+ * universal: cualquier cosa que se ponga hay que aprendérsela, y mientras
+ * tanto lo único que aporta es ruido a la izquierda del texto.
+ *
+ * Sin ellos, la navegación la ordenan el peso y el espacio, que es lo que de
+ * verdad se lee. Los iconos que quedan en el producto son los funcionales
+ * —buscar, cerrar, una flecha—, donde la forma SÍ es más rápida que la
+ * palabra.
+ */
 
 export interface NavItem {
   to: string;
   label: string;
   /** Etiqueta corta para la barra inferior en móvil. */
   short?: string;
-  icon: NavIcon;
   /** Coincidencia por prefijo para marcar activo el ítem en rutas de detalle. */
   match?: string;
   /** Sólo visible para quien administra el club. */
@@ -38,37 +37,35 @@ export const NAV: NavGroup[] = [
   {
     id: 'hoy',
     items: [
-      { to: '/app', label: 'Inicio', icon: Home },
-      { to: '/app/calendario', label: 'Calendario', icon: CalendarDays },
+      { to: '/app', label: 'Inicio' },
+      { to: '/app/calendario', label: 'Calendario' },
     ],
   },
   {
     id: 'equipo',
     label: 'Equipo',
     items: [
-      { to: '/app/plantilla', label: 'Plantilla', icon: IconoCamiseta },
-      { to: '/app/disponibilidad', label: 'Disponibilidad y lesiones', short: 'Disponibilidad', icon: IconoParteMedico },
+      { to: '/app/plantilla', label: 'Plantilla' },
+      { to: '/app/disponibilidad', label: 'Disponibilidad y lesiones', short: 'Disponibilidad' },
     ],
   },
   {
     id: 'trabajo',
     label: 'Trabajo en campo',
     items: [
-      { to: '/app/entrenamientos', label: 'Entrenamientos', icon: IconoSilbato },
-      { to: '/app/ejercicios', label: 'Biblioteca de ejercicios', short: 'Ejercicios', icon: IconoCono },
-      { to: '/app/pizarra', label: 'Pizarra táctica', short: 'Pizarra', icon: IconoCampo },
-      { to: '/app/partidos', label: 'Partidos', icon: IconoBalon },
+      { to: '/app/entrenamientos', label: 'Entrenamientos' },
+      { to: '/app/ejercicios', label: 'Biblioteca de ejercicios', short: 'Ejercicios' },
+      { to: '/app/pizarra', label: 'Pizarra táctica', short: 'Pizarra' },
+      { to: '/app/partidos', label: 'Partidos' },
     ],
   },
   {
     id: 'club',
     label: 'Club',
     items: [
-      { to: '/app/analiticas', label: 'Analíticas', icon: IconoAnaliticas },
-      /* «Plantilla» y «Equipo técnico» llevaban EL MISMO icono de personas.
-         Dos secciones distintas con el mismo dibujo no orientan a nadie. */
-      { to: '/app/equipo-tecnico', label: 'Equipo técnico', icon: IconoCuerpoTecnico },
-      { to: '/app/ajustes', label: 'Ajustes y ayuda', short: 'Ajustes', icon: Settings },
+      { to: '/app/analiticas', label: 'Analíticas' },
+      { to: '/app/equipo-tecnico', label: 'Equipo técnico' },
+      { to: '/app/ajustes', label: 'Ajustes y ayuda', short: 'Ajustes' },
     ],
   },
 ];
