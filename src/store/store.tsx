@@ -18,6 +18,7 @@ import type {
 import { EMPTY_CLUB_DATA } from '@/types';
 import { db, loadWorkspace } from '@/services/db';
 import { auth } from '@/services/auth';
+import { olvidarDesbloqueo } from '@/services/passcode';
 import { humanError } from '@/services/supabase';
 
 /* ────────────────────────────── Estado local ──────────────────────────────── */
@@ -451,6 +452,9 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    // El candado de esta pestaña se olvida al salir: si no, quien entrase
+    // después con otra cuenta se saltaría el suyo.
+    olvidarDesbloqueo();
     await auth.signOut();
     uid.current = null;
     setUserId(null);

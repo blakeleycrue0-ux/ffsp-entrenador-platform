@@ -4,6 +4,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { useClub } from '@/store/store';
 import { isClubAdmin } from '@/store/selectors';
 import { Wordmark } from '@/components/ui/Brand';
+import { RequireCodigo } from '@/features/passcode/RequireCodigo';
 
 // Rutas con carga diferida: la primera pantalla llega antes y cada módulo
 // (pizarra, analíticas, constructor de sesiones…) se descarga sólo si se usa.
@@ -101,9 +102,14 @@ export default function App() {
           path="/app"
           element={
             <RequireAuth>
-              <RequireClub>
-                <AppShell />
-              </RequireClub>
+              {/* El candado va por delante de todo lo que hay dentro de la
+                  sesión, incluida la creación del club: si la cuenta tiene
+                  código, no se enseña nada sin escribirlo. */}
+              <RequireCodigo>
+                <RequireClub>
+                  <AppShell />
+                </RequireClub>
+              </RequireCodigo>
             </RequireAuth>
           }
         >

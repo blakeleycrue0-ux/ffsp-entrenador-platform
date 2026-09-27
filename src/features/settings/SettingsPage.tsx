@@ -14,6 +14,7 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { PlanPanel } from '@/features/billing/PlanPanel';
+import { CodigoPanel } from '@/features/passcode/CodigoPanel';
 
 export default function SettingsPage() {
   const { data, userId, actions } = useClub();
@@ -73,6 +74,8 @@ export default function SettingsPage() {
       {tab === 'cuenta' && (
         <div className="grid gap-3 lg:grid-cols-2">
           <PlanPanel />
+
+          <CodigoPanel />
 
           <Panel>
             <PanelHeader title="Contraseña" description="Se aplica la próxima vez que entres." />

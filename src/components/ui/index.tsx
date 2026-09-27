@@ -492,13 +492,17 @@ export function Modal({
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6">
-      <div className="absolute inset-0 bg-ink-900/35 animate-fade-in" onClick={onClose} />
+      {/* El velo es NEGRO. Con la paleta invertida, `ink-900` es blanco: puesto
+          ahí aclaraba la página en vez de apagarla, y el diálogo —que iba con
+          `bg-panel`, un 4,5 % de blanco— se leía con la pantalla de detrás
+          atravesándolo. Aquí el fondo lo pone `.cristal`, que sí tapa. */}
+      <div className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden border border-line bg-panel shadow-pop',
-          'rounded-t-xl sm:rounded-lg animate-slide-up sm:animate-fade-up',
+          'cristal relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden',
+          'rounded-t-4xl animate-sheet-in sm:rounded-3xl sm:animate-fade-up',
           width,
         )}
       >
@@ -519,7 +523,7 @@ export function Modal({
         )}
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-2 border-t border-line bg-surface px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-center justify-end gap-2 border-t border-line bg-white/[0.03] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {footer}
           </div>
         )}

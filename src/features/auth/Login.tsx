@@ -11,6 +11,7 @@ import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useClub } from '@/store/store';
 import { auth } from '@/services/auth';
 import { compruebaConexion, humanError } from '@/services/supabase';
+import { marcarDesbloqueado } from '@/services/passcode';
 import {
   ACCEPT_ERROR, CLUB_ROLE_LABEL, invitations, type InvitationPeek,
 } from '@/services/invitations';
@@ -98,9 +99,15 @@ export default function Login() {
     setBusy(true);
     try {
       if (mode === 'entrar') {
-        await auth.signIn(email, password);
+        const user = await auth.signIn(email, password);
+        /* Acaba de escribir la contraseña de la cuenta, que es la
+           autenticación de verdad: pedirle además el código en el mismo
+           segundo sería pedir dos veces lo mismo. El candado es para VOLVER
+           a la aplicación, no para entrar. */
+        if (user) marcarDesbloqueado(user.id);
       } else if (mode === 'registro') {
         const result = await auth.signUp(email, password, fullName);
+        if (result.session?.user) marcarDesbloqueado(result.session.user.id);
         if (!result.session) {
           setNotice(
             'Cuenta creada. Te hemos enviado un correo de confirmación: ábrelo y vuelve aquí para entrar.',

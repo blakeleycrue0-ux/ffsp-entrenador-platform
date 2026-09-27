@@ -79,8 +79,8 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
 
   return (
     <div className="fixed inset-0 z-[80] flex items-start justify-center p-4 pt-[12vh]">
-      <div className="absolute inset-0 bg-ink-900/25 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-line bg-panel shadow-pop animate-scale-in">
+      <div className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="cristal relative z-10 w-full max-w-2xl animate-fade-up overflow-hidden rounded-3xl">
         <div className="flex items-center gap-3 border-b border-line/80 px-4">
           <Search size={18} className="shrink-0 text-ink-400" />
           <input

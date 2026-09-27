@@ -132,7 +132,7 @@ export function BottomNav() {
 
       {sheet && (
         <div className="fixed inset-0 z-[60] lg:hidden">
-          <div className="absolute inset-0 bg-ink-900/35 animate-fade-in" onClick={() => setSheet(null)} />
+          <div className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm" onClick={() => setSheet(null)} />
           {/* Hoja de cristal, con su tirador. Sube desde abajo, no aparece
               en el centro como un cuadro de diálogo de escritorio. */}
           <div className="cristal absolute inset-x-0 bottom-0 max-h-[82vh] animate-sheet-in overflow-y-auto rounded-t-4xl pb-[calc(1rem+var(--safe-bottom))]">
