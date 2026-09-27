@@ -30,9 +30,7 @@ import { humanError } from '@/services/supabase';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { Button, Field, Input, Select } from '@/components/ui';
 import { Wordmark } from '@/components/ui/Brand';
-import { IconoBalon, IconoCamiseta, IconoCampo, IconoSilbato } from '@/components/ui/Icons';
 import { PasoPlan } from './PasoPlan';
-import { cn } from '@/lib/utils';
 import type { Staff, TrainingSlot } from '@/types';
 
 const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -43,12 +41,7 @@ const temporadaActual = () => {
   return `${inicio}/${String((inicio + 1) % 100).padStart(2, '0')}`;
 };
 
-const PASOS = [
-  { id: 1, titulo: 'Quién eres', icono: IconoSilbato },
-  { id: 2, titulo: 'Tu club', icono: IconoCampo },
-  { id: 3, titulo: 'Tu equipo', icono: IconoCamiseta },
-  { id: 4, titulo: 'Tu plan', icono: IconoBalon },
-];
+const TOTAL = 4;
 
 /* Los cargos salen de la lista que ya usa el resto de la plataforma, no de
    una copia escrita aquí: si mañana se añade uno, aparece solo. Se quita
@@ -173,14 +166,11 @@ export default function Onboarding() {
       </header>
 
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-5 pb-12">
-        <Pasos actual={paso} />
+        <Progreso actual={paso} />
 
         <div className="mt-6 rounded-3xl bg-panel p-6 sm:p-8">
           {paso === 1 && (
-            <Bloque
-              titulo="Empecemos por ti"
-              entradilla="Tu nombre aparece en el club y en las convocatorias que compartas. El cargo decide qué puedes hacer."
-            >
+            <Bloque paso={1} titulo="¿Quién eres?">
               <Field label="Tu nombre y apellidos" required>
                 <Input
                   value={nombre}
@@ -203,10 +193,7 @@ export default function Onboarding() {
           )}
 
           {paso === 2 && (
-            <Bloque
-              titulo="Ahora tu club"
-              entradilla="Todo lo que registres pertenece a este club y sólo lo ve el cuerpo técnico al que invites. Ningún otro club puede verlo."
-            >
+            <Bloque paso={2} titulo="Tu club">
               <Field label="Nombre del club" required hint="Como aparece oficialmente.">
                 <Input
                   value={club}
@@ -236,10 +223,7 @@ export default function Onboarding() {
           )}
 
           {paso === 3 && (
-            <Bloque
-              titulo="Y tu primer equipo"
-              entradilla="Con esto ya tienes dónde dar de alta jugadoras y planificar. Si prefieres mirar antes, puedes saltártelo."
-            >
+            <Bloque paso={3} titulo="Tu equipo">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Nombre del equipo" required>
                   <Input
@@ -365,57 +349,41 @@ export default function Onboarding() {
   );
 }
 
-function Bloque({
-  titulo, entradilla, children,
-}: { titulo: string; entradilla: string; children: React.ReactNode }) {
+/**
+ * Una pregunta por pantalla. El rótulo dice dónde estás, el titular pregunta
+ * UNA cosa y debajo va sólo lo que hay que rellenar. Ni párrafos ni promesas:
+ * lo que hace falta explicar se explica donde hace falta, no de entrada.
+ */
+function Bloque({ paso, titulo, children }: { paso: number; titulo: string; children: React.ReactNode }) {
   return (
     <div className="animate-fade-up">
-      <h1 className="font-display text-2xl font-bold tracking-[-0.015em] text-ink-900">{titulo}</h1>
-      <p className="mt-1.5 max-w-xl text-base leading-relaxed text-ink-700">{entradilla}</p>
-      <div className="mt-6 space-y-4">{children}</div>
+      <p className="rotulo">Paso {paso} de {TOTAL}</p>
+      <h1 className="cifra mt-2 text-4xl">{titulo}</h1>
+      <div className="mt-7 space-y-5">{children}</div>
     </div>
   );
 }
 
-/** Dónde estás y cuánto queda. Sin esto, un formulario por pasos angustia. */
-function Pasos({ actual }: { actual: number }) {
+/**
+ * Cuánto queda, en una barra.
+ * Antes eran cuatro círculos con iconos y sus etiquetas. Ocupaban un tercio
+ * de la pantalla para decir algo que cabe en dos píxeles de alto, y los
+ * iconos ahí arriba no ayudaban a nadie a rellenar el formulario de abajo.
+ */
+function Progreso({ actual }: { actual: number }) {
   return (
-    <ol className="flex items-center gap-2">
-      {PASOS.map((p) => {
-        const hecho = p.id < actual;
-        const aqui = p.id === actual;
-        const Icono = p.icono;
-        return (
-          <li key={p.id} className="flex flex-1 items-center gap-2.5">
-            <span
-              className={cn(
-                'grid h-9 w-9 shrink-0 place-items-center rounded-full border transition-colors',
-                hecho
-                  ? 'border-ink-900 bg-ink-900 text-ink-0'
-                  : aqui
-                    ? 'border-ink-900 bg-transparent text-ink-900'
-                    : 'border-ink-300 text-ink-400',
-              )}
-            >
-              {hecho ? <Check size={16} strokeWidth={2.6} /> : <Icono size={17} />}
-            </span>
-            <span
-              className={cn(
-                'hidden truncate text-sm sm:block',
-                aqui ? 'font-semibold text-ink-900' : 'text-ink-500',
-              )}
-            >
-              {p.titulo}
-            </span>
-            {p.id !== PASOS.length && (
-              <span
-                aria-hidden
-                className={cn('h-px flex-1 transition-colors', hecho ? 'bg-ink-900' : 'bg-ink-300')}
-              />
-            )}
-          </li>
-        );
-      })}
-    </ol>
+    <div
+      role="progressbar"
+      aria-valuemin={1}
+      aria-valuemax={TOTAL}
+      aria-valuenow={actual}
+      aria-label={`Paso ${actual} de ${TOTAL}`}
+      className="h-[3px] w-full overflow-hidden rounded-full bg-ink-200"
+    >
+      <div
+        className="h-full rounded-full bg-ink-900 transition-[width] duration-500 ease-out"
+        style={{ width: `${(actual / TOTAL) * 100}%` }}
+      />
+    </div>
   );
 }

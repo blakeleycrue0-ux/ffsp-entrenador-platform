@@ -50,7 +50,6 @@ export function BottomNav() {
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-panel pb-[var(--safe-bottom)] lg:hidden">
         <div className="flex h-[58px] items-stretch">
           {TABS.map((tab) => {
-            const Icon = tab.icon;
             const on = isActive(pathname, tab);
             return (
               <Link
@@ -59,9 +58,8 @@ export function BottomNav() {
                 aria-current={on ? 'page' : undefined}
                 className="relative flex flex-1 flex-col items-center justify-center gap-1"
               >
-                {on && <span className="absolute top-0 h-0.5 w-8 bg-ink-900" />}
-                <Icon size={19} strokeWidth={on ? 2.1 : 1.8} className={on ? 'text-ink-900' : 'text-ink-400'} />
-                <span className={cn('text-[10px] font-medium', on ? 'text-ink-900' : 'text-muted')}>
+                {on && <span className="absolute top-0 h-0.5 w-10 rounded-full bg-ink-900" />}
+                <span className={cn('text-[13px]', on ? 'font-semibold text-ink-900' : 'font-medium text-ink-500')}>
                   {tab.short ?? tab.label}
                 </span>
               </Link>
@@ -113,18 +111,16 @@ export function BottomNav() {
               <>
                 <ul className="p-2">
                   {MORE.map((m) => {
-                    const Icon = m.icon;
                     const on = isActive(pathname, m);
                     return (
                       <li key={m.to}>
                         <button
                           onClick={() => go(m.to)}
                           className={cn(
-                            'flex w-full items-center gap-3 rounded px-3 py-2.5 text-left text-base transition-colors',
-                            on ? 'bg-ink-900 font-medium text-ink-0' : 'text-ink-800 active:bg-surface',
+                            'flex w-full items-center rounded-2xl px-4 py-3 text-left text-md transition-colors',
+                            on ? 'bg-ink-900 font-semibold text-ink-0' : 'font-medium text-ink-700 active:bg-raised',
                           )}
                         >
-                          <Icon size={17} className={on ? 'text-white' : 'text-ink-400'} />
                           {m.label}
                         </button>
                       </li>

@@ -137,12 +137,13 @@ export default function Dashboard() {
       {/* Saludo */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[26px] font-semibold leading-tight sm:text-[30px]">
-            Hola{firstName ? `, ${firstName}` : ''}
+          {/* La fecha va ARRIBA y pequeña, el saludo grande debajo. Antes el
+              saludo llevaba colgando «Esto es lo que tienes preparado para
+              hoy», que no dice nada que no diga ya la pantalla entera. */}
+          <p className="rotulo">{longDate(toISODate(today()))}</p>
+          <h1 className="cifra mt-2 text-4xl sm:text-5xl">
+            {firstName ? `Hola, ${firstName}` : 'Hola'}
           </h1>
-          <p className="mt-1.5 text-[14.5px] text-muted">
-            Esto es lo que tienes preparado para hoy · {longDate(toISODate(today()))}
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button icon={<Plus size={17} strokeWidth={2.3} />} onClick={() => setCreateOpen(true)}>
@@ -164,15 +165,17 @@ export default function Dashboard() {
                 </Tag>
               </div>
 
-              <p className="mt-3 text-[13px] font-medium text-ink-900">
+              {/* La HORA es el dato. Va grande y sola; el resto la acompaña. */}
+              <p className="cifra mt-4 text-5xl">{session0.start}</p>
+              <p className="mt-2 text-md font-medium text-ink-900">{session0.title}</p>
+              <p className="mt-0.5 text-base text-ink-500">
                 {data.teams.find((t) => t.id === session0.teamId)?.name}
               </p>
-              <h3 className="mt-0.5 text-[19px] font-semibold leading-tight">{session0.title}</h3>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px] text-ink-600">
+              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-base text-ink-600">
                 <span className="flex items-center gap-1.5">
                   <Clock size={15} className="text-ink-400" />
-                  {session0.start} · {minutesToLabel(session0.duration)}
+                  {minutesToLabel(session0.duration)}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <MapPin size={15} className="text-ink-400" />
