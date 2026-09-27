@@ -9,6 +9,7 @@ import type {
 } from '@/types';
 import { normalize, pct, shortDate, toISODate, today } from '@/lib/utils';
 import { NIVELES, planEfectivo, type PlanTier } from '@/services/billing';
+import { permisosDe, type Permisos } from '@/services/entitlements';
 
 export const currentStaff = (data: ClubData): Staff | null => data.profile;
 
@@ -318,17 +319,22 @@ export function globalSearch(data: ClubData, query: string): SearchHit[] {
  * no autorizan nada, sólo evitan que alguien rellene un formulario entero para
  * que el servidor se lo rechace al final.
  */
+/**
+ * Lo que puede este club, en un objeto.
+ * Quien necesite saber si algo entra en su plan pregunta aquí; el catálogo de
+ * capacidades vive en `services/entitlements`, y es el único sitio donde se
+ * decide qué trae cada plan.
+ */
+export const permisos = (data: ClubData): Permisos =>
+  permisosDe(data.plans, data.subscription, data.teams.length);
+
 export const planActual = (data: ClubData): PlanTier => planEfectivo(data.subscription);
 
 /** Equipos que permite su plan. `null` es sin límite. */
-export const limiteDeEquipos = (data: ClubData): number | null =>
-  data.plans.find((p) => p.tier === planActual(data))?.maxTeams ?? null;
+export const limiteDeEquipos = (data: ClubData): number | null => permisos(data).limiteDeEquipos;
 
-/** ¿Le cabe un equipo más? */
-export const cabeOtroEquipo = (data: ClubData): boolean => {
-  const limite = limiteDeEquipos(data);
-  return limite === null || data.teams.length < limite;
-};
+/** ¿Le cabe un equipo más? Lo decide igualmente RLS al insertar. */
+export const cabeOtroEquipo = (data: ClubData): boolean => permisos(data).puedeCrearEquipo();
 
 /**
  * El primer plan que le permitiría más equipos de los que tiene ahora, por su

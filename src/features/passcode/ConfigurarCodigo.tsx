@@ -20,8 +20,8 @@ type Paso = 'actual' | 'nuevo' | 'repetir';
 
 const TITULO: Record<Paso, string> = {
   actual: 'Tu código de ahora',
-  nuevo: 'Elige un código',
-  repetir: 'Repítelo',
+  nuevo: '',
+  repetir: 'Confirma tu código',
 };
 
 export function ConfigurarCodigo({
@@ -29,10 +29,18 @@ export function ConfigurarCodigo({
   yaTiene,
   onHecho,
   onCancelar,
+  /** Qué dice el botón de escape: «Cancelar» en Ajustes, «Ahora no» al darse de alta. */
+  cancelarEtiqueta = 'Cancelar',
+  /** El alta lo llama «Protege tu espacio»; en Ajustes basta con «Elige un código». */
+  tituloNuevo = 'Elige un código',
+  subtituloNuevo = 'Cuatro cifras. Te las pediremos para confirmar acciones importantes.',
 }: {
   yaTiene: boolean;
   onHecho: () => void;
   onCancelar?: () => void;
+  cancelarEtiqueta?: string;
+  tituloNuevo?: string;
+  subtituloNuevo?: string;
 }) {
   const [paso, setPaso] = useState<Paso>(yaTiene ? 'actual' : 'nuevo');
   const [pin, setPin] = useState('');
@@ -109,7 +117,7 @@ export function ConfigurarCodigo({
     if (v !== primero) {
       setPrimero('');
       setAviso(null);
-      fallar('No coinciden. Empezamos otra vez.', 'nuevo');
+      fallar('Los códigos no coinciden. Prueba otra vez.', 'nuevo');
       return;
     }
 
@@ -118,14 +126,14 @@ export function ConfigurarCodigo({
 
   return (
     <div className="mx-auto w-full max-w-[340px] text-center">
-      <h2 className="cifra text-2xl">{TITULO[paso]}</h2>
+      <h2 className="cifra text-2xl">{paso === 'nuevo' ? tituloNuevo : TITULO[paso]}</h2>
       <p className="mt-2 min-h-[38px] px-2 text-base leading-relaxed text-ink-500">
         {error ? (
           <span className="text-bad">{error}</span>
         ) : paso === 'actual' ? (
           'Para cambiarlo, escribe primero el que tienes puesto.'
         ) : paso === 'nuevo' ? (
-          'Cuatro cifras. Te las pedirá al volver a la aplicación en este móvil.'
+          subtituloNuevo
         ) : (
           'Otra vez, para asegurarnos de que no hay un dedo de más.'
         )}
@@ -140,7 +148,7 @@ export function ConfigurarCodigo({
           valor={pin}
           onChange={escribir}
           disabled={fase !== 'escribiendo' || enviando}
-          extra={onCancelar ? { label: 'Cancelar', onClick: onCancelar } : undefined}
+          extra={onCancelar ? { label: cancelarEtiqueta, onClick: onCancelar } : undefined}
         />
       </div>
 

@@ -33,6 +33,7 @@ const MatchEditor = lazy(() => import('@/features/matches/MatchEditor'));
 const AttendancePage = lazy(() => import('@/features/attendance/AttendancePage'));
 const StatsPage = lazy(() => import('@/features/stats/StatsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
+const BillingPage = lazy(() => import('@/features/billing/BillingPage'));
 const ProfilePage = lazy(() => import('@/features/settings/ProfilePage'));
 const LegalPage = lazy(() => import('@/features/legal/LegalPage'));
 const Onboarding = lazy(() => import('@/features/onboarding/Onboarding'));
@@ -174,6 +175,7 @@ export default function App() {
           />
 
           <Route path="ajustes" element={<SettingsPage />} />
+          <Route path="ajustes/plan" element={<BillingPage />} />
           <Route path="perfil" element={<ProfilePage />} />
 
           {/* Direcciones anteriores */}
