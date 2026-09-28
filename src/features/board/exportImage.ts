@@ -1,9 +1,10 @@
 /**
  * Exportación a imagen.
  * ---------------------------------------------------------------------------
- * Genera un PNG del instante que hay en pantalla. No exportamos vídeo: la
- * grabación desde el navegador depende de códecs que no están en todos los
- * equipos, y preferimos no ofrecer algo que puede fallar sin avisar.
+ * Genera un PNG del instante que hay en pantalla, serializando el SVG que ya
+ * se está viendo: es exacto y cuesta una vez. El vídeo va por otro camino
+ * —`exportVideo`, que dibuja sobre un lienzo— porque para treinta fotogramas
+ * por segundo esto no da abasto.
  */
 
 const limpiarNombre = (name: string) =>

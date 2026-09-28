@@ -76,9 +76,11 @@ export const CAPACIDADES: Record<Capacidad, Ficha> = {
   analiticas: { nombre: 'Analíticas', desde: 'free', lista: true },
   'cuerpo-tecnico': { nombre: 'Cuerpo técnico', desde: 'free', lista: true },
 
-  /* Aún por construir (fases G–J). No se anuncian todavía. */
-  'pizarra-avanzada': { nombre: 'Pizarra táctica avanzada', desde: 'pro', lista: false },
-  'exportar-video': { nombre: 'Exportar jugadas en vídeo', desde: 'pro', lista: false },
+  /* Ya construidas: trayectorias a mano alzada y exportación de vídeo. */
+  'pizarra-avanzada': { nombre: 'Trayectorias a mano alzada', desde: 'pro', lista: true },
+  'exportar-video': { nombre: 'Exportar jugadas en vídeo', desde: 'pro', lista: true },
+
+  /* Aún por construir. No se anuncian todavía. */
   'analiticas-avanzadas': { nombre: 'Analíticas avanzadas', desde: 'pro', lista: false },
   informes: { nombre: 'Informes', desde: 'pro', lista: false },
 
@@ -140,10 +142,24 @@ export function permisosDe(
   };
 }
 
+/**
+ * De qué plan es una capacidad HOY.
+ *
+ * Mientras no se pueda contratar nada, `puede()` deja usarlo todo —está
+ * explicado arriba— y entonces enseñar «Trayectorias a mano alzada» como
+ * ventaja de Pro sería vender una diferencia que no existe: la tiene todo el
+ * mundo. Con `seVende` en falso, todo cuenta como Gratis, que es la verdad de
+ * hoy. El día que haya precios, la tabla vuelve a mandar sin tocar nada.
+ */
+const nivelDeHoy = (c: Capacidad, seVende: boolean): PlanTier =>
+  (seVende ? CAPACIDADES[c].desde : 'free');
+
+const construidas = () => (Object.keys(CAPACIDADES) as Capacidad[]).filter((c) => CAPACIDADES[c].lista);
+
 /** Todo lo que trae un plan contando lo que hereda de los de debajo. */
-export function todoLoQueTrae(tier: PlanTier): string[] {
-  return (Object.keys(CAPACIDADES) as Capacidad[])
-    .filter((c) => CAPACIDADES[c].lista && alcanza(tier, CAPACIDADES[c].desde))
+export function todoLoQueTrae(tier: PlanTier, seVende = true): string[] {
+  return construidas()
+    .filter((c) => alcanza(tier, nivelDeHoy(c, seVende)))
     .map((c) => CAPACIDADES[c].nombre);
 }
 
@@ -152,9 +168,9 @@ export function todoLoQueTrae(tier: PlanTier): string[] {
  * comparar: repetir debajo de Pro las diez líneas que ya están en Gratis
  * obliga a leerlas dos veces para descubrir que son las mismas.
  */
-export function loQueFalta(tier: PlanTier): string[] {
-  return (Object.keys(CAPACIDADES) as Capacidad[])
-    .filter((c) => CAPACIDADES[c].lista && CAPACIDADES[c].desde === tier)
+export function loQueFalta(tier: PlanTier, seVende = true): string[] {
+  return construidas()
+    .filter((c) => nivelDeHoy(c, seVende) === tier)
     .map((c) => CAPACIDADES[c].nombre);
 }
 

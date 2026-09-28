@@ -195,6 +195,7 @@ export default function BoardPage() {
         <Skeleton className="aspect-[111/74] w-full" />
       ) : (
         <BoardEditor
+          nombreDeLaJugada={name}
           scene={scene}
           onChange={setSceneDirty}
           playback={playback}

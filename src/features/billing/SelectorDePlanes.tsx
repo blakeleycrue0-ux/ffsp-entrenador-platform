@@ -74,6 +74,9 @@ export function SelectorDePlanes({
 
   const dePago = plan.tier !== 'free';
   const hayPrecios = ordenados.some((p) => p.priceMonthly !== null || p.priceYearly !== null);
+  /* Si hoy no se puede contratar nada, no hay diferencias que enseñar: todo
+     está en los tres, y así se lista. */
+  const seVende = ordenados.some((p) => p.contratable);
   const precio = importe(periodo === 'anual' ? plan.priceYearly : plan.priceMonthly, plan.currency);
   const ahorro = ahorroAnual(plan);
 
@@ -156,14 +159,14 @@ export function SelectorDePlanes({
         <div className="mt-6 divide-y divide-line">
           <Linea texto={LIMITE[plan.tier]} fuerte />
           {plan.tier !== 'free' && <Linea texto={`Todo lo de ${ordenados[0]?.name ?? 'Gratis'}`} />}
-          {(plan.tier === 'free' ? todoLoQueTrae('free') : loQueFalta(plan.tier)).map((t) => (
+          {(plan.tier === 'free' ? todoLoQueTrae('free', seVende) : loQueFalta(plan.tier, seVende)).map((t) => (
             <Linea key={t} texto={t} />
           ))}
         </div>
 
         {/* Si hoy un plan de pago no añade ninguna capacidad más, se dice.
             Callarlo dejaría creer que trae cosas que todavía no existen. */}
-        {plan.tier !== 'free' && loQueFalta(plan.tier).length === 0 && (
+        {plan.tier !== 'free' && loQueFalta(plan.tier, seVende).length === 0 && (
           <p className="mt-4 text-sm leading-relaxed text-ink-500">
             Hoy la diferencia es sólo cuántos equipos caben. Las herramientas avanzadas se irán
             añadiendo a este plan; no las cobramos por adelantado.

@@ -16,11 +16,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowUpRight, Copy, Hand, Image as ImageIcon, Maximize2, Minus, MousePointer2, Move,
   Pause, Play, Redo2, Repeat, RotateCcw, Slash, Spline, Square, Trash2, Undo2,
-  X, ZoomIn, ZoomOut,
+  Download, X, ZoomIn, ZoomOut,
 } from 'lucide-react';
 import { Button, Field, Input, Panel, PanelHeader, Segmented, Select, Tag, Toggle } from '@/components/ui';
 import { BoardStage, useBoardView, type Tool } from './BoardStage';
 import { Isla, esEstrecha, useSitio } from './Flotantes';
+import { Exportar } from './Exportar';
 import { Timeline } from './Timeline';
 import { formatSeconds, type Playback, type Speed } from './playback';
 import {
@@ -106,7 +107,7 @@ export function useBoardHistory(scene: Scene, setScene: (s: Scene) => void) {
 }
 
 export function BoardEditor({
-  scene, playback, history, svgRef, onExportImage, aside, compact, squad = [],
+  scene, playback, history, svgRef, onExportImage, aside, compact, squad = [], nombreDeLaJugada,
 }: {
   scene: Scene;
   /** Los cambios se aplican a través de `history.commit`. */
@@ -115,6 +116,8 @@ export function BoardEditor({
   history: ReturnType<typeof useBoardHistory>;
   svgRef?: React.RefObject<SVGSVGElement>;
   onExportImage?: () => void;
+  /** Para poner nombre al archivo exportado. */
+  nombreDeLaJugada?: string;
   /** Contenido extra para la columna lateral (nombre, notas, guardar…). */
   aside?: React.ReactNode;
   /** Sin columna lateral: el panel de la jugada va debajo del campo. */
@@ -156,6 +159,7 @@ export function BoardEditor({
      una hoja que tapa media pizarra y lo primero que se ve sería el panel en
      vez del campo; el botón «Panel» queda a la vista. */
   const [cajon, setCajon] = useState(() => scene.objects.length === 0 && !esEstrecha());
+  const [exportando, setExportando] = useState(false);
 
   const editable = !playback.playing;
   /** Si la herramienta activa deja una anotación (y por tanto usa color). */
@@ -773,15 +777,13 @@ export function BoardEditor({
         >
           <Redo2 size={15} />
         </button>
-        {onExportImage && (
-          <button
-            onClick={onExportImage}
-            aria-label="Guardar como imagen"
-            className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
-          >
-            <ImageIcon size={15} />
-          </button>
-        )}
+        <button
+          onClick={() => setExportando(true)}
+          aria-label="Exportar"
+          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+        >
+          <Download size={15} />
+        </button>
         <button
           onClick={presentar}
           aria-label="Presentar"
@@ -1033,6 +1035,15 @@ export function BoardEditor({
               {lateral}
             </div>
           </div>
+        )}
+
+        {exportando && (
+          <Exportar
+            scene={scene}
+            nombre={nombreDeLaJugada ?? 'Jugada'}
+            onImagen={onExportImage}
+            onCerrar={() => setExportando(false)}
+          />
         )}
 
         {!cajon && (
