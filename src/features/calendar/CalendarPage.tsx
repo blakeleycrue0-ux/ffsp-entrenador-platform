@@ -93,8 +93,10 @@ export default function CalendarPage() {
         }
       />
 
-      {/* Controles */}
-      <Panel className="mb-5 flex flex-wrap items-center justify-between gap-3 p-3.5">
+      {/* Controles. Sin caja, igual que en Plantilla: un recuadro alrededor de
+          unos mandos que ya están juntos no agrupa nada y se lleva un buen
+          trozo de alto en un móvil. */}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button
             onClick={() => move(-1)}
@@ -117,7 +119,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} className="w-auto min-w-[150px]">
+          <Select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} className="w-full sm:w-[190px]">
             <option value="todos">Todos los equipos</option>
             {teams.map((t) => (
               <option key={t.id} value={t.id}>
@@ -135,13 +137,15 @@ export default function CalendarPage() {
             ]}
           />
         </div>
-      </Panel>
+      </div>
 
-      {/* Leyenda */}
-      <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2">
+      {/* Leyenda. Es lo único de esta pantalla cuyo color SÍ lleva información
+          —de qué tipo es cada evento—, así que se queda; pero más pequeña y
+          más apagada, porque se consulta una vez y ya no se vuelve a mirar. */}
+      <div className="mb-5 flex flex-wrap gap-x-3.5 gap-y-1.5">
         {(Object.keys(EVENT_KIND) as EventKind[]).map((k) => (
-          <span key={k} className="flex items-center gap-1.5 text-[12.5px] text-muted">
-            <span className={cn('h-2 w-2 rounded-full', EVENT_KIND[k].dot)} />
+          <span key={k} className="flex items-center gap-1.5 text-xs text-ink-500">
+            <span className={cn('h-1.5 w-1.5 rounded-full', EVENT_KIND[k].dot)} />
             {EVENT_KIND[k].label}
           </span>
         ))}
@@ -214,22 +218,27 @@ function WeekView({ cursor, events, onOpen }: { cursor: Date; events: CalendarEv
           <div
             key={i}
             className={cn(
-              'rounded-2xl border bg-panel p-3 transition-colors',
+              'rounded-2xl border bg-panel transition-colors',
+              /* Un día sin nada no necesita el mismo alto que uno lleno: en
+                 una semana tranquila eran siete cajas de 190 px para decir
+                 «Libre» siete veces. Vacío, es una línea. */
+              list.length === 0 ? 'px-3 py-2.5 lg:p-3' : 'p-3',
               isToday ? 'border-ink-300 bg-ink-50/30' : 'border-line',
             )}
           >
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-baseline justify-between gap-3">
               <span className={cn('text-[12px] font-medium', isToday ? 'text-ink-900' : 'text-ink-400')}>
                 {DAY_LABELS[i]}
               </span>
+              {list.length === 0 && <span className="flex-1 text-xs text-ink-400 lg:hidden">Libre</span>}
               <span className={cn('text-[16px] font-semibold tabular-nums', isToday ? 'text-ink-900' : 'text-ink-700')}>
                 {d.getDate()}
               </span>
             </div>
 
-            <div className="mt-3 space-y-1.5">
+            <div className={cn(list.length === 0 ? '' : 'mt-3', 'space-y-1.5')}>
               {list.length === 0 ? (
-                <p className="py-3 text-center text-[11.5px] text-ink-300">Libre</p>
+                <p className="hidden py-3 text-center text-[11.5px] text-ink-300 lg:block">Libre</p>
               ) : (
                 list.map((e) => (
                   <button
