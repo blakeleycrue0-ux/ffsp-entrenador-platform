@@ -49,7 +49,10 @@ export function CodigoPanel() {
 
         {tiene !== null && (
           <div className="flex flex-wrap gap-2">
-            <Button variant={tiene ? 'secondary' : 'primary'} onClick={() => setConfigurar(true)}>
+            {/* Secundario: en Ajustes no hay UNA acción principal, hay varias
+                secciones con la suya. Tres botones azules en la misma página
+                no jerarquizan nada, sólo hacen ruido. */}
+            <Button variant="secondary" onClick={() => setConfigurar(true)}>
               {tiene ? 'Cambiar el código' : 'Poner un código'}
             </Button>
             {tiene && (

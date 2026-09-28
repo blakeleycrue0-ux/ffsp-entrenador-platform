@@ -92,6 +92,7 @@ export default function SettingsPage() {
                 />
               </Field>
               <Button
+                variant="secondary"
                 loading={changingPassword}
                 onClick={async () => {
                   if (newPassword.length < 6) {

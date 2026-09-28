@@ -962,8 +962,16 @@ export function BoardEditor({
       <div
         className={cn(
           'relative overflow-hidden rounded-3xl border border-line bg-ink-50',
-          'h-[calc(100dvh-172px)] min-h-[420px] lg:h-[calc(100dvh-136px)]',
+          'min-h-[420px]',
         )}
+        /* El alto sale de las mismas variables que usa el armazón, más lo que
+           ocupa la línea del título. Con un número escrito a mano, en cuanto
+           cambiaba el dique o el margen de página el campo se quedaba corto o
+           se metía debajo del menú. */
+        style={{
+          height:
+            'calc(100dvh - var(--header-h) - var(--pagina-top) - var(--hueco-inferior) - 52px)',
+        }}
       >
         {/* El campo y sus mandos viven en una caja que se encoge cuando se abre
             el panel. Sin esto, la regla de tiempo —centrada sobre el lienzo—

@@ -62,9 +62,11 @@ export function useSitio(clave: string, inicial: Sitio = POR_DEFECTO) {
 
 const ANCLAJE: Record<Muelle, string> = {
   arriba: 'left-1/2 top-3 -translate-x-1/2',
-  /* En el móvil, por encima de la barra flotante de la aplicación: pegada
-     abajo del todo se quedaba media isla debajo del menú. */
-  abajo: 'left-1/2 -translate-x-1/2 bottom-[calc(72px+var(--safe-bottom))] lg:bottom-3',
+  /* Tres píxeles del borde de SU lienzo, y nada más. Aquí había un hueco a
+     mano para esquivar el dique de la aplicación; ahora ese hueco lo reserva
+     el armazón, así que contarlo otra vez dejaba la isla flotando en mitad de
+     la nada con el campo cortado por arriba. */
+  abajo: 'left-1/2 -translate-x-1/2 bottom-3',
   izquierda: 'left-3 top-1/2 -translate-y-1/2',
   derecha: 'right-3 top-1/2 -translate-y-1/2',
   flotante: '',
