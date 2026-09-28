@@ -131,12 +131,19 @@ export interface StageProps {
   onView?: (v: View) => void;
   /** En presentación no se ve nada que no sea la jugada. */
   presenting?: boolean;
+  /**
+   * Ocupar toda la caja en vez de crecer con el ancho. El propio SVG centra y
+   * escala su contenido (`preserveAspectRatio`), así que el campo se ve entero
+   * con bandas transparentes a los lados: es lo que hace falta en un espacio
+   * de trabajo de alto fijo, donde la ventana manda y el campo se adapta.
+   */
+  llenar?: boolean;
 }
 
 export function BoardStage({
   scene, playback, selected, onSelect, onMove, onDropNew, editable, showPaths, svgRef, className,
   tool = null, drawColor = '#FFFFFF', drawWidth = 0.36, onDraw, onTrazo,
-  selectedDrawing = null, onSelectDrawing, view = VIEW_INICIAL, onView, presenting,
+  selectedDrawing = null, onSelectDrawing, view = VIEW_INICIAL, onView, presenting, llenar,
 }: StageProps) {
   const spec = PITCHES[scene.pitch];
   const vertical = scene.vertical === true;
@@ -342,9 +349,10 @@ export function BoardStage({
     <svg
       ref={svg}
       viewBox={viewBox}
-      style={{ aspectRatio: ratio, touchAction: 'none' }}
+      style={llenar ? { touchAction: 'none' } : { aspectRatio: ratio, touchAction: 'none' }}
       className={cn(
-        'board-surface mx-auto block max-h-full w-full',
+        'board-surface block',
+        llenar ? 'h-full w-full' : 'mx-auto max-h-full w-full',
         tool === 'mano' && 'cursor-grab active:cursor-grabbing',
         tool && tool !== 'mano' && 'cursor-crosshair',
         tool === 'movimiento' && !selected && 'cursor-not-allowed',

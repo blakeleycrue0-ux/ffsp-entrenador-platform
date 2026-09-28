@@ -220,6 +220,20 @@ export interface Scene {
   drawings?: Drawing[];
 }
 
+/**
+ * Una jugada nueva nace EN VERTICAL en una pantalla estrecha.
+ *
+ * Un campo apaisado dentro de un móvil de pie deja dos franjas negras y el
+ * campo ocupando una quinta parte de la pantalla —medido: 21 %—. Girado, el
+ * campo llena. No se toca ninguna jugada ya guardada, y la orientación sigue
+ * siendo un ajuste de la jugada que se cambia cuando se quiera: esto sólo
+ * decide con qué empieza.
+ */
+export const escenaNueva = (): Scene => ({
+  ...EMPTY_SCENE,
+  vertical: typeof window !== 'undefined' && window.innerWidth < 900,
+});
+
 export const EMPTY_SCENE: Scene = {
   version: 1,
   pitch: 'completo',
