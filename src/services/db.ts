@@ -142,6 +142,33 @@ const fromDrill = (d: Drill, userId?: string) => ({
   created_by: d.createdBy ?? userId ?? null,
 });
 
+/**
+ * Los bloques vienen de una columna `jsonb`, y ahí puede haber CUALQUIER COSA:
+ * una sesión guardada por una versión anterior, un bloque al que le falta la
+ * lista de etiquetas, un `duration` que llegó como texto. La aplicación leía
+ * `b.tags.includes(...)` directamente y un solo bloque sin etiquetas tiraba la
+ * pantalla entera de entrenamientos —comprobado: «Cannot read properties of
+ * undefined»—.
+ *
+ * Se normaliza AQUÍ, en el único sitio por donde pasan todas las sesiones, en
+ * vez de poner un `?.` en cada pantalla que las lee: así el resto del código
+ * puede fiarse del tipo, que es justo lo que se le prometió.
+ */
+const toBloques = (valor: unknown): TrainingSession['blocks'] => {
+  if (!Array.isArray(valor)) return [];
+  return valor
+    .filter((b): b is Record<string, unknown> => !!b && typeof b === 'object')
+    .map((b, i) => ({
+      id: typeof b.id === 'string' ? b.id : `b${i}`,
+      drillId: typeof b.drillId === 'string' ? b.drillId : undefined,
+      title: typeof b.title === 'string' ? b.title : 'Bloque',
+      duration: typeof b.duration === 'number' && b.duration >= 0 ? b.duration : 0,
+      tags: Array.isArray(b.tags) ? b.tags.filter((t): t is string => typeof t === 'string') : [],
+      notes: typeof b.notes === 'string' ? b.notes : undefined,
+      series: typeof b.series === 'string' ? b.series : undefined,
+    })) as TrainingSession['blocks'];
+};
+
 const toSession = (r: Row): TrainingSession => ({
   id: r.id as string,
   teamId: r.team_id as string,
@@ -154,7 +181,7 @@ const toSession = (r: Row): TrainingSession => ({
   expectedPlayers: (r.expected_players as number) ?? 0,
   material: (r.material as string[]) ?? [],
   notes: (r.notes as string) ?? undefined,
-  blocks: (r.blocks as TrainingSession['blocks']) ?? [],
+  blocks: toBloques(r.blocks),
   status: r.status as TrainingSession['status'],
   generatedByAI: (r.generated_by_ai as boolean) ?? false,
 });

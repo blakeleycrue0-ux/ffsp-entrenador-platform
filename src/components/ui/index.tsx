@@ -759,10 +759,14 @@ export function Tooltip({
   return (
     <span className="group/tt relative inline-flex">
       {children}
+      {/* `hidden` y no `opacity-0`: invisible pero MAQUETADO, una etiqueta
+          larga cerca del borde derecho ensanchaba la página cuatro píxeles y
+          dejaba un desplazamiento lateral que no llevaba a ninguna parte.
+          Sin maquetar no puede ensanchar nada. */}
       <span
         role="tooltip"
         className={cn(
-          'pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded bg-ink-900 px-2 py-1 text-xs text-ink-0 opacity-0 transition-opacity duration-120 group-hover/tt:opacity-100',
+          'pointer-events-none absolute left-1/2 z-50 hidden -translate-x-1/2 whitespace-nowrap rounded bg-ink-900 px-2 py-1 text-xs text-ink-0 group-hover/tt:block',
           side === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5',
         )}
       >
