@@ -1,4 +1,5 @@
 import { Suspense, lazy } from 'react';
+import { cargaDiferida } from '@/lib/cargaDiferida';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { useClub } from '@/store/store';
@@ -8,35 +9,35 @@ import { RequireCodigo } from '@/features/passcode/RequireCodigo';
 
 // Rutas con carga diferida: la primera pantalla llega antes y cada módulo
 // (pizarra, analíticas, constructor de sesiones…) se descarga sólo si se usa.
-const Landing = lazy(() => import('@/features/landing/Landing'));
-const Login = lazy(() => import('@/features/auth/Login'));
-const Dashboard = lazy(() => import('@/features/dashboard/Dashboard'));
-const TeamsPage = lazy(() => import('@/features/teams/TeamsPage'));
-const TeamDetail = lazy(() => import('@/features/teams/TeamDetail'));
-const TeamEditor = lazy(() => import('@/features/teams/TeamEditor'));
-const ClubAdminPage = lazy(() => import('@/features/admin/ClubAdminPage'));
-const PlayersPage = lazy(() => import('@/features/players/PlayersPage'));
-const PlayerDetail = lazy(() => import('@/features/players/PlayerDetail'));
-const PlayerEditor = lazy(() => import('@/features/players/PlayerEditor'));
-const AvailabilityPage = lazy(() => import('@/features/availability/AvailabilityPage'));
-const CalendarPage = lazy(() => import('@/features/calendar/CalendarPage'));
-const SessionsPage = lazy(() => import('@/features/sessions/SessionsPage'));
-const SessionDetail = lazy(() => import('@/features/sessions/SessionDetail'));
-const SessionBuilder = lazy(() => import('@/features/sessions/SessionBuilder'));
-const DrillsPage = lazy(() => import('@/features/drills/DrillsPage'));
-const DrillDetail = lazy(() => import('@/features/drills/DrillDetail'));
-const DrillEditor = lazy(() => import('@/features/drills/DrillEditor'));
-const BoardPage = lazy(() => import('@/features/board/BoardPage'));
-const MatchesPage = lazy(() => import('@/features/matches/MatchesPage'));
-const MatchDetail = lazy(() => import('@/features/matches/MatchDetail'));
-const MatchEditor = lazy(() => import('@/features/matches/MatchEditor'));
-const AttendancePage = lazy(() => import('@/features/attendance/AttendancePage'));
-const StatsPage = lazy(() => import('@/features/stats/StatsPage'));
-const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
-const BillingPage = lazy(() => import('@/features/billing/BillingPage'));
-const ProfilePage = lazy(() => import('@/features/settings/ProfilePage'));
-const LegalPage = lazy(() => import('@/features/legal/LegalPage'));
-const Onboarding = lazy(() => import('@/features/onboarding/Onboarding'));
+const Landing = lazy(cargaDiferida(() => import('@/features/landing/Landing')));
+const Login = lazy(cargaDiferida(() => import('@/features/auth/Login')));
+const Dashboard = lazy(cargaDiferida(() => import('@/features/dashboard/Dashboard')));
+const TeamsPage = lazy(cargaDiferida(() => import('@/features/teams/TeamsPage')));
+const TeamDetail = lazy(cargaDiferida(() => import('@/features/teams/TeamDetail')));
+const TeamEditor = lazy(cargaDiferida(() => import('@/features/teams/TeamEditor')));
+const ClubAdminPage = lazy(cargaDiferida(() => import('@/features/admin/ClubAdminPage')));
+const PlayersPage = lazy(cargaDiferida(() => import('@/features/players/PlayersPage')));
+const PlayerDetail = lazy(cargaDiferida(() => import('@/features/players/PlayerDetail')));
+const PlayerEditor = lazy(cargaDiferida(() => import('@/features/players/PlayerEditor')));
+const AvailabilityPage = lazy(cargaDiferida(() => import('@/features/availability/AvailabilityPage')));
+const CalendarPage = lazy(cargaDiferida(() => import('@/features/calendar/CalendarPage')));
+const SessionsPage = lazy(cargaDiferida(() => import('@/features/sessions/SessionsPage')));
+const SessionDetail = lazy(cargaDiferida(() => import('@/features/sessions/SessionDetail')));
+const SessionBuilder = lazy(cargaDiferida(() => import('@/features/sessions/SessionBuilder')));
+const DrillsPage = lazy(cargaDiferida(() => import('@/features/drills/DrillsPage')));
+const DrillDetail = lazy(cargaDiferida(() => import('@/features/drills/DrillDetail')));
+const DrillEditor = lazy(cargaDiferida(() => import('@/features/drills/DrillEditor')));
+const BoardPage = lazy(cargaDiferida(() => import('@/features/board/BoardPage')));
+const MatchesPage = lazy(cargaDiferida(() => import('@/features/matches/MatchesPage')));
+const MatchDetail = lazy(cargaDiferida(() => import('@/features/matches/MatchDetail')));
+const MatchEditor = lazy(cargaDiferida(() => import('@/features/matches/MatchEditor')));
+const AttendancePage = lazy(cargaDiferida(() => import('@/features/attendance/AttendancePage')));
+const StatsPage = lazy(cargaDiferida(() => import('@/features/stats/StatsPage')));
+const SettingsPage = lazy(cargaDiferida(() => import('@/features/settings/SettingsPage')));
+const BillingPage = lazy(cargaDiferida(() => import('@/features/billing/BillingPage')));
+const ProfilePage = lazy(cargaDiferida(() => import('@/features/settings/ProfilePage')));
+const LegalPage = lazy(cargaDiferida(() => import('@/features/legal/LegalPage')));
+const Onboarding = lazy(cargaDiferida(() => import('@/features/onboarding/Onboarding')));
 
 /** Pantalla de arranque mientras se comprueba la sesión y se cargan los datos. */
 function Booting() {

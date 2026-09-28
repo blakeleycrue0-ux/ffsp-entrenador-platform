@@ -13,6 +13,7 @@ npm run preview          # deja esto corriendo en otra terminal
 npm run maqueta          # un ancho, rápido, para ir iterando
 npm run maqueta:completo # los siete anchos y dos altos
 npm run maqueta:contenido
+npm run maqueta:fragmentos
 ```
 
 Si Chromium no está donde Playwright lo busca, se le dice:
@@ -37,6 +38,20 @@ Lo mismo, pero con contenido que rompe de verdad: un club con un nombre de
 sesenta caracteres, jugadoras con nombre de una letra y con cincuenta, treinta
 jugadoras, ninguna y ningún equipo. Los diseños se rompen con los extremos,
 no con «Cadete A».
+
+## Qué comprueba `fragmentos.mjs`
+
+Esta no mide cajas: mide que la aplicación sobreviva a que una de sus partes
+no llegue. Cada pantalla se descarga por separado, y cuando uno de esos
+archivos falta —se publicó una versión nueva con la pestaña abierta, o se cayó
+la red un segundo— caían **las trece secciones a la vez**, con un botón de
+reintentar que no podía funcionar porque `React.lazy` se queda con la promesa
+rechazada. Aquí se sirven ocho fragmentos como HTML, igual que hacía el
+comodín del hosting, y se exige que:
+
+- si los archivos nuevos sí están, se arregle sola: una recarga y ya;
+- si siguen sin estar, no entre en bucle de recargas y diga la verdad, con un
+  botón que recargue de verdad.
 
 ## Los datos son falsos
 

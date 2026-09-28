@@ -8,11 +8,12 @@
     "dev": "vite",
     "build": "tsc -b && tsc -p tsconfig.functions.json && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit false --emitDeclarationOnly false --pretty",
+    "typecheck": "tsc -b --pretty",
     "maqueta": "node pruebas/solapes.mjs",
     "maqueta:completo": "node pruebas/solapes.mjs --completo",
     "maqueta:contenido": "node pruebas/contenido.mjs",
-    "maqueta:perfil": "node pruebas/perfil.mjs"
+    "maqueta:perfil": "node pruebas/perfil.mjs",
+    "maqueta:fragmentos": "node pruebas/fragmentos.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
