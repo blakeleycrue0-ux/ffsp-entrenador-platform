@@ -79,7 +79,7 @@ export default function Dashboard() {
           <div className="skeleton h-8 w-64" />
           <div className="skeleton h-4 w-80" />
         </div>
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Skeleton />
           <Skeleton />
           <Skeleton />
@@ -158,7 +158,7 @@ export default function Dashboard() {
       </div>
 
       {/* Tarjetas principales */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Próximo entrenamiento */}
         {session0 ? (
           <Panel className="relative overflow-hidden">
@@ -233,9 +233,11 @@ export default function Dashboard() {
             <div className="relative p-5">
               <div className="flex items-center justify-between gap-3">
                 <span className="eyebrow">Próximo partido</span>
-                <Tag tone="solid" size="sm">
-                  {relativeDay(match0.date)}
-                </Tag>
+                {/* En gris, no en blanco sólido: la fecha completa está tres
+                    líneas más abajo, así que esto es un recordatorio, no un
+                    dato nuevo, y no tiene por qué ser lo más brillante de la
+                    tarjeta. */}
+                <Tag size="sm">{relativeDay(match0.date)}</Tag>
               </div>
 
               <p className="mt-3 text-[13px] font-medium text-ink-900">
@@ -415,7 +417,7 @@ export default function Dashboard() {
       </div>
 
       {/* Tareas + actividad */}
-      <div className="grid gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <Panel className="p-5 lg:col-span-2">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Tareas pendientes</span>
@@ -482,7 +484,7 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {overviews.map((o) => (
             <Link key={o.team.id} to={`/app/equipo-tecnico/${o.team.id}`} className="panel panel-hover block p-4">
               <div className="flex items-start justify-between gap-2">

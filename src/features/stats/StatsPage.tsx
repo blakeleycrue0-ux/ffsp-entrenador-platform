@@ -129,7 +129,7 @@ export default function StatsPage() {
       />
 
       {/* Cifras principales */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Panel className="p-4">
           <Figure
             label="Asistencia media"
@@ -183,7 +183,7 @@ export default function StatsPage() {
         </p>
       </Panel>
 
-      <div className="mt-3 grid gap-3 lg:grid-cols-3">
+      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
         <Panel className="lg:col-span-2">
           <PanelHeader
             title="Evolución de la asistencia"
@@ -214,7 +214,7 @@ export default function StatsPage() {
         </Panel>
       </div>
 
-      <div className="mt-3 grid gap-3 lg:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
         <RankingPanel title="Mayor asistencia" rows={best} tone="ok" />
         <RankingPanel title="Menor asistencia" rows={worst} tone="bad" detail />
       </div>

@@ -94,9 +94,9 @@ export default function MatchEditor() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
         <Panel className="p-5 sm:p-6">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Equipo">
               <Select
                 value={form.teamId}

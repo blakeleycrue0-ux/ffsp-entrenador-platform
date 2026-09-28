@@ -23,7 +23,7 @@ export default function ProfilePage() {
     <>
       <PageHeader title="Mi perfil" description="Tus datos, tus equipos y tus preferencias." />
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Panel className="p-6 lg:col-span-2">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
             <Avatar name={staff.name} size={80} className="shrink-0" />
@@ -90,7 +90,7 @@ export default function ProfilePage() {
           </p>
         </Panel>
       )}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {teams.map((t) => {
           const o = teamOverview(data, t);
           return (

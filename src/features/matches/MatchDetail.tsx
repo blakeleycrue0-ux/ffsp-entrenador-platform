@@ -137,7 +137,7 @@ export default function MatchDetail() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           [<CalendarClock key="a" size={16} />, 'Fecha', relativeDay(match.date), longDate(match.date)],
           [<Clock key="b" size={16} />, 'Hora', match.start, `citación ${callup?.meetingTime ?? '—'}`],
@@ -188,7 +188,7 @@ export default function MatchDetail() {
               </div>
             </Panel>
           ) : (
-            <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
               {/* Lista de jugadoras */}
               <Panel className="overflow-hidden">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
@@ -370,7 +370,7 @@ export default function MatchDetail() {
           ))}
 
         {tab === 'detalles' && (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Panel className="p-5">
               <h2 className="text-[15px] font-semibold">Información del partido</h2>
               <dl className="mt-4 space-y-3 text-[13.5px]">

@@ -128,10 +128,10 @@ export default function TeamEditor() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         <Panel className="p-5 sm:p-6">
           <h2 className="text-[15px] font-semibold">Datos del equipo</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Nombre" className="sm:col-span-2" hint="Como lo llamáis en el club.">
               <Input value={form.name} onChange={(e) => patch({ name: e.target.value })} placeholder="Ej.: Sub-17" />
             </Field>

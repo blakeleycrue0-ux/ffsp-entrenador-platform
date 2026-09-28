@@ -116,7 +116,7 @@ export default function DrillsPage() {
           />
         </Panel>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {drills.map((d) => (
             <Panel key={d.id} className="flex flex-col p-5">
               <div className="flex items-start justify-between gap-3">

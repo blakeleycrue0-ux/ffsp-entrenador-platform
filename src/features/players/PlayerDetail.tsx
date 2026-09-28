@@ -144,7 +144,7 @@ export default function PlayerDetail() {
 
       <div className="mt-6">
         {tab === 'asistencia' && (
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Panel className="p-5">
               <Figure
                 label="Asistencia"
@@ -201,7 +201,7 @@ export default function PlayerDetail() {
         )}
 
         {tab === 'evolucion' && (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Panel className="p-5">
               <h3 className="flex items-center gap-2 text-[15px] font-semibold">
                 <TrendingUp size={16} className="text-ink-800" /> Asistencia por sesión
@@ -252,7 +252,7 @@ export default function PlayerDetail() {
         {tab === 'contacto' && (
           <Panel className="p-5 sm:p-6">
             {canSeeContact ? (
-              <div className="grid gap-6 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <p className="eyebrow">Datos de la jugadora</p>
                   <dl className="mt-3 space-y-2.5 text-[13.5px]">

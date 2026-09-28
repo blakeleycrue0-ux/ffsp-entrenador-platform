@@ -12,7 +12,7 @@
  * hueco de la página dejaría de cuadrar en cuanto uno de los dos cambiara.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ClipboardList, Dumbbell, LogOut, Plus, Swords, UserRound, Users, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,7 @@ import { useClub } from '@/store/store';
 import { currentStaff } from '@/store/selectors';
 import { ROLE_LABEL } from '@/services/auth';
 import { Avatar } from '@/components/ui';
-import { ALL_NAV_ITEMS, MOBILE_NAV, admiteCrear, isActive } from './navigation';
+import { ALL_NAV_ITEMS, MOBILE_NAV, isActive } from './navigation';
 
 const TABS = MOBILE_NAV.map((to) => ALL_NAV_ITEMS.find((i) => i.to === to)!).filter(Boolean);
 const MORE = ALL_NAV_ITEMS.filter((i) => !MOBILE_NAV.includes(i.to));
@@ -32,12 +32,40 @@ const QUICK = [
   { label: 'Nuevo ejercicio', to: '/app/ejercicios/nuevo', icon: Dumbbell },
 ];
 
+/**
+ * ¿Está abierto el teclado del móvil?
+ *
+ * No hay un evento para esto, así que se mira lo que sí se puede medir: el
+ * `visualViewport` —lo que de verdad se ve— se encoge cuando el teclado sube.
+ * Con más de 140 px de diferencia no hay otra explicación razonable; por
+ * debajo, es la barra del navegador escondiéndose.
+ *
+ * Hace falta porque el dique y el botón de crear van `fixed`, y con el teclado
+ * abierto se quedan flotando ENCIMA de las teclas: tapan lo que se escribe y
+ * se pulsan sin querer al ir a por una letra.
+ */
+function useTecladoAbierto(): boolean {
+  const [abierto, setAbierto] = useState(false);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const mirar = () => setAbierto(window.innerHeight - vv.height > 140);
+    mirar();
+    vv.addEventListener('resize', mirar);
+    return () => vv.removeEventListener('resize', mirar);
+  }, []);
+
+  return abierto;
+}
+
 export function BottomNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { data, signOut } = useClub();
   const staff = currentStaff(data);
   const [sheet, setSheet] = useState<null | 'more' | 'create'>(null);
+  const teclado = useTecladoAbierto();
 
   const moreActive = MORE.some((m) => isActive(pathname, m));
 
@@ -52,26 +80,6 @@ export function BottomNav() {
 
   return (
     <>
-      {/* Acción rápida: pequeña, azul y justo encima del dique. Sólo donde de
-          verdad se empieza algo nuevo — ver `admiteCrear`. */}
-      {admiteCrear(pathname) && (
-      <button
-        onClick={() => setSheet('create')}
-        aria-label="Crear"
-        className={cn(
-          'fixed right-4 z-flotante grid w-[var(--fab-h)] place-items-center rounded-full text-white',
-          '[background:linear-gradient(180deg,#168BFF,#087AF0)] shadow-pop',
-          'transition-transform duration-200 ease-out active:scale-95 lg:hidden',
-        )}
-        /* Siempre por encima del dique y con dieciséis píxeles de aire, se
-           encoja éste o no: antes tenía sus propios 76 y 88 px y en cuanto el
-           dique cambiaba de alto se le montaba encima. */
-        style={{ height: 'var(--fab-h)', bottom: 'calc(var(--sobre-nav) + var(--fab-gap))' }}
-      >
-        <Plus size={22} strokeWidth={2.2} />
-      </button>
-      )}
-
       {/* ── EL DIQUE ──────────────────────────────────────────────────────────
           Flota: separado de los bordes y por encima del área segura, para no
           chocar con los controles del navegador ni con la barra del iPhone. Es
@@ -79,7 +87,10 @@ export function BottomNav() {
           brillo ni color: se tiene que notar poco. */}
       <nav
         aria-label="Secciones"
-        className="cristal fixed inset-x-4 z-nav rounded-3xl lg:hidden"
+        /* `hidden` y no una animación: con el teclado abierto el dique estorba
+           de verdad, y sacarlo del árbol evita además que el lector de
+           pantalla lo recorra mientras se escribe. */
+        className={cn('cristal fixed inset-x-4 z-nav rounded-3xl lg:hidden', teclado && 'hidden')}
         style={{
           height: 'var(--nav-h)',
           bottom: 'calc(var(--nav-gap) + var(--safe-bottom))',
@@ -153,6 +164,19 @@ export function BottomNav() {
               </div>
             ) : (
               <>
+                {/* Crear, desde cualquier sección y a un toque del dique.
+                    Antes esto era un botón redondo azul fijo en la esquina: se
+                    montaba sobre las tarjetas de Inicio, competía con
+                    «Guardar» en asistencia y repetía el «Añadir jugadora» que
+                    ya estaba en la cabecera de cada lista. */}
+                <div className="px-2 pt-1">
+                  <button
+                    onClick={() => setSheet('create')}
+                    className="flex w-full items-center gap-3 rounded-2xl bg-raised px-4 py-3 text-left text-md font-semibold text-ink-900 active:opacity-80"
+                  >
+                    <Plus size={18} /> Crear…
+                  </button>
+                </div>
                 <ul className="p-2">
                   {MORE.map((m) => {
                     const on = isActive(pathname, m);

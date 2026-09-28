@@ -281,10 +281,18 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTML
   },
 );
 
+/**
+ * UN `<select>` NATIVO CRECE HASTA SU OPCIÓN MÁS LARGA. Con `w-auto`, un club
+ * llamado «Club Deportivo Femenino Ciudad de San Fernando de Henares «B»»
+ * estiraba el desplegable a 594 px dentro de una columna de 324 y sacaba la
+ * página 237 px por el lado —medido—. `max-w-full` en los dos niveles le pone
+ * el techo de su contenedor y el texto se recorta, que es lo que tiene que
+ * pasar.
+ */
 export function Select({ className, children, ...rest }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <div className="relative">
-      <select className={cn('field cursor-pointer appearance-none pr-8', className)} {...rest}>
+    <div className="relative min-w-0 max-w-full">
+      <select className={cn('field max-w-full cursor-pointer appearance-none pr-8', className)} {...rest}>
         {children}
       </select>
       <ChevronDown size={15} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden />
@@ -575,7 +583,10 @@ export function EmptyState({
     <div className={cn('px-6 py-12 text-center', className)}>
       <h3 className="text-md font-semibold text-ink-900">{title}</h3>
       {description && <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-muted">{description}</p>}
-      {action && <div className="mt-5 flex justify-center gap-2">{action}</div>}
+      {/* `flex-wrap`: dos acciones con etiqueta larga —«Añadir jugadora» e
+          «Importar desde un archivo»— no caben en 320 px, y como los botones
+          no parten su texto a propósito, lo que tiene que partir es la fila. */}
+      {action && <div className="mt-5 flex flex-wrap justify-center gap-2">{action}</div>}
     </div>
   );
 }
@@ -728,12 +739,19 @@ export function PageHeader({
   return (
     <div className={cn('mb-8', className)}>
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
-        <div className="min-w-0 flex-1">
+        {/* `basis-[15rem]`: sin una anchura de partida, el navegador prefiere
+            ESTRECHAR el título antes que bajar los botones a la línea de
+            abajo, y «Entrenamientos» acababa en una caja de 139 px pidiendo
+            187. Con una base, lo que se parte primero son los botones. */}
+        <div className="min-w-0 flex-1 basis-[15rem]">
           {eyebrow && <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2 text-sm text-ink-500">{eyebrow}</div>}
-          <h1 className="text-xl font-semibold leading-tight sm:text-2xl">{title}</h1>
+          <h1 className="break-words text-xl font-semibold leading-tight sm:text-2xl">{title}</h1>
           {description && <p className="mt-2 max-w-[62ch] text-base leading-relaxed text-ink-500">{description}</p>}
         </div>
-        {actions && <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+        {/* Sin `shrink-0`: con él la caja de botones se negaba a estrecharse,
+            así que `flex-wrap` no llegaba a entrar nunca y a 320 px se salía
+            de la pantalla 127 px. Que se encoja y, si no cabe, que parta. */}
+        {actions && <div className="flex min-w-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {children}
     </div>

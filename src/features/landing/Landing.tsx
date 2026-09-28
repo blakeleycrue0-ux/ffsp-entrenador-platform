@@ -379,7 +379,7 @@ export default function Landing() {
 
         {/* ── Tres cosas que la definen ────────────────────────────────── */}
         <section className="border-b border-line bg-panel">
-          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 md:grid-cols-3 md:gap-10 lg:py-16">
+          <div className="mx-auto grid grid-cols-1 max-w-6xl gap-8 px-5 py-14 md:grid-cols-3 md:gap-10 lg:py-16">
             {PILARES.map((p, i) => (
               <Revelar key={p.titulo} delay={i * 80}>
                 <div className="flex gap-4">
@@ -415,7 +415,7 @@ export default function Landing() {
             </Revelar>
 
             <Revelar delay={80}>
-              <div className="mt-12 grid gap-8 lg:mt-14 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-14">
+              <div className="mt-12 grid grid-cols-1 gap-8 lg:mt-14 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-14">
                 {/* Selector. En ancho de sobremesa cada apartado se despliega
                     con su explicación; en móvil son pestañas que se deslizan. */}
                 <div role="tablist" aria-label="Capacidades">
@@ -537,7 +537,7 @@ export default function Landing() {
 
         {/* ── En el campo, con el móvil ────────────────────────────────── */}
         <section className="border-y border-line bg-surface">
-          <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 py-20 lg:grid-cols-2 lg:gap-16 lg:py-28">
+          <div className="mx-auto grid grid-cols-1 max-w-6xl items-center gap-14 px-5 py-20 lg:grid-cols-2 lg:gap-16 lg:py-28">
             <Revelar>
               <p className="text-sm font-semibold uppercase tracking-[0.14em] text-azul-400">
                 En el campo
@@ -591,7 +591,7 @@ export default function Landing() {
                 Tres pasos y estás dentro.
               </h2>
             </Revelar>
-            <div className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
+            <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
               {PASOS.map(([titulo, texto], i) => (
                 <Revelar key={titulo} delay={i * 90}>
                   <div className="border-t-2 border-ink-900 pt-5">
@@ -617,7 +617,7 @@ export default function Landing() {
             style={{ backgroundImage: GRANO }}
           />
           <div className="relative mx-auto max-w-6xl px-5 py-20 lg:py-28">
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20">
               <Revelar>
                 <p className="text-sm font-semibold uppercase tracking-[0.14em] text-azul-400">
                   Honestidad
@@ -732,7 +732,7 @@ export default function Landing() {
       {/* ── Pie ────────────────────────────────────────────────────────── */}
       <footer className="border-t border-line bg-panel">
         <div className="mx-auto max-w-6xl px-5 py-14">
-          <div className="grid gap-10 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
             <div>
               <div className="flex items-center gap-2.5">
                 <Marca size={24} className="text-azul-500" />

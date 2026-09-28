@@ -206,7 +206,7 @@ function WeekView({ cursor, events, onOpen }: { cursor: Date; events: CalendarEv
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7 lg:gap-2">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7 lg:gap-2">
       {days.map((d, i) => {
         const list = events.filter((e) => e.date === toISODate(d));
         const isToday = isSameDay(d, today());

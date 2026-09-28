@@ -26,16 +26,9 @@
        Cualquier cosa que quiera quedarse POR ENCIMA del dique parte de aquí. */
     --sobre-nav: calc(var(--nav-h) + var(--nav-gap) + var(--safe-bottom));
 
-    /* El botón de crear: alto y separación respecto al dique. */
-    --fab-h: 48px;
-    --fab-gap: 16px;
-
     /* Lo que la página tiene que dejar libre al final para que su último
-       renglón se pueda leer entero. Se mide contra la pieza MÁS ALTA de las
-       que flotan, que es el botón de crear y no el dique: reservando sólo lo
-       del dique, la última fila de la lista se quedaba debajo del botón y no
-       se podía pulsar por mucho que se desplazara. */
-    --hueco-inferior: calc(var(--sobre-nav) + var(--fab-gap) + var(--fab-h) + 16px);
+       renglón se pueda leer entero por encima del dique. */
+    --hueco-inferior: calc(var(--sobre-nav) + 24px);
 
     /* Márgenes laterales y ritmo vertical de una página. */
     --pagina-x: 16px;
@@ -52,8 +45,6 @@
     :root {
       --nav-h: 0px;
       --nav-gap: 0px;
-      --fab-h: 0px;
-      --fab-gap: 0px;
       --hueco-inferior: 48px;
       --pagina-x: 24px;
       --pagina-top: 24px;

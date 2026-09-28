@@ -188,12 +188,12 @@ export default function SessionBuilder() {
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_340px]">
         <div className="space-y-4">
           {/* Datos de la sesión */}
           <Panel className="p-5">
             <h2 className="text-[15px] font-semibold">Datos de la sesión</h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Título" className="sm:col-span-2">
                 <Input
                   value={draft.title}

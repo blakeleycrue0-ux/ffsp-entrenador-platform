@@ -163,7 +163,7 @@ export default function AvailabilityPage() {
       </Panel>
 
       {/* Resumen: sólo cuenta lo que hay registrado */}
-      <div className="mb-3 grid gap-3 sm:grid-cols-3">
+      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Panel className="p-4">
           <Figure label="En plantilla" value={squad.length} />
         </Panel>
@@ -294,7 +294,7 @@ export default function AvailabilityPage() {
                 ))}
               </Select>
             </Field>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field label="Desde">
                 <Input
                   type="date"

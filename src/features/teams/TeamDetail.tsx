@@ -81,7 +81,7 @@ export default function TeamDetail() {
       />
 
       {/* Panel del equipo */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Panel className="flex items-center gap-4 p-5">
           <Ring value={teamAttendanceRate(data, team.id)} size={64} stroke={6} />
           <Figure
@@ -124,7 +124,7 @@ export default function TeamDetail() {
 
       <div className="mt-6">
         {tab === 'resumen' && (
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Panel className="p-5 lg:col-span-2">
               <h3 className="text-[15px] font-semibold">Evolución de la asistencia</h3>
               <p className="mt-1 text-[13px] text-muted">Porcentaje de presentes en cada sesión registrada.</p>
@@ -168,7 +168,7 @@ export default function TeamDetail() {
                   Ver analíticas
                 </Link>
               </div>
-              <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {[...rows]
                   .filter((r) => r.computable > 0)
                   .sort((a, b) => (a.rate ?? 0) - (b.rate ?? 0))
@@ -237,7 +237,7 @@ export default function TeamDetail() {
         )}
 
         {tab === 'agenda' && (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Panel className="overflow-hidden">
               <div className="border-b border-ink-100 px-5 py-3.5">
                 <h3 className="flex items-center gap-2 text-[14.5px] font-semibold">
@@ -339,7 +339,7 @@ export default function TeamDetail() {
         )}
 
         {tab === 'cuerpo' && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {coaches.map((c) => (
               <Panel key={c.id} className="flex items-start gap-3.5 p-5">
                 <Avatar name={c.name} size={44} />

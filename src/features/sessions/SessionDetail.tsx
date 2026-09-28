@@ -112,7 +112,7 @@ export default function SessionDetail() {
       />
 
       {/* Datos de la sesión */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           [<Clock key="1" size={16} />, 'Horario', `${s.start} – ${addMinutes(s.start, s.duration)}`, minutesToLabel(s.duration)],
           [<MapPin key="2" size={16} />, 'Campo', s.venue, team?.name ?? ''],
@@ -132,7 +132,7 @@ export default function SessionDetail() {
         ))}
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Línea de tiempo */}
         <Panel className="overflow-hidden lg:col-span-2">
           <div className="flex items-center justify-between border-b border-ink-100 px-5 py-4">

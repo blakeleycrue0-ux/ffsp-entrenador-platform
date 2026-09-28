@@ -80,9 +80,12 @@ export default function PlayersPage() {
 
       <ImportPlayers open={importing} onClose={() => setImporting(false)} teamId={teamId} />
 
-      {/* Filtros */}
-      <Panel className="mb-5 p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+      {/* Filtros. SIN CAJA: un recuadro alrededor de un buscador y dos
+          desplegables no agrupa nada que no se viera ya —están juntos—, y en un
+          móvil se comía cien píxeles de alto en bordes y relleno para no decir
+          nada. Lo que separa esto de la lista es una línea. */}
+      <div className="mb-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
             <Input
@@ -92,15 +95,15 @@ export default function PlayersPage() {
               className="pl-10"
             />
           </div>
-          <div className="flex flex-wrap gap-2.5">
-            <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-auto min-w-[150px]">
+          <div className="flex gap-2.5">
+            <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-full sm:w-[170px]">
               {teams.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>
               ))}
             </Select>
-            <Select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className="w-auto min-w-[150px]">
+            <Select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className="w-full sm:w-[170px]">
               <option value="todas">Cualquier estado</option>
               {(Object.keys(AVAILABILITY) as AvailabilityStatus[]).map((s) => (
                 <option key={s} value={s}>
@@ -111,7 +114,7 @@ export default function PlayersPage() {
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-3">
           <Filter size={14} className="mr-1 text-ink-400" />
           {POSITION_GROUPS.map((g) => (
             <button
@@ -125,11 +128,11 @@ export default function PlayersPage() {
               {g.label}
             </button>
           ))}
-          <span className="ml-auto text-[12.5px] text-ink-400">
+          <span className="ml-auto text-sm text-ink-500">
             {players.length} de {data.players.filter((p) => p.teamId === teamId).length} jugadoras
           </span>
         </div>
-      </Panel>
+      </div>
 
       {players.length === 0 ? (
         <Panel>
@@ -209,7 +212,7 @@ export default function PlayersPage() {
           </div>
         </Panel>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {players.map((p) => (
             <Link key={p.id} to={`/app/plantilla/${p.id}`} className="panel panel-hover p-4">
               <div className="flex items-start justify-between">

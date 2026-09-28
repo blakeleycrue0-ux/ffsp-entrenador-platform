@@ -151,7 +151,7 @@ export default function Login() {
     invite?.found && (invite.expired || invite.revoked || invite.accepted);
 
   return (
-    <div className="grid min-h-screen bg-panel lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 min-h-screen bg-panel lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
       {/* Marca */}
       <div className="hidden flex-col justify-between border-r border-line bg-surface p-10 lg:flex">
         <Link to="/" className="text-sm font-medium text-ink-600 transition-colors hover:text-ink-900">

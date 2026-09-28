@@ -93,7 +93,7 @@ export default function BillingPage() {
         description="Qué plan tiene tu club, qué estás usando y dónde se gestiona el pago."
       />
 
-      <div className="grid gap-3 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <Panel className="lg:col-span-2">
           <PanelHeader
             title="Tu plan"

@@ -151,11 +151,11 @@ export default function PlayerEditor() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         <div className="space-y-4">
           <Panel className="p-5">
             <h2 className="text-[15px] font-semibold">Datos básicos</h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Nombre y apellidos" className="sm:col-span-2">
                 <Input value={form.name} onChange={(e) => patch({ name: e.target.value })} placeholder="Nombre y apellidos" />
               </Field>
@@ -227,7 +227,7 @@ export default function PlayerEditor() {
               <p className="mt-1 text-[12.5px] text-muted">
                 Datos personales. Sólo los ven los perfiles con permiso y nunca aparecen en listados.
               </p>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Teléfono de la jugadora">
                   <Input value={form.phone ?? ''} onChange={(e) => patch({ phone: e.target.value })} placeholder="+34 …" />
                 </Field>
@@ -260,7 +260,7 @@ export default function PlayerEditor() {
                   <div className="mt-3 space-y-3">
                     {form.guardians.map((g, i) => (
                       <div key={i} className="rounded-xl border border-line p-3.5">
-                        <div className="grid gap-3 sm:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                           <Field label="Nombre">
                             <Input value={g.name} onChange={(e) => setGuardian(i, { name: e.target.value })} />
                           </Field>

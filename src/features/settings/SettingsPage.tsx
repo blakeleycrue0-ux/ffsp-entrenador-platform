@@ -75,7 +75,7 @@ export default function SettingsPage() {
       />
 
       {tab === 'cuenta' && (
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           <PlanPanel />
 
           <CodigoPanel />
@@ -141,7 +141,7 @@ export default function SettingsPage() {
         <div className="space-y-3">
           <Panel>
             <PanelHeader title="Tu perfil" />
-            <div className="grid gap-4 p-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
               <div>
                 <p className="eyebrow">Rol</p>
                 <p className="mt-1 text-base font-medium text-ink-900">
@@ -221,7 +221,7 @@ export default function SettingsPage() {
       )}
 
       {tab === 'ayuda' && (
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           <Panel>
             <PanelHeader
               title="Cuéntanos un problema"

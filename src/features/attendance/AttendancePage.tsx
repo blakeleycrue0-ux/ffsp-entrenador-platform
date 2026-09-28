@@ -194,7 +194,7 @@ export default function AttendancePage() {
       {/* ── QUÉ SESIÓN ────────────────────────────────────────────────────────
           Dos desplegables y la fecha debajo. Sin caja: agrupar dos campos que
           ya están juntos no añade ninguna información, sólo un borde más. */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="label" htmlFor="asis-equipo">Equipo</label>
           <Select id="asis-equipo" value={teamId} onChange={(e) => setTeamId(e.target.value)}>

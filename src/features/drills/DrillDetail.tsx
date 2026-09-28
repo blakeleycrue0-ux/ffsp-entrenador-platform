@@ -63,7 +63,7 @@ export default function DrillDetail() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           {/* Pizarra */}
           <Panel className="p-5">
