@@ -254,7 +254,7 @@ export default function Landing() {
           con un cristal oscuro para que el texto no se pise con el contenido. */}
       <header
         className={cn(
-          'sticky top-0 z-40 transition-colors duration-200',
+          'sticky top-0 z-nav transition-colors duration-200',
           conBorde ? 'border-b border-white/10 bg-night/85 backdrop-blur-xl' : 'bg-transparent',
         )}
       >
@@ -299,12 +299,9 @@ export default function Landing() {
       <main>
         {/* ── Portada ──────────────────────────────────────────────────── */}
         <section className="relative overflow-hidden bg-night text-white">
-          {/* Resplandor verde detrás del titular */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-[-22rem] h-[44rem] w-[72rem] -translate-x-1/2 rounded-full opacity-[0.22] blur-[120px]"
-            style={{ background: 'radial-gradient(closest-side, #19B877, transparent 70%)' }}
-          />
+          {/* Aquí había un resplandor verde de 72 rem detrás del titular, de
+              cuando la marca era verde. Sobrevivió al cambio de identidad y
+              tiñe de otro color una portada que es negra, blanca y azul. */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-[0.035]"
@@ -328,9 +325,9 @@ export default function Landing() {
               <h1 className="mx-auto mt-7 max-w-4xl font-display text-[clamp(2.2rem,8.6vw,5.25rem)] font-black leading-[0.94] tracking-[-0.045em] text-white">
                 Prepara la semana.
                 <br />
-                <span className="bg-gradient-to-br from-azul-300 to-azul-600 bg-clip-text text-transparent">
-                  Dibuja la jugada.
-                </span>
+                {/* Azul plano, no un degradado recortado sobre el texto: un
+                    titular con degradado se lee peor y no dice nada más. */}
+                <span className="text-azul-500">Dibuja la jugada.</span>
               </h1>
             </Revelar>
 
@@ -368,11 +365,6 @@ export default function Landing() {
           <div id="pizarra" className="relative mx-auto max-w-6xl scroll-mt-20 px-5 pb-20 lg:pb-24">
             <Revelar delay={220}>
               <div className="relative">
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute -inset-x-10 -top-6 bottom-10 rounded-[3rem] opacity-40 blur-[64px]"
-                  style={{ background: 'radial-gradient(closest-side, #19B877, transparent 72%)' }}
-                />
                 <div className="relative rounded-2xl border border-white/10 bg-white/[0.035] p-3 shadow-[0_40px_100px_-40px_rgba(0,0,0,0.9)] sm:p-5">
                   <BoardDemo tone="dark" />
                   <p className="mt-3.5 px-1 text-sm leading-relaxed text-white/45">
@@ -708,16 +700,9 @@ export default function Landing() {
         <section className="bg-panel px-5 pb-20 lg:pb-28">
           <Revelar>
             <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-night px-6 py-16 text-center ring-1 ring-inset ring-white/10 sm:px-12 lg:py-24">
-              {/* El verde sube desde abajo. Un degradado en porcentajes se
-                  comporta igual en cualquier ancho; un desenfoque, no. */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    'radial-gradient(120% 110% at 50% 128%, #19B877 0%, rgba(25,184,119,0.45) 34%, transparent 62%)',
-                }}
-              />
+              {/* Aquí subía un verde desde abajo, de la identidad anterior.
+                  Se queda el negro: el color de esta sección lo pone el botón,
+                  que es lo único que hay que pulsar. */}
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 opacity-[0.14] mix-blend-overlay"

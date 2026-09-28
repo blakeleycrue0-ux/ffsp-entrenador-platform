@@ -144,7 +144,7 @@ export function Isla({
       className={cn(
         /* Nunca más ancha que el lienzo: centrada y sin tope, una barra larga
            se sale por los dos lados y el primer botón queda fuera. */
-        'cristal absolute z-20 max-w-[calc(100%-1.5rem)] rounded-2xl',
+        'cristal absolute z-flotante max-w-[calc(100%-1.5rem)] rounded-2xl',
         moviendo ? 'transition-none' : 'transition-[top,left,right,bottom] duration-200',
         sitio.muelle === 'flotante' ? '' : ANCLAJE[sitio.muelle],
         className,

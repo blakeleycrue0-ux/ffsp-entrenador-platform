@@ -21,8 +21,11 @@ import { AvailabilityDot, disponibilidad, respuesta } from '@/components/domain/
 import { cn, longDate, relativeDay, relativeTime } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
 import type { Callup } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function MatchDetail() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { matchId = '' } = useParams();
   const { data, actions } = useClub();
   const ownName = clubShortName(data);

@@ -10,8 +10,11 @@ import { Avatar, Tag, Panel, EmptyState, LinkButton, PageHeader, Figure, Tabs } 
 import { LineTrend, Ring } from '@/components/domain/Charts';
 import { AvailabilityDot, disponibilidad } from '@/components/domain/StatusBits';
 import { cn, longDate, minutesToLabel, relativeDay, shortDate } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function TeamDetail() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { teamId = '' } = useParams();
   const { data } = useClub();
   const [tab, setTab] = useState('resumen');

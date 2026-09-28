@@ -6,8 +6,11 @@ import { ROLE_LABEL } from '@/services/auth';
 import { Avatar, Tag, Button, Panel, LinkButton, PageHeader } from '@/components/ui';
 import { Ring } from '@/components/domain/Charts';
 import { relativeDay } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function ProfilePage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('formulario');
   const { data, signOut } = useClub();
   const staff = currentStaff(data);
   const teams = visibleTeams(data);

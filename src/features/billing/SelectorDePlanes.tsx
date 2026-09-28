@@ -93,7 +93,7 @@ export function SelectorDePlanes({
             className={cn(
               'relative flex-1 rounded-xl py-2.5 text-base font-semibold transition-all duration-200',
               p.tier === elegido
-                ? 'bg-azul-600 text-white shadow-azul'
+                ? 'bg-azul-600 text-white'
                 : 'text-ink-600 hover:bg-white/[0.06] hover:text-ink-900',
             )}
           >

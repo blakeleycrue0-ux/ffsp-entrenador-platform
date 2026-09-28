@@ -22,8 +22,11 @@ import { BoardEditor, useBoardHistory } from './BoardEditor';
 import { formatSeconds, usePlayback } from './playback';
 import { escenaNueva, layoutTeam, type Scene } from './scene';
 import { exportSceneImage } from './exportImage';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function BoardPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('completo');
   const { playId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();

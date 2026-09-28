@@ -10,6 +10,7 @@ import { ImportPlayers } from './ImportPlayers';
 import { AVAILABILITY, AvailabilityDot, disponibilidad, LINEA, lineaDe } from '@/components/domain/StatusBits';
 import { cn, age, normalize } from '@/lib/utils';
 import type { AvailabilityStatus, PlayerPosition } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const POSITION_GROUPS: { id: string; label: string; positions: PlayerPosition[] }[] = [
   { id: 'todas', label: 'Todas', positions: [] },
@@ -20,6 +21,8 @@ const POSITION_GROUPS: { id: string; label: string; positions: PlayerPosition[] 
 ];
 
 export default function PlayersPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, teamId, setTeamId } = useClub();
   const teams = visibleTeams(data);
 

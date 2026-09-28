@@ -5,8 +5,11 @@ import { useClub } from '@/store/store';
 import { visibleTeams } from '@/store/selectors';
 import { Tag, Panel, EmptyState, LinkButton, PageHeader, Select, Tabs } from '@/components/ui';
 import { cn, minutesToLabel, relativeDay, toISODate, today } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function SessionsPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, teamId, setTeamId } = useClub();
   const teams = visibleTeams(data);
   const [tab, setTab] = useState('proximas');

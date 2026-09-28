@@ -9,8 +9,11 @@ import { Tag, Button, Panel, LinkButton, PageHeader } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { addMinutes, cn, longDate, minutesToLabel, relativeDay } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function SessionDetail() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { sessionId = '' } = useParams();
   const { data, actions } = useClub();
   const toast = useToast();
@@ -153,7 +156,7 @@ export default function SessionDetail() {
                   {i < timeline.length - 1 && (
                     <span className="absolute left-[38px] top-14 h-[calc(100%-2.5rem)] w-px bg-line" />
                   )}
-                  <div className="relative z-10 flex w-7 shrink-0 flex-col items-center">
+                  <div className="relative z-fijo flex w-7 shrink-0 flex-col items-center">
                     <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink-50 text-[11px] font-bold text-ink-900 tabular-nums">
                       {String(i + 1).padStart(2, '0')}
                     </span>

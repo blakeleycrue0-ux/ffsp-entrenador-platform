@@ -7,8 +7,11 @@ import { isClubAdmin, teamOverview, visibleTeams } from '@/store/selectors';
 import { Tag, EmptyState, LinkButton, PageHeader, Skeleton } from '@/components/ui';
 import { Ring } from '@/components/domain/Charts';
 import { relativeDay } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function TeamsPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, loading } = useClub();
   const admin = isClubAdmin(data);
   const teams = useMemo(() => visibleTeams(data), [data]);

@@ -140,7 +140,7 @@ function Oferta({
   const mensual = importe(plan.priceMonthly, plan.currency);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-hoja flex items-end justify-center sm:items-center">
       <button
         aria-label="Cerrar"
         onClick={onSeguirEnGratis}

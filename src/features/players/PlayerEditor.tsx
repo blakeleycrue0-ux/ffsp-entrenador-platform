@@ -16,6 +16,7 @@ import { useToast } from '@/components/ui/Toast';
 import { AVAILABILITY, AVAILABILITY_ORDER } from '@/components/domain/StatusBits';
 import { cn } from '@/lib/utils';
 import { POSITIONS, type Guardian, type Player, type PlayerPosition } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const blank = (teamId: string, number: number): Player => ({
   id: '',
@@ -32,6 +33,8 @@ const blank = (teamId: string, number: number): Player => ({
 });
 
 export default function PlayerEditor() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('formulario');
   const { playerId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();

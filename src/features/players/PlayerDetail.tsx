@@ -10,8 +10,11 @@ import { Avatar, Tag, Panel, LinkButton, Figure, Tabs } from '@/components/ui';
 import { asistencia, disponibilidad } from '@/components/domain/StatusBits';
 import { BarTrend, Ring } from '@/components/domain/Charts';
 import { age, cn, dayShort, longDate, shortDate } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function PlayerDetail() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { playerId = '' } = useParams();
   const { data } = useClub();
   const [tab, setTab] = useState('asistencia');

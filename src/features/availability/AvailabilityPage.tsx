@@ -21,8 +21,11 @@ import {
   type Injury, type InjuryState, type InjuryUpdate,
 } from '@/services/injuries';
 import { longDate, longDateInline, toISODate, today } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function AvailabilityPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { data, teamId, setTeamId, userId } = useClub();
   const toast = useToast();
   const teams = visibleTeams(data);

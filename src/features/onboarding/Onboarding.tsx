@@ -258,7 +258,7 @@ export default function Onboarding() {
                     className={cn(
                       'flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left transition-all',
                       cargo === c
-                        ? 'border-azul-600/60 bg-azul-600/10 text-ink-900 shadow-azul'
+                        ? 'border-azul-600/60 bg-azul-600/10 text-ink-900'
                         : 'border-line bg-panel text-ink-700 hover:bg-raised',
                     )}
                   >
@@ -295,7 +295,9 @@ export default function Onboarding() {
                   maxLength={28}
                 />
               </Field>
-              <div className="cristal rounded-2xl px-4 py-3">
+              {/* Cristal NO: esto no flota sobre nada, está en la columna con
+                  todo lo demás. El cristal es para lo que se pone encima. */}
+              <div className="rounded-2xl border border-line bg-panel px-4 py-3">
                 <p className="text-sm font-semibold text-ink-900">¿Te han invitado?</p>
                 <p className="mt-0.5 text-sm leading-relaxed text-ink-500">
                   Usa el enlace que te envió tu club, no crees uno nuevo.
@@ -536,7 +538,7 @@ function Progreso({ actual, total }: { actual: number; total: number }) {
       className="h-[3px] w-full overflow-hidden rounded-full bg-white/10"
     >
       <div
-        className="h-full rounded-full bg-azul-600 shadow-azul transition-[width] duration-[450ms] ease-[cubic-bezier(.22,1,.36,1)]"
+        className="h-full rounded-full bg-azul-600 transition-[width] duration-[450ms] ease-[cubic-bezier(.22,1,.36,1)]"
         style={{ width: `${parte * 100}%` }}
       />
     </div>

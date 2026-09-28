@@ -28,7 +28,15 @@ export function Topbar({ onSearch, onCreate }: { onSearch: () => void; onCreate:
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-[var(--header-h)] items-center gap-3 border-b border-line bg-panel px-4 lg:px-6">
+    /* EL FONDO TIENE QUE TAPAR. Estaba con `bg-panel`, que es un 4,5 % de
+       blanco: la cabecera se quedaba pegada arriba y el contenido de la página
+       pasaba por DEBAJO y se leía a través de ella, cruzándose con el logo y
+       los iconos. Un fondo casi transparente en algo pegajoso no es un estilo,
+       es un fallo. Cristal ahumado: tapa, desenfoca y se sigue notando poco. */
+    <header
+      className="cristal sticky top-0 z-nav flex items-center gap-3 rounded-none border-x-0 border-t-0 px-4 lg:px-6"
+      style={{ height: 'calc(var(--header-h) + var(--safe-top))', paddingTop: 'var(--safe-top)' }}
+    >
       <Link to="/app" className="lg:hidden">
         <Wordmark size="sm" showSubtitle={false} />
       </Link>

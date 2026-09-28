@@ -668,7 +668,7 @@ export function BoardEditor({
           title={h.id === 'movimiento' && !selected ? 'Elige antes una ficha' : h.label}
           className={cn(
             'grid h-9 w-9 place-items-center rounded-xl transition-colors disabled:opacity-35',
-            tool === h.id ? 'bg-azul-600 text-white shadow-azul' : 'text-ink-700 hover:bg-white/[0.07] hover:text-ink-900',
+            tool === h.id ? 'bg-azul-600 text-white' : 'text-ink-700 hover:bg-white/[0.07] hover:text-ink-900',
           )}
         >
           {h.icon}
@@ -721,7 +721,7 @@ export function BoardEditor({
       <button
         onClick={playback.toggle}
         aria-label={playback.playing ? 'Pausar' : 'Reproducir'}
-        className="grid h-9 w-9 place-items-center rounded-xl bg-azul-600 text-white shadow-azul transition-transform active:scale-95"
+        className="grid h-9 w-9 place-items-center rounded-xl bg-azul-600 text-white transition-transform active:scale-95"
       >
         {playback.playing ? <Pause size={15} /> : <Play size={15} />}
       </button>
@@ -1008,7 +1008,7 @@ export function BoardEditor({
              verde del campo, un 60 % de negro deja el texto ilegible. */
           <div
             className={cn(
-              'cristal absolute z-20 overflow-y-auto p-3',
+              'cristal absolute z-flotante overflow-y-auto p-3',
               'inset-x-3 bottom-3 max-h-[62%] rounded-3xl',
               'lg:inset-x-auto lg:bottom-3 lg:right-3 lg:top-3 lg:max-h-none lg:w-[300px] lg:rounded-2xl',
             )}
@@ -1017,7 +1017,7 @@ export function BoardEditor({
             {/* Pegada arriba: el panel se desplaza, y sin esto el título y el
                 botón de cerrar se iban con el desplazamiento. */}
             <div
-              className="sticky -top-3 z-10 -mx-3 mb-2 flex items-center justify-between px-3 py-2"
+              className="sticky -top-3 z-fijo -mx-3 mb-2 flex items-center justify-between px-3 py-2"
               style={{ background: 'rgba(11,11,14,0.92)' }}
             >
               <p className="rotulo">{selectedObject || drawing ? 'Selección' : 'La jugada'}</p>
@@ -1049,7 +1049,7 @@ export function BoardEditor({
         {!cajon && (
           <button
             onClick={() => setCajon(true)}
-            className="cristal absolute right-3 top-3 z-20 rounded-xl px-3 py-2 text-sm font-semibold text-ink-800 transition-colors hover:text-ink-900"
+            className="cristal absolute right-3 top-3 z-flotante rounded-xl px-3 py-2 text-sm font-semibold text-ink-800 transition-colors hover:text-ink-900"
           >
             {selectedObject ? KIND_LABEL[selectedObject.kind] : 'Panel'}
           </button>

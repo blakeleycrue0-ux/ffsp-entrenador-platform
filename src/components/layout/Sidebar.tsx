@@ -20,7 +20,7 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
        de un píxel, no un cambio de fondo. En un tema oscuro, meter el menú en
        otro tono sólo añade una mancha; lo que ordena la pantalla es el aire y
        el peso del texto. */
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-[var(--sidebar-w)] flex-col border-r border-line bg-surface lg:flex">
+    <aside className="fixed inset-y-0 left-0 z-nav hidden w-[var(--sidebar-w)] flex-col border-r border-line bg-surface lg:flex">
       {/* El club de quien trabaja aquí, no la marca del producto */}
       <div className="flex items-center gap-2.5 px-4 py-4">
         <ClubCrest name={clubName(data)} src={data.club?.crestUrl} size={30} />

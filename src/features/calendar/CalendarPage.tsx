@@ -15,11 +15,14 @@ import {
   addDays, cap, cn, isSameDay, longDate, monthName, startOfWeek, toISODate, today,
 } from '@/lib/utils';
 import type { CalendarEvent, EventKind } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 type View = 'dia' | 'semana' | 'mes';
 const DAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 export default function CalendarPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data } = useClub();
   const toast = useToast();
   const teams = visibleTeams(data);

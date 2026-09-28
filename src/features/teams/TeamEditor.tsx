@@ -12,6 +12,7 @@ import { humanError } from '@/services/supabase';
 import { Button, Panel, Field, Input, Modal, PageHeader, Select } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import type { Team, TrainingSlot } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -32,6 +33,8 @@ const blank = (): Team => ({
 });
 
 export default function TeamEditor() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('formulario');
   const { teamId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();

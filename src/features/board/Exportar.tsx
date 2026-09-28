@@ -78,7 +78,7 @@ export function Exportar({
   const segundos = (scene.durationMs / 1000).toFixed(1).replace('.', ',');
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-hoja flex items-end justify-center sm:items-center">
       <button
         aria-label="Cerrar"
         onClick={estado === 'grabando' ? () => aborto.current?.abort() : onCerrar}

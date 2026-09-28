@@ -22,6 +22,7 @@ import {
 import { Avatar, Meter } from '@/components/ui';
 import { BarTrend, LineTrend } from '@/components/domain/Charts';
 import { cn, dayShort, shortDate } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 /** Un porcentaje que puede no existir. Nunca se dibuja como 0 %. */
 const Pct = ({ value, className }: { value: number | null; className?: string }) =>
@@ -34,6 +35,8 @@ const Pct = ({ value, className }: { value: number | null; className?: string })
 type Periodo = '4' | '8' | 'todo';
 
 export default function StatsPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, teamId, setTeamId } = useClub();
   const teams = visibleTeams(data);
   const [periodo, setPeriodo] = useState<Periodo>('8');

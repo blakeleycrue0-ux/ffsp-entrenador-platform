@@ -79,3 +79,29 @@ export const isActive = (pathname: string, item: NavItem): boolean => {
   if (item.to === '/app') return pathname === '/app' || pathname === '/app/';
   return pathname.startsWith(item.match ?? item.to);
 };
+
+/**
+ * ¿Tiene sentido un botón de «crear» flotante en esta pantalla?
+ *
+ * NO EN TODAS, y ésa es la decisión. Un botón redondo azul fijo en la esquina
+ * de cada pantalla deja de significar nada: en asistencia competía con
+ * «Guardar», en la pizarra tapaba las herramientas y en ajustes no había nada
+ * que crear. Se queda donde de verdad se empieza algo nuevo.
+ *
+ * Fuera de aquí: cualquier formulario (`/nuevo`, `/editar`), porque ahí ya se
+ * está creando algo; y las pantallas que se miran o se rellenan, no se
+ * llenan de elementos nuevos.
+ */
+const SIN_CREAR = [
+  '/app/asistencia',
+  '/app/disponibilidad',
+  '/app/analiticas',
+  '/app/ajustes',
+  '/app/perfil',
+  '/app/pizarra',
+];
+
+export const admiteCrear = (pathname: string): boolean => {
+  if (/\/(nuevo|nueva|editar|asistencia)(\/|$)/.test(pathname)) return false;
+  return !SIN_CREAR.some((r) => pathname.startsWith(r));
+};

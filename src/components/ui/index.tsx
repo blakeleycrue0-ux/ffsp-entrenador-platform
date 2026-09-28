@@ -35,7 +35,7 @@ type ButtonSize = 'sm' | 'md' | 'lg';
  */
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'text-white shadow-azul [background:linear-gradient(180deg,#168BFF,#087AF0)] ' +
+    'text-white [background:linear-gradient(180deg,#168BFF,#087AF0)] ' +
     'hover:[background:linear-gradient(180deg,#2E98FF,#0A84FF)] ' +
     'disabled:[background:rgba(255,255,255,0.09)] disabled:text-ink-500 disabled:shadow-none',
   secondary: 'bg-raised text-ink-900 hover:bg-[rgba(255,255,255,0.11)]',
@@ -491,7 +491,7 @@ export function Modal({
   const width = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }[size];
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6">
+    <div className="fixed inset-0 z-hoja flex items-end justify-center sm:items-center sm:p-6">
       {/* El velo es NEGRO. Con la paleta invertida, `ink-900` es blanco: puesto
           ahí aclaraba la página en vez de apagarla, y el diálogo —que iba con
           `bg-panel`, un 4,5 % de blanco— se leía con la pantalla de detrás
@@ -501,7 +501,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         className={cn(
-          'cristal relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden',
+          'cristal relative z-fijo flex max-h-[92vh] w-full flex-col overflow-hidden',
           'rounded-t-4xl animate-sheet-in sm:rounded-3xl sm:animate-fade-up',
           width,
         )}
@@ -672,7 +672,7 @@ export function Dropdown({
       {open && (
         <div
           className={cn(
-            'absolute z-50 mt-1 min-w-[200px] overflow-hidden rounded-md border border-line bg-panel p-1 shadow-pop animate-fade-up',
+            'absolute z-hoja mt-1 min-w-[200px] overflow-hidden rounded-md border border-line bg-panel p-1 shadow-pop animate-fade-up',
             align === 'right' ? 'right-0' : 'left-0',
             className,
           )}
@@ -720,15 +720,20 @@ export function PageHeader({
   children?: React.ReactNode;
   className?: string;
 }) {
+  /* El ritmo del encabezado, igual en todas las pantallas: título, ocho
+     píxeles, descripción, treinta y dos hasta el contenido. Antes cada página
+     lo remataba con su propio margen y ninguna empezaba a la misma altura.
+     `min-w-0` en las dos columnas: sin él, un título largo o un nombre de
+     equipo largo empujan los botones fuera de la pantalla en vez de cortarse. */
   return (
-    <div className={cn('mb-5', className)}>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="min-w-0">
-          {eyebrow && <div className="mb-1 flex flex-wrap items-center gap-2 text-sm text-muted">{eyebrow}</div>}
+    <div className={cn('mb-8', className)}>
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0 flex-1">
+          {eyebrow && <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2 text-sm text-ink-500">{eyebrow}</div>}
           <h1 className="text-xl font-semibold leading-tight sm:text-2xl">{title}</h1>
-          {description && <p className="mt-1 max-w-2xl text-base leading-relaxed text-muted">{description}</p>}
+          {description && <p className="mt-2 max-w-[62ch] text-base leading-relaxed text-ink-500">{description}</p>}
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+        {actions && <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {children}
     </div>
@@ -766,7 +771,7 @@ export function Tooltip({
       <span
         role="tooltip"
         className={cn(
-          'pointer-events-none absolute left-1/2 z-50 hidden -translate-x-1/2 whitespace-nowrap rounded bg-ink-900 px-2 py-1 text-xs text-ink-0 group-hover/tt:block',
+          'pointer-events-none absolute left-1/2 z-hoja hidden -translate-x-1/2 whitespace-nowrap rounded bg-ink-900 px-2 py-1 text-xs text-ink-0 group-hover/tt:block',
           side === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5',
         )}
       >

@@ -30,8 +30,11 @@ import { humanError } from '@/services/supabase';
 import { useConfirmacion } from '@/features/passcode/Confirmar';
 import { BotonDePlan, LIMITE, SelectorDePlanes, useSeleccionDePlan } from './SelectorDePlanes';
 import { cn } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function BillingPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const toast = useToast();
   const { data } = useClub();
   const { confirmar, hoja } = useConfirmacion();

@@ -6,8 +6,11 @@ import { useToast } from '@/components/ui/Toast';
 import { DrillBoardViewer } from '@/features/board/DrillBoard';
 import { TacticBoard } from './TacticBoard';
 import { cn, shortDate } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function DrillDetail() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { drillId = '' } = useParams();
   const { data, actions } = useClub();
   const toast = useToast();

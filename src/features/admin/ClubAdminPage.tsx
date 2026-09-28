@@ -26,8 +26,11 @@ import { useToast } from '@/components/ui/Toast';
 import { squadOf } from '@/store/selectors';
 import { longDate } from '@/lib/utils';
 import type { Club, Staff, StaffRole } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function ClubAdminPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, actions } = useClub();
   const toast = useToast();
   const [tab, setTab] = useState('equipos');

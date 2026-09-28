@@ -8,6 +8,7 @@ import { humanError } from '@/services/supabase';
 import { DrillBoardEditor } from '@/features/board/DrillBoard';
 import { cn } from '@/lib/utils';
 import type { Drill, DrillTag } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const TAGS: DrillTag[] = [
   'Posesión', 'Finalización', 'Defensa', 'Ataque', 'Presión', 'Transición',
@@ -29,6 +30,8 @@ const empty = (): Drill => ({
 });
 
 export default function DrillEditor() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { drillId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();

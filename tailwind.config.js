@@ -82,9 +82,30 @@ export default {
         /* Lo que flota de verdad. Si se ve la sombra, sobra. */
         pop: '0 16px 50px rgba(0,0,0,0.45)',
         lift: '0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08)',
-        /* Iluminación azul de lo activo. Es el máximo: si alguien piensa
-           «brillo», ya es demasiado. */
-        azul: '0 0 24px rgba(10,140,255,0.12)',
+      },
+
+      /**
+       * LAS CAPAS TIENEN NOMBRE.
+       * Con números sueltos, cada componente nuevo elegía uno más alto que el
+       * anterior para «asegurarse», y así se llega a un z-index de seis cifras
+       * y a que nadie sepa qué tapa a qué. Estos siete valen para todo el
+       * producto y se leen: `z-nav` está por encima de `z-flotante` porque la
+       * navegación manda sobre un botón flotante.
+       */
+      zIndex: {
+        contenido: '0',
+        /* Lo que se queda pegado dentro de su propio desplazamiento. */
+        fijo: '10',
+        /* Botones y barras que flotan sobre la página. */
+        flotante: '20',
+        /* La navegación: por encima de todo lo de la página. */
+        nav: '30',
+        /* El velo que apaga la aplicación detrás de una hoja. */
+        velo: '40',
+        /* Hojas, diálogos y menús contextuales. */
+        hoja: '50',
+        /* Los avisos, que tienen que verse incluso sobre una hoja. */
+        aviso: '60',
       },
       borderRadius: {
         DEFAULT: '10px',

@@ -123,7 +123,7 @@ function HojaDeConfirmacion({
   };
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-hoja flex items-end justify-center sm:items-center">
       {/* La aplicación sigue ahí detrás, en cristal ahumado. */}
       <button
         aria-label="Cancelar"

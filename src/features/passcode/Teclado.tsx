@@ -46,7 +46,7 @@ export function Puntos({ valor, fase }: { valor: string; fase: Fase }) {
                 fase === 'mal'
                   ? 'border-bad bg-bad'
                   : lleno
-                    ? 'scale-110 border-transparent bg-azul-600 shadow-azul'
+                    ? 'scale-110 border-transparent bg-azul-600'
                     : 'border-white/22 bg-transparent',
               )}
             />

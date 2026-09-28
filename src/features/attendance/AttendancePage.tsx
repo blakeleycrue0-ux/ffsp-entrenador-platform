@@ -13,20 +13,20 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCheck, Save, Undo2 } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { squadOf, teamAttendanceRate, visibleTeams } from '@/store/selectors';
-import {
-  Avatar, Tag, Button, Panel, EmptyState, PageHeader, Select, Figure,
-} from '@/components/ui';
+import { squadOf, visibleTeams } from '@/store/selectors';
+import { Avatar, Button, EmptyState, PageHeader, Panel, Select } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { AvailabilityDot, asistencia, disponibilidad } from '@/components/domain/StatusBits';
-import { SplitBar } from '@/components/domain/Charts';
 import { cn, longDate, relativeDay, toISODate, today } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
 import type { AttendanceMark } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const MARKS: AttendanceMark[] = ['presente', 'tarde', 'justificada', 'lesionada', 'ausente'];
 
 export default function AttendancePage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { data, teamId, setTeamId, actions } = useClub();
   const toast = useToast();
   const teams = visibleTeams(data);
@@ -88,6 +88,34 @@ export default function AttendancePage() {
       sinRegistrar: list.filter((m) => m.mark === 'sin_registrar').length,
     };
   }, [marks]);
+
+  /** El estado de partida, para poder contar los cambios y deshacerlos. */
+  const partida = useMemo(() => {
+    const base: Record<string, AttendanceMark> = {};
+    squad.forEach((p) => {
+      base[p.id] = existing?.marks[p.id]?.mark
+        ?? (p.availability.status === 'lesionada'
+          ? 'lesionada'
+          : ['enferma', 'sancionada'].includes(p.availability.status)
+            ? 'justificada'
+            : 'sin_registrar');
+    });
+    return base;
+  }, [squad, existing]);
+
+  /* Cuántas marcas se han tocado. La barra de guardar dice esto y sólo esto:
+     un número que no se sabe de dónde sale no sirve para decidir si guardar. */
+  const cambios = useMemo(
+    () => Object.entries(marks).filter(([id, m]) => m.mark !== partida[id]).length,
+    [marks, partida],
+  );
+
+  const descartar = () => {
+    const base: Record<string, { mark: AttendanceMark; reason?: string }> = {};
+    squad.forEach((p) => { base[p.id] = existing?.marks[p.id] ?? { mark: partida[p.id] }; });
+    setMarks(base);
+    setDirty(false);
+  };
 
   const setMark = (playerId: string, mark: AttendanceMark) => {
     setMarks((m) => ({ ...m, [playerId]: { ...m[playerId], mark } }));
@@ -160,181 +188,187 @@ export default function AttendancePage() {
     <>
       <PageHeader
         title="Asistencia"
-        description="Marca todos como presentes y corrige sólo las excepciones."
-        actions={
-          <div className="hidden gap-2 sm:flex">
-            <Button variant="secondary" size="sm" icon={<CheckCheck size={15} />} onClick={markAllPresent}>
-              Marcar todos como presentes
-            </Button>
-            <Button size="sm" icon={<Save size={15} />} loading={saving} onClick={save} disabled={!dirty && !!existing}>
-              Guardar asistencia
-            </Button>
-          </div>
-        }
+        description="Marca a todas como presentes y cambia sólo las excepciones."
       />
 
-      {/* Selectores */}
-      <Panel className="mb-4 p-4">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="label">Equipo</label>
-            <Select value={teamId} onChange={(e) => setTeamId(e.target.value)}>
-              {teams.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <label className="label">Entrenamiento</label>
-            <Select value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
-              {sessions.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {relativeDay(s.date)} · {s.start} — {s.title}
-                </option>
-              ))}
-            </Select>
+      {/* ── QUÉ SESIÓN ────────────────────────────────────────────────────────
+          Dos desplegables y la fecha debajo. Sin caja: agrupar dos campos que
+          ya están juntos no añade ninguna información, sólo un borde más. */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="label" htmlFor="asis-equipo">Equipo</label>
+          <Select id="asis-equipo" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
+            {teams.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <label className="label" htmlFor="asis-sesion">Entrenamiento</label>
+          <Select id="asis-sesion" value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
+            {sessions.map((s) => (
+              <option key={s.id} value={s.id}>
+                {relativeDay(s.date)} · {s.start}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </div>
+
+      {session && (
+        <p className="mt-3 text-sm leading-relaxed text-ink-500">
+          {/* El título va aquí y no dentro del desplegable: ahí se cortaba a
+              media palabra, porque un `<select>` nativo no se puede recortar
+              con puntos suspensivos. */}
+          {session.title && <span className="text-ink-700">{session.title} · </span>}
+          {longDate(session.date)} · {session.start}
+          {session.venue ? ` · ${session.venue}` : ''}
+          {existing?.savedAt && <span className="text-ink-400"> · ya registrada, puedes corregirla</span>}
+        </p>
+      )}
+
+      {/* ── RESUMEN ───────────────────────────────────────────────────────────
+          Cuatro cifras con su palabra debajo, y nada más. Antes eran cuatro
+          cajas con borde, fondo, radio y relleno, más una barra de colores en
+          una quinta caja: cinco rectángulos para decir «18 de 22». La cifra
+          grande ya es el contraste; el recuadro no añadía nada. */}
+      {/* Rejilla, no una fila que se parte: envuelto, el cuarto dato caía solo
+          a la línea de abajo y parecía que sobraba. */}
+      <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+        <Cifra valor={squad.length} etiqueta="Plantilla" />
+        <Cifra valor={counts.presente + counts.tarde} etiqueta="Presentes" tono="ok" />
+        <Cifra valor={counts.ausente} etiqueta="Ausentes" tono="bad" />
+        <Cifra valor={counts.justificada + counts.lesionada} etiqueta="Justificadas" tono="warn" />
+      </div>
+
+      {counts.sinRegistrar > 0 && (
+        <p className="mt-3 text-sm text-ink-500">
+          {counts.sinRegistrar === 1
+            ? 'Queda 1 jugadora sin marcar.'
+            : `Quedan ${counts.sinRegistrar} jugadoras sin marcar.`}
+        </p>
+      )}
+
+      {/* ── JUGADORAS ─────────────────────────────────────────────────────────
+          La acción de «todas presentes» vive AQUÍ, al lado de la lista sobre la
+          que actúa, y no en una barra flotante permanente junto al guardar: son
+          dos cosas distintas y estaban en el mismo sitio, tocándose. */}
+      <div className="mt-8 flex flex-wrap items-baseline justify-between gap-3">
+        <h2 className="text-md font-semibold text-ink-900">Jugadoras</h2>
+        <Button variant="secondary" size="sm" icon={<CheckCheck size={15} />} onClick={markAllPresent}>
+          Marcar todas presentes
+        </Button>
+      </div>
+
+      <ul className="mt-2 divide-y divide-line">
+        {squad.map((p) => {
+          const current = marks[p.id]?.mark ?? 'sin_registrar';
+          return (
+            <li key={p.id} className="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:gap-4">
+              <Link to={`/app/plantilla/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                <Avatar name={p.name} size={36} badge={p.number} />
+                <span className="min-w-0">
+                  <span className="block truncate text-base font-medium text-ink-900">{p.shortName}</span>
+                  <span className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-ink-500">
+                    <AvailabilityDot status={p.availability.status} />
+                    {p.position}
+                    {p.availability.status !== 'disponible' && (
+                      <span className="truncate text-ink-400">· {disponibilidad(p.availability.status).label}</span>
+                    )}
+                  </span>
+                </span>
+              </Link>
+
+              {/* Cinco estados, siempre en una fila que se desliza si no cabe:
+                  partida en dos filas se convertía en un bloque y empujaba a
+                  la jugadora de al lado. */}
+              <div className="flex shrink-0 gap-1.5">
+                {MARKS.map((m) => {
+                  const a = asistencia(m);
+                  const active = current === m;
+                  return (
+                    <button
+                      key={m}
+                      onClick={() => setMark(p.id, m)}
+                      aria-pressed={active}
+                      className={cn(
+                        'h-10 min-w-0 flex-1 rounded-xl border px-2 text-sm font-medium transition-colors sm:h-9 sm:flex-none sm:px-3',
+                        active
+                          ? m === 'presente'
+                            ? 'border-transparent bg-ok/15 text-ok'
+                            : m === 'tarde' || m === 'justificada'
+                              ? 'border-transparent bg-warn/15 text-warn'
+                              : m === 'lesionada'
+                                ? 'border-transparent bg-bad/12 text-bad'
+                                : 'border-transparent bg-bad/15 text-bad'
+                          : 'border-line text-ink-500 hover:border-ink-400 hover:text-ink-800',
+                      )}
+                    >
+                      <span className="hidden sm:inline">{a.label}</span>
+                      <span className="sm:hidden">{a.short}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* ── GUARDAR ───────────────────────────────────────────────────────────
+          Sólo existe cuando hay algo que guardar. Antes había una barra fija
+          permanente con las cifras, «Todos», «Descartar» y «Guardar» a la vez,
+          y encima el botón redondo de crear se le montaba por la derecha; para
+          que no se tocaran, la propia barra se reservaba 72 px a mano.
+          Una barra, una responsabilidad: cuántos cambios hay y guardarlos. */}
+      {dirty && (
+        <div
+          className="sticky z-flotante mt-6 lg:static lg:mt-8"
+          style={{ bottom: 'calc(var(--sobre-nav) + 12px)' }}
+        >
+          <div className="cristal flex items-center gap-3 rounded-2xl px-4 py-3">
+            <p className="min-w-0 flex-1 truncate text-base text-ink-700">
+              {cambios === 1 ? '1 cambio sin guardar' : `${cambios} cambios sin guardar`}
+            </p>
+            <Button variant="ghost" size="sm" icon={<Undo2 size={15} />} onClick={descartar}>
+              <span className="hidden sm:inline">Descartar</span>
+            </Button>
+            <Button size="sm" icon={<Save size={15} />} loading={saving} onClick={save}>
+              Guardar
+            </Button>
           </div>
         </div>
-
-        {session && (
-          <p className="mt-3 text-[12.5px] text-muted">
-            {longDate(session.date)} · {session.start} · {session.venue}
-            {existing?.savedAt && <span className="ml-2 text-ink-400">· ya registrada, puedes corregirla</span>}
-          </p>
-        )}
-      </Panel>
-
-      {/* Resumen en vivo */}
-      <div className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Panel className="p-5">
-          <Figure label="Plantilla" value={squad.length} hint={`${counts.sinRegistrar} sin registrar`} />
-        </Panel>
-        <Panel className="p-5">
-          <Figure label="Presentes" value={counts.presente} tone="ok" hint="en esta sesión" />
-        </Panel>
-        <Panel className="p-5">
-          <Figure label="Justificadas" value={counts.justificada} tone="warn" hint="con motivo" />
-        </Panel>
-        <Panel className="p-5">
-          <Figure label="Ausentes" value={counts.ausente} tone="bad" hint={`media del equipo ${teamAttendanceRate(data, teamId)}%`} />
-        </Panel>
-      </div>
-
-      <Panel className="mb-4 p-4">
-        <SplitBar
-          height={10}
-          segments={[
-            { value: counts.presente, color: 'bg-ok', label: 'Presentes' },
-            { value: counts.tarde, color: 'bg-warn', label: 'Tarde' },
-            { value: counts.justificada, color: 'bg-warn/60', label: 'Justificadas' },
-            { value: counts.lesionada, color: 'bg-bad/60', label: 'Lesionadas' },
-            { value: counts.ausente, color: 'bg-bad', label: 'Ausentes' },
-            { value: counts.sinRegistrar, color: 'bg-line', label: 'Sin registrar' },
-          ]}
-        />
-      </Panel>
-
-      {/* Lista de marcado */}
-      <Panel className="overflow-hidden">
-        <ul className="divide-y divide-ink-100">
-          {squad.map((p) => {
-            const current = marks[p.id]?.mark ?? 'pendiente';
-            return (
-              <li key={p.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:px-5">
-                <Link to={`/app/plantilla/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3.5">
-                  <Avatar name={p.name} size={38} badge={p.number} />
-                  <span className="min-w-0">
-                    <span className="block truncate text-[14px] font-medium text-ink-900">{p.shortName}</span>
-                    <span className="mt-0.5 flex items-center gap-1.5 text-[12.5px] text-muted">
-                      <AvailabilityDot status={p.availability.status} />
-                      {p.position}
-                      {p.availability.status !== 'disponible' && (
-                        <span className="text-ink-400">· {disponibilidad(p.availability.status).label}</span>
-                      )}
-                    </span>
-                  </span>
-                </Link>
-
-                {/* Botonera de estados — grande y con buen área táctil */}
-                <div className="grid shrink-0 grid-cols-4 gap-1.5 sm:flex">
-                  {MARKS.map((m) => {
-                    const a = asistencia(m);
-                    const active = current === m;
-                    return (
-                      <button
-                        key={m}
-                        onClick={() => setMark(p.id, m)}
-                        className={cn(
-                          'flex h-10 items-center justify-center gap-1.5 rounded-xl border px-3 text-[12.5px] font-medium transition-all sm:w-auto sm:min-w-[92px]',
-                          active
-                            ? m === 'presente'
-                              ? 'border-ok bg-ok/10 text-[#1F6B44]'
-                              : m === 'justificada'
-                                ? 'border-warn bg-warn/10 text-[#9A6412]'
-                                : m === 'ausente'
-                                  ? 'border-bad bg-bad/8 text-[#A63B34]'
-                                  : 'border-ink-300 bg-ink-100 text-ink-600'
-                            : 'border-line text-ink-400 hover:border-ink-300 hover:text-ink-600',
-                        )}
-                      >
-                        <span className={cn('h-2 w-2 rounded-full', active ? a.bg : 'bg-line')} />
-                        <span className="hidden sm:inline">{a.label}</span>
-                        <span className="sm:hidden">{a.short}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </Panel>
-
-      {/* Barra de guardado fija en móvil */}
-      <div className="sticky bottom-[calc(76px+var(--safe-bottom))] z-20 mt-4 lg:static lg:mt-6">
-        <Panel className="flex flex-col items-stretch gap-3 p-4 shadow-pop sm:flex-row sm:flex-wrap sm:items-center sm:justify-between lg:shadow-card">
-          <div className="flex flex-wrap items-center gap-2">
-            <Tag tone="ok">{counts.presente} presentes</Tag>
-            {counts.tarde > 0 && <Tag tone="warn">{counts.tarde} tarde</Tag>}
-            <Tag tone="bad">{counts.ausente} ausentes</Tag>
-            {counts.sinRegistrar > 0 && <Tag tone="neutral">{counts.sinRegistrar} sin registrar</Tag>}
-          </div>
-          <div className="flex gap-2 pr-[72px] sm:pr-0">
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={<CheckCheck size={15} />}
-              onClick={markAllPresent}
-              className="flex-1 sm:hidden"
-            >
-              Todos
-            </Button>
-            {dirty && (
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={<Undo2 size={15} />}
-                onClick={() => {
-                  const base: Record<string, { mark: AttendanceMark; reason?: string }> = {};
-                  squad.forEach((p) => {
-                    base[p.id] = existing?.marks[p.id] ?? { mark: 'sin_registrar' };
-                  });
-                  setMarks(base);
-                  setDirty(false);
-                }}
-              >
-                Descartar cambios
-              </Button>
-            )}
-            <Button size="sm" icon={<Save size={15} />} loading={saving} onClick={save} disabled={!dirty && !!existing} className="flex-1 sm:flex-none">
-              Guardar
-              <span className="hidden sm:inline">&nbsp;asistencia</span>
-            </Button>
-          </div>
-        </Panel>
-      </div>
+      )}
     </>
+  );
+}
+
+/**
+ * Una cifra y su palabra. Sin caja, sin borde y sin cápsula de color.
+ *
+ * EL NÚMERO VA EN BLANCO Y EL COLOR ES UN PUNTO. Tres cifras enormes en verde,
+ * rojo y ámbar sobre negro se pelean entre ellas y ninguna destaca; además el
+ * color acaba siendo lo primero que se ve, cuando lo primero que hay que leer
+ * es cuántas son. El punto dice de qué es cada una sin gritar.
+ */
+function Cifra({
+  valor, etiqueta, tono,
+}: { valor: number; etiqueta: string; tono?: 'ok' | 'warn' | 'bad' }) {
+  return (
+    <div className="min-w-0">
+      <p className="cifra text-[34px] text-ink-900">{valor}</p>
+      <p className="mt-1.5 flex items-center gap-1.5 text-sm text-ink-500">
+        {tono && (
+          <span
+            aria-hidden
+            className={cn(
+              'h-1.5 w-1.5 shrink-0 rounded-full',
+              tono === 'ok' ? 'bg-ok' : tono === 'warn' ? 'bg-warn' : 'bg-bad',
+            )}
+          />
+        )}
+        <span className="truncate">{etiqueta}</span>
+      </p>
+    </div>
   );
 }

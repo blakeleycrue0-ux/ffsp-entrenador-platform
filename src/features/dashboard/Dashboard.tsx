@@ -21,8 +21,11 @@ import { Ring, SplitBar } from '@/components/domain/Charts';
 import { cn, daysFromToday, longDate, minutesToLabel, relativeDay, relativeTime, toISODate, today } from '@/lib/utils';
 import { CreateMenu } from '@/components/layout/CreateMenu';
 import type { CoachTask } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function Dashboard() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, loading, loadError, teamId, actions } = useClub();
   const ownName = clubShortName(data);
   const admin = isClubAdmin(data);

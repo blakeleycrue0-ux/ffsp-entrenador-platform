@@ -21,6 +21,7 @@ import { useToast } from '@/components/ui/Toast';
 import { addMinutes, cn, minutesToLabel, normalize, toISODate, today, uid } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
 import type { Drill, DrillTag, SessionBlock, TrainingSession } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const TAGS: DrillTag[] = [
   'Calentamiento', 'Posesión', 'Finalización', 'Defensa', 'Ataque', 'Presión',
@@ -43,6 +44,8 @@ const emptySession = (teamId: string): TrainingSession => ({
 });
 
 export default function SessionBuilder() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();

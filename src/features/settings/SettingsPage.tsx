@@ -15,8 +15,11 @@ import {
 import { useToast } from '@/components/ui/Toast';
 import { PlanPanel } from '@/features/billing/PlanPanel';
 import { CodigoPanel } from '@/features/passcode/CodigoPanel';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function SettingsPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { data, userId, actions } = useClub();
   const toast = useToast();
   const staff = currentStaff(data);
