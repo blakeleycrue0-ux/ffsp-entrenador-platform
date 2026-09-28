@@ -406,6 +406,26 @@ const unwrap = <T,>(res: { data: T | null; error: unknown }): T => {
  * tiene equipos asignados, las consultas devuelven listas vacías.
  */
 export async function loadWorkspace(userId: string): Promise<ClubData> {
+  /**
+   * PRIMERO, ASEGURAR QUE EXISTE EL PERFIL.
+   *
+   * El perfil lo crea un disparador al darse de alta, y si ese disparador no
+   * llegó a hacerlo —o la fila se perdió después— la cuenta quedaba viva pero
+   * inservible: `updateProfile` actualizaba cero filas sin decir nada y crear
+   * un club fallaba con un error de clave foránea en bruto, porque
+   * `clubs.created_by` apunta a `profiles`. Y no había manera de arreglarlo
+   * desde el cliente: `profiles` no tiene política de INSERT, a propósito.
+   *
+   * Esta llamada es del servidor, sólo puede crear el perfil de QUIEN LLAMA y
+   * no hace nada si ya existe. Si falla, no se corta la carga: lo más probable
+   * es que el perfil esté y no pase nada, y dejar a alguien sin entrar por
+   * esto sería peor que el problema.
+   */
+  await supabase.rpc('asegurar_perfil').then(
+    () => undefined,
+    () => undefined,
+  );
+
   const [profileRes, staffRes, teamsRes, teamStaffRes, clubRes, tasksRes, notifsRes, plansRes] =
     await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),

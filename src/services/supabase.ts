@@ -106,6 +106,31 @@ export function humanError(error: unknown): string {
   }
   if (code === '23505') return 'Ese registro ya existe.';
 
+  /**
+   * Una clave foránea rota es un fallo NUESTRO, no de quien está delante. Al
+   * crear un club salía en pantalla, en crudo:
+   *
+   *   insert or update on table "clubs" violates foreign key constraint
+   *   "clubs_created_by_fkey"
+   *
+   * Eso no le dice nada a una entrenadora y encima parece culpa suya. Se
+   * traduce, se apunta a la salida que sí existe —recargar, porque al cargar
+   * el espacio de trabajo se recompone el perfil— y se deja el detalle en la
+   * consola para quien tenga que arreglarlo.
+   */
+  if (code === '23503' || /violates foreign key constraint/i.test(raw)) {
+    if (/created_by|profiles/i.test(raw)) {
+      return (
+        'Falta tu ficha de usuaria y por eso no hemos podido guardar. Recarga la página: ' +
+        'se recompone sola. Si vuelve a pasar, es un fallo nuestro y queremos saberlo.'
+      );
+    }
+    return (
+      'Estos datos hacen referencia a algo que ya no existe. Recarga la página y vuelve a ' +
+      'intentarlo; si sigue igual, es un fallo nuestro.'
+    );
+  }
+
   if (status === 503 || status === 502 || /service unavailable|bad gateway/i.test(raw)) {
     return 'El servidor de datos no responde ahora mismo. Si el proyecto de Supabase está en pausa, reanúdalo desde su panel.';
   }

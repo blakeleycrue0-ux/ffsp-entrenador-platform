@@ -11,7 +11,8 @@
     "typecheck": "tsc -b --noEmit false --emitDeclarationOnly false --pretty",
     "maqueta": "node pruebas/solapes.mjs",
     "maqueta:completo": "node pruebas/solapes.mjs --completo",
-    "maqueta:contenido": "node pruebas/contenido.mjs"
+    "maqueta:contenido": "node pruebas/contenido.mjs",
+    "maqueta:perfil": "node pruebas/perfil.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
