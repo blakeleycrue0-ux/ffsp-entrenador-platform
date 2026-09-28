@@ -7,8 +7,11 @@ import { isClubAdmin, teamOverview, visibleTeams } from '@/store/selectors';
 import { Tag, EmptyState, LinkButton, PageHeader, Skeleton } from '@/components/ui';
 import { Ring } from '@/components/domain/Charts';
 import { relativeDay } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function TeamsPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, loading } = useClub();
   const admin = isClubAdmin(data);
   const teams = useMemo(() => visibleTeams(data), [data]);
@@ -16,7 +19,7 @@ export default function TeamsPage() {
 
   if (loading) {
     return (
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Skeleton />
         <Skeleton />
       </div>
@@ -63,7 +66,7 @@ export default function TeamsPage() {
           />
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {overviews.map((o) => (
             <Link key={o.team.id} to={`/app/equipo-tecnico/${o.team.id}`} className="panel panel-hover block overflow-hidden">
               <div className="flex items-start justify-between gap-4 border-b border-ink-100 p-5">

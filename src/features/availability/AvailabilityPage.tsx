@@ -21,8 +21,11 @@ import {
   type Injury, type InjuryState, type InjuryUpdate,
 } from '@/services/injuries';
 import { longDate, longDateInline, toISODate, today } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function AvailabilityPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { data, teamId, setTeamId, userId } = useClub();
   const toast = useToast();
   const teams = visibleTeams(data);
@@ -160,7 +163,7 @@ export default function AvailabilityPage() {
       </Panel>
 
       {/* Resumen: sólo cuenta lo que hay registrado */}
-      <div className="mb-3 grid gap-3 sm:grid-cols-3">
+      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Panel className="p-4">
           <Figure label="En plantilla" value={squad.length} />
         </Panel>
@@ -291,7 +294,7 @@ export default function AvailabilityPage() {
                 ))}
               </Select>
             </Field>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field label="Desde">
                 <Input
                   type="date"

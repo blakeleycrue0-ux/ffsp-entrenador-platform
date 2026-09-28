@@ -118,7 +118,7 @@ export function BoardDemo({
           className={cn(
             'inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors',
             oscuro
-              ? 'bg-accent-500 text-night hover:bg-accent-400'
+              ? 'bg-azul-600 text-white hover:bg-azul-500'
               : 'bg-ink-900 text-ink-0 hover:bg-ink-800',
           )}
         >

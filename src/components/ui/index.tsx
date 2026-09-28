@@ -35,7 +35,7 @@ type ButtonSize = 'sm' | 'md' | 'lg';
  */
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'text-white shadow-azul [background:linear-gradient(180deg,#168BFF,#087AF0)] ' +
+    'text-white [background:linear-gradient(180deg,#168BFF,#087AF0)] ' +
     'hover:[background:linear-gradient(180deg,#2E98FF,#0A84FF)] ' +
     'disabled:[background:rgba(255,255,255,0.09)] disabled:text-ink-500 disabled:shadow-none',
   secondary: 'bg-raised text-ink-900 hover:bg-[rgba(255,255,255,0.11)]',
@@ -281,10 +281,18 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTML
   },
 );
 
+/**
+ * UN `<select>` NATIVO CRECE HASTA SU OPCIÓN MÁS LARGA. Con `w-auto`, un club
+ * llamado «Club Deportivo Femenino Ciudad de San Fernando de Henares «B»»
+ * estiraba el desplegable a 594 px dentro de una columna de 324 y sacaba la
+ * página 237 px por el lado —medido—. `max-w-full` en los dos niveles le pone
+ * el techo de su contenedor y el texto se recorta, que es lo que tiene que
+ * pasar.
+ */
 export function Select({ className, children, ...rest }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <div className="relative">
-      <select className={cn('field cursor-pointer appearance-none pr-8', className)} {...rest}>
+    <div className="relative min-w-0 max-w-full">
+      <select className={cn('field max-w-full cursor-pointer appearance-none pr-8', className)} {...rest}>
         {children}
       </select>
       <ChevronDown size={15} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden />
@@ -491,14 +499,18 @@ export function Modal({
   const width = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }[size];
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6">
-      <div className="absolute inset-0 bg-ink-900/35 animate-fade-in" onClick={onClose} />
+    <div className="fixed inset-0 z-hoja flex items-end justify-center sm:items-center sm:p-6">
+      {/* El velo es NEGRO. Con la paleta invertida, `ink-900` es blanco: puesto
+          ahí aclaraba la página en vez de apagarla, y el diálogo —que iba con
+          `bg-panel`, un 4,5 % de blanco— se leía con la pantalla de detrás
+          atravesándolo. Aquí el fondo lo pone `.cristal`, que sí tapa. */}
+      <div className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative z-10 flex max-h-[92vh] w-full flex-col overflow-hidden border border-line bg-panel shadow-pop',
-          'rounded-t-xl sm:rounded-lg animate-slide-up sm:animate-fade-up',
+          'cristal relative z-fijo flex max-h-[92vh] w-full flex-col overflow-hidden',
+          'rounded-t-4xl animate-sheet-in sm:rounded-3xl sm:animate-fade-up',
           width,
         )}
       >
@@ -519,7 +531,7 @@ export function Modal({
         )}
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-2 border-t border-line bg-surface px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-center justify-end gap-2 border-t border-line bg-white/[0.03] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {footer}
           </div>
         )}
@@ -571,7 +583,10 @@ export function EmptyState({
     <div className={cn('px-6 py-12 text-center', className)}>
       <h3 className="text-md font-semibold text-ink-900">{title}</h3>
       {description && <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-muted">{description}</p>}
-      {action && <div className="mt-5 flex justify-center gap-2">{action}</div>}
+      {/* `flex-wrap`: dos acciones con etiqueta larga —«Añadir jugadora» e
+          «Importar desde un archivo»— no caben en 320 px, y como los botones
+          no parten su texto a propósito, lo que tiene que partir es la fila. */}
+      {action && <div className="mt-5 flex flex-wrap justify-center gap-2">{action}</div>}
     </div>
   );
 }
@@ -668,7 +683,7 @@ export function Dropdown({
       {open && (
         <div
           className={cn(
-            'absolute z-50 mt-1 min-w-[200px] overflow-hidden rounded-md border border-line bg-panel p-1 shadow-pop animate-fade-up',
+            'absolute z-hoja mt-1 min-w-[200px] overflow-hidden rounded-md border border-line bg-panel p-1 shadow-pop animate-fade-up',
             align === 'right' ? 'right-0' : 'left-0',
             className,
           )}
@@ -716,15 +731,27 @@ export function PageHeader({
   children?: React.ReactNode;
   className?: string;
 }) {
+  /* El ritmo del encabezado, igual en todas las pantallas: título, ocho
+     píxeles, descripción, treinta y dos hasta el contenido. Antes cada página
+     lo remataba con su propio margen y ninguna empezaba a la misma altura.
+     `min-w-0` en las dos columnas: sin él, un título largo o un nombre de
+     equipo largo empujan los botones fuera de la pantalla en vez de cortarse. */
   return (
-    <div className={cn('mb-5', className)}>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="min-w-0">
-          {eyebrow && <div className="mb-1 flex flex-wrap items-center gap-2 text-sm text-muted">{eyebrow}</div>}
-          <h1 className="text-xl font-semibold leading-tight sm:text-2xl">{title}</h1>
-          {description && <p className="mt-1 max-w-2xl text-base leading-relaxed text-muted">{description}</p>}
+    <div className={cn('mb-8', className)}>
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+        {/* `basis-[15rem]`: sin una anchura de partida, el navegador prefiere
+            ESTRECHAR el título antes que bajar los botones a la línea de
+            abajo, y «Entrenamientos» acababa en una caja de 139 px pidiendo
+            187. Con una base, lo que se parte primero son los botones. */}
+        <div className="min-w-0 flex-1 basis-[15rem]">
+          {eyebrow && <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2 text-sm text-ink-500">{eyebrow}</div>}
+          <h1 className="break-words text-xl font-semibold leading-tight sm:text-2xl">{title}</h1>
+          {description && <p className="mt-2 max-w-[62ch] text-base leading-relaxed text-ink-500">{description}</p>}
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+        {/* Sin `shrink-0`: con él la caja de botones se negaba a estrecharse,
+            así que `flex-wrap` no llegaba a entrar nunca y a 320 px se salía
+            de la pantalla 127 px. Que se encoja y, si no cabe, que parta. */}
+        {actions && <div className="flex min-w-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {children}
     </div>
@@ -755,10 +782,14 @@ export function Tooltip({
   return (
     <span className="group/tt relative inline-flex">
       {children}
+      {/* `hidden` y no `opacity-0`: invisible pero MAQUETADO, una etiqueta
+          larga cerca del borde derecho ensanchaba la página cuatro píxeles y
+          dejaba un desplazamiento lateral que no llevaba a ninguna parte.
+          Sin maquetar no puede ensanchar nada. */}
       <span
         role="tooltip"
         className={cn(
-          'pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded bg-ink-900 px-2 py-1 text-xs text-ink-0 opacity-0 transition-opacity duration-120 group-hover/tt:opacity-100',
+          'pointer-events-none absolute left-1/2 z-hoja hidden -translate-x-1/2 whitespace-nowrap rounded bg-ink-900 px-2 py-1 text-xs text-ink-0 group-hover/tt:block',
           side === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5',
         )}
       >

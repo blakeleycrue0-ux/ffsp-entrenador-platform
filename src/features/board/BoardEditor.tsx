@@ -16,18 +16,21 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowUpRight, Copy, Hand, Image as ImageIcon, Maximize2, Minus, MousePointer2, Move,
   Pause, Play, Redo2, Repeat, RotateCcw, Slash, Spline, Square, Trash2, Undo2,
-  ZoomIn, ZoomOut,
+  Download, X, ZoomIn, ZoomOut,
 } from 'lucide-react';
 import { Button, Field, Input, Panel, PanelHeader, Segmented, Select, Tag, Toggle } from '@/components/ui';
 import { BoardStage, useBoardView, type Tool } from './BoardStage';
+import { Isla, esEstrecha, useSitio } from './Flotantes';
+import { Exportar } from './Exportar';
 import { Timeline } from './Timeline';
 import { formatSeconds, type Playback, type Speed } from './playback';
 import {
   DRAW_COLORS, DRAW_LABEL, KIND_LABEL, MOVE_LABEL, MOVES, PITCH_OPTIONS, RESIZABLE, ROTATABLE,
   type DrawKind, type Keyframe, type ObjectKind, type PitchKind, type Point, type Scene, type Surface,
   addDrawing, addObject, duplicateObject, layoutSquad, layoutTeam, moveObject, patchDrawing,
-  patchKeyframe, patchObject, removeDrawing, removeKeyframe, removeObject,
+  patchKeyframe, patchObject, putRuta, removeDrawing, removeKeyframe, removeObject,
 } from './scene';
+import { largo as largoTrazo, procesaTrazo } from './trazo';
 import { cn } from '@/lib/utils';
 
 /** Lo que se puede poner en el campo, por grupos. */
@@ -40,6 +43,7 @@ const PALETTE: { grupo: string; kinds: ObjectKind[] }[] = [
 const HERRAMIENTAS: { id: Tool; label: string; icon: React.ReactNode }[] = [
   { id: null, label: 'Seleccionar', icon: <MousePointer2 size={15} /> },
   { id: 'mano', label: 'Desplazar', icon: <Hand size={15} /> },
+  { id: 'movimiento', label: 'Movimiento', icon: <Spline size={15} /> },
   { id: 'linea', label: 'Línea', icon: <Slash size={15} /> },
   { id: 'flecha', label: 'Flecha', icon: <ArrowUpRight size={15} /> },
   { id: 'discontinua', label: 'Discontinua', icon: <Minus size={15} /> },
@@ -103,7 +107,7 @@ export function useBoardHistory(scene: Scene, setScene: (s: Scene) => void) {
 }
 
 export function BoardEditor({
-  scene, playback, history, svgRef, onExportImage, aside, compact, squad = [],
+  scene, playback, history, svgRef, onExportImage, aside, compact, squad = [], nombreDeLaJugada,
 }: {
   scene: Scene;
   /** Los cambios se aplican a través de `history.commit`. */
@@ -112,6 +116,8 @@ export function BoardEditor({
   history: ReturnType<typeof useBoardHistory>;
   svgRef?: React.RefObject<SVGSVGElement>;
   onExportImage?: () => void;
+  /** Para poner nombre al archivo exportado. */
+  nombreDeLaJugada?: string;
   /** Contenido extra para la columna lateral (nombre, notas, guardar…). */
   aside?: React.ReactNode;
   /** Sin columna lateral: el panel de la jugada va debajo del campo. */
@@ -129,14 +135,73 @@ export function BoardEditor({
   const [presenting, setPresenting] = useState(false);
   const shell = useRef<HTMLDivElement>(null);
   const vista = useBoardView();
+  /* En el móvil los mandos van donde llega el pulgar —las herramientas abajo—
+     y la reproducción arriba, plegada: dos islas en el mismo borde se taparían
+     entre ellas. En pantalla ancha caben las dos donde siempre. */
+  const [sitioHerramientas, setSitioHerramientas] = useSitio(
+    'herramientas',
+    esEstrecha()
+      ? { muelle: 'abajo', x: 12, y: 24, plegado: false }
+      : { muelle: 'arriba', x: 24, y: 24, plegado: false },
+  );
+  const [sitioTiempo, setSitioTiempo] = useSitio(
+    'tiempo',
+    esEstrecha()
+      ? { muelle: 'arriba', x: 12, y: 24, plegado: true }
+      : { muelle: 'abajo', x: 24, y: 400, plegado: false },
+  );
+  /* Con el campo vacío, el panel arranca abierto: no hay nada que mirar y todo
+     que añadir, y un campo en blanco sin la paleta a la vista deja a cualquiera
+     buscando por dónde se empieza. En cuanto hay algo puesto, se quita de en
+     medio. */
+  /* Con el campo vacío en una pantalla ancha, el panel arranca abierto: no hay
+     nada que mirar y todo que añadir. En el móvil NO, porque ahí el panel es
+     una hoja que tapa media pizarra y lo primero que se ve sería el panel en
+     vez del campo; el botón «Panel» queda a la vista. */
+  const [cajon, setCajon] = useState(() => scene.objects.length === 0 && !esEstrecha());
+  const [exportando, setExportando] = useState(false);
 
   const editable = !playback.playing;
+  /** Si la herramienta activa deja una anotación (y por tanto usa color). */
+  const esDibujoActivo = tool !== null && tool !== 'mano' && tool !== 'movimiento';
   const selectedObject = scene.objects.find((o) => o.id === selected) ?? null;
   const selectedTrack = selected ? scene.tracks[selected] ?? [] : [];
   const drawing = (scene.drawings ?? []).find((d) => d.id === selectedDrawing) ?? null;
 
   const onMove = useCallback(
     (id: string, at: Point) => commit(moveObject(scene, id, Math.round(playback.time), at)),
+    [commit, scene, playback.time],
+  );
+
+  /**
+   * Una trayectoria dibujada con el dedo se convierte en UN fotograma que
+   * guarda, además del destino, el recorrido entero.
+   *
+   * CUÁNTO DURA NO SE PREGUNTA, SE DEDUCE del largo del trazo: unos siete
+   * metros por segundo, que es el ritmo al que se recorre un campo en una
+   * jugada de pizarra. Pedir la duración en un cuadro de diálogo justo después
+   * de dibujar rompe el gesto, y casi siempre se acepta lo que venga puesto.
+   * Se puede afinar después en el panel de la ficha.
+   *
+   * Si el movimiento se sale de la jugada, la jugada se alarga: es más
+   * probable que se quiera ver entero a que se quiera cortado.
+   */
+  const onTrazo = useCallback(
+    (id: string, crudos: Point[]) => {
+      const ruta = procesaTrazo(crudos);
+      if (ruta.length < 2) return;
+
+      const desde = Math.round(playback.time);
+      const metros = largoTrazo(ruta);
+      const duracion = Math.max(500, Math.min(12000, Math.round((metros / 7) * 1000)));
+      const hasta = desde + duracion;
+
+      let next = putRuta(scene, id, desde, hasta, ruta);
+      if (hasta > next.durationMs) next = { ...next, durationMs: hasta + 500 };
+
+      commit(next);
+      setTool(null);
+    },
     [commit, scene, playback.time],
   );
 
@@ -153,6 +218,13 @@ export function BoardEditor({
     },
     [commit, scene],
   );
+
+  /* Seleccionar algo abre el panel: es lo que se quiere mirar. Pero sólo con
+     la herramienta de selección; en mitad de un trazo, que salte un panel
+     encima del campo es justo lo contrario de lo que hace falta. */
+  useEffect(() => {
+    if (selected && tool === null) setCajon(true);
+  }, [selected, tool]);
 
   /* ─────────────────────────── Presentación ──────────────────────────────── */
 
@@ -582,6 +654,147 @@ export function BoardEditor({
     </div>
   );
 
+  /* Las mismas herramientas, sin barra: van dentro de una isla de cristal. */
+  const herramientas = (
+    /* Una sola fila, siempre. Envuelta, en un móvil se convierte en un bloque
+       de tres filas encima del campo; sin envolver, se desliza. */
+    <div className="flex flex-nowrap items-center gap-1">
+      {HERRAMIENTAS.map((h) => (
+        <button
+          key={h.label}
+          onClick={() => setTool(h.id)}
+          disabled={!editable || (h.id === 'movimiento' && !selected)}
+          aria-pressed={tool === h.id}
+          title={h.id === 'movimiento' && !selected ? 'Elige antes una ficha' : h.label}
+          className={cn(
+            'grid h-9 w-9 place-items-center rounded-xl transition-colors disabled:opacity-35',
+            tool === h.id ? 'bg-azul-600 text-white' : 'text-ink-700 hover:bg-white/[0.07] hover:text-ink-900',
+          )}
+        >
+          {h.icon}
+        </button>
+      ))}
+
+      <span className="mx-0.5 h-6 w-px bg-line" />
+
+      <button
+        onClick={vista.zoomOut}
+        aria-label="Alejar"
+        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+      >
+        <ZoomOut size={15} />
+      </button>
+      <button
+        onClick={vista.zoomIn}
+        aria-label="Acercar"
+        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+      >
+        <ZoomIn size={15} />
+      </button>
+      <button
+        onClick={vista.fit}
+        disabled={vista.ajustado}
+        aria-label="Encuadrar todo"
+        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900 disabled:opacity-35"
+      >
+        <Move size={15} />
+      </button>
+
+      {esDibujoActivo && (
+        <>
+          <span className="mx-0.5 h-6 w-px bg-line" />
+          <Paleta value={drawColor} onChange={setDrawColor} />
+          <Segmented
+            size="sm"
+            value={String(drawWidth)}
+            onChange={(v) => setDrawWidth(Number(v))}
+            options={GROSORES}
+          />
+        </>
+      )}
+    </div>
+  );
+
+  /* Y los mandos de la reproducción, también sin barra. */
+  const mandosDeTiempo = (
+    <div className="flex flex-nowrap items-center gap-1.5">
+      <button
+        onClick={playback.toggle}
+        aria-label={playback.playing ? 'Pausar' : 'Reproducir'}
+        className="grid h-9 w-9 place-items-center rounded-xl bg-azul-600 text-white transition-transform active:scale-95"
+      >
+        {playback.playing ? <Pause size={15} /> : <Play size={15} />}
+      </button>
+      <button
+        onClick={playback.reset}
+        aria-label="Reiniciar"
+        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+      >
+        <RotateCcw size={15} />
+      </button>
+      <button
+        onClick={() => playback.setLoop(!playback.loop)}
+        aria-pressed={playback.loop}
+        aria-label="Bucle"
+        className={cn(
+          'grid h-9 w-9 place-items-center rounded-xl transition-colors',
+          playback.loop ? 'bg-white/12 text-ink-900' : 'text-ink-700 hover:bg-white/[0.07] hover:text-ink-900',
+        )}
+      >
+        <Repeat size={14} />
+      </button>
+
+      <span className="ml-1 text-sm tabular-nums text-ink-500">
+        {formatSeconds(playback.time)} / {formatSeconds(scene.durationMs)}
+      </span>
+
+      <Segmented<'0.5' | '1' | '2'>
+        size="sm"
+        className="ml-1"
+        value={String(playback.speed) as '0.5' | '1' | '2'}
+        onChange={(v) => playback.setSpeed(Number(v) as Speed)}
+        options={[
+          { id: '0.5', label: '0,5×' },
+          { id: '1', label: '1×' },
+          { id: '2', label: '2×' },
+        ]}
+      />
+
+      <span className="ml-auto flex items-center gap-1">
+        <button
+          onClick={undo}
+          disabled={!canUndo}
+          aria-label="Deshacer"
+          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900 disabled:opacity-35"
+        >
+          <Undo2 size={15} />
+        </button>
+        <button
+          onClick={redo}
+          disabled={!canRedo}
+          aria-label="Rehacer"
+          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900 disabled:opacity-35"
+        >
+          <Redo2 size={15} />
+        </button>
+        <button
+          onClick={() => setExportando(true)}
+          aria-label="Exportar"
+          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+        >
+          <Download size={15} />
+        </button>
+        <button
+          onClick={presentar}
+          aria-label="Presentar"
+          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+        >
+          <Maximize2 size={15} />
+        </button>
+      </span>
+    </div>
+  );
+
   const barraReproduccion = (
     <div className="flex flex-wrap items-center gap-2 border-b border-line px-3 py-2">
       <Button
@@ -636,8 +849,9 @@ export function BoardEditor({
     </div>
   );
 
-  const campo = (
+  const hazCampo = (llenar?: boolean) => (
     <BoardStage
+      llenar={llenar}
       scene={scene}
       playback={playback}
       selected={editable ? selected : null}
@@ -657,6 +871,7 @@ export function BoardEditor({
         commit(addDrawing(scene, d));
         setTool(null);
       }}
+      onTrazo={onTrazo}
       selectedDrawing={selectedDrawing}
       onSelectDrawing={setSelectedDrawing}
       view={vista.view}
@@ -664,6 +879,9 @@ export function BoardEditor({
       presenting={presenting}
     />
   );
+
+  const campo = hazCampo(false);
+  const campoLleno = hazCampo(true);
 
   /* Presentación: sólo el campo y los mandos imprescindibles. */
   if (presenting) {
@@ -702,32 +920,149 @@ export function BoardEditor({
     );
   }
 
-  return (
-    <div ref={shell} className={cn('grid gap-3', !compact && 'lg:grid-cols-[1fr_280px]')}>
-      <div className="min-w-0 space-y-3">
-        <Panel className="overflow-hidden">
-          {barraReproduccion}
-          {barraDibujo}
-
-          <div className="bg-ink-900/5 p-2 sm:p-3">
-            <div className="mx-auto w-full overflow-hidden rounded">{campo}</div>
-          </div>
-
-          <div className="border-t border-line px-3 py-3">
-            <Timeline
-              scene={scene}
-              playback={playback}
-              selected={selected}
-              editable={editable}
-              onRemoveKeyframe={(id, t) => commit(removeKeyframe(scene, id, t))}
-            />
-          </div>
-        </Panel>
-
-        {compact && lateral}
+  /* Encajado dentro de otra pantalla —la ficha de un ejercicio— la pizarra no
+     puede quedarse con la ventana entera: ahí sigue siendo un bloque más. */
+  if (compact) {
+    return (
+      <div ref={shell} className="grid gap-3">
+        <div className="min-w-0 space-y-3">
+          <Panel className="overflow-hidden">
+            {barraReproduccion}
+            {barraDibujo}
+            <div className="bg-ink-900/5 p-2 sm:p-3">
+              <div className="mx-auto w-full overflow-hidden rounded">{campo}</div>
+            </div>
+            <div className="border-t border-line px-3 py-3">
+              <Timeline
+                scene={scene}
+                playback={playback}
+                selected={selected}
+                editable={editable}
+                onRemoveKeyframe={(id, t) => commit(removeKeyframe(scene, id, t))}
+              />
+            </div>
+          </Panel>
+          {lateral}
+        </div>
       </div>
+    );
+  }
 
-      {!compact && lateral}
+  /**
+   * EL ESPACIO DE TRABAJO. El campo ocupa la ventana entera menos la cabecera,
+   * y todo lo demás flota encima en cristal. Antes había dos barras fijas
+   * arriba, una regla fija abajo y una columna fija a la derecha: entre las
+   * cuatro se llevaban casi la mitad de la pantalla de forma permanente, y lo
+   * que quedaba para el campo —que es lo único que hay que mirar— era una
+   * franja. Ahora los mandos tapan sólo el trozo donde están, se pliegan y se
+   * pueden llevar a otro borde.
+   */
+  return (
+    <div ref={shell} className="relative">
+      <div
+        className={cn(
+          'relative overflow-hidden rounded-3xl border border-line bg-ink-50',
+          'min-h-[420px]',
+        )}
+        /* El alto sale de las mismas variables que usa el armazón, más lo que
+           ocupa la línea del título. Con un número escrito a mano, en cuanto
+           cambiaba el dique o el margen de página el campo se quedaba corto o
+           se metía debajo del menú. */
+        style={{
+          height:
+            'calc(100dvh - var(--header-h) - var(--pagina-top) - var(--hueco-inferior) - 52px)',
+        }}
+      >
+        {/* El campo y sus mandos viven en una caja que se encoge cuando se abre
+            el panel. Sin esto, la regla de tiempo —centrada sobre el lienzo—
+            se metía por debajo del panel y se perdía la mitad. */}
+        <div className={cn('absolute inset-0 transition-[right] duration-200', cajon && 'lg:right-[316px]')}>
+          <div className="absolute inset-0 p-1.5 lg:p-2">{campoLleno}</div>
+
+          <Isla sitio={sitioHerramientas} onSitio={setSitioHerramientas} etiqueta="Herramientas">
+            {herramientas}
+          </Isla>
+
+          <Isla
+            sitio={sitioTiempo}
+            onSitio={setSitioTiempo}
+            etiqueta="Reproducción"
+          >
+            <div className="w-[min(600px,calc(100vw-120px))] px-1">
+              {mandosDeTiempo}
+              {!sitioTiempo.plegado && (
+                <div className="mt-2">
+                  <Timeline
+                    scene={scene}
+                    playback={playback}
+                    selected={selected}
+                    editable={editable}
+                    onRemoveKeyframe={(id, t) => commit(removeKeyframe(scene, id, t))}
+                  />
+                </div>
+              )}
+            </div>
+          </Isla>
+        </div>
+
+        {/* El inspector aparece cuando hay algo seleccionado y se puede cerrar.
+            Una columna permanente a la derecha se come el campo también cuando
+            no hay nada que inspeccionar, que es la mayor parte del rato. */}
+        {cajon && (
+          /* En el móvil es una hoja que sube desde abajo, no una columna: una
+             columna de 300 px en una pantalla de 390 tapa el campo entero y
+             deja la pizarra inservible. En pantalla ancha sí es columna.
+             Y va más opaca que el resto del cristal a propósito: sobre el
+             verde del campo, un 60 % de negro deja el texto ilegible. */
+          <div
+            className={cn(
+              'cristal absolute z-flotante overflow-y-auto p-3',
+              'inset-x-3 bottom-3 max-h-[62%] rounded-3xl',
+              'lg:inset-x-auto lg:bottom-3 lg:right-3 lg:top-3 lg:max-h-none lg:w-[300px] lg:rounded-2xl',
+            )}
+            style={{ background: 'rgba(11,11,14,0.88)' }}
+          >
+            {/* Pegada arriba: el panel se desplaza, y sin esto el título y el
+                botón de cerrar se iban con el desplazamiento. */}
+            <div
+              className="sticky -top-3 z-fijo -mx-3 mb-2 flex items-center justify-between px-3 py-2"
+              style={{ background: 'rgba(11,11,14,0.92)' }}
+            >
+              <p className="rotulo">{selectedObject || drawing ? 'Selección' : 'La jugada'}</p>
+              <button
+                onClick={() => setCajon(false)}
+                aria-label="Cerrar el panel"
+                className="rounded p-1 text-ink-500 transition-colors hover:text-ink-900"
+              >
+                <X size={15} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              {panelJugada}
+              {aside}
+              {lateral}
+            </div>
+          </div>
+        )}
+
+        {exportando && (
+          <Exportar
+            scene={scene}
+            nombre={nombreDeLaJugada ?? 'Jugada'}
+            onImagen={onExportImage}
+            onCerrar={() => setExportando(false)}
+          />
+        )}
+
+        {!cajon && (
+          <button
+            onClick={() => setCajon(true)}
+            className="cristal absolute right-3 top-3 z-flotante rounded-xl px-3 py-2 text-sm font-semibold text-ink-800 transition-colors hover:text-ink-900"
+          >
+            {selectedObject ? KIND_LABEL[selectedObject.kind] : 'Panel'}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

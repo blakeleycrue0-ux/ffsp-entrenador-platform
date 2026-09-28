@@ -17,8 +17,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pitch } from './Pitch';
 import {
   MOVE_DASH, PITCHES, type BoardObject, type DrawKind, type Drawing, type ObjectKind,
-  type Point, type Scene, sampleScene, trackSegments,
+  type Point, type Scene, sampleScene, sampleTrack, trackSegments,
 } from './scene';
+import { largo as largoDe } from './trazo';
 import type { Playback } from './playback';
 import { cn } from '@/lib/utils';
 
@@ -86,8 +87,14 @@ export function useBoardView() {
 
 /* ──────────────────────────────── Props ──────────────────────────────────── */
 
-/** `mano` desplaza el campo; el resto dibuja; `null` selecciona y arrastra. */
-export type Tool = 'mano' | DrawKind | null;
+/**
+ * `mano` desplaza el campo, `movimiento` dibuja la trayectoria de la ficha
+ * seleccionada, el resto son anotaciones, y `null` selecciona y arrastra.
+ */
+export type Tool = 'mano' | 'movimiento' | DrawKind | null;
+
+/** Las herramientas que dejan una anotación sobre el campo. */
+const esDibujo = (t: Tool): t is DrawKind => t !== null && t !== 'mano' && t !== 'movimiento';
 
 export interface StageProps {
   scene: Scene;
@@ -111,6 +118,12 @@ export interface StageProps {
   drawColor?: string;
   drawWidth?: number;
   onDraw?: (d: Omit<Drawing, 'id'>) => void;
+  /**
+   * Trayectoria dibujada a mano para un objeto: los puntos crudos del dedo, en
+   * metros. Quien la recibe decide cuánto dura y dónde va el fotograma; aquí
+   * sólo se recoge el gesto.
+   */
+  onTrazo?: (id: string, crudos: Point[]) => void;
   selectedDrawing?: string | null;
   onSelectDrawing?: (id: string | null) => void;
 
@@ -118,12 +131,19 @@ export interface StageProps {
   onView?: (v: View) => void;
   /** En presentación no se ve nada que no sea la jugada. */
   presenting?: boolean;
+  /**
+   * Ocupar toda la caja en vez de crecer con el ancho. El propio SVG centra y
+   * escala su contenido (`preserveAspectRatio`), así que el campo se ve entero
+   * con bandas transparentes a los lados: es lo que hace falta en un espacio
+   * de trabajo de alto fijo, donde la ventana manda y el campo se adapta.
+   */
+  llenar?: boolean;
 }
 
 export function BoardStage({
   scene, playback, selected, onSelect, onMove, onDropNew, editable, showPaths, svgRef, className,
-  tool = null, drawColor = '#FFFFFF', drawWidth = 0.36, onDraw,
-  selectedDrawing = null, onSelectDrawing, view = VIEW_INICIAL, onView, presenting,
+  tool = null, drawColor = '#FFFFFF', drawWidth = 0.36, onDraw, onTrazo,
+  selectedDrawing = null, onSelectDrawing, view = VIEW_INICIAL, onView, presenting, llenar,
 }: StageProps) {
   const spec = PITCHES[scene.pitch];
   const vertical = scene.vertical === true;
@@ -134,6 +154,11 @@ export function BoardStage({
   const dragging = useRef<{ id: string; pointerId: number } | null>(null);
   const panning = useRef<{ pointerId: number; x: number; y: number; from: View } | null>(null);
   const [draft, setDraft] = useState<Point[] | null>(null);
+  /* El trazo a mano se acumula en una referencia —se añaden decenas de puntos
+     por segundo y no hace falta repintar por cada uno— y se copia al estado
+     sólo cuando el dedo avanza de verdad. */
+  const trazo = useRef<{ id: string; pointerId: number; puntos: Point[] } | null>(null);
+  const [trazoVista, setTrazoVista] = useState<Point[] | null>(null);
 
   const margin = 3;
   /* En vertical el lienzo cambia de proporción, pero las coordenadas no. */
@@ -202,6 +227,19 @@ export function BoardStage({
       return;
     }
 
+    if (tool === 'movimiento') {
+      /* La trayectoria SIEMPRE arranca donde está la ficha ahora, aunque el
+         dedo se apoye tres metros más allá: si no, la jugadora daría un salto
+         al empezar a moverse. */
+      if (!selected) return;
+      const desde = sampleTrack(scene.tracks[selected] ?? [], playback.time);
+      if (!desde) return;
+      trazo.current = { id: selected, pointerId: e.pointerId, puntos: [desde] };
+      setTrazoVista([desde]);
+      (e.currentTarget as Element).setPointerCapture(e.pointerId);
+      return;
+    }
+
     if (tool) {
       const at = toPitch(e.clientX, e.clientY);
       if (at) setDraft([at, at]);
@@ -217,6 +255,18 @@ export function BoardStage({
     const pan = panning.current;
     if (pan && pan.pointerId === e.pointerId) {
       onView?.({ ...pan.from, tx: pan.from.tx + (e.clientX - pan.x) * 0.06, ty: pan.from.ty + (e.clientY - pan.y) * 0.06 });
+      return;
+    }
+
+    const tr = trazo.current;
+    if (tr && tr.pointerId === e.pointerId) {
+      const at = toPitch(e.clientX, e.clientY);
+      if (!at) return;
+      const ultimo = tr.puntos[tr.puntos.length - 1];
+      // Un cuarto de metro: por debajo de eso es pulso, no intención.
+      if (Math.hypot(at.x - ultimo.x, at.y - ultimo.y) < 0.25) return;
+      tr.puntos.push(at);
+      setTrazoVista([...tr.puntos]);
       return;
     }
 
@@ -242,11 +292,23 @@ export function BoardStage({
       return;
     }
 
+    const tr = trazo.current;
+    if (tr && tr.pointerId === e.pointerId) {
+      trazo.current = null;
+      setTrazoVista(null);
+      const at = toPitch(e.clientX, e.clientY);
+      if (at) tr.puntos.push(at);
+      /* Metro y medio: por debajo es un toque, y un toque no es un recorrido.
+         Crear ahí un movimiento llenaría la jugada de fotogramas invisibles. */
+      if (largoDe(tr.puntos) > 1.5) onTrazo?.(tr.id, tr.puntos);
+      return;
+    }
+
     if (draft) {
       const [a, b] = draft;
       const largo = Math.hypot(b.x - a.x, b.y - a.y);
       // Un toque suelto no es un trazo: evita llenar el campo de puntos.
-      if (largo > 1.2 && tool && tool !== 'mano' && onDraw) {
+      if (largo > 1.2 && esDibujo(tool) && onDraw) {
         const points =
           tool === 'curva'
             ? [a, { x: (a.x + b.x) / 2 + (b.y - a.y) * 0.3, y: (a.y + b.y) / 2 - (b.x - a.x) * 0.3 }, b]
@@ -287,11 +349,13 @@ export function BoardStage({
     <svg
       ref={svg}
       viewBox={viewBox}
-      style={{ aspectRatio: ratio, touchAction: 'none' }}
+      style={llenar ? { touchAction: 'none' } : { aspectRatio: ratio, touchAction: 'none' }}
       className={cn(
-        'board-surface mx-auto block max-h-full w-full',
+        'board-surface block',
+        llenar ? 'h-full w-full' : 'mx-auto max-h-full w-full',
         tool === 'mano' && 'cursor-grab active:cursor-grabbing',
         tool && tool !== 'mano' && 'cursor-crosshair',
+        tool === 'movimiento' && !selected && 'cursor-not-allowed',
         className,
       )}
       role="img"
@@ -345,6 +409,22 @@ export function BoardStage({
       <g ref={world} transform={worldTransform}>
         <Pitch spec={spec} surface={scene.surface ?? 'cesped'} />
 
+        {/* El trazo que se está dibujando AHORA: se ve crudo, tal cual sale
+            del dedo, para que se entienda que lo que manda es el gesto. Al
+            soltar se suaviza y pasa a ser la trayectoria de verdad. */}
+        {trazoVista && trazoVista.length > 1 && (
+          <polyline
+            points={trazoVista.map((p) => `${p.x},${p.y}`).join(' ')}
+            fill="none"
+            stroke="#0A8CFF"
+            strokeWidth={0.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity={0.9}
+            pointerEvents="none"
+          />
+        )}
+
         {/* Dibujos explicativos: por debajo de las fichas, nunca las tapan */}
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
           {(scene.drawings ?? []).map((d) => (
@@ -363,7 +443,7 @@ export function BoardStage({
               }
             />
           ))}
-          {draft && tool && tool !== 'mano' && (
+          {draft && esDibujo(tool) && (
             <DrawingShape
               d={{
                 id: 'borrador',

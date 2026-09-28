@@ -5,8 +5,11 @@ import { useClub } from '@/store/store';
 import { visibleTeams } from '@/store/selectors';
 import { Tag, Panel, EmptyState, LinkButton, PageHeader, Select, Tabs } from '@/components/ui';
 import { cn, minutesToLabel, relativeDay, toISODate, today } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function SessionsPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, teamId, setTeamId } = useClub();
   const teams = visibleTeams(data);
   const [tab, setTab] = useState('proximas');
@@ -81,7 +84,7 @@ export default function SessionsPage() {
           />
         </Panel>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {sessions.map((s) => (
             <Link key={s.id} to={`/app/entrenamientos/${s.id}`} className="panel panel-hover block p-5">
               <div className="flex items-start justify-between gap-3">

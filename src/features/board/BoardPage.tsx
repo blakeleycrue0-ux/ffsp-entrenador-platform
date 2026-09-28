@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, Trash2 } from 'lucide-react';
 import {
-  Button, ConfirmDialog, EmptyState, ErrorState, Field, Modal, PageHeader, Panel, PanelHeader,
+  Button, ConfirmDialog, EmptyState, ErrorState, Field, Modal, Panel, PanelHeader,
   SaveIndicator, Select, Skeleton, Tag, Textarea, type SaveState,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
@@ -20,17 +20,20 @@ import { plays, type Play as SavedPlay, type PlaySummary } from '@/services/play
 import { humanError } from '@/services/supabase';
 import { BoardEditor, useBoardHistory } from './BoardEditor';
 import { formatSeconds, usePlayback } from './playback';
-import { EMPTY_SCENE, layoutTeam, type Scene } from './scene';
+import { escenaNueva, layoutTeam, type Scene } from './scene';
 import { exportSceneImage } from './exportImage';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function BoardPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('completo');
   const { playId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
   const { data, userId, teamId } = useClub();
   const teams = visibleTeams(data);
 
-  const [scene, setScene] = useState<Scene>(EMPTY_SCENE);
+  const [scene, setScene] = useState<Scene>(escenaNueva);
   const [list, setList] = useState<PlaySummary[] | null>(null);
   const [current, setCurrent] = useState<SavedPlay | null>(null);
   const [name, setName] = useState('Jugada sin nombre');
@@ -139,7 +142,7 @@ export default function BoardPage() {
   };
 
   const nueva = useCallback(() => {
-    setScene(EMPTY_SCENE);
+    setScene(escenaNueva());
     setCurrent(null);
     setName('Jugada sin nombre');
     setDescription('');
@@ -167,36 +170,35 @@ export default function BoardPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow={current ? 'Pizarra táctica · guardada en el club' : 'Pizarra táctica'}
-        title={
-          <input
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setSaveState('idle');
-            }}
-            aria-label="Nombre de la jugada"
-            className="w-full max-w-xl rounded border border-transparent bg-transparent px-1 py-0.5 text-xl font-semibold leading-tight outline-none transition-colors hover:border-line focus:border-ink-600 sm:text-2xl"
-          />
-        }
-        actions={
-          <>
-            <SaveIndicator state={saveState} />
-            <Button variant="secondary" onClick={() => setOpenList(true)}>
-              Mis jugadas
-            </Button>
-            <Button onClick={save} loading={saveState === 'saving'}>
-              Guardar
-            </Button>
-          </>
-        }
-      />
+      {/* Cabecera de UNA línea, no la de las demás pantallas.
+          La normal pone el rótulo arriba, el título debajo y los botones en
+          una tercera fila cuando no caben: en un móvil eso son 290 px de los
+          844 que hay, gastados en decir dónde estás mientras el campo —que es
+          a lo que se ha venido— se queda con la mitad de lo que le toca. */}
+      <div className="mb-3 flex items-center gap-2">
+        <input
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setSaveState('idle');
+          }}
+          aria-label="Nombre de la jugada"
+          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-1.5 py-1 text-lg font-semibold leading-tight outline-none transition-colors hover:border-line focus:border-ink-600 sm:text-xl"
+        />
+        <SaveIndicator state={saveState} />
+        <Button size="sm" variant="secondary" onClick={() => setOpenList(true)}>
+          Mis jugadas
+        </Button>
+        <Button size="sm" onClick={save} loading={saveState === 'saving'}>
+          Guardar
+        </Button>
+      </div>
 
       {loading && !current && scene.objects.length === 0 ? (
         <Skeleton className="aspect-[111/74] w-full" />
       ) : (
         <BoardEditor
+          nombreDeLaJugada={name}
           scene={scene}
           onChange={setSceneDirty}
           playback={playback}

@@ -82,9 +82,30 @@ export default {
         /* Lo que flota de verdad. Si se ve la sombra, sobra. */
         pop: '0 16px 50px rgba(0,0,0,0.45)',
         lift: '0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08)',
-        /* Iluminación azul de lo activo. Es el máximo: si alguien piensa
-           «brillo», ya es demasiado. */
-        azul: '0 0 24px rgba(10,140,255,0.12)',
+      },
+
+      /**
+       * LAS CAPAS TIENEN NOMBRE.
+       * Con números sueltos, cada componente nuevo elegía uno más alto que el
+       * anterior para «asegurarse», y así se llega a un z-index de seis cifras
+       * y a que nadie sepa qué tapa a qué. Estos siete valen para todo el
+       * producto y se leen: `z-nav` está por encima de `z-flotante` porque la
+       * navegación manda sobre un botón flotante.
+       */
+      zIndex: {
+        contenido: '0',
+        /* Lo que se queda pegado dentro de su propio desplazamiento. */
+        fijo: '10',
+        /* Botones y barras que flotan sobre la página. */
+        flotante: '20',
+        /* La navegación: por encima de todo lo de la página. */
+        nav: '30',
+        /* El velo que apaga la aplicación detrás de una hoja. */
+        velo: '40',
+        /* Hojas, diálogos y menús contextuales. */
+        hoja: '50',
+        /* Los avisos, que tienen que verse incluso sobre una hoja. */
+        aviso: '60',
       },
       borderRadius: {
         DEFAULT: '10px',
@@ -137,6 +158,28 @@ export default {
           '60%': { transform: 'scale(1.06)', opacity: 1 },
           '100%': { transform: 'scale(1)', opacity: 1 },
         },
+        /* El código no coincide: los puntos se sacuden en horizontal. Es el
+           gesto que ya conoce cualquiera de la pantalla de bloqueo del móvil,
+           y dice «otra vez» sin tener que leer nada. */
+        'temblor': {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '15%': { transform: 'translateX(-9px)' },
+          '30%': { transform: 'translateX(8px)' },
+          '45%': { transform: 'translateX(-6px)' },
+          '60%': { transform: 'translateX(4px)' },
+          '80%': { transform: 'translateX(-2px)' },
+        },
+        /* Acierto: los cuatro puntos se juntan y de ahí sale un anillo. */
+        'juntar': {
+          '0%': { transform: 'scale(1)', opacity: 1 },
+          '100%': { transform: 'scale(.34)', opacity: 0 },
+        },
+        'anillo': {
+          '0%': { transform: 'scale(.4)', opacity: 0 },
+          '35%': { opacity: 1 },
+          '100%': { transform: 'scale(1)', opacity: 1 },
+        },
+        'trazo': { '0%': { strokeDashoffset: '26' }, '100%': { strokeDashoffset: '0' } },
       },
       animation: {
         'fade-in': 'fade-in .15s ease-out both',
@@ -145,6 +188,10 @@ export default {
         'sheet-in': 'sheet-in .42s cubic-bezier(.16,1,.3,1) both',
         'pop-in': 'pop-in .45s cubic-bezier(.34,1.56,.64,1) both',
         'paso': 'paso .25s cubic-bezier(.22,1,.36,1) both',
+        'temblor': 'temblor .45s cubic-bezier(.36,.07,.19,.97) both',
+        'juntar': 'juntar .22s cubic-bezier(.4,0,1,1) both',
+        'anillo': 'anillo .34s cubic-bezier(.34,1.56,.64,1) .14s both',
+        'trazo': 'trazo .26s ease-out .34s both',
       },
     },
   },

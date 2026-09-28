@@ -1,9 +1,18 @@
 /**
  * Navegación en móvil. Cuatro destinos fijos y una hoja «Más» con el resto:
  * en pantalla pequeña no se esconde ninguna sección.
+ *
+ * LO ACTIVO ES BLANCO, Y YA ESTÁ. Antes, encima de la sección activa había un
+ * punto azul con un halo. No decía nada que el blanco de la palabra no dijera
+ * ya, y dos señales para lo mismo se leen como una decoración: se quitó.
+ *
+ * NO SE COLOCA SOLO. Su alto y su separación del borde salen de `--nav-h` y
+ * `--nav-gap`, las mismas variables con las que el armazón calcula el hueco
+ * que deja la página por abajo. Si aquí se escribiera el número a mano, el
+ * hueco de la página dejaría de cuadrar en cuanto uno de los dos cambiara.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ClipboardList, Dumbbell, LogOut, Plus, Swords, UserRound, Users, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,12 +32,40 @@ const QUICK = [
   { label: 'Nuevo ejercicio', to: '/app/ejercicios/nuevo', icon: Dumbbell },
 ];
 
+/**
+ * ¿Está abierto el teclado del móvil?
+ *
+ * No hay un evento para esto, así que se mira lo que sí se puede medir: el
+ * `visualViewport` —lo que de verdad se ve— se encoge cuando el teclado sube.
+ * Con más de 140 px de diferencia no hay otra explicación razonable; por
+ * debajo, es la barra del navegador escondiéndose.
+ *
+ * Hace falta porque el dique y el botón de crear van `fixed`, y con el teclado
+ * abierto se quedan flotando ENCIMA de las teclas: tapan lo que se escribe y
+ * se pulsan sin querer al ir a por una letra.
+ */
+function useTecladoAbierto(): boolean {
+  const [abierto, setAbierto] = useState(false);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const mirar = () => setAbierto(window.innerHeight - vv.height > 140);
+    mirar();
+    vv.addEventListener('resize', mirar);
+    return () => vv.removeEventListener('resize', mirar);
+  }, []);
+
+  return abierto;
+}
+
 export function BottomNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { data, signOut } = useClub();
   const staff = currentStaff(data);
   const [sheet, setSheet] = useState<null | 'more' | 'create'>(null);
+  const teclado = useTecladoAbierto();
 
   const moreActive = MORE.some((m) => isActive(pathname, m));
 
@@ -37,52 +74,27 @@ export function BottomNav() {
     setSheet(null);
   };
 
-  /* El dique se comprime al bajar y vuelve al subir. Es lo único que hace
-     falta para que se note que flota por encima del contenido y no forma
-     parte de la página. */
-  const [compacto, setCompacto] = useState(false);
-  const ultimo = useRef(0);
-  useEffect(() => {
-    const alScroll = () => {
-      const y = window.scrollY;
-      if (Math.abs(y - ultimo.current) > 8) {
-        setCompacto(y > ultimo.current && y > 40);
-        ultimo.current = y;
-      }
-    };
-    window.addEventListener('scroll', alScroll, { passive: true });
-    return () => window.removeEventListener('scroll', alScroll);
-  }, []);
+  /* EL DIQUE YA NO SE ENCOGE AL DESPLAZAR. Cambiaba de alto —64 a 56 px— y con
+     él cambiaba el sitio donde acababa la página, así que el contenido se movía
+     bajo el dedo mientras se leía. Un alto fijo no salta. */
 
   return (
     <>
-      {/* Acción rápida: pequeña, azul y justo encima del dique. */}
-      <button
-        onClick={() => setSheet('create')}
-        aria-label="Crear"
-        className={cn(
-          'fixed right-4 z-40 grid h-[52px] w-[52px] place-items-center rounded-full text-white',
-          'shadow-azul [background:linear-gradient(180deg,#168BFF,#087AF0)]',
-          'transition-[transform,bottom] duration-300 ease-out active:scale-95 lg:hidden',
-          compacto ? 'bottom-[calc(76px+var(--safe-bottom))]' : 'bottom-[calc(88px+var(--safe-bottom))]',
-        )}
-      >
-        <Plus size={23} strokeWidth={2.2} />
-      </button>
-
       {/* ── EL DIQUE ──────────────────────────────────────────────────────────
           Flota: separado de los bordes y por encima del área segura, para no
-          chocar nunca con los controles del navegador ni con la barra del
-          iPhone. Es cristal de verdad — desenfoca lo que pasa por debajo — y
-          lo activo se marca con un punto azul, no pintando el dique entero. */}
+          chocar con los controles del navegador ni con la barra del iPhone. Es
+          cristal de verdad, desenfoca lo que pasa por debajo, y no lleva ni
+          brillo ni color: se tiene que notar poco. */}
       <nav
-        className={cn(
-          'cristal fixed inset-x-3 z-40 rounded-3xl transition-[transform,bottom,height] duration-300 lg:hidden',
-          'ease-[cubic-bezier(.22,1,.36,1)]',
-          compacto
-            ? 'bottom-[calc(8px+var(--safe-bottom))] h-[56px]'
-            : 'bottom-[calc(12px+var(--safe-bottom))] h-[64px]',
-        )}
+        aria-label="Secciones"
+        /* `hidden` y no una animación: con el teclado abierto el dique estorba
+           de verdad, y sacarlo del árbol evita además que el lector de
+           pantalla lo recorra mientras se escribe. */
+        className={cn('cristal fixed inset-x-4 z-nav rounded-3xl lg:hidden', teclado && 'hidden')}
+        style={{
+          height: 'var(--nav-h)',
+          bottom: 'calc(var(--nav-gap) + var(--safe-bottom))',
+        }}
       >
         <div className="flex h-full items-stretch">
           {TABS.map((tab) => {
@@ -92,19 +104,12 @@ export function BottomNav() {
                 key={tab.to}
                 to={tab.to}
                 aria-current={on ? 'page' : undefined}
-                className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1"
+                className="flex min-w-0 flex-1 items-center justify-center px-1"
               >
                 <span
-                  aria-hidden
                   className={cn(
-                    'h-1.5 w-1.5 rounded-full transition-all duration-200',
-                    on ? 'bg-azul-600 shadow-azul' : 'bg-transparent',
-                  )}
-                />
-                <span
-                  className={cn(
-                    'max-w-full truncate text-[11px] transition-colors',
-                    on ? 'font-semibold text-white' : 'font-medium text-white/45',
+                    'max-w-full truncate text-[11.5px] transition-colors',
+                    on ? 'font-semibold text-white' : 'font-medium text-white/[0.42]',
                   )}
                 >
                   {tab.short ?? tab.label}
@@ -114,16 +119,9 @@ export function BottomNav() {
           })}
           <button
             onClick={() => setSheet('more')}
-            className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1"
+            className="flex min-w-0 flex-1 items-center justify-center px-1"
           >
-            <span
-              aria-hidden
-              className={cn(
-                'h-1.5 w-1.5 rounded-full transition-all duration-200',
-                moreActive ? 'bg-azul-600 shadow-azul' : 'bg-transparent',
-              )}
-            />
-            <span className={cn('text-[11px] transition-colors', moreActive ? 'font-semibold text-white' : 'font-medium text-white/45')}>
+            <span className={cn('text-[11.5px] transition-colors', moreActive ? 'font-semibold text-white' : 'font-medium text-white/[0.42]')}>
               Más
             </span>
           </button>
@@ -131,8 +129,8 @@ export function BottomNav() {
       </nav>
 
       {sheet && (
-        <div className="fixed inset-0 z-[60] lg:hidden">
-          <div className="absolute inset-0 bg-ink-900/35 animate-fade-in" onClick={() => setSheet(null)} />
+        <div className="fixed inset-0 z-hoja lg:hidden">
+          <div className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm" onClick={() => setSheet(null)} />
           {/* Hoja de cristal, con su tirador. Sube desde abajo, no aparece
               en el centro como un cuadro de diálogo de escritorio. */}
           <div className="cristal absolute inset-x-0 bottom-0 max-h-[82vh] animate-sheet-in overflow-y-auto rounded-t-4xl pb-[calc(1rem+var(--safe-bottom))]">
@@ -166,6 +164,19 @@ export function BottomNav() {
               </div>
             ) : (
               <>
+                {/* Crear, desde cualquier sección y a un toque del dique.
+                    Antes esto era un botón redondo azul fijo en la esquina: se
+                    montaba sobre las tarjetas de Inicio, competía con
+                    «Guardar» en asistencia y repetía el «Añadir jugadora» que
+                    ya estaba en la cabecera de cada lista. */}
+                <div className="px-2 pt-1">
+                  <button
+                    onClick={() => setSheet('create')}
+                    className="flex w-full items-center gap-3 rounded-2xl bg-raised px-4 py-3 text-left text-md font-semibold text-ink-900 active:opacity-80"
+                  >
+                    <Plus size={18} /> Crear…
+                  </button>
+                </div>
                 <ul className="p-2">
                   {MORE.map((m) => {
                     const on = isActive(pathname, m);

@@ -12,6 +12,7 @@ import { humanError } from '@/services/supabase';
 import { Button, Panel, Field, Input, Modal, PageHeader, Select } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import type { Team, TrainingSlot } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -32,6 +33,8 @@ const blank = (): Team => ({
 });
 
 export default function TeamEditor() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('formulario');
   const { teamId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -125,10 +128,10 @@ export default function TeamEditor() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         <Panel className="p-5 sm:p-6">
           <h2 className="text-[15px] font-semibold">Datos del equipo</h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Nombre" className="sm:col-span-2" hint="Como lo llamáis en el club.">
               <Input value={form.name} onChange={(e) => patch({ name: e.target.value })} placeholder="Ej.: Sub-17" />
             </Field>

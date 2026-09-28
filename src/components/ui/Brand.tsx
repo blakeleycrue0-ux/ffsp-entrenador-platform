@@ -10,9 +10,11 @@
  *    subido, sus iniciales sobre navy: sobria y siempre disponible, nunca un
  *    escudo prestado que no es de nadie.
  *
- * `Aro` es el símbolo suelto —la vuelta completa, con el balón cerrándola— y
- * sólo se usa donde hace falta un icono cuadrado de verdad: la pestaña del
- * navegador. En la página manda el nombre escrito.
+ * `Marca` es el símbolo: el archivo real del logo, no una aproximación
+ * dibujada a ojo. Se pinta como MÁSCARA CSS en vez de como imagen, por dos
+ * motivos: así toma el color de donde esté (`currentColor`) —blanco sobre
+ * negro, azul cuando toca— y así una sola imagen sirve para todos los casos
+ * en vez de tener una copia por color.
  */
 
 import { cn } from '@/lib/utils';
@@ -34,14 +36,19 @@ export function Wordmark({
   }[size];
   const pie = { sm: 'text-[8.5px]', md: 'text-[9px]', lg: 'text-[10px]', xl: 'text-[11px]' }[size];
 
+  const marca = { sm: 18, md: 22, lg: 28, xl: 38 }[size];
+
   return (
     <span
       className={cn('inline-flex flex-col leading-none', className)}
       aria-label="Playoff360"
     >
-      <span className={cn('font-display font-extrabold tracking-[-0.035em]', tipo)}>
-        <span className={tone === 'light' ? 'text-white' : 'text-ink-900'}>Playoff</span>
-        <span className="text-accent-500">360</span>
+      <span className="inline-flex items-center gap-2">
+        <Marca size={marca} className={tone === 'light' ? 'text-white' : 'text-ink-900'} />
+        <span className={cn('font-display font-extrabold tracking-[-0.035em]', tipo)}>
+          <span className={tone === 'light' ? 'text-white' : 'text-ink-900'}>Playoff</span>
+          <span className="text-azul-500">360</span>
+        </span>
       </span>
       {showSubtitle && (
         <span
@@ -58,29 +65,32 @@ export function Wordmark({
   );
 }
 
-/** El símbolo suelto: la vuelta completa y el balón que la cierra. */
-export function Aro({ size = 28, className }: { size?: number; className?: string }) {
+/**
+ * El símbolo de Playoff360.
+ *
+ * El archivo es blanco con transparencia, así que se usa como máscara: el
+ * color sale de `currentColor` y no hay que mantener una imagen por cada
+ * fondo. Si el navegador no supiera enmascarar —ninguno actual—, quedaría un
+ * hueco, así que lleva respaldo a imagen normal.
+ */
+export function Marca({ size = 28, className }: { size?: number; className?: string }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      className={cn('shrink-0', className)}
+    <span
       aria-hidden
-    >
-      <circle
-        cx="31"
-        cy="33"
-        r="15.5"
-        stroke="currentColor"
-        strokeWidth="6"
-        strokeDasharray="83.4 13.9"
-        strokeLinecap="round"
-        transform="rotate(-6 31 33)"
-      />
-      <circle cx="45.8" cy="19.6" r="6.2" fill="currentColor" />
-    </svg>
+      className={cn('inline-block shrink-0 bg-current', className)}
+      style={{
+        width: size,
+        height: size,
+        WebkitMaskImage: 'url(/playoff360.png)',
+        maskImage: 'url(/playoff360.png)',
+        WebkitMaskSize: 'contain',
+        maskSize: 'contain',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center',
+      }}
+    />
   );
 }
 

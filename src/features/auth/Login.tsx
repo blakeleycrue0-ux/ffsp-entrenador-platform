@@ -11,6 +11,7 @@ import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useClub } from '@/store/store';
 import { auth } from '@/services/auth';
 import { compruebaConexion, humanError } from '@/services/supabase';
+import { marcarDesbloqueado } from '@/services/passcode';
 import {
   ACCEPT_ERROR, CLUB_ROLE_LABEL, invitations, type InvitationPeek,
 } from '@/services/invitations';
@@ -98,9 +99,15 @@ export default function Login() {
     setBusy(true);
     try {
       if (mode === 'entrar') {
-        await auth.signIn(email, password);
+        const user = await auth.signIn(email, password);
+        /* Acaba de escribir la contraseña de la cuenta, que es la
+           autenticación de verdad: pedirle además el código en el mismo
+           segundo sería pedir dos veces lo mismo. El candado es para VOLVER
+           a la aplicación, no para entrar. */
+        if (user) marcarDesbloqueado(user.id);
       } else if (mode === 'registro') {
         const result = await auth.signUp(email, password, fullName);
+        if (result.session?.user) marcarDesbloqueado(result.session.user.id);
         if (!result.session) {
           setNotice(
             'Cuenta creada. Te hemos enviado un correo de confirmación: ábrelo y vuelve aquí para entrar.',
@@ -144,7 +151,7 @@ export default function Login() {
     invite?.found && (invite.expired || invite.revoked || invite.accepted);
 
   return (
-    <div className="grid min-h-screen bg-panel lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 min-h-screen bg-panel lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
       {/* Marca */}
       <div className="hidden flex-col justify-between border-r border-line bg-surface p-10 lg:flex">
         <Link to="/" className="text-sm font-medium text-ink-600 transition-colors hover:text-ink-900">

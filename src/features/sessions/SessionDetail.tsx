@@ -9,8 +9,11 @@ import { Tag, Button, Panel, LinkButton, PageHeader } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { addMinutes, cn, longDate, minutesToLabel, relativeDay } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function SessionDetail() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { sessionId = '' } = useParams();
   const { data, actions } = useClub();
   const toast = useToast();
@@ -109,7 +112,7 @@ export default function SessionDetail() {
       />
 
       {/* Datos de la sesión */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           [<Clock key="1" size={16} />, 'Horario', `${s.start} – ${addMinutes(s.start, s.duration)}`, minutesToLabel(s.duration)],
           [<MapPin key="2" size={16} />, 'Campo', s.venue, team?.name ?? ''],
@@ -129,7 +132,7 @@ export default function SessionDetail() {
         ))}
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Línea de tiempo */}
         <Panel className="overflow-hidden lg:col-span-2">
           <div className="flex items-center justify-between border-b border-ink-100 px-5 py-4">
@@ -153,7 +156,7 @@ export default function SessionDetail() {
                   {i < timeline.length - 1 && (
                     <span className="absolute left-[38px] top-14 h-[calc(100%-2.5rem)] w-px bg-line" />
                   )}
-                  <div className="relative z-10 flex w-7 shrink-0 flex-col items-center">
+                  <div className="relative z-fijo flex w-7 shrink-0 flex-col items-center">
                     <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink-50 text-[11px] font-bold text-ink-900 tabular-nums">
                       {String(i + 1).padStart(2, '0')}
                     </span>

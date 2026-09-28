@@ -333,7 +333,7 @@ export function ImportPlayers({
             Hemos leído {tabla.rows.length} {tabla.rows.length === 1 ? 'fila' : 'filas'} y{' '}
             {tabla.headers.length} columnas.
           </p>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {CAMPOS.map((c) => (
               <Field key={c.id} label={c.label} required={c.required}>
                 <Select

@@ -11,6 +11,8 @@
  * adapta al tamaño de la pantalla sin recalcular la jugada.
  */
 
+import { enLaFraccion } from './trazo';
+
 export type PitchKind = 'completo' | 'medio' | 'f7' | 'medio-f7' | 'vacio';
 
 export interface PitchSpec {
@@ -161,10 +163,21 @@ export interface Keyframe {
   y: number;
   /**
    * Punto de control de la curva hacia este fotograma, en metros y absoluto.
-   * Sin él el desplazamiento es recto.
+   * Sin él el desplazamiento es recto. Se mantiene por las jugadas guardadas
+   * antes de que existiera `path`; para las nuevas manda `path`.
    */
   cx?: number;
   cy?: number;
+  /**
+   * EL RECORRIDO DIBUJADO A MANO hasta este fotograma: los puntos de en medio,
+   * en metros, sin los extremos (que son el fotograma anterior y éste).
+   *
+   * Aquí está la diferencia entre «va de A a B» y «sale por fuera, quiebra y
+   * entra al primer palo». Se recorre por DISTANCIA, no por número de puntos,
+   * para que la velocidad sea constante aunque el dedo fuera despacio en una
+   * parte del trazo.
+   */
+  path?: Point[];
   /** Cómo se entra y se sale de este tramo. */
   ease?: 'lineal' | 'suave';
   /** Qué representa el tramo que termina aquí: sirve para dibujar la estela. */
@@ -206,6 +219,20 @@ export interface Scene {
   /** Anotaciones. No intervienen en la animación. */
   drawings?: Drawing[];
 }
+
+/**
+ * Una jugada nueva nace EN VERTICAL en una pantalla estrecha.
+ *
+ * Un campo apaisado dentro de un móvil de pie deja dos franjas negras y el
+ * campo ocupando una quinta parte de la pantalla —medido: 21 %—. Girado, el
+ * campo llena. No se toca ninguna jugada ya guardada, y la orientación sigue
+ * siendo un ajuste de la jugada que se cambia cuando se quiera: esto sólo
+ * decide con qué empieza.
+ */
+export const escenaNueva = (): Scene => ({
+  ...EMPTY_SCENE,
+  vertical: typeof window !== 'undefined' && window.innerWidth < 900,
+});
 
 export const EMPTY_SCENE: Scene = {
   version: 1,
@@ -255,10 +282,28 @@ export function sampleTrack(track: Track, t: number): Point | null {
   const raw = span <= 0 ? 1 : (t - a.t) / span;
   const u = b.ease === 'lineal' ? raw : easeInOut(raw);
 
+  if (b.path && b.path.length > 0) {
+    return enLaFraccion([{ x: a.x, y: a.y }, ...b.path, { x: b.x, y: b.y }], u);
+  }
   if (b.cx !== undefined && b.cy !== undefined) {
     return quad({ x: a.x, y: a.y }, { x: b.cx, y: b.cy }, { x: b.x, y: b.y }, u);
   }
   return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u };
+}
+
+/**
+ * Hacia dónde avanza la ficha en el instante `t`, en grados, o `null` si no se
+ * mueve lo bastante como para decirlo. Lo usan las fichas que se orientan.
+ */
+export function sampleHeading(track: Track, t: number): number | null {
+  if (!track || track.length < 2) return null;
+  const a = sampleTrack(track, t - 60);
+  const b = sampleTrack(track, t + 60);
+  if (!a || !b) return null;
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  if (Math.hypot(dx, dy) < 0.08) return null;
+  return (Math.atan2(dy, dx) * 180) / Math.PI;
 }
 
 /** Todas las posiciones de la escena en el instante `t`. */
@@ -286,9 +331,17 @@ export function trackSegments(track: Track, stepsPerLeg = 12): TrackSegment[] {
   for (let i = 1; i < track.length; i += 1) {
     const a = track[i - 1];
     const b = track[i];
+    /* Un tramo con recorrido dibujado necesita MÁS muestras que uno recto.
+       Con las doce de siempre, un arco de treinta puntos salía en la pantalla
+       como un polígono: la trayectoria estaba bien guardada y se veía torcida,
+       que es la peor de las combinaciones. Tres muestras por punto del trazo
+       bastan para que la línea se lea curva. */
+    const pasos = b.path && b.path.length
+      ? Math.min(240, Math.max(stepsPerLeg, b.path.length * 3))
+      : stepsPerLeg;
     const points: Point[] = [];
-    for (let j = 0; j <= stepsPerLeg; j += 1) {
-      const p = sampleTrack(track, a.t + ((b.t - a.t) * j) / stepsPerLeg);
+    for (let j = 0; j <= pasos; j += 1) {
+      const p = sampleTrack(track, a.t + ((b.t - a.t) * j) / pasos);
       if (p) points.push(p);
     }
     out.push({ points, move: b.move ?? 'carrera' });
@@ -309,6 +362,38 @@ export function putKeyframe(scene: Scene, objectId: string, t: number, at: Point
   const key: Keyframe = { ...previous, t: idx >= 0 ? track[idx].t : round, x: at.x, y: at.y };
   if (idx >= 0) track[idx] = key;
   else track.push(key);
+  track.sort((a, b) => a.t - b.t);
+  return { ...scene, tracks: { ...scene.tracks, [objectId]: track } };
+}
+
+/**
+ * Guarda un movimiento dibujado a mano: dónde estaba, dónde acaba y por dónde
+ * pasa.
+ *
+ * Se hace de una vez y no encadenando `putKeyframe` con `patchKeyframe`,
+ * porque `putKeyframe` REUTILIZA un fotograma que caiga a menos de 40 ms y
+ * conserva su instante. Encadenando, el segundo paso buscaría por el instante
+ * pedido, no encontraría el fotograma —que quedó en el suyo— y el recorrido se
+ * perdería sin decir nada: el movimiento saldría recto.
+ */
+export function putRuta(
+  scene: Scene, objectId: string, desde: number, hasta: number, ruta: Point[],
+): Scene {
+  if (ruta.length < 2 || hasta <= desde) return scene;
+  const track = [...(scene.tracks[objectId] ?? [])];
+
+  const pon = (t: number, at: Point, extra?: Partial<Keyframe>): number => {
+    const idx = track.findIndex((k) => Math.abs(k.t - t) < 40);
+    if (idx >= 0) {
+      track[idx] = { ...track[idx], x: at.x, y: at.y, ...extra };
+      return idx;
+    }
+    track.push({ t: Math.round(t), x: at.x, y: at.y, ...extra });
+    return track.length - 1;
+  };
+
+  pon(desde, ruta[0], { path: undefined });
+  pon(hasta, ruta[ruta.length - 1], { path: ruta.slice(1, -1), ease: 'suave' });
   track.sort((a, b) => a.t - b.t);
   return { ...scene, tracks: { ...scene.tracks, [objectId]: track } };
 }
@@ -409,6 +494,9 @@ export function sceneKeyTimes(scene: Scene): number[] {
  * Todo lo añadido después tiene valor por defecto, así que una jugada guardada
  * con una versión anterior se abre igual y no pierde nada.
  */
+const esPunto = (p: unknown): p is Point =>
+  !!p && typeof (p as Point).x === 'number' && typeof (p as Point).y === 'number';
+
 export function parseScene(value: unknown): Scene {
   const raw = value as Partial<Scene> | null;
   if (!raw || typeof raw !== 'object' || !Array.isArray(raw.objects)) return { ...EMPTY_SCENE };
@@ -418,7 +506,12 @@ export function parseScene(value: unknown): Scene {
   for (const obj of objects) {
     const track = (raw.tracks as Record<string, Track> | undefined)?.[obj.id];
     tracks[obj.id] = Array.isArray(track)
-      ? track.filter((k) => typeof k?.t === 'number').sort((a, b) => a.t - b.t)
+      ? track
+          .filter((k) => typeof k?.t === 'number')
+          /* Un `path` corrupto no debe tumbar la jugada entera: se cae al
+             trazo recto, que es lo que hacían las jugadas de antes. */
+          .map((k) => (Array.isArray(k.path) && k.path.every(esPunto) ? k : { ...k, path: undefined }))
+          .sort((a, b) => a.t - b.t)
       : [];
   }
 

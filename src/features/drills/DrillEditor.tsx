@@ -8,6 +8,7 @@ import { humanError } from '@/services/supabase';
 import { DrillBoardEditor } from '@/features/board/DrillBoard';
 import { cn } from '@/lib/utils';
 import type { Drill, DrillTag } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const TAGS: DrillTag[] = [
   'Posesión', 'Finalización', 'Defensa', 'Ataque', 'Presión', 'Transición',
@@ -29,6 +30,8 @@ const empty = (): Drill => ({
 });
 
 export default function DrillEditor() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { drillId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -86,11 +89,11 @@ export default function DrillEditor() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px]">
         <div className="space-y-4">
           <Panel className="p-5">
             <h2 className="text-[15px] font-semibold">Definición</h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Nombre" className="sm:col-span-2">
                 <Input value={form.name} onChange={(e) => patch({ name: e.target.value })} placeholder="Ej.: Rondo 5v2 a un toque" />
               </Field>

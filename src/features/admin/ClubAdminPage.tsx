@@ -26,8 +26,11 @@ import { useToast } from '@/components/ui/Toast';
 import { squadOf } from '@/store/selectors';
 import { longDate } from '@/lib/utils';
 import type { Club, Staff, StaffRole } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function ClubAdminPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, actions } = useClub();
   const toast = useToast();
   const [tab, setTab] = useState('equipos');
@@ -438,7 +441,7 @@ function InvitationsTab() {
             envía el correo: el enlace lo compartes tú.
           </p>
         </div>
-        <div className="grid gap-3 p-4 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-end">
+        <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-end">
           <Field label="Correo electrónico">
             <Input
               type="email"
@@ -592,7 +595,7 @@ function ClubDataTab() {
   };
 
   return (
-    <div className="grid gap-3 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
       <Panel>
         <div className="border-b border-line px-4 py-3">
           <h3 className="text-md font-semibold">Identidad</h3>

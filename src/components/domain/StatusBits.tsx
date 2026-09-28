@@ -110,11 +110,13 @@ export const ATTENDANCE: Record<
   AttendanceMark,
   { label: string; short: string; tone: 'ok' | 'warn' | 'bad' | 'neutral'; bg: string; text: string }
 > = {
-  presente: { label: 'Presente', short: 'P', tone: 'ok', bg: 'bg-ok', text: 'text-ok' },
-  tarde: { label: 'Llegó tarde', short: 'T', tone: 'warn', bg: 'bg-warn', text: 'text-warn' },
-  justificada: { label: 'Justificada', short: 'J', tone: 'warn', bg: 'bg-warn', text: 'text-warn' },
-  lesionada: { label: 'Lesionada', short: 'L', tone: 'bad', bg: 'bg-bad', text: 'text-bad' },
-  ausente: { label: 'Ausente', short: 'A', tone: 'bad', bg: 'bg-bad', text: 'text-bad' },
+  /* El `short` es para el móvil. Eran letras sueltas —P, T, J, L, A— que sin
+     una leyenda al lado no se entienden; una palabra corta sí. */
+  presente: { label: 'Presente', short: 'Sí', tone: 'ok', bg: 'bg-ok', text: 'text-ok' },
+  tarde: { label: 'Llegó tarde', short: 'Tarde', tone: 'warn', bg: 'bg-warn', text: 'text-warn' },
+  justificada: { label: 'Justificada', short: 'Just.', tone: 'warn', bg: 'bg-warn', text: 'text-warn' },
+  lesionada: { label: 'Lesionada', short: 'Lesión', tone: 'bad', bg: 'bg-bad', text: 'text-bad' },
+  ausente: { label: 'Ausente', short: 'No', tone: 'bad', bg: 'bg-bad', text: 'text-bad' },
   sin_registrar: { label: 'Sin registrar', short: '—', tone: 'neutral', bg: 'bg-ink-300', text: 'text-ink-400' },
 };
 

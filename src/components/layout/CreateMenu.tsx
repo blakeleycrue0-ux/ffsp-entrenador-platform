@@ -21,7 +21,7 @@ export function CreateMenu({ open, onClose }: { open: boolean; onClose: () => vo
 
   return (
     <Modal open={open} onClose={onClose} title="¿Qué quieres crear?" description="Elige y te llevamos directamente al flujo.">
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {OPTIONS.map((o) => {
           const Icon = o.icon;
           return (

@@ -21,6 +21,7 @@ import { useToast } from '@/components/ui/Toast';
 import { addMinutes, cn, minutesToLabel, normalize, toISODate, today, uid } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
 import type { Drill, DrillTag, SessionBlock, TrainingSession } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const TAGS: DrillTag[] = [
   'Calentamiento', 'Posesión', 'Finalización', 'Defensa', 'Ataque', 'Presión',
@@ -43,6 +44,8 @@ const emptySession = (teamId: string): TrainingSession => ({
 });
 
 export default function SessionBuilder() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -185,12 +188,12 @@ export default function SessionBuilder() {
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_340px]">
         <div className="space-y-4">
           {/* Datos de la sesión */}
           <Panel className="p-5">
             <h2 className="text-[15px] font-semibold">Datos de la sesión</h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Título" className="sm:col-span-2">
                 <Input
                   value={draft.title}

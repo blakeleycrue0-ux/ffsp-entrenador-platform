@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight, ArrowUpRight, Check, Minus, Plus, Shield, Smartphone, Zap,
 } from 'lucide-react';
-import { Aro, Wordmark } from '@/components/ui/Brand';
+import { Marca, Wordmark } from '@/components/ui/Brand';
 import { BoardDemo } from '@/features/board/BoardDemo';
 import { cn } from '@/lib/utils';
 
@@ -254,13 +254,13 @@ export default function Landing() {
           con un cristal oscuro para que el texto no se pise con el contenido. */}
       <header
         className={cn(
-          'sticky top-0 z-40 transition-colors duration-200',
+          'sticky top-0 z-nav transition-colors duration-200',
           conBorde ? 'border-b border-white/10 bg-night/85 backdrop-blur-xl' : 'bg-transparent',
         )}
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-8 px-5">
           <a href="#" className="flex items-center gap-2.5" aria-label="Playoff360, inicio">
-            <Aro size={26} className="text-accent-500" />
+            <Marca size={26} className="text-azul-500" />
             <Wordmark tone="light" />
           </a>
 
@@ -288,7 +288,7 @@ export default function Landing() {
             </Link>
             <Link
               to="/entrar"
-              className="inline-flex h-10 items-center rounded-full bg-accent-500 px-5 text-base font-semibold text-night transition-colors hover:bg-accent-400"
+              className="inline-flex h-10 items-center rounded-full bg-azul-600 px-5 text-base font-semibold text-night transition-colors hover:bg-azul-500"
             >
               Crear mi club
             </Link>
@@ -299,12 +299,9 @@ export default function Landing() {
       <main>
         {/* ── Portada ──────────────────────────────────────────────────── */}
         <section className="relative overflow-hidden bg-night text-white">
-          {/* Resplandor verde detrás del titular */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-[-22rem] h-[44rem] w-[72rem] -translate-x-1/2 rounded-full opacity-[0.22] blur-[120px]"
-            style={{ background: 'radial-gradient(closest-side, #19B877, transparent 70%)' }}
-          />
+          {/* Aquí había un resplandor verde de 72 rem detrás del titular, de
+              cuando la marca era verde. Sobrevivió al cambio de identidad y
+              tiñe de otro color una portada que es negra, blanca y azul. */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-[0.035]"
@@ -318,8 +315,8 @@ export default function Landing() {
 
           <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-16 text-center lg:pt-24">
             <Revelar>
-              <p className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/15 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium uppercase tracking-[0.12em] text-accent-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent-400" />
+              <p className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/15 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium uppercase tracking-[0.12em] text-azul-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-azul-400" />
                 Para el cuerpo técnico<span className="hidden sm:inline">&nbsp;de cualquier club</span>
               </p>
             </Revelar>
@@ -328,9 +325,9 @@ export default function Landing() {
               <h1 className="mx-auto mt-7 max-w-4xl font-display text-[clamp(2.2rem,8.6vw,5.25rem)] font-black leading-[0.94] tracking-[-0.045em] text-white">
                 Prepara la semana.
                 <br />
-                <span className="bg-gradient-to-br from-accent-400 to-accent-600 bg-clip-text text-transparent">
-                  Dibuja la jugada.
-                </span>
+                {/* Azul plano, no un degradado recortado sobre el texto: un
+                    titular con degradado se lee peor y no dice nada más. */}
+                <span className="text-azul-500">Dibuja la jugada.</span>
               </h1>
             </Revelar>
 
@@ -345,7 +342,7 @@ export default function Landing() {
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link
                   to="/entrar"
-                  className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent-500 px-7 py-3.5 text-md font-semibold text-night transition-colors hover:bg-accent-400 sm:w-auto"
+                  className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-azul-600 px-7 py-3.5 text-md font-semibold text-night transition-colors hover:bg-azul-500 sm:w-auto"
                 >
                   Crear mi club
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
@@ -368,11 +365,6 @@ export default function Landing() {
           <div id="pizarra" className="relative mx-auto max-w-6xl scroll-mt-20 px-5 pb-20 lg:pb-24">
             <Revelar delay={220}>
               <div className="relative">
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute -inset-x-10 -top-6 bottom-10 rounded-[3rem] opacity-40 blur-[64px]"
-                  style={{ background: 'radial-gradient(closest-side, #19B877, transparent 72%)' }}
-                />
                 <div className="relative rounded-2xl border border-white/10 bg-white/[0.035] p-3 shadow-[0_40px_100px_-40px_rgba(0,0,0,0.9)] sm:p-5">
                   <BoardDemo tone="dark" />
                   <p className="mt-3.5 px-1 text-sm leading-relaxed text-white/45">
@@ -387,11 +379,11 @@ export default function Landing() {
 
         {/* ── Tres cosas que la definen ────────────────────────────────── */}
         <section className="border-b border-line bg-panel">
-          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-14 md:grid-cols-3 md:gap-10 lg:py-16">
+          <div className="mx-auto grid grid-cols-1 max-w-6xl gap-8 px-5 py-14 md:grid-cols-3 md:gap-10 lg:py-16">
             {PILARES.map((p, i) => (
               <Revelar key={p.titulo} delay={i * 80}>
                 <div className="flex gap-4">
-                  <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent-50 text-accent-700">
+                  <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-azul-600/12 text-azul-400">
                     <p.icono size={19} strokeWidth={2.2} />
                   </span>
                   <div>
@@ -410,7 +402,7 @@ export default function Landing() {
         <section id="producto" className="scroll-mt-16 bg-panel">
           <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
             <Revelar>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-accent-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-azul-400">
                 El producto
               </p>
               <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-ink-900 sm:text-5xl">
@@ -423,7 +415,7 @@ export default function Landing() {
             </Revelar>
 
             <Revelar delay={80}>
-              <div className="mt-12 grid gap-8 lg:mt-14 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-14">
+              <div className="mt-12 grid grid-cols-1 gap-8 lg:mt-14 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-14">
                 {/* Selector. En ancho de sobremesa cada apartado se despliega
                     con su explicación; en móvil son pestañas que se deslizan. */}
                 <div role="tablist" aria-label="Capacidades">
@@ -454,7 +446,7 @@ export default function Landing() {
                         key={c.clave}
                         className={cn(
                           'border-l-2 pl-5 transition-colors',
-                          activa === i ? 'border-accent-500' : 'border-line',
+                          activa === i ? 'border-azul-600' : 'border-line',
                         )}
                       >
                         <button
@@ -486,7 +478,7 @@ export default function Landing() {
                                   key={d}
                                   className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-sm font-medium text-ink-700"
                                 >
-                                  <Check size={12} strokeWidth={3} className="text-accent-600" />
+                                  <Check size={12} strokeWidth={3} className="text-azul-400" />
                                   {d}
                                 </li>
                               ))}
@@ -531,7 +523,7 @@ export default function Landing() {
                           key={d}
                           className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-sm font-medium text-ink-700"
                         >
-                          <Check size={13} strokeWidth={3} className="text-accent-600" />
+                          <Check size={13} strokeWidth={3} className="text-azul-400" />
                           {d}
                         </li>
                       ))}
@@ -545,9 +537,9 @@ export default function Landing() {
 
         {/* ── En el campo, con el móvil ────────────────────────────────── */}
         <section className="border-y border-line bg-surface">
-          <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 py-20 lg:grid-cols-2 lg:gap-16 lg:py-28">
+          <div className="mx-auto grid grid-cols-1 max-w-6xl items-center gap-14 px-5 py-20 lg:grid-cols-2 lg:gap-16 lg:py-28">
             <Revelar>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-accent-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-azul-400">
                 En el campo
               </p>
               <h2 className="mt-4 font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-ink-900 sm:text-5xl">
@@ -565,7 +557,7 @@ export default function Landing() {
                   'Cada quien ve sólo los equipos que tiene asignados',
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-3 text-md text-ink-800">
-                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent-500 text-night">
+                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-azul-600 text-white">
                       <Check size={13} strokeWidth={3} />
                     </span>
                     {t}
@@ -599,11 +591,11 @@ export default function Landing() {
                 Tres pasos y estás dentro.
               </h2>
             </Revelar>
-            <div className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
+            <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
               {PASOS.map(([titulo, texto], i) => (
                 <Revelar key={titulo} delay={i * 90}>
                   <div className="border-t-2 border-ink-900 pt-5">
-                    <span className="font-display text-sm font-bold tracking-[0.1em] text-accent-600">
+                    <span className="font-display text-sm font-bold tracking-[0.1em] text-azul-400">
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <h3 className="mt-2 font-display text-xl font-bold tracking-[-0.015em] text-ink-900">
@@ -625,9 +617,9 @@ export default function Landing() {
             style={{ backgroundImage: GRANO }}
           />
           <div className="relative mx-auto max-w-6xl px-5 py-20 lg:py-28">
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20">
               <Revelar>
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-accent-400">
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-azul-400">
                   Honestidad
                 </p>
                 <h2 className="mt-4 font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-white sm:text-5xl">
@@ -708,16 +700,9 @@ export default function Landing() {
         <section className="bg-panel px-5 pb-20 lg:pb-28">
           <Revelar>
             <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-night px-6 py-16 text-center ring-1 ring-inset ring-white/10 sm:px-12 lg:py-24">
-              {/* El verde sube desde abajo. Un degradado en porcentajes se
-                  comporta igual en cualquier ancho; un desenfoque, no. */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    'radial-gradient(120% 110% at 50% 128%, #19B877 0%, rgba(25,184,119,0.45) 34%, transparent 62%)',
-                }}
-              />
+              {/* Aquí subía un verde desde abajo, de la identidad anterior.
+                  Se queda el negro: el color de esta sección lo pone el botón,
+                  que es lo único que hay que pulsar. */}
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 opacity-[0.14] mix-blend-overlay"
@@ -733,7 +718,7 @@ export default function Landing() {
                 </p>
                 <Link
                   to="/entrar"
-                  className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-accent-500 px-8 py-4 text-md font-semibold text-night transition-colors hover:bg-accent-400"
+                  className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-azul-600 px-8 py-4 text-md font-semibold text-night transition-colors hover:bg-azul-500"
                 >
                   Empezar
                   <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
@@ -747,10 +732,10 @@ export default function Landing() {
       {/* ── Pie ────────────────────────────────────────────────────────── */}
       <footer className="border-t border-line bg-panel">
         <div className="mx-auto max-w-6xl px-5 py-14">
-          <div className="grid gap-10 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
             <div>
               <div className="flex items-center gap-2.5">
-                <Aro size={24} className="text-accent-500" />
+                <Marca size={24} className="text-azul-500" />
                 <Wordmark />
               </div>
               <p className="mt-4 max-w-xs text-base leading-relaxed text-ink-600">

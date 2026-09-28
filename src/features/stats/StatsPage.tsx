@@ -22,6 +22,7 @@ import {
 import { Avatar, Meter } from '@/components/ui';
 import { BarTrend, LineTrend } from '@/components/domain/Charts';
 import { cn, dayShort, shortDate } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 /** Un porcentaje que puede no existir. Nunca se dibuja como 0 %. */
 const Pct = ({ value, className }: { value: number | null; className?: string }) =>
@@ -34,6 +35,8 @@ const Pct = ({ value, className }: { value: number | null; className?: string })
 type Periodo = '4' | '8' | 'todo';
 
 export default function StatsPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, teamId, setTeamId } = useClub();
   const teams = visibleTeams(data);
   const [periodo, setPeriodo] = useState<Periodo>('8');
@@ -126,7 +129,7 @@ export default function StatsPage() {
       />
 
       {/* Cifras principales */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Panel className="p-4">
           <Figure
             label="Asistencia media"
@@ -180,7 +183,7 @@ export default function StatsPage() {
         </p>
       </Panel>
 
-      <div className="mt-3 grid gap-3 lg:grid-cols-3">
+      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
         <Panel className="lg:col-span-2">
           <PanelHeader
             title="Evolución de la asistencia"
@@ -211,7 +214,7 @@ export default function StatsPage() {
         </Panel>
       </div>
 
-      <div className="mt-3 grid gap-3 lg:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
         <RankingPanel title="Mayor asistencia" rows={best} tone="ok" />
         <RankingPanel title="Menor asistencia" rows={worst} tone="bad" detail />
       </div>

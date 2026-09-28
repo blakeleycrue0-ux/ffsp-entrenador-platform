@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/Toast';
 import { cn, toISODate, today } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
 import type { Match } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const empty = (teamId: string, competition: string, venue: string): Match => ({
   id: '',
@@ -22,6 +23,8 @@ const empty = (teamId: string, competition: string, venue: string): Match => ({
 });
 
 export default function MatchEditor() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('formulario');
   const { matchId } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -91,9 +94,9 @@ export default function MatchEditor() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
         <Panel className="p-5 sm:p-6">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Equipo">
               <Select
                 value={form.teamId}

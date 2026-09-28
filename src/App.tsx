@@ -4,6 +4,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { useClub } from '@/store/store';
 import { isClubAdmin } from '@/store/selectors';
 import { Wordmark } from '@/components/ui/Brand';
+import { RequireCodigo } from '@/features/passcode/RequireCodigo';
 
 // Rutas con carga diferida: la primera pantalla llega antes y cada módulo
 // (pizarra, analíticas, constructor de sesiones…) se descarga sólo si se usa.
@@ -32,6 +33,7 @@ const MatchEditor = lazy(() => import('@/features/matches/MatchEditor'));
 const AttendancePage = lazy(() => import('@/features/attendance/AttendancePage'));
 const StatsPage = lazy(() => import('@/features/stats/StatsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
+const BillingPage = lazy(() => import('@/features/billing/BillingPage'));
 const ProfilePage = lazy(() => import('@/features/settings/ProfilePage'));
 const LegalPage = lazy(() => import('@/features/legal/LegalPage'));
 const Onboarding = lazy(() => import('@/features/onboarding/Onboarding'));
@@ -101,9 +103,14 @@ export default function App() {
           path="/app"
           element={
             <RequireAuth>
-              <RequireClub>
-                <AppShell />
-              </RequireClub>
+              {/* El candado va por delante de todo lo que hay dentro de la
+                  sesión, incluida la creación del club: si la cuenta tiene
+                  código, no se enseña nada sin escribirlo. */}
+              <RequireCodigo>
+                <RequireClub>
+                  <AppShell />
+                </RequireClub>
+              </RequireCodigo>
             </RequireAuth>
           }
         >
@@ -168,6 +175,7 @@ export default function App() {
           />
 
           <Route path="ajustes" element={<SettingsPage />} />
+          <Route path="ajustes/plan" element={<BillingPage />} />
           <Route path="perfil" element={<ProfilePage />} />
 
           {/* Direcciones anteriores */}

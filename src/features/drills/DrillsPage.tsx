@@ -5,6 +5,7 @@ import { useClub } from '@/store/store';
 import { Tag, Panel, EmptyState, Input, LinkButton, PageHeader } from '@/components/ui';
 import { cn, normalize } from '@/lib/utils';
 import type { DrillTag } from '@/types';
+import { useAnchura } from '@/components/layout/AppShell';
 
 const TAGS: DrillTag[] = [
   'Posesión', 'Finalización', 'Defensa', 'Ataque', 'Presión', 'Transición',
@@ -12,6 +13,8 @@ const TAGS: DrillTag[] = [
 ];
 
 export default function DrillsPage() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('ancho');
   const { data, actions } = useClub();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState<DrillTag[]>([]);
@@ -113,7 +116,7 @@ export default function DrillsPage() {
           />
         </Panel>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {drills.map((d) => (
             <Panel key={d.id} className="flex flex-col p-5">
               <div className="flex items-start justify-between gap-3">

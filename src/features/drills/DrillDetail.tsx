@@ -6,8 +6,11 @@ import { useToast } from '@/components/ui/Toast';
 import { DrillBoardViewer } from '@/features/board/DrillBoard';
 import { TacticBoard } from './TacticBoard';
 import { cn, shortDate } from '@/lib/utils';
+import { useAnchura } from '@/components/layout/AppShell';
 
 export default function DrillDetail() {
+  /* El ancho lo decide la tarea, no la pantalla. */
+  useAnchura('tabla');
   const { drillId = '' } = useParams();
   const { data, actions } = useClub();
   const toast = useToast();
@@ -60,7 +63,7 @@ export default function DrillDetail() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           {/* Pizarra */}
           <Panel className="p-5">

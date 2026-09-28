@@ -3,10 +3,52 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── EL SISTEMA DE COLOCACIÓN ──────────────────────────────────────────────
+     TODO lo que se coloca respecto a otra cosa sale de aquí. Antes cada
+     archivo elegía su número: el armazón reservaba 104 px por abajo, el dique
+     medía 64 y se ponía a 12, la barra de guardar de asistencia se pegaba a
+     76, la isla de la pizarra a 72 y el botón de crear a 88. Cinco números
+     distintos para la misma distancia, así que en cuanto uno cambiaba, los
+     otros cuatro se quedaban mal y algo acababa tapando a algo.
+     Ahora se cambia el número aquí y se mueve todo a la vez. */
   :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+
     --header-h: 56px;
     --sidebar-w: 236px;
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+    /* El dique: su alto y su separación del borde de abajo. */
+    --nav-h: 64px;
+    --nav-gap: 12px;
+
+    /* Desde el borde inferior de la ventana hasta donde empieza el dique.
+       Cualquier cosa que quiera quedarse POR ENCIMA del dique parte de aquí. */
+    --sobre-nav: calc(var(--nav-h) + var(--nav-gap) + var(--safe-bottom));
+
+    /* Lo que la página tiene que dejar libre al final para que su último
+       renglón se pueda leer entero por encima del dique. */
+    --hueco-inferior: calc(var(--sobre-nav) + 24px);
+
+    /* Márgenes laterales y ritmo vertical de una página. */
+    --pagina-x: 16px;
+    --pagina-top: 20px;
+  }
+
+  @media (min-width: 640px) {
+    :root { --pagina-x: 24px; }
+  }
+
+  /* En escritorio no hay dique: la navegación está a la izquierda. Sin esto,
+     cada página reservaría abajo un hueco para algo que no existe. */
+  @media (min-width: 1024px) {
+    :root {
+      --nav-h: 0px;
+      --nav-gap: 0px;
+      --hueco-inferior: 48px;
+      --pagina-x: 24px;
+      --pagina-top: 24px;
+    }
   }
 
   html {
@@ -30,8 +72,9 @@
         que la pantalla está iluminada desde algún sitio en vez de ser un
         agujero negro.
      2. Grano. Es ruido generado en el propio SVG, sin ninguna imagen que
-        descargar, al 3,5 % de opacidad y con una deriva lentísima. A ese
-        nivel no se «ve»: se nota. Es lo que quita el aspecto de plástico.
+        descargar, al 3,5 % de opacidad. A ese nivel no se «ve»: se nota. Es
+        lo que quita el aspecto de plástico. No se mueve: una animación
+        infinita que nadie llega a ver sólo gasta batería.
 
      Nada de esto brilla ni tiene color. En cuanto un fondo oscuro tiene un
      halo de color, deja de parecer caro y parece una plantilla. */
@@ -44,28 +87,17 @@
     z-index: 0;
   }
 
-  /* La luz de la pantalla. Arriba a la derecha, AZUL y al 10 %: a ese nivel
-     no se lee como un degradado de colores, se lee como que la pantalla está
-     encendida. En cuanto se sube, deja de parecer un producto y parece una
-     plantilla con gradiente. */
+  /* La luz de la pantalla: gris, no azul. El halo azul del 10 % se leía como
+     una mancha de color en la esquina —un «blob»— y el azul de esta marca es
+     para lo que se pulsa, no para decorar el fondo. Queda un 4 % de blanco
+     cayendo desde arriba, que es lo que quita el aspecto de agujero negro. */
   body::before {
-    background:
-      radial-gradient(90% 55% at 82% -5%, rgba(10, 140, 255, 0.10), transparent 58%),
-      radial-gradient(120% 70% at 50% -12%, rgba(255, 255, 255, 0.045), transparent 60%);
+    background: radial-gradient(120% 70% at 50% -12%, rgba(255, 255, 255, 0.045), transparent 60%);
   }
 
   body::after {
     opacity: 0.035;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23r)'/%3E%3C/svg%3E");
-    animation: deriva 14s steps(4, end) infinite;
-  }
-
-  @keyframes deriva {
-    0%   { transform: translate3d(0, 0, 0); }
-    25%  { transform: translate3d(-2%, 1%, 0); }
-    50%  { transform: translate3d(1%, -2%, 0); }
-    75%  { transform: translate3d(2%, 1%, 0); }
-    100% { transform: translate3d(0, 0, 0); }
   }
 
   /* El contenido va por encima de las dos capas. */
@@ -132,20 +164,25 @@
     @apply relative rounded-2xl border border-line bg-panel;
   }
 
+  /* Más tapado y menos saturado que antes. Al 60 % se leía el texto de la
+     página a través del dique y de la cabecera, que es justo lo que no puede
+     pasar; y el 140 % de saturación teñía de verde el cristal que se ponía
+     encima del campo. Ni brillo, ni color: el material tiene que desaparecer
+     cuando no se está mirando. */
   .cristal {
-    background: rgba(20, 20, 24, 0.60);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(18, 18, 22, 0.78);
+    backdrop-filter: blur(20px) saturate(125%);
+    -webkit-backdrop-filter: blur(20px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     box-shadow:
-      0 12px 40px rgba(0, 0, 0, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      0 10px 35px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
   /* Cuando el navegador no sabe desenfocar, el cristal se vuelve opaco: más
      vale una superficie sólida legible que una transparente ilegible. */
   @supports not (backdrop-filter: blur(1px)) {
-    .cristal { background: #16161A; }
+    .cristal { background: #121216; }
   }
 
   .panel-hover {
@@ -191,14 +228,20 @@
   /* El rótulo que acompaña a una cifra. Pequeño, en mayúsculas y apagado:
      la cifra es lo que se lee, esto es lo que la explica. */
   .rotulo {
-    @apply text-2xs font-semibold uppercase tracking-[0.11em] text-ink-500;
+    @apply text-2xs font-semibold uppercase tracking-[0.09em] text-ink-500;
+    overflow-wrap: break-word;
   }
 
   /* Separador de sección: una línea, no otra tarjeta. */
   .separador { @apply h-px w-full bg-line; }
 
+  /* El espaciado entre letras baja de 0,11 a 0,09 em y las palabras largas
+     pueden partirse. A 320 px, «ENTRENAMIENTOS» en versalitas muy espaciadas
+     medía dos píxeles más que su columna y se salía: es UNA palabra, así que
+     no tenía por dónde cortar. Achicar la letra no es la solución. */
   .eyebrow {
-    @apply text-2xs font-semibold uppercase tracking-[0.11em] text-ink-500;
+    @apply text-2xs font-semibold uppercase tracking-[0.09em] text-ink-500;
+    overflow-wrap: break-word;
   }
 
   .hairline {
