@@ -300,8 +300,12 @@ export default function Dashboard() {
           </Panel>
         )}
 
-        {/* Asistencia */}
-        <Panel className="p-5">
+        {/* ── Asistencia y convocatoria ────────────────────────────────────
+            Sin caja. Arriba están las dos piezas que de verdad lo merecen —lo
+            siguiente que toca hacer—; esto es contexto, y ponerlo en una
+            tarjeta idéntica a las de arriba hace que las cuatro pesen lo mismo
+            y que no se vea cuál es cuál. Lo separa un filete y el aire. */}
+        <section className="border-t border-line-sutil pt-6">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Asistencia</span>
             <Link to="/app/entrenamientos" className="text-[12.5px] font-medium text-ink-900 hover:text-ink-900">
@@ -319,9 +323,14 @@ export default function Dashboard() {
               </p>
 
               <div className="mt-3 space-y-2">
+                {/* El tramo de las que vinieron va en BLANCO, no en verde: es
+                    la parte normal de la barra y ocupa casi toda. En verde, lo
+                    primero que se ve de la pantalla es una barra de color que
+                    no avisa de nada; en blanco, lo que destaca es el trozo
+                    ámbar y el rojo, que es donde hay algo que mirar. */}
                 <SplitBar
                   segments={[
-                    { value: attCounts.present + attCounts.late, color: 'bg-ok', label: 'Vinieron' },
+                    { value: attCounts.present + attCounts.late, color: 'bg-ink-800', label: 'Vinieron' },
                     { value: attCounts.justified + attCounts.injured, color: 'bg-warn', label: 'Justificadas' },
                     { value: attCounts.absent, color: 'bg-bad', label: 'Ausentes' },
                     { value: attCounts.unregistered, color: 'bg-line', label: 'Sin registrar' },
@@ -329,7 +338,7 @@ export default function Dashboard() {
                 />
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
                   <span className="flex items-center gap-1.5 text-ink-600">
-                    <span className="h-2 w-2 rounded-full bg-ok" /> {attCounts.present} presentes
+                    <span className="h-2 w-2 rounded-full bg-ink-800" /> {attCounts.present} presentes
                   </span>
                   <span className="flex items-center gap-1.5 text-ink-600">
                     <span className="h-2 w-2 rounded-full bg-warn" /> {attCounts.justified + attCounts.injured}{' '}
@@ -343,10 +352,10 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        </Panel>
+        </section>
 
         {/* Convocatoria */}
-        <Panel className="p-5">
+        <section className="border-t border-line-sutil pt-6">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Convocatoria</span>
             {match0 && (
@@ -409,12 +418,12 @@ export default function Dashboard() {
               }
             />
           )}
-        </Panel>
+        </section>
       </div>
 
       {/* Tareas + actividad */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
-        <Panel className="p-5 lg:col-span-2">
+        <section className="border-t border-line-sutil pt-6 lg:col-span-2">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Tareas pendientes</span>
             <span className="text-[12.5px] text-ink-400">{openTasks.length} abiertas</span>
@@ -435,9 +444,9 @@ export default function Dashboard() {
               ))}
             </ul>
           )}
-        </Panel>
+        </section>
 
-        <Panel className="p-5 lg:col-span-3">
+        <section className="border-t border-line-sutil pt-6 lg:col-span-3">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Actividad reciente</span>
           </div>
@@ -468,7 +477,7 @@ export default function Dashboard() {
             ))}
           </ul>
           )}
-        </Panel>
+        </section>
       </div>
 
       {/* Mis equipos */}

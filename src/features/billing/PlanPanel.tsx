@@ -14,7 +14,7 @@ import { permisos } from '@/store/selectors';
 import { diasDePrueba, NIVELES, type Plan } from '@/services/billing';
 import { cn } from '@/lib/utils';
 
-export function PlanPanel() {
+export function PlanPanel({ plano = false }: { plano?: boolean } = {}) {
   const { data } = useClub();
   const per = permisos(data);
   const sub = data.subscription;
@@ -24,14 +24,21 @@ export function PlanPanel() {
 
   if (!data.club) return null;
 
-  return (
-    <Panel>
-      <PanelHeader
-        title="Plan"
-        actions={<Tag tone={per.nivel === 'free' ? undefined : 'solid'}>{actual?.name ?? 'Gratis'}</Tag>}
-      />
+  const cuerpo = (
+    <>
+      {plano ? (
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-lg text-ink-900">Plan</h3>
+          <Tag tone={per.nivel === 'free' ? undefined : 'solid'}>{actual?.name ?? 'Gratis'}</Tag>
+        </div>
+      ) : (
+        <PanelHeader
+          title="Plan"
+          actions={<Tag tone={per.nivel === 'free' ? undefined : 'solid'}>{actual?.name ?? 'Gratis'}</Tag>}
+        />
+      )}
 
-      <div className="space-y-4 p-5">
+      <div className={plano ? 'mt-4 space-y-4' : 'space-y-4 p-5'}>
         {/* El dato es cuántos equipos lleva. Va como cifra, no como frase. */}
         <div className="flex items-end gap-3">
           <span className="cifra text-4xl">{per.equipos}</span>
@@ -67,8 +74,10 @@ export function PlanPanel() {
           Plan y facturación
         </LinkButton>
       </div>
-    </Panel>
+    </>
   );
+
+  return plano ? <section>{cuerpo}</section> : <Panel>{cuerpo}</Panel>;
 }
 
 function Aviso({ children, tono }: { children: React.ReactNode; tono?: 'warn' | 'bad' }) {

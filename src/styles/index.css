@@ -367,7 +367,8 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Los deslizadores nativos salen en azul del sistema: se traen al navy */
+  /* Los deslizadores nativos salen en el azul del sistema operativo: se traen
+     al blanco y negro del producto, igual que `.barra`. */
   input[type='range'] {
     @apply h-6 w-full cursor-pointer appearance-none bg-transparent p-0;
   }

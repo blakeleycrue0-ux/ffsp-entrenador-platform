@@ -35,6 +35,7 @@ import { humanError } from '@/services/supabase';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { Button, Field, Input, Select } from '@/components/ui';
 import { Marca, Wordmark } from '@/components/ui/Brand';
+import { Ambiente } from '@/components/visual/Particulas';
 import { ConfigurarCodigo } from '@/features/passcode/ConfigurarCodigo';
 import { PasoPlan } from './PasoPlan';
 import { cn } from '@/lib/utils';
@@ -180,8 +181,13 @@ export default function Onboarding() {
     : NUMERADOS.indexOf(paso as (typeof NUMERADOS)[number]) + 1;
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface">
-      <header className="mx-auto flex w-full max-w-[460px] items-center justify-between px-5 pb-1 pt-5">
+    /* El ambiente detrás, como en la portada y en la entrada: montar el club
+       es el primer rato dentro del producto, y tiene que parecer el mismo
+       producto. El velo central deja el centro oscuro para que el formulario
+       se lea sin competir con el fondo. */
+    <div className="relative flex min-h-[100svh] flex-col overflow-hidden bg-surface">
+      <Ambiente intensidad={0.8} densidad={0.75} velo="centro" />
+      <header className="relative mx-auto flex w-full max-w-[460px] items-center justify-between px-5 pb-1 pt-[max(20px,var(--safe-top))]">
         <Wordmark tone="light" />
         <button
           onClick={() => void signOut()}
@@ -193,7 +199,10 @@ export default function Onboarding() {
 
       {/* Sin caja: la PANTALLA es la interfaz. Un rectángulo gigante alrededor
           de todo es lo que hace que una aplicación parezca una página web. */}
-      <main className="mx-auto flex w-full max-w-[460px] flex-1 flex-col px-5 pb-10 pt-6">
+      {/* `justify-center`: en una pantalla de escritorio el paso quedaba
+          pegado arriba con medio lienzo negro debajo. Centrado, la pantalla
+          entera es el paso. */}
+      <main className="relative mx-auto flex w-full max-w-[460px] flex-1 flex-col justify-center px-5 pb-[max(40px,var(--safe-bottom))] pt-6">
         <Progreso actual={numero} total={NUMERADOS.length} />
 
         <div className="mt-7">
@@ -477,7 +486,11 @@ export default function Onboarding() {
           )}
         </div>
 
-        {paso !== 'listo' && <p className="mt-6 text-sm text-ink-500">Puedes cambiarlo todo después.</p>}
+        {/* En la bienvenida esta frase ya está en el subtítulo: repetirla dos
+            veces en la misma pantalla no tranquiliza más, sólo canta. */}
+        {paso !== 'listo' && paso !== 'bienvenida' && (
+          <p className="mt-6 text-sm text-ink-500">Puedes cambiarlo todo después.</p>
+        )}
       </main>
     </div>
   );
