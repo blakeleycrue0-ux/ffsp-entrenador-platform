@@ -20,7 +20,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight, ArrowUpRight, Check, Layers, Minus, Plus, Shield, ShieldCheck, Smartphone, Zap,
+  ArrowRight, ArrowUpRight, Check, Minus, Plus, Shield, Smartphone, Zap,
 } from 'lucide-react';
 import { Wordmark } from '@/components/ui/Brand';
 import { Ambiente } from '@/components/visual/Particulas';
@@ -168,20 +168,17 @@ const CAPACIDADES = [
   },
 ] as const;
 
-/**
- * Tres hechos del producto, no indicadores de uso. No hay cifras de clubes ni
- * de usuarias porque no están verificadas, y poner una inventada en la primera
- * pantalla es la manera más rápida de no merecer la segunda. Cada uno se puede
- * comprobar abriendo el producto.
+/*
+ * Aquí había tres hechos del producto —seis áreas, club aislado, funciona en
+ * el móvil— al pie de la portada. Estaban bien escritos y eran verdad, y aun
+ * así sobraban: una fila de iconos con etiquetas debajo de los botones es LA
+ * forma de la plantilla, y con ella el cuadro dejaba de ser una imagen y
+ * pasaba a ser una lista de secciones. Lo que tiene que ver alguien al llegar,
+ * y en este orden, es la tela, el titular y el botón.
  *
- * La versión corta es para el móvil: tres etiquetas largas en 390 px se parten
- * en tres renglones y se comen la escultura.
+ * Lo que decían sigue dicho más abajo, donde hay sitio para explicarlo. No se
+ * ha perdido nada; se ha quitado de donde estorbaba.
  */
-const HECHOS = [
-  { icono: Layers, corto: '6 áreas', largo: '6 áreas conectadas' },
-  { icono: ShieldCheck, corto: 'Club aislado', largo: 'Cada club, aislado' },
-  { icono: Smartphone, corto: 'En el móvil', largo: 'Funciona en el móvil' },
-] as const;
 
 /** La marca del sello: un destello diminuto, dibujado, no un icono de librería. */
 function Sparkle() {
@@ -350,11 +347,15 @@ export default function Landing() {
             >
               Iniciar sesión
             </Link>
-            {/* 42 px, no una cápsula gigante: en el móvil ocupaba un tercio
-                del ancho de la cabecera y se comía la marca. */}
+            {/* 40 px. LA CABECERA NO COMPITE CON LA PORTADA: en el móvil esto
+                llegó a ocupar un tercio del ancho y era, con diferencia, lo más
+                blanco y lo más grande de la primera pantalla —por delante del
+                titular—. Un botón de cabecera es un sitio al que volver, no la
+                llamada principal; la llamada principal está abajo, con la
+                tela detrás. */}
             <Link
               to="/entrar"
-              className="metal-claro inline-flex h-[42px] items-center rounded-[7px] px-[17px] text-[14px] font-medium text-ink-0"
+              className="metal-claro inline-flex h-[40px] items-center rounded-[7px] px-[16px] text-[13.5px] font-medium text-ink-0"
             >
               Crear mi club
             </Link>
@@ -364,102 +365,108 @@ export default function Landing() {
 
       <main>
         {/* ── Portada ────────────────────────────────────────────────────────
-            UN SOLO FOTOGRAMA. Todo cabe en una pantalla y nada de lo que
-            importa queda por debajo del pliegue: cabecera arriba, la escultura
-            de puntos ocupando el grueso del cuadro, el texto CENTRADO en el
-            tercio inferior y tres hechos al pie.
+            UN SOLO FOTOGRAMA, NO SEIS PIEZAS APILADAS.
 
-            La escultura es la protagonista y el texto va encima; por eso el
-            titular no es lo más grande del cuadro ni va pegado a la izquierda.
-            El hueco vacío entre la cabecera y el texto no sobra: es lo que
-            deja respirar a la imagen, y se encoge solo en pantallas bajas. */}
+            Lo que había antes era una lista: cabecera, fondo, sello, titular,
+            párrafo, botones, tres hechos. Siete cosas, cada una en su banda, y
+            entre la tela y el texto una franja de negro que las separaba del
+            todo. Se veía la costura.
+
+            Aquí la tela CRUZA POR DETRÁS del sello y del titular —el lienzo no
+            se corta por encima del texto, se oscurece lo justo para que el
+            blanco gane al plateado—, así que el fondo y el contenido son la
+            misma imagen y no dos capas pegadas.
+
+            Y se ha quitado la fila de hechos del pie. No porque estuviera mal
+            escrita: porque convertía el cuadro en una plantilla. Lo que tiene
+            que ver alguien al llegar, en este orden, es la tela, el titular y
+            el botón. Nada más compitiendo.
+
+            Las proporciones se miden, no se estiman: `pruebas/portada.mjs`
+            comprueba en cinco tamaños dónde cae cada pieza. */}
         <section className="relative flex h-[100svh] min-h-[560px] flex-col overflow-hidden bg-black">
-          <Ambiente intensidad={1} velo="abajo" />
+          <Ambiente intensidad={1} velo="portada" />
 
-          {/* El hueco. `min-h-0` para que ceda el primero cuando la pantalla
-              es baja, en vez de empujar el texto fuera del cuadro. */}
+          {/* El hueco de arriba se lo come todo; el de abajo es fijo. Así el
+              bloque queda SIEMPRE anclado por el pie —que es lo que se ve
+              igual en todas las pantallas— en vez de flotar a una altura
+              distinta en cada una. */}
           <div className="min-h-0 flex-1" />
 
           <div className="relative px-5 text-center">
+            {/* Casi invisible, a propósito: es una nota al pie de quién usa
+                esto, no un botón. Antes tenía borde claro y fondo propio y
+                parecía un campo de formulario vacío. */}
             <span
-              className="animate-entra inline-flex items-center gap-1.5 rounded-[5px] border border-white/12 bg-white/[0.045] px-3 text-[11.5px] font-medium tracking-[0.01em] text-ink-600 backdrop-blur-md"
-              style={{ animationDelay: '120ms', height: 31 }}
+              className="animate-entra inline-flex h-[29px] items-center gap-1.5 rounded-[5px] px-[11px] text-[11px] font-medium tracking-[0.015em] text-ink-600"
+              style={{
+                animationDelay: '120ms',
+                background: 'rgba(20,20,20,0.65)',
+                border: '1px solid rgba(255,255,255,0.14)',
+                backdropFilter: 'blur(6px)',
+              }}
             >
               <Sparkle />
               Para cuerpos técnicos
             </span>
 
-            {/* DOS LÍNEAS, en cualquier ancho. «Todo el cuerpo técnico» rompía
-                en dos a 34 px y el titular se comía tres renglones, lo que
-                además empujaba el bloque por encima del tercio inferior. Quién
-                lo usa ya lo dice el sello de arriba. */}
+            {/* DOS LÍNEAS, EN CUALQUIER ANCHO, y el titular no es lo más
+                grande del cuadro: acompaña a la tela, no la sustituye.
+                La cursiva va en UNA palabra y al mismo tamaño óptico que el
+                resto (la Instrument Serif pinta más grande al mismo cuerpo, de
+                ahí el 0.94). Una línea entera en cursiva de palo seco a serif
+                convertía esto en un anuncio de perfume. */}
             <h1
-              className="animate-entra mx-auto mt-6 text-[35px] leading-[1.1] text-ink-900 sm:text-[44px] lg:text-[52px]"
+              className="animate-entra mx-auto mt-6 text-[35px] leading-[1.08] text-ink-900 sm:mt-7 sm:text-[44px] lg:text-[52px]"
               style={{ animationDelay: '240ms', fontWeight: 500, letterSpacing: '-0.045em' }}
             >
-              Todo tu equipo.
+              Prepara la semana.
               <br />
-              {/* La única serif del producto. Gris, para que acompañe al
-                  titular en vez de competir con él. */}
-              <span className="font-serif italic text-[#999999]">En un solo lugar.</span>
+              Dibuja la{' '}
+              <span className="font-serif italic" style={{ fontSize: '0.94em' }}>jugada</span>.
             </h1>
 
             <p
-              className="animate-entra mx-auto mt-5 max-w-[330px] text-[14.5px] leading-[1.5] text-[#999999] sm:max-w-[470px] sm:text-[15.5px]"
+              className="animate-entra mx-auto mt-4 max-w-[330px] text-[14.5px] leading-[1.5] text-[#999999] sm:mt-5 sm:max-w-[470px] sm:text-[15.5px]"
               style={{ animationDelay: '380ms' }}
             >
-              Plantilla, asistencia, entrenamientos, partidos y rendimiento.
-              Todo conectado en un mismo espacio.
+              Plantilla, entrenamientos, partidos y rendimiento.
+              Todo tu equipo, en un mismo espacio.
             </p>
 
+            {/* Uno al lado del otro también en el móvil: `flex-nowrap`. Y sin
+                flecha en el principal, que sólo servía para hacerlo más ancho
+                que el secundario sin decir nada. */}
             <div
-              className="animate-entra mt-8 flex flex-wrap items-center justify-center gap-2.5"
+              className="animate-entra mt-7 flex flex-nowrap items-center justify-center gap-2.5"
               style={{ animationDelay: '500ms' }}
             >
               <Link
                 to="/entrar"
                 /* 6 px exactos: `rounded-md` vale 12 en este proyecto —la
                    escala está redefinida— y salían esquinas del doble. */
-                className="metal-claro inline-flex h-[42px] items-center justify-center gap-1.5 rounded-[6px] px-5 text-[14px] font-medium text-ink-0"
+                className="metal-claro inline-flex h-[43px] items-center justify-center rounded-[6px] px-[17px] text-[13.5px] font-medium text-ink-0"
               >
                 Crear mi club
-                <ArrowRight size={15} />
               </Link>
               <button
                 type="button"
                 onClick={() => document.getElementById('producto')?.scrollIntoView({ behavior: 'smooth' })}
-                className="inline-flex h-[42px] items-center justify-center rounded-[6px] border border-white/14 bg-white/[0.045] px-5 text-[14px] font-medium text-ink-800 backdrop-blur-md transition-colors duration-250 ease-suave hover:border-white/24 hover:bg-white/[0.08]"
+                className="inline-flex h-[43px] items-center justify-center rounded-[6px] px-[17px] text-[13.5px] font-medium text-ink-800 backdrop-blur-md transition-colors duration-250 ease-suave"
+                style={{ background: 'rgba(10,10,10,0.5)', border: '1px solid rgba(255,255,255,0.25)' }}
               >
                 Ver producto
               </button>
             </div>
           </div>
 
-          {/* Un hueco que SÓLO crece en pantallas altas. Con el hueco de arriba
-              como único repartidor, el texto se iba al 64 % del alto en un
-              monitor de 1080 y al 56 % en un móvil: medido. Esto se come el
-              exceso y deja el bloque entre el 55 % y el 60 % en los cinco
-              tamaños, que es donde tiene que estar. */}
+          {/* El aire de abajo. Fijo en proporción, con tope por los dos lados:
+              en una pantalla baja no puede comerse el bloque, y en un monitor
+              de 1080 no puede dejar un socavón. */}
           <div
             className="shrink-0"
-            style={{ height: 'clamp(0px, calc((100svh - 820px) * 0.17), 56px)' }}
+            style={{ height: 'clamp(44px, 12.5svh, 150px)' }}
           />
-
-          {/* Los tres hechos, al pie. No son indicadores de uso: son cosas
-              comprobables abriendo el producto. En pantallas muy bajas
-              desaparecen antes que comerle sitio a la escultura. */}
-          <div
-            className="animate-entra relative mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 px-5 pb-[max(22px,var(--safe-bottom))] text-[11.5px] text-ink-600 [@media(max-height:620px)]:hidden"
-            style={{ animationDelay: '640ms' }}
-          >
-            {HECHOS.map(({ icono: Icono, corto, largo }) => (
-              <span key={largo} className="inline-flex items-center gap-1.5">
-                <Icono size={13} strokeWidth={1.7} className="shrink-0 text-ink-500" />
-                <span className="sm:hidden">{corto}</span>
-                <span className="hidden sm:inline">{largo}</span>
-              </span>
-            ))}
-          </div>
         </section>
 
         {/* ── La pizarra, funcionando de verdad ──────────────────────────── */}
