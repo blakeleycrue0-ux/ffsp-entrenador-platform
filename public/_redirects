@@ -1,5 +1,18 @@
-# Copia de la regla de rutas de netlify.toml, por si el sitio se publica
+# Copia de las reglas de rutas de netlify.toml, por si el sitio se publica
 # arrastrando la carpeta `dist` en lugar de construyéndolo desde el repositorio.
-# La aplicación resuelve sus rutas en el navegador: en el servidor sólo hay un
-# archivo, así que todo tiene que llegar a él.
+#
+# LAS DOS REGLAS, NO SÓLO LA SEGUNDA. Aquí estaba únicamente el comodín, así
+# que por esta vía los fragmentos que faltaban seguían recibiendo el índice con
+# un 200 —el fallo que el 404 viene a evitar—. Si los dos archivos no dicen lo
+# mismo, el sitio se comporta de una manera u otra según cómo se haya publicado,
+# que es la clase de diferencia que luego nadie encuentra.
+#
+# El orden importa: lo de `/assets` va antes del comodín.
+
+# Un fragmento que ya no existe tiene que devolver 404, no el índice: así el
+# navegador no intenta ejecutar HTML como si fuera JavaScript y `cargaDiferida`
+# puede recargar para traerse los nombres nuevos.
+/assets/*  /404.html  404
+
+# Todo lo demás, a la aplicación: las rutas las resuelve el navegador.
 /*  /index.html  200
