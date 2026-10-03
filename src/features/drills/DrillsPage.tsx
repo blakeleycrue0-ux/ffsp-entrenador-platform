@@ -66,7 +66,7 @@ export default function DrillsPage() {
             onClick={() => setOnlyFav((f) => !f)}
             className={cn(
               'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
-              onlyFav ? 'bg-warn/10 text-[#9A6412] ring-1 ring-inset ring-warn/30' : 'text-muted hover:bg-ink-100',
+              onlyFav ? 'bg-warn/10 text-warn ring-1 ring-inset ring-warn/30' : 'text-muted hover:bg-ink-100',
             )}
           >
             <Bookmark size={14} className={onlyFav ? 'fill-current' : ''} /> Guardados

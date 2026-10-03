@@ -32,6 +32,24 @@
 # La aplicación resuelve sus rutas en el navegador, así que en el servidor sólo
 # existe un archivo. Sin esta regla, entrar directamente en /entrar o /app —o
 # simplemente recargar la página— devuelve un 404.
+#
+# PERO LA REGLA NO PUEDE SER PARA TODO. Las pantallas se descargan por separado
+# y llevan un identificador en el nombre; al publicar una versión nueva, los
+# archivos de la anterior dejan de existir. Con el comodín a secas, pedir uno
+# de esos archivos devolvía el índice con un 200 y el navegador intentaba
+# ejecutar HTML como si fuera JavaScript:
+#
+#   Failed to load module script: Expected a JavaScript-or-Wasm module script
+#   but the server responded with a MIME type of "text/html"
+#
+# Un 404 de verdad es más claro para depurar y, sobre todo, deja que el
+# navegador y `cargaDiferida` lo traten como lo que es: un archivo que no está.
+# El orden importa: esta regla va ANTES del comodín.
+[[redirects]]
+  from = "/assets/*"
+  status = 404
+  force = false
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

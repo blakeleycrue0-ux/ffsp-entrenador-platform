@@ -15,8 +15,11 @@ import { marcarDesbloqueado } from '@/services/passcode';
 import {
   ACCEPT_ERROR, CLUB_ROLE_LABEL, invitations, type InvitationPeek,
 } from '@/services/invitations';
+import { ArrowLeft } from 'lucide-react';
 import { Button, Field, Input, Tag } from '@/components/ui';
 import { Wordmark } from '@/components/ui/Brand';
+import { Ambiente } from '@/components/visual/Particulas';
+import { cn } from '@/lib/utils';
 
 type Mode = 'entrar' | 'registro' | 'recuperar';
 
@@ -150,183 +153,241 @@ export default function Login() {
   const inviteBlocked =
     invite?.found && (invite.expired || invite.revoked || invite.accepted);
 
+  /* Los tres pasos del camino completo. Sólo se enseñan al crear cuenta: en
+     «entrar» no hay camino que recorrer, y pintar un progreso que no avanza es
+     peor que no pintar nada. */
+  const PASOS = [
+    ['01', 'Cuenta'],
+    ['02', 'Club'],
+    ['03', 'Equipo'],
+  ] as const;
+
   return (
-    <div className="grid grid-cols-1 min-h-screen bg-panel lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
-      {/* Marca */}
-      <div className="hidden flex-col justify-between border-r border-line bg-surface p-10 lg:flex">
-        <Link to="/" className="text-sm font-medium text-ink-600 transition-colors hover:text-ink-900">
-          Volver a la página principal
-        </Link>
+    <div className="min-h-[100svh] bg-surface lg:grid lg:grid-cols-[minmax(0,1.04fr)_minmax(0,1fr)] lg:gap-0 lg:p-3">
+      {/* ── El panel visual ──────────────────────────────────────────────────
+          En escritorio es una superficie de grafito redondeada con el ambiente
+          dentro. En el móvil no se apila debajo —eso es lo que hace una
+          maqueta que sólo «responde»— sino que se convierte en la cabecera:
+          una franja de ambiente detrás de la marca, y el formulario debajo. */}
+      <div className="relative hidden overflow-hidden rounded-3xl border border-line-sutil bg-panel lg:flex lg:flex-col lg:justify-between">
+        <Ambiente intensidad={0.95} velo="centro" />
 
-        <div>
-          <Wordmark size="xl" showSubtitle={false} />
-          <h1 className="mt-7 max-w-sm text-3xl font-semibold leading-tight tracking-[-0.015em]">
-La herramienta de tu club: plantilla, entrenamientos, partidos y pizarra táctica.
-          </h1>
-          <p className="mt-4 max-w-sm text-md leading-relaxed text-ink-700">
-            Menos gestión. Más tiempo para entrenar.
+        <div className="relative p-10">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-sm text-ink-600 transition-colors duration-250 ease-suave hover:text-ink-900"
+          >
+            <ArrowLeft size={14} />
+            Volver a la página principal
+          </Link>
+        </div>
+
+        <div className="relative px-10">
+          <Wordmark size="lg" tone="light" />
+          <p className="mt-8 max-w-[22ch] text-4xl text-ink-900" style={{ fontWeight: 520 }}>
+            La herramienta de tu club, en un mismo sitio.
           </p>
-
-          <p className="mt-8 max-w-sm rounded-md border border-line bg-panel px-4 py-3 text-sm leading-relaxed text-ink-700">
-            Cada persona del cuerpo técnico ve únicamente los equipos que tiene asignados. El permiso
-            lo aplica el servidor, no la pantalla.
+          <p className="mt-5 max-w-[46ch] text-md text-ink-700">
+            Plantilla, entrenamientos, partidos y pizarra táctica. Menos gestión y más tiempo para
+            entrenar.
           </p>
         </div>
 
-        <p className="text-sm text-ink-400">Cada club, con sus datos separados de los demás.</p>
+        <div className="relative p-10">
+          {mode === 'registro' ? (
+            <ol className="flex flex-wrap gap-2">
+              {PASOS.map(([n, texto], i) => (
+                <li
+                  key={n}
+                  className={cn(
+                    'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-250 ease-suave',
+                    i === 0
+                      ? 'bg-ink-900 text-ink-0'
+                      : 'border border-line-sutil bg-panel text-ink-600',
+                  )}
+                >
+                  <span className="tabular-nums opacity-60">{n}</span>
+                  <span className="font-medium">{texto}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-sm text-ink-600">
+              Cada club, con sus datos separados de los demás. El permiso lo aplica el servidor, no
+              la pantalla.
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Formulario */}
-      <div className="flex flex-col justify-center px-5 py-10 sm:px-12">
-        <div className="mx-auto w-full max-w-md">
-          <div className="lg:hidden">
-            <Wordmark size="lg" />
+      {/* ── El formulario ───────────────────────────────────────────────── */}
+      <div className="relative flex min-h-[100svh] flex-col lg:min-h-0">
+        {/* La franja de ambiente del móvil: ocupa la parte de arriba y lleva la
+            marca encima. En escritorio no existe. */}
+        <div className="relative h-[30svh] min-h-[180px] shrink-0 overflow-hidden lg:hidden">
+          <Ambiente intensidad={0.95} densidad={0.8} velo="abajo" />
+          <div className="relative flex h-full flex-col justify-between p-5 pt-[max(20px,var(--safe-top))]">
+            <Link
+              to="/"
+              className="inline-flex w-fit items-center gap-2 text-sm text-ink-600 transition-colors hover:text-ink-900"
+            >
+              <ArrowLeft size={14} />
+              Volver
+            </Link>
+            <Wordmark size="md" tone="light" />
           </div>
+        </div>
 
-          {/* Invitación */}
-          {token && (
-            <div className="mb-6 mt-6 rounded-md border border-line bg-surface p-4 lg:mt-0">
-              {invite === null ? (
-                <p className="text-base text-muted">Comprobando la invitación…</p>
-              ) : !invite.found ? (
-                <p className="text-base leading-relaxed text-ink-800">
-                  Ese enlace de invitación no existe. Pide uno nuevo a quien administra el club.
-                </p>
-              ) : (
-                <>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-base font-medium text-ink-900">
-                      Invitación {invite.clubName ? `de ${invite.clubName}` : 'al club'}
-                    </p>
-                    {invite.accepted && <Tag tone="neutral" size="sm">Ya aceptada</Tag>}
-                    {invite.revoked && <Tag tone="bad" size="sm">Anulada</Tag>}
-                    {invite.expired && !invite.accepted && <Tag tone="warn" size="sm">Caducada</Tag>}
-                  </div>
-                  <p className="mt-1.5 text-sm leading-relaxed text-ink-700">
-                    Para <strong>{invite.email}</strong>
-                    {invite.role && ` · ${CLUB_ROLE_LABEL[invite.role]}`}
-                    {invite.teamName && ` · ${invite.teamName}`}
+        <div className="flex flex-1 flex-col justify-center px-5 pb-[max(28px,var(--safe-bottom))] pt-8 sm:px-10 lg:px-14 lg:py-12">
+          <div className="mx-auto w-full max-w-[420px]">
+            {/* Invitación */}
+            {token && (
+              <div className="mb-7 rounded-xl border border-line-sutil bg-panel p-4">
+                {invite === null ? (
+                  <p className="text-base text-ink-600">Comprobando la invitación…</p>
+                ) : !invite.found ? (
+                  <p className="text-base leading-relaxed text-ink-800">
+                    Ese enlace de invitación no existe. Pide uno nuevo a quien administra el club.
                   </p>
-                  {inviteBlocked && (
-                    <p className="mt-2 text-sm leading-relaxed text-muted">
-                      Esta invitación ya no se puede usar. Pide una nueva al club.
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-base font-medium text-ink-900">
+                        Invitación {invite.clubName ? `de ${invite.clubName}` : 'al club'}
+                      </p>
+                      {invite.accepted && <Tag tone="neutral" size="sm">Ya aceptada</Tag>}
+                      {invite.revoked && <Tag tone="bad" size="sm">Anulada</Tag>}
+                      {invite.expired && !invite.accepted && <Tag tone="warn" size="sm">Caducada</Tag>}
+                    </div>
+                    <p className="mt-1.5 text-sm leading-relaxed text-ink-700">
+                      Para <strong className="text-ink-900">{invite.email}</strong>
+                      {invite.role && ` · ${CLUB_ROLE_LABEL[invite.role]}`}
+                      {invite.teamName && ` · ${invite.teamName}`}
+                    </p>
+                    {inviteBlocked && (
+                      <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                        Esta invitación ya no se puede usar. Pide una nueva al club.
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            <h1 className="text-4xl text-ink-900" style={{ fontWeight: 520 }}>
+              {t.title}
+            </h1>
+            <p className="mt-3 text-md leading-relaxed text-ink-700">{t.sub}</p>
+
+            <form onSubmit={submit} className="mt-9 space-y-4">
+              {mode === 'registro' && (
+                <Field label="Nombre y apellidos" required>
+                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" />
+                </Field>
+              )}
+
+              <Field label="Correo electrónico" required>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="nombre@correo.com"
+                  autoComplete="email"
+                  readOnly={!!(token && invite?.found && invite.email)}
+                />
+              </Field>
+
+              {mode !== 'recuperar' && (
+                <Field
+                  label="Contraseña"
+                  hint={mode === 'registro' ? 'Mínimo 6 caracteres.' : undefined}
+                  required
+                >
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
+                  />
+                </Field>
+              )}
+
+              {sinConexion && !error && (
+                <p className="rounded-lg border border-warn/35 bg-warn/8 px-3.5 py-2.5 text-sm leading-relaxed text-warn">
+                  {sinConexion}
+                </p>
+              )}
+              {error && (
+                <p className="rounded-lg border border-bad/30 bg-bad/8 px-3.5 py-2.5 text-sm leading-relaxed text-bad">
+                  {error}
+                </p>
+              )}
+              {notice && (
+                <p className="rounded-lg border border-ok/30 bg-ok/8 px-3.5 py-2.5 text-sm leading-relaxed text-ok">
+                  {notice}
+                </p>
+              )}
+
+              <Button type="submit" block size="lg" loading={busy} className="!mt-7">
+                {t.cta}
+              </Button>
+            </form>
+
+            <div className="mt-6 space-y-2 text-sm">
+              {mode === 'entrar' && (
+                <>
+                  <p className="text-ink-600">
+                    ¿Has olvidado la contraseña?{' '}
+                    <button
+                      onClick={() => {
+                        setMode('recuperar');
+                        setError(null);
+                      }}
+                      className="font-medium text-ink-900 underline underline-offset-4 decoration-ink-400 transition-colors hover:decoration-ink-900"
+                    >
+                      Recupérala
+                    </button>
+                  </p>
+                  {!token && (
+                    <p className="text-ink-600">
+                      ¿Aún no tienes cuenta?{' '}
+                      <button
+                        onClick={() => {
+                          setMode('registro');
+                          setError(null);
+                        }}
+                        className="font-medium text-ink-900 underline underline-offset-4 decoration-ink-400 transition-colors hover:decoration-ink-900"
+                      >
+                        Crear cuenta
+                      </button>
                     </p>
                   )}
                 </>
               )}
-            </div>
-          )}
-
-          <div className={token ? '' : 'mt-8 lg:mt-0'}>
-            <h2 className="text-2xl font-semibold leading-tight">{t.title}</h2>
-            <p className="mt-1.5 text-base leading-relaxed text-muted">{t.sub}</p>
-          </div>
-
-          <form onSubmit={submit} className="mt-6 space-y-3.5">
-            {mode === 'registro' && (
-              <Field label="Nombre y apellidos" required>
-                <Input
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  autoComplete="name"
-                />
-              </Field>
-            )}
-
-            <Field label="Correo electrónico" required>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="nombre@correo.com"
-                autoComplete="email"
-                readOnly={!!(token && invite?.found && invite.email)}
-              />
-            </Field>
-
-            {mode !== 'recuperar' && (
-              <Field label="Contraseña" hint={mode === 'registro' ? 'Mínimo 6 caracteres.' : undefined} required>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
-                />
-              </Field>
-            )}
-
-            {sinConexion && !error && (
-              <p className="rounded-md border border-warn/40 bg-warn/8 px-3 py-2 text-sm leading-relaxed text-warn">
-                {sinConexion}
-              </p>
-            )}
-            {error && (
-              <p className="rounded-md border border-bad/30 bg-bad/5 px-3 py-2 text-sm leading-relaxed text-bad">
-                {error}
-              </p>
-            )}
-            {notice && (
-              <p className="rounded-md border border-ok/30 bg-ok/5 px-3 py-2 text-sm leading-relaxed text-ok">
-                {notice}
-              </p>
-            )}
-
-            <Button type="submit" block size="lg" loading={busy}>
-              {t.cta}
-            </Button>
-          </form>
-
-          <div className="mt-5 space-y-1.5 text-sm">
-            {mode === 'entrar' && (
-              <>
-                <p className="text-muted">
-                  ¿Has olvidado la contraseña?{' '}
+              {mode !== 'entrar' && (
+                <p className="text-ink-600">
+                  ¿Ya tienes cuenta?{' '}
                   <button
                     onClick={() => {
-                      setMode('recuperar');
+                      setMode('entrar');
                       setError(null);
                     }}
-                    className="font-medium text-ink-900 underline underline-offset-2"
+                    className="font-medium text-ink-900 underline underline-offset-4 decoration-ink-400 transition-colors hover:decoration-ink-900"
                   >
-                    Recupérala
+                    Iniciar sesión
                   </button>
                 </p>
-                {!token && (
-                  <p className="text-muted">
-                    ¿Aún no tienes cuenta?{' '}
-                    <button
-                      onClick={() => {
-                        setMode('registro');
-                        setError(null);
-                      }}
-                      className="font-medium text-ink-900 underline underline-offset-2"
-                    >
-                      Crear cuenta
-                    </button>
-                  </p>
-                )}
-              </>
-            )}
-            {mode !== 'entrar' && (
-              <button
-                onClick={() => {
-                  setMode('entrar');
-                  setError(null);
-                }}
-                className="font-medium text-ink-900 underline underline-offset-2"
-              >
-                Ya tengo cuenta, entrar
-              </button>
+              )}
+            </div>
+
+            {!token && (
+              <p className="mt-9 border-t border-line-sutil pt-6 text-xs leading-relaxed text-ink-500">
+                Al entrar por primera vez creas tu club y quedas como su administración: desde ahí
+                creas los equipos e invitas al resto del cuerpo técnico. Los datos de cada club
+                están separados de los de cualquier otro.
+              </p>
             )}
           </div>
-
-          {!token && (
-            <p className="mt-7 text-xs leading-relaxed text-muted">
-              Al entrar por primera vez creas tu club y quedas como su administración: desde ahí
-              creas los equipos e invitas al resto del cuerpo técnico. Los datos de cada club están
-              separados de los de cualquier otro.
-            </p>
-          )}
         </div>
       </div>
     </div>

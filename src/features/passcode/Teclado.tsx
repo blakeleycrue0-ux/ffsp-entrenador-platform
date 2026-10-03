@@ -46,7 +46,7 @@ export function Puntos({ valor, fase }: { valor: string; fase: Fase }) {
                 fase === 'mal'
                   ? 'border-bad bg-bad'
                   : lleno
-                    ? 'scale-110 border-transparent bg-azul-600'
+                    ? 'scale-110 border-transparent bg-ink-900'
                     : 'border-white/22 bg-transparent',
               )}
             />
@@ -59,7 +59,7 @@ export function Puntos({ valor, fase }: { valor: string; fase: Fase }) {
   );
 }
 
-/** El anillo azul que se cierra con el visto. Dura poco más de medio segundo. */
+/** El anillo que se cierra con el visto. Dura poco más de medio segundo. */
 function Acierto() {
   return (
     <svg
@@ -70,10 +70,10 @@ function Acierto() {
       fill="none"
       aria-hidden
     >
-      <circle cx="26" cy="26" r="24" stroke="#0A8CFF" strokeWidth="2.5" opacity=".9" />
+      <circle cx="26" cy="26" r="24" stroke="#FFFFFF" strokeWidth="2.5" opacity=".9" />
       <path
         d="M17 26.5 L23.2 32.5 L35 20.5"
-        stroke="#0A8CFF"
+        stroke="#FFFFFF"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"

@@ -93,7 +93,10 @@ export function Ring({
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   // Sobre negro, lo que destaca es el blanco; los estados van en su tono claro.
-  const color = { solid: '#FFFFFF', ok: '#3FD08A', warn: '#E8B23F' }[tone];
+  /* Los tonos de estado salen de los mismos valores apagados que el resto del
+     producto. Estaban escritos a mano aquí con el verde chillón de antes, así
+     que un mismo «va bien» se veía de dos colores distintos según la pantalla. */
+  const color = { solid: '#FFFFFF', ok: '#4F9E78', warn: '#B48A2E' }[tone];
   // Sin dato no se dibuja un anillo vacío que parezca un 0 %: se dice que falta.
   const filled = value === null ? 0 : Math.min(100, Math.max(0, value));
   return (

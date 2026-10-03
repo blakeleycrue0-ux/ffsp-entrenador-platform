@@ -137,7 +137,7 @@ export default function MatchesPage() {
                           <p className="text-[13.5px] font-medium text-ink-800 tabular-nums">
                             {confirmed} / {selected.length} confirmadas
                           </p>
-                          <p className={cn('text-[12px]', pending > 0 ? 'text-[#9A6412]' : 'text-ink-400')}>
+                          <p className={cn('text-[12px]', pending > 0 ? 'text-warn' : 'text-ink-400')}>
                             {pending > 0 ? `${pending} pendientes` : 'Convocatoria completa'}
                           </p>
                         </div>

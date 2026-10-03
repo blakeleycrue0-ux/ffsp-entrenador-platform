@@ -13,6 +13,7 @@
  */
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { esFalloDeDescarga } from '@/lib/cargaDiferida';
 
 interface Props {
   children: ReactNode;
@@ -49,26 +50,53 @@ export class ErrorBoundary extends Component<Props, State> {
     const { error } = this.state;
     if (!error) return this.props.children;
 
+    /**
+     * Si lo que ha fallado es la DESCARGA de la pantalla, «Volver a intentarlo»
+     * es mentira: `React.lazy` guarda la promesa rechazada, así que volver a
+     * montar el componente da exactamente el mismo error, siempre. Lo único
+     * que arregla esto es recargar la página, y eso es lo que hay que ofrecer.
+     */
+    const noHaLlegado = esFalloDeDescarga(error);
+
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-6">
         <div className="w-full max-w-lg rounded-lg border border-line bg-panel p-6 shadow-card">
-          <p className="eyebrow text-bad">Fallo nuestro</p>
+          <p className="eyebrow text-bad">{noHaLlegado ? 'No hemos podido cargarla' : 'Fallo nuestro'}</p>
           <h1 className="mt-1.5 text-xl font-semibold text-ink-900">
-            Esta pantalla no se ha podido dibujar
+            {noHaLlegado ? 'Esta pantalla no ha llegado a descargarse' : 'Esta pantalla no se ha podido dibujar'}
           </h1>
           <p className="mt-2 text-base leading-relaxed text-ink-700">
-            No has hecho nada mal y no se ha perdido nada de lo que tengas guardado
-            {this.props.donde ? ` en ${this.props.donde}` : ''}. Vuelve a intentarlo; si sigue
-            igual, cuéntanoslo desde <strong>Ajustes → Ayuda</strong> y pega el detalle de abajo.
+            {noHaLlegado ? (
+              <>
+                Suele pasar cuando se publica una versión nueva con la aplicación abierta, o
+                cuando la conexión se corta un momento. No se ha perdido nada de lo que tengas
+                guardado: recarga y vuelve a estar todo.
+              </>
+            ) : (
+              <>
+                No has hecho nada mal y no se ha perdido nada de lo que tengas guardado
+                {this.props.donde ? ` en ${this.props.donde}` : ''}. Vuelve a intentarlo; si sigue
+                igual, cuéntanoslo desde <strong>Ajustes → Ayuda</strong> y pega el detalle de abajo.
+              </>
+            )}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              onClick={() => this.setState({ error: null })}
-              className="rounded-md bg-ink-900 px-3.5 py-2 text-base font-medium text-ink-0 transition-colors hover:bg-ink-800"
-            >
-              Volver a intentarlo
-            </button>
+            {noHaLlegado ? (
+              <button
+                onClick={() => window.location.reload()}
+                className="rounded-md bg-ink-900 px-3.5 py-2 text-base font-medium text-ink-0 transition-colors hover:bg-ink-800"
+              >
+                Recargar la aplicación
+              </button>
+            ) : (
+              <button
+                onClick={() => this.setState({ error: null })}
+                className="rounded-md bg-ink-900 px-3.5 py-2 text-base font-medium text-ink-0 transition-colors hover:bg-ink-800"
+              >
+                Volver a intentarlo
+              </button>
+            )}
             <button
               onClick={() => window.location.assign('/app')}
               className="rounded-md border border-line px-3.5 py-2 text-base font-medium text-ink-800 transition-colors hover:bg-surface"

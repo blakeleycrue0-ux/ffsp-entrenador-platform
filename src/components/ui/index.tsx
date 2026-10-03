@@ -21,33 +21,36 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 /**
  * Botones.
  * ---------------------------------------------------------------------------
- * El azul es la acción de PlayOff360. Antes el principal era una cápsula
- * blanca enorme; ahora es azul, de 56 px y con un degradado tan corto que no
- * se ve como degradado — sólo evita que el relleno parezca plano.
+ * LA ACCIÓN PRINCIPAL ES BLANCA, con el texto negro. Era azul, y el azul se ha
+ * ido del producto entero. No se ha sustituido por otro color de marca a
+ * propósito: sobre negro, el blanco es lo que más destaca que existe, así que
+ * usarlo para la acción principal deja a todo lo demás por debajo sin tener
+ * que inventarse una jerarquía de colores.
  *
- * Al pulsar encoge un 2 % y se apaga un punto; al soltar vuelve con muelle.
- * Es lo que hace que un botón se sienta como un objeto y no como un enlace.
+ * Y sale gratis en contraste. El azul daba 3,2 sobre blanco —por debajo del
+ * mínimo para texto normal, y había que apañarlo con el peso y un degradado—;
+ * negro sobre blanco da 21. No hay nada que medir ni que justificar.
  *
- * MEDIDO: blanco sobre #0A8CFF da 3,2 de contraste. Para texto de 16 px eso
- * queda por debajo de 4,5, así que el texto va en 600 y el degradado baja
- * hasta #087AF0, que sube la media. Si algún día hay que cumplir AA estricto
- * aquí, la variante honesta es `azul-800` (#0058B8), que da 5,3.
+ * El relleno no es plano: lleva el barrido metálico, que al pasar por encima
+ * desplaza un reflejo muy tenue. Es el único efecto del producto y va contado.
+ *
+ * Al pulsar encoge un 2 %. Es lo que hace que un botón se sienta como un
+ * objeto y no como un enlace.
  */
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'text-white [background:linear-gradient(180deg,#168BFF,#087AF0)] ' +
-    'hover:[background:linear-gradient(180deg,#2E98FF,#0A84FF)] ' +
-    'disabled:[background:rgba(255,255,255,0.09)] disabled:text-ink-500 disabled:shadow-none',
-  secondary: 'bg-raised text-ink-900 hover:bg-[rgba(255,255,255,0.11)]',
+    'metal-claro text-ink-0 ' +
+    'disabled:[background-image:none] disabled:bg-[rgba(255,255,255,0.07)] disabled:text-ink-500 disabled:shadow-none',
+  secondary: 'metal text-ink-800',
   ghost: 'bg-transparent text-ink-600 hover:bg-panel hover:text-ink-900',
-  quiet: 'bg-panel text-ink-800 hover:bg-raised',
-  danger: 'bg-bad/12 text-bad hover:bg-bad/20',
+  quiet: 'border border-line-sutil bg-panel text-ink-800 hover:bg-raised',
+  danger: 'border border-bad/25 bg-bad/10 text-bad hover:bg-bad/18',
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3.5 text-sm gap-1.5 rounded-xl',
-  md: 'h-11 px-4 text-base gap-2 rounded-2xl',
-  lg: 'h-14 px-5 text-md gap-2 rounded-2xl',
+  sm: 'h-9 px-3.5 text-sm gap-1.5 rounded-lg',
+  md: 'h-11 px-4 text-base gap-2 rounded-xl',
+  lg: 'h-14 px-5 text-md gap-2 rounded-xl',
 };
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -67,8 +70,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       ref={ref}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex select-none items-center justify-center whitespace-nowrap font-semibold',
-        'transition-[transform,background,box-shadow] duration-150 ease-out',
+        'inline-flex select-none items-center justify-center whitespace-nowrap font-medium',
+        'transition-[transform,background-color,color] duration-250 ease-suave',
         'active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100',
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
@@ -91,8 +94,8 @@ export function LinkButton({
       to={to}
       state={state}
       className={cn(
-        'inline-flex select-none items-center justify-center whitespace-nowrap font-semibold',
-        'transition-[transform,background] duration-150 ease-out active:scale-[0.98]',
+        'inline-flex select-none items-center justify-center whitespace-nowrap font-medium',
+        'transition-[transform,background-color,color] duration-250 ease-suave active:scale-[0.98]',
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
         block && 'w-full',
@@ -147,7 +150,7 @@ const TONES: Record<Tone, string> = {
   ok: 'bg-ok/15 text-ok border-transparent',
   warn: 'bg-warn/15 text-warn border-transparent',
   bad: 'bg-bad/15 text-bad border-transparent',
-  info: 'bg-azul-600/15 text-azul-400 border-transparent',
+  info: 'border-line bg-raised text-ink-800',
   solid: 'bg-ink-900 text-ink-0 border-transparent',
 };
 
@@ -180,26 +183,30 @@ export function Dot({ tone = 'neutral', className }: { tone?: Tone; className?: 
 /* ─────────────────────────────────── Avatar ──────────────────────────────── */
 
 /**
- * Ocho parejas de color para los avatares sin foto.
+ * Seis tonos de avatar, y ninguno con color.
  * ---------------------------------------------------------------------------
- * Una lista de jugadoras con dieciséis círculos grises idénticos no se lee:
- * hay que ir letra a letra. Con un color estable por persona, la vista
- * distingue filas antes de leer, y la misma jugadora se reconoce igual en la
+ * Una lista de jugadoras con dieciséis círculos idénticos no se lee: hay que ir
+ * letra a letra. Hace falta que cada persona tenga su tono estable, para que la
+ * vista distinga filas antes de leer y para reconocer a la misma jugadora en la
  * plantilla, en la convocatoria y en la asistencia.
  *
- * El color sale del NOMBRE, no de la posición en la lista: si sale del orden,
- * cambia al ordenar de otra forma y deja de servir para reconocer a nadie.
- * Todos los tonos están calculados para leerse sobre su propio fondo.
+ * Antes eso se hacía con ocho colores —azul, verde, naranja, morado…—, y ocho
+ * colores en una plantilla de veinte es un mosaico. Ahora son seis escalones de
+ * grafito con su letra más o menos clara: distinguen igual de bien, no compiten
+ * con el estado de disponibilidad (que sí usa color porque significa algo) y
+ * no meten un color de marca por la puerta de atrás.
+ *
+ * El tono sale del NOMBRE, no de la posición en la lista: si saliera del orden,
+ * cambiaría al ordenar de otra forma y dejaría de servir para reconocer a
+ * nadie. Todos se leen sobre su propio fondo.
  */
 const COLORES_DE_AVATAR = [
-  'bg-[#16243C] text-[#7FB0FF]',
-  'bg-[#0F2A20] text-[#5ADCA0]',
-  'bg-[#2C1D10] text-[#EFA463]',
-  'bg-[#221733] text-[#B58CF0]',
-  'bg-[#2B1519] text-[#FF8F86]',
-  'bg-[#0E2529] text-[#5FCBDB]',
-  'bg-[#272113] text-[#E0C05A]',
-  'bg-[#1C1F26] text-[#A9B6CC]',
+  'bg-[#1F1F1F] text-[#E4E4E4]',
+  'bg-[#141414] text-[#B4B4B4]',
+  'bg-[#2A2A2A] text-[#FFFFFF]',
+  'bg-[#181818] text-[#CFCFCF]',
+  'bg-[#232323] text-[#9E9E9E]',
+  'bg-[#101010] text-[#D8D8D8]',
 ];
 
 const colorDe = (name: string) => {

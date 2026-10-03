@@ -7,28 +7,23 @@
  *
  * Lo que NO hay, y no es un descuido: cifras de uso, escudos de clubes,
  * premios, testimonios y precios. Nada de eso está verificado ni decidido, y
- * ponerlo sería mentir en la primera pantalla que ve alguien.
+ * ponerlo sería mentir en la primera pantalla que ve alguien. Las tres cifras
+ * que sí hay bajo la portada son hechos comprobables del producto, no
+ * indicadores de tracción.
+ *
+ * SOBRE EL ASPECTO. Negro, blanco y grafito. Ni un color de marca. La portada
+ * abre con el campo de partículas a pantalla completa y el titular abajo, no
+ * centrado: centrado es lo que hace cualquier plantilla, y bajarlo deja que la
+ * imagen respire y que la primera pantalla sea atmósfera en vez de texto.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ArrowRight, ArrowUpRight, Check, Minus, Plus, Shield, Smartphone, Zap,
-} from 'lucide-react';
-import { Marca, Wordmark } from '@/components/ui/Brand';
+import { ArrowRight, ArrowUpRight, Check, Minus, Plus, Shield, Smartphone, Zap } from 'lucide-react';
+import { Wordmark } from '@/components/ui/Brand';
+import { Ambiente } from '@/components/visual/Particulas';
 import { BoardDemo } from '@/features/board/BoardDemo';
 import { cn } from '@/lib/utils';
-
-/* ───────────────────────────── Texturas de fondo ──────────────────────────── */
-
-/** Grano finísimo. Quita el aspecto de plano de color y no pesa nada. */
-const GRANO =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E\")";
-
-/** Líneas de campo, muy tenues. No compiten con el texto. */
-const RETICULA =
-  'repeating-linear-gradient(90deg, #fff 0 1px, transparent 1px 96px),' +
-  'repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 96px)';
 
 /* ──────────────────────────── Aparición al bajar ──────────────────────────── */
 
@@ -38,64 +33,72 @@ const RETICULA =
  */
 function Revelar({
   children, delay = 0, className,
-}: { children: React.ReactNode; delay?: number; className?: string }) {
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+  const [visto, setVisto] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setVisible(true);
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setVisto(true);
       return;
     }
-    const io = new IntersectionObserver(
-      (entradas) => {
-        if (entradas[0]?.isIntersecting) {
-          setVisible(true);
-          io.disconnect();
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisto(true);
+          obs.disconnect();
         }
       },
-      { rootMargin: '0px 0px -10% 0px' },
+      { rootMargin: '0px 0px -12% 0px' },
     );
-    io.observe(el);
-    return () => io.disconnect();
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
 
   return (
     <div
       ref={ref}
-      className={cn(
-        'transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none',
-        visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0',
-        className,
-      )}
-      style={{ transitionDelay: visible ? `${delay}ms` : '0ms' }}
+      className={className}
+      style={{
+        opacity: visto ? 1 : 0,
+        transform: visto ? 'none' : 'translateY(14px)',
+        filter: visto ? 'none' : 'blur(5px)',
+        transition: `opacity .8s cubic-bezier(0.16,1,0.3,1) ${delay}ms,
+                     transform .8s cubic-bezier(0.16,1,0.3,1) ${delay}ms,
+                     filter .8s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+      }}
     >
       {children}
     </div>
   );
 }
 
-/* ─────────────────────────────── Piezas ──────────────────────────────────── */
+/* ───────────────────────────────── Marcos ─────────────────────────────────── */
 
-/** Marco de navegador. Hace que una captura se lea como producto. */
+/** Marco de navegador. Sin los tres puntos de colores de siempre. */
 function Ventana({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-xl border border-white/10 bg-night shadow-[0_30px_80px_-30px_rgba(8,17,28,0.65)]',
+        'overflow-hidden rounded-xl border border-line bg-surface',
+        'shadow-[0_40px_120px_-40px_rgba(0,0,0,0.9)]',
         className,
       )}
     >
-      <div className="flex items-center gap-2 border-b border-white/10 bg-white/[0.04] px-3.5 py-2.5">
+      <div className="flex items-center gap-2 border-b border-line-sutil bg-panel px-3.5 py-2.5">
         <span className="flex gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-          <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-          <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+          <span className="h-2 w-2 rounded-full bg-white/14" />
+          <span className="h-2 w-2 rounded-full bg-white/14" />
+          <span className="h-2 w-2 rounded-full bg-white/14" />
         </span>
-        <span className="mx-auto hidden rounded-full bg-white/[0.06] px-3 py-0.5 text-[11px] text-white/35 sm:block">
-          playoff360
+        <span className="mx-auto hidden rounded-md px-3 py-0.5 text-[11px] tracking-normal text-ink-500 sm:block">
+          playoff360.site
         </span>
       </div>
       {children}
@@ -108,8 +111,8 @@ function Telefono({ src, alt, className }: { src: string; alt: string; className
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-[2.1rem] border-[7px] border-ink-900 bg-ink-900',
-        'shadow-[0_28px_60px_-24px_rgba(16,28,45,0.5)]',
+        'overflow-hidden rounded-[2.1rem] border-[7px] border-ink-200 bg-ink-200',
+        'shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)]',
         className,
       )}
     >
@@ -125,9 +128,9 @@ const CAPACIDADES = [
     clave: 'pizarra',
     titulo: 'Pizarra táctica animada',
     texto:
-      'Coloca a las jugadoras, muévelas en distintos instantes y dale a reproducir: las posiciones se calculan en cada fotograma a partir del reloj, así que el movimiento es continuo y al pausar no salta. Línea de tiempo, velocidad, bucle y exportación a imagen.',
+      'Coloca a las jugadoras, muévelas en distintos instantes y dale a reproducir: las posiciones se calculan en cada fotograma a partir del reloj, así que el movimiento es continuo y al pausar no salta. El campo se mira desde donde haga falta —cenital, de banda, tras la portería— y se exporta a imagen o a vídeo.',
     imagen: '/producto/pizarra.png',
-    detalles: ['Campo completo o medio', 'Carrera, conducción, pase y desmarque', 'Deshacer y rehacer'],
+    detalles: ['Campo completo o medio, y en perspectiva', 'Carrera, conducción, pase y desmarque', 'Trayectorias curvas, a mano o con el tirador'],
   },
   {
     clave: 'plantilla',
@@ -163,6 +166,17 @@ const CAPACIDADES = [
   },
 ] as const;
 
+/**
+ * Tres hechos del producto, no indicadores de uso. No hay cifras de clubes ni
+ * de usuarias porque no están verificadas, y poner una inventada en la primera
+ * pantalla es la manera más rápida de no merecer la siguiente.
+ */
+const HECHOS = [
+  ['6', 'áreas en un mismo espacio'],
+  ['0 €', 'hoy, y sin pasarela de cobro'],
+  ['14', 'días que dura una invitación'],
+] as const;
+
 const PILARES = [
   {
     icono: Shield,
@@ -195,7 +209,6 @@ const NO_HACE = [
   'No genera diagnósticos ni recomendaciones médicas.',
   'No calcula métricas físicas ni rendimiento predictivo.',
   'No convierte en ceros los datos que faltan.',
-  'No exporta la animación en vídeo, todavía.',
   'No tiene planes de pago: no están decididos.',
 ];
 
@@ -214,7 +227,7 @@ const FAQ: [string, string][] = [
   ],
   [
     '¿Se puede exportar la animación en vídeo?',
-    'Todavía no. Se exporta una imagen del instante que elijas. Grabar vídeo desde el navegador no funciona igual en todos los equipos y preferimos no ofrecerlo hasta que sea fiable.',
+    'Sí. Se graba la jugada tal cual se reproduce y se descarga; el formato depende de lo que sepa grabar tu navegador, así que la aplicación dice cuál va a salir antes de empezar. También se exporta una imagen del instante que elijas.',
   ],
   [
     '¿Valora lesiones o predice el rendimiento?',
@@ -226,15 +239,62 @@ const FAQ: [string, string][] = [
   ],
 ];
 
+/* ─────────────────────────────── Piezas ───────────────────────────────────── */
+
+/** El botón principal: blanco con texto negro. Esto sustituye al azul. */
+function Principal({ to, children, className }: { to: string; children: React.ReactNode; className?: string }) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        'metal-claro inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6',
+        'text-md font-medium text-ink-0',
+        className,
+      )}
+    >
+      {children}
+    </Link>
+  );
+}
+
+/** El secundario: grafito con filo de luz. */
+function Secundario({
+  children, className, ...rest
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        'metal inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6',
+        'text-md font-medium text-ink-800',
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** El sello de arriba del titular. */
+function Sello({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-1.5 text-2xs font-semibold uppercase tracking-[0.14em] text-ink-600">
+      <span className="h-1 w-1 rounded-full bg-ink-600" />
+      {children}
+    </span>
+  );
+}
+
 /* ─────────────────────────────── Página ──────────────────────────────────── */
 
 export default function Landing() {
   const [abierta, setAbierta] = useState<number | null>(0);
   const [activa, setActiva] = useState(0);
-  const [conBorde, setConBorde] = useState(false);
+  const [conFondo, setConFondo] = useState(false);
 
   useEffect(() => {
-    const alScroll = () => setConBorde(window.scrollY > 8);
+    const alScroll = () => setConFondo(window.scrollY > 24);
     alScroll();
     window.addEventListener('scroll', alScroll, { passive: true });
     return () => window.removeEventListener('scroll', alScroll);
@@ -248,47 +308,51 @@ export default function Landing() {
   const cap = CAPACIDADES[activa]!;
 
   return (
-    <div className="bg-panel">
-      {/* ── Navegación ─────────────────────────────────────────────────── */}
-      {/* Arriba del todo va transparente sobre la portada; al bajar se cierra
-          con un cristal oscuro para que el texto no se pise con el contenido. */}
-      <header
-        className={cn(
-          'sticky top-0 z-nav transition-colors duration-200',
-          conBorde ? 'border-b border-white/10 bg-night/85 backdrop-blur-xl' : 'bg-transparent',
-        )}
-      >
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-8 px-5">
-          <a href="#" className="flex items-center gap-2.5" aria-label="Playoff360, inicio">
-            <Marca size={26} className="text-azul-500" />
-            <Wordmark tone="light" />
+    <div className="bg-surface">
+      {/* ── Navegación ─────────────────────────────────────────────────────
+          Flota sobre el ambiente en una cápsula de grafito. Al bajar se cierra
+          un poco más para que el texto de la página no se pise con ella. */}
+      <header className="fixed inset-x-0 top-0 z-nav px-4 pt-[max(14px,var(--safe-top))]">
+        <div
+          className={cn(
+            'mx-auto flex h-14 max-w-5xl items-center gap-5 rounded-2xl px-3 pl-4 transition-all duration-400 ease-suave',
+            conFondo
+              ? 'border border-line-sutil bg-surface/82 backdrop-blur-xl'
+              : 'border border-transparent bg-transparent',
+          )}
+        >
+          <a href="#" className="flex items-center" aria-label="Playoff360, inicio">
+            <Wordmark tone="light" size="sm" />
           </a>
 
-          <nav className="hidden items-center gap-7 text-base text-white/60 md:flex">
-            <a href="#producto" onClick={irA('producto')} className="transition-colors hover:text-white">
-              Producto
-            </a>
-            <a href="#pizarra" onClick={irA('pizarra')} className="transition-colors hover:text-white">
-              Pizarra
-            </a>
-            <a href="#limites" onClick={irA('limites')} className="transition-colors hover:text-white">
-              Límites
-            </a>
-            <a href="#preguntas" onClick={irA('preguntas')} className="transition-colors hover:text-white">
-              Preguntas
-            </a>
+          <nav className="hidden items-center gap-6 text-sm text-ink-600 md:flex">
+            {[
+              ['producto', 'Producto'],
+              ['pizarra', 'Pizarra'],
+              ['limites', 'Límites'],
+              ['preguntas', 'Preguntas'],
+            ].map(([id, texto]) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                onClick={irA(id)}
+                className="transition-colors duration-250 ease-suave hover:text-ink-900"
+              >
+                {texto}
+              </a>
+            ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1.5">
             <Link
               to="/entrar"
-              className="hidden h-10 items-center rounded-full px-4 text-base font-medium text-white/70 transition-colors hover:text-white sm:inline-flex"
+              className="hidden h-9 items-center rounded-lg px-3.5 text-sm font-medium text-ink-700 transition-colors duration-250 ease-suave hover:text-ink-900 sm:inline-flex"
             >
-              Entrar
+              Iniciar sesión
             </Link>
             <Link
               to="/entrar"
-              className="inline-flex h-10 items-center rounded-full bg-azul-600 px-5 text-base font-semibold text-night transition-colors hover:bg-azul-500"
+              className="metal-claro inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-ink-0"
             >
               Crear mi club
             </Link>
@@ -297,349 +361,239 @@ export default function Landing() {
       </header>
 
       <main>
-        {/* ── Portada ──────────────────────────────────────────────────── */}
-        <section className="relative overflow-hidden bg-night text-white">
-          {/* Aquí había un resplandor verde de 72 rem detrás del titular, de
-              cuando la marca era verde. Sobrevivió al cambio de identidad y
-              tiñe de otro color una portada que es negra, blanca y azul. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.035]"
-            style={{ backgroundImage: RETICULA }}
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.16] mix-blend-overlay"
-            style={{ backgroundImage: GRANO }}
-          />
+        {/* ── Portada ────────────────────────────────────────────────────────
+            Pantalla completa, el ambiente detrás y el titular ABAJO. Centrado
+            vertical es lo que hace cualquier plantilla; bajarlo deja que la
+            imagen respire y que lo primero que se ve sea atmósfera. */}
+        {/* `min(100svh, 1000px)`: en una pantalla muy alta —un monitor girado,
+            una tableta de pie— un alto de pantalla completa dejaba un vacío de
+            metro y medio encima del titular. Con el tope, la portada deja de
+            crecer y empieza antes la sección siguiente. */}
+        <section className="relative flex min-h-[min(100svh,1000px)] flex-col justify-end overflow-hidden">
+          <Ambiente intensidad={1} velo="abajo" />
 
-          <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-16 text-center lg:pt-24">
-            <Revelar>
-              <p className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/15 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium uppercase tracking-[0.12em] text-azul-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-azul-400" />
-                Para el cuerpo técnico<span className="hidden sm:inline">&nbsp;de cualquier club</span>
-              </p>
-            </Revelar>
+          <div className="relative mx-auto w-full max-w-5xl px-5 pb-16 pt-32 sm:pb-20 lg:pb-24">
+            <div className="animate-entra" style={{ animationDelay: '120ms' }}>
+              <Sello>Para cuerpos técnicos</Sello>
+            </div>
 
-            <Revelar delay={60}>
-              <h1 className="mx-auto mt-7 max-w-4xl font-display text-[clamp(2.2rem,8.6vw,5.25rem)] font-black leading-[0.94] tracking-[-0.045em] text-white">
-                Prepara la semana.
-                <br />
-                {/* Azul plano, no un degradado recortado sobre el texto: un
-                    titular con degradado se lee peor y no dice nada más. */}
-                <span className="text-azul-500">Dibuja la jugada.</span>
-              </h1>
-            </Revelar>
+            <h1
+              className="animate-entra mt-6 max-w-[16ch] text-4xl text-ink-900 sm:text-6xl lg:text-7xl"
+              style={{ animationDelay: '240ms', fontWeight: 540 }}
+            >
+              Todo el cuerpo técnico.
+              <br />
+              Un solo espacio.
+            </h1>
 
-            <Revelar delay={120}>
-              <p className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-white/65 [text-wrap:balance] sm:text-xl">
-                Plantilla, entrenamientos, partidos y disponibilidad en un solo sitio. Y una pizarra
-                táctica que se mueve como un vídeo, no como un pase de diapositivas.
-              </p>
-            </Revelar>
+            <p
+              className="animate-entra mt-6 max-w-[52ch] text-md text-ink-700 sm:text-lg"
+              style={{ animationDelay: '380ms' }}
+            >
+              Plantilla, asistencia, entrenamientos, disponibilidad, partidos, rendimiento y
+              pizarra táctica en un mismo sitio. Sin perder el contexto por el camino.
+            </p>
 
-            <Revelar delay={180}>
-              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <Link
-                  to="/entrar"
-                  className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-azul-600 px-7 py-3.5 text-md font-semibold text-night transition-colors hover:bg-azul-500 sm:w-auto"
-                >
-                  Crear mi club
-                  <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
-                </Link>
-                <a
-                  href="#pizarra"
-                  onClick={irA('pizarra')}
-                  className="inline-flex w-full items-center justify-center rounded-full border border-white/20 bg-white/[0.03] px-7 py-3.5 text-md font-semibold text-white transition-colors hover:border-white/45 sm:w-auto"
-                >
-                  Probar la pizarra
-                </a>
-              </div>
-              <p className="mt-5 text-sm text-white/40">
-                Empieza vacía · Sin instalar nada · Sin tarjeta, porque no hay nada que pagar
-              </p>
-            </Revelar>
-          </div>
+            <div
+              className="animate-entra mt-9 flex flex-wrap items-center gap-3"
+              style={{ animationDelay: '500ms' }}
+            >
+              <Principal to="/entrar">
+                Crear mi club
+                <ArrowRight size={16} />
+              </Principal>
+              <Secundario onClick={() => document.getElementById('producto')?.scrollIntoView({ behavior: 'smooth' })}>
+                Ver cómo funciona
+              </Secundario>
+            </div>
 
-          {/* La pizarra real, jugable, encajada en la portada */}
-          <div id="pizarra" className="relative mx-auto max-w-6xl scroll-mt-20 px-5 pb-20 lg:pb-24">
-            <Revelar delay={220}>
-              <div className="relative">
-                <div className="relative rounded-2xl border border-white/10 bg-white/[0.035] p-3 shadow-[0_40px_100px_-40px_rgba(0,0,0,0.9)] sm:p-5">
-                  <BoardDemo tone="dark" />
-                  <p className="mt-3.5 px-1 text-sm leading-relaxed text-white/45">
-                    Esta es la pizarra de la aplicación, funcionando aquí mismo. Pulsa reproducir:
-                    las jugadoras y el balón se desplazan de forma continua.
-                  </p>
+            {/* Tres hechos. No son indicadores de uso: son cosas que se pueden
+                comprobar abriendo el producto. */}
+            <dl
+              className="animate-entra mt-14 grid max-w-2xl grid-cols-1 gap-x-10 gap-y-7 border-t border-line-sutil pt-8 sm:grid-cols-3"
+              style={{ animationDelay: '640ms' }}
+            >
+              {HECHOS.map(([cifra, pie]) => (
+                <div key={pie} className="min-w-0">
+                  <dt className="cifra text-3xl">{cifra}</dt>
+                  <dd className="mt-2 text-sm text-ink-600">{pie}</dd>
                 </div>
-              </div>
-            </Revelar>
+              ))}
+            </dl>
           </div>
         </section>
 
-        {/* ── Tres cosas que la definen ────────────────────────────────── */}
-        <section className="border-b border-line bg-panel">
-          <div className="mx-auto grid grid-cols-1 max-w-6xl gap-8 px-5 py-14 md:grid-cols-3 md:gap-10 lg:py-16">
-            {PILARES.map((p, i) => (
-              <Revelar key={p.titulo} delay={i * 80}>
-                <div className="flex gap-4">
-                  <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-azul-600/12 text-azul-400">
-                    <p.icono size={19} strokeWidth={2.2} />
-                  </span>
-                  <div>
-                    <h3 className="font-display text-lg font-bold tracking-[-0.01em] text-ink-900">
-                      {p.titulo}
-                    </h3>
-                    <p className="mt-1.5 text-base leading-relaxed text-ink-600">{p.texto}</p>
-                  </div>
-                </div>
-              </Revelar>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Qué hace, con pantallas reales ───────────────────────────── */}
-        <section id="producto" className="scroll-mt-16 bg-panel">
+        {/* ── La pizarra, funcionando de verdad ──────────────────────────── */}
+        <section id="pizarra" className="scroll-mt-24 border-t border-line-sutil bg-surface">
           <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
             <Revelar>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-azul-400">
-                El producto
-              </p>
-              <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-ink-900 sm:text-5xl">
-                Lo que ves aquí es la aplicación, no un montaje.
+              <p className="eyebrow">La pizarra</p>
+              <h2 className="mt-3 max-w-[22ch] text-3xl text-ink-900 sm:text-4xl">
+                No es un vídeo. Es el producto.
               </h2>
-              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-600">
-                Todas las capturas están hechas con la aplicación de verdad, rellenada con un club
-                de ejemplo. Ni un pixel dibujado a mano.
+              <p className="mt-4 max-w-[58ch] text-md text-ink-700">
+                Esta pizarra es la misma que hay dentro de la aplicación, con el mismo motor.
+                Dale a reproducir.
               </p>
             </Revelar>
 
-            <Revelar delay={80}>
-              <div className="mt-12 grid grid-cols-1 gap-8 lg:mt-14 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-14">
-                {/* Selector. En ancho de sobremesa cada apartado se despliega
-                    con su explicación; en móvil son pestañas que se deslizan. */}
-                <div role="tablist" aria-label="Capacidades">
-                  {/* Móvil: pestañas en una fila deslizable */}
-                  <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 lg:hidden">
-                    {CAPACIDADES.map((c, i) => (
-                      <button
-                        key={c.clave}
-                        role="tab"
-                        aria-selected={activa === i}
-                        onClick={() => setActiva(i)}
-                        className={cn(
-                          'shrink-0 whitespace-nowrap rounded-full border px-4 py-2 font-display text-base font-bold transition-colors',
-                          activa === i
-                            ? 'border-ink-900 bg-ink-900 text-ink-0'
-                            : 'border-line text-ink-700',
-                        )}
-                      >
-                        {c.titulo}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Sobremesa: lista desplegable */}
-                  <div className="hidden lg:block">
-                    {CAPACIDADES.map((c, i) => (
-                      <div
-                        key={c.clave}
-                        className={cn(
-                          'border-l-2 pl-5 transition-colors',
-                          activa === i ? 'border-azul-600' : 'border-line',
-                        )}
-                      >
-                        <button
-                          role="tab"
-                          aria-selected={activa === i}
-                          onClick={() => setActiva(i)}
-                          className="w-full py-3.5 text-left"
-                        >
-                          <span
-                            className={cn(
-                              'block font-display text-lg font-bold tracking-[-0.015em] transition-colors',
-                              activa === i ? 'text-ink-900' : 'text-ink-500 hover:text-ink-800',
-                            )}
-                          >
-                            {c.titulo}
-                          </span>
-                        </button>
-                        <div
-                          className={cn(
-                            'grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none',
-                            activa === i ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
-                          )}
-                        >
-                          <div className="overflow-hidden">
-                            <p className="pb-4 text-base leading-relaxed text-ink-600">{c.texto}</p>
-                            <ul className="flex flex-wrap gap-1.5 pb-5">
-                              {c.detalles.map((d) => (
-                                <li
-                                  key={d}
-                                  className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-sm font-medium text-ink-700"
-                                >
-                                  <Check size={12} strokeWidth={3} className="text-azul-400" />
-                                  {d}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Pantalla. La primera va en el flujo y marca la altura; las
-                    demás se apilan encima, así que ninguna se recorta. */}
-                <div>
-                  <div className="relative">
-                    {CAPACIDADES.map((c, i) => (
-                      <Ventana
-                        key={c.clave}
-                        className={cn(
-                          'transition-opacity duration-300 motion-reduce:transition-none',
-                          i > 0 && 'absolute inset-0',
-                          activa === i ? 'opacity-100' : 'pointer-events-none opacity-0',
-                        )}
-                      >
-                        <img
-                          src={c.imagen}
-                          alt={c.titulo}
-                          loading={i === 0 ? 'eager' : 'lazy'}
-                          decoding="async"
-                          className="block w-full"
-                        />
-                      </Ventana>
-                    ))}
-                  </div>
-
-                  {/* En móvil la explicación va debajo de la captura */}
-                  <div className="lg:hidden">
-                    <p className="mt-6 text-md leading-relaxed text-ink-700">{cap.texto}</p>
-                    <ul className="mt-4 flex flex-wrap gap-2">
-                      {cap.detalles.map((d) => (
-                        <li
-                          key={d}
-                          className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-sm font-medium text-ink-700"
-                        >
-                          <Check size={13} strokeWidth={3} className="text-azul-400" />
-                          {d}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
+            <Revelar delay={120} className="mt-10">
+              <BoardDemo tone="dark" />
             </Revelar>
           </div>
         </section>
 
-        {/* ── En el campo, con el móvil ────────────────────────────────── */}
-        <section className="border-y border-line bg-surface">
-          <div className="mx-auto grid grid-cols-1 max-w-6xl items-center gap-14 px-5 py-20 lg:grid-cols-2 lg:gap-16 lg:py-28">
+        {/* ── Capacidades ───────────────────────────────────────────────── */}
+        <section id="producto" className="scroll-mt-24 border-t border-line-sutil">
+          <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
             <Revelar>
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-azul-400">
-                En el campo
-              </p>
-              <h2 className="mt-4 font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-ink-900 sm:text-5xl">
-                De pie, con prisa y con guantes.
+              <p className="eyebrow">El producto</p>
+              <h2 className="mt-3 max-w-[20ch] text-3xl text-ink-900 sm:text-4xl">
+                Seis áreas que ya no viven en seis sitios.
               </h2>
-              <p className="mt-5 max-w-lg text-lg leading-relaxed text-ink-600">
-                Pasar lista son dos toques: todas presentes y corriges las excepciones. La
-                plantilla, el entrenamiento del día y la convocatoria caben en el bolsillo, sin
-                instalar nada.
-              </p>
-              <ul className="mt-8 space-y-3.5">
-                {[
-                  'Todo el trabajo también desde el móvil',
-                  'Sin instalar ninguna aplicación: se abre y ya está',
-                  'Cada quien ve sólo los equipos que tiene asignados',
-                ].map((t) => (
-                  <li key={t} className="flex items-start gap-3 text-md text-ink-800">
-                    <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-azul-600 text-white">
-                      <Check size={13} strokeWidth={3} />
-                    </span>
-                    {t}
-                  </li>
+            </Revelar>
+
+            {/* Las pestañas son una fila de texto con una línea debajo, no una
+                hilera de tarjetas: la navegación no tiene por qué ocupar como
+                el contenido. */}
+            <Revelar delay={80} className="mt-10 overflow-x-auto">
+              <div className="flex min-w-max gap-1 border-b border-line-sutil">
+                {CAPACIDADES.map((c, i) => (
+                  <button
+                    key={c.clave}
+                    type="button"
+                    onClick={() => setActiva(i)}
+                    aria-pressed={i === activa}
+                    className={cn(
+                      'relative px-4 py-3 text-sm font-medium transition-colors duration-250 ease-suave',
+                      i === activa ? 'text-ink-900' : 'text-ink-600 hover:text-ink-800',
+                    )}
+                  >
+                    {c.titulo.split(',')[0]}
+                    {i === activa && (
+                      <span className="absolute inset-x-3 -bottom-px h-px bg-ink-900" />
+                    )}
+                  </button>
                 ))}
-              </ul>
-            </Revelar>
-
-            <Revelar delay={100}>
-              <div className="flex justify-center gap-4 sm:gap-7">
-                <Telefono
-                  src="/producto/plantilla-movil.png"
-                  alt="La plantilla del equipo en el móvil"
-                  className="w-[46%] max-w-[232px] -rotate-3"
-                />
-                <Telefono
-                  src="/producto/entrenamientos-movil.png"
-                  alt="Los entrenamientos de la semana en el móvil"
-                  className="mt-12 w-[46%] max-w-[232px] rotate-3"
-                />
               </div>
             </Revelar>
-          </div>
-        </section>
 
-        {/* ── Cómo se empieza ──────────────────────────────────────────── */}
-        <section className="bg-panel">
-          <div className="mx-auto max-w-6xl px-5 py-20 lg:py-24">
-            <Revelar>
-              <h2 className="max-w-2xl font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-ink-900 sm:text-5xl">
-                Tres pasos y estás dentro.
-              </h2>
-            </Revelar>
-            <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
-              {PASOS.map(([titulo, texto], i) => (
-                <Revelar key={titulo} delay={i * 90}>
-                  <div className="border-t-2 border-ink-900 pt-5">
-                    <span className="font-display text-sm font-bold tracking-[0.1em] text-azul-400">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <h3 className="mt-2 font-display text-xl font-bold tracking-[-0.015em] text-ink-900">
-                      {titulo}
-                    </h3>
-                    <p className="mt-2 text-base leading-relaxed text-ink-600">{texto}</p>
-                  </div>
-                </Revelar>
-              ))}
+            <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-14">
+              <div className="min-w-0">
+                <h3 className="text-2xl text-ink-900">{cap.titulo}</h3>
+                <p className="mt-4 text-md leading-relaxed text-ink-700">{cap.texto}</p>
+                <ul className="mt-7 space-y-3">
+                  {cap.detalles.map((d) => (
+                    <li key={d} className="flex gap-3 text-base text-ink-700">
+                      <Check size={16} className="mt-1 shrink-0 text-ink-500" />
+                      <span className="min-w-0">{d}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <Ventana className="min-w-0">
+                <img
+                  src={cap.imagen}
+                  alt={`Pantalla de ${cap.titulo.toLowerCase()} en Playoff360`}
+                  loading="lazy"
+                  decoding="async"
+                  className="block w-full"
+                />
+              </Ventana>
             </div>
           </div>
         </section>
 
-        {/* ── Qué no hace ──────────────────────────────────────────────── */}
-        <section id="limites" className="relative scroll-mt-16 overflow-hidden bg-night text-white">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.14] mix-blend-overlay"
-            style={{ backgroundImage: GRANO }}
-          />
-          <div className="relative mx-auto max-w-6xl px-5 py-20 lg:py-28">
-            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20">
-              <Revelar>
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-azul-400">
-                  Honestidad
-                </p>
-                <h2 className="mt-4 font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-white sm:text-5xl">
-                  Y lo que no hace.
+        {/* ── En el móvil ───────────────────────────────────────────────── */}
+        <section className="border-t border-line-sutil">
+          <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
+            <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-center">
+              <Revelar className="min-w-0">
+                <p className="eyebrow">A pie de campo</p>
+                <h2 className="mt-3 max-w-[18ch] text-3xl text-ink-900 sm:text-4xl">
+                  Lo que se usa de pie, con una mano.
                 </h2>
-                <p className="mt-5 max-w-md text-lg leading-relaxed text-white/55">
-                  Preferimos decirlo aquí que dejar que lo descubras usándola. Si algo de esta lista
-                  te hace falta, esta no es tu herramienta todavía.
+                <p className="mt-4 max-w-[52ch] text-md text-ink-700">
+                  Pasar lista, consultar una ficha o mirar la sesión del día no debería requerir
+                  sentarse. No hay que instalar nada: se abre en el navegador del móvil y ya está.
+                </p>
+                <div className="mt-8 space-y-5 border-t border-line-sutil pt-7">
+                  {PILARES.map((p) => (
+                    <div key={p.titulo} className="flex gap-4">
+                      <p.icono size={17} strokeWidth={1.6} className="mt-0.5 shrink-0 text-ink-500" />
+                      <div className="min-w-0">
+                        <p className="text-base font-medium text-ink-800">{p.titulo}</p>
+                        <p className="mt-1 text-sm text-ink-600">{p.texto}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Revelar>
+
+              <Revelar delay={100} className="min-w-0">
+                <div className="flex justify-center gap-4 sm:gap-6">
+                  <Telefono
+                    src="/producto/plantilla-movil.png"
+                    alt="La plantilla en el móvil"
+                    className="w-[46%] max-w-[230px] translate-y-5"
+                  />
+                  <Telefono
+                    src="/producto/entrenamientos-movil.png"
+                    alt="Los entrenamientos en el móvil"
+                    className="w-[46%] max-w-[230px] -translate-y-5"
+                  />
+                </div>
+              </Revelar>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Cómo se empieza ───────────────────────────────────────────── */}
+        <section className="border-t border-line-sutil">
+          <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
+            <Revelar>
+              <p className="eyebrow">Cómo se empieza</p>
+              <h2 className="mt-3 text-3xl text-ink-900 sm:text-4xl">Tres pasos, y el club es tuyo.</h2>
+            </Revelar>
+
+            {/* Números grandes y una línea. Sin tarjetas: lo que ordena esto es
+                la numeración, no un contenedor alrededor de cada paso. */}
+            <ol className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line-sutil bg-line-sutil sm:grid-cols-3">
+              {PASOS.map(([titulo, texto], i) => (
+                <li key={titulo} className="bg-surface p-7">
+                  <Revelar delay={i * 90}>
+                    <span className="cifra text-2xl text-ink-400">0{i + 1}</span>
+                    <p className="mt-5 text-lg text-ink-900">{titulo}</p>
+                    <p className="mt-2 text-sm text-ink-600">{texto}</p>
+                  </Revelar>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        {/* ── Lo que no hace ────────────────────────────────────────────── */}
+        <section id="limites" className="scroll-mt-24 border-t border-line-sutil">
+          <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
+            <div className="grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <Revelar className="min-w-0">
+                <p className="eyebrow">Los límites</p>
+                <h2 className="mt-3 max-w-[16ch] text-3xl text-ink-900 sm:text-4xl">
+                  Lo que no hace, dicho aquí.
+                </h2>
+                <p className="mt-4 max-w-[48ch] text-md text-ink-700">
+                  Está en la portada y no en la letra pequeña a propósito. Descubrir un límite
+                  después de meter la plantilla entera es lo que hace perder la confianza.
                 </p>
               </Revelar>
 
-              <Revelar delay={100}>
-                <ul>
+              <Revelar delay={100} className="min-w-0">
+                <ul className="divide-y divide-line-sutil border-y border-line-sutil">
                   {NO_HACE.map((t) => (
-                    <li
-                      key={t}
-                      className="flex items-start gap-3.5 border-b border-white/10 py-4 text-md leading-relaxed text-white/75 first:border-t"
-                    >
-                      <Minus size={18} className="mt-0.5 shrink-0 text-white/25" />
-                      {t}
+                    <li key={t} className="flex items-start gap-3 py-4 text-base text-ink-700">
+                      <Minus size={15} className="mt-1.5 shrink-0 text-ink-500" />
+                      <span className="min-w-0">{t}</span>
                     </li>
                   ))}
                 </ul>
@@ -648,122 +602,92 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ── Preguntas ────────────────────────────────────────────────── */}
-        <section id="preguntas" className="scroll-mt-16 bg-panel">
+        {/* ── Preguntas ─────────────────────────────────────────────────── */}
+        <section id="preguntas" className="scroll-mt-24 border-t border-line-sutil">
           <div className="mx-auto max-w-3xl px-5 py-20 lg:py-28">
             <Revelar>
-              <h2 className="font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-ink-900 sm:text-5xl">
-                Preguntas que nos harías.
-              </h2>
+              <p className="eyebrow">Preguntas</p>
+              <h2 className="mt-3 text-3xl text-ink-900 sm:text-4xl">Lo que se suele preguntar.</h2>
             </Revelar>
 
-            <Revelar delay={80}>
-              <dl className="mt-10 border-t border-line">
-                {FAQ.map(([q, a], i) => (
-                  <div key={q} className="border-b border-line">
-                    <dt>
-                      <button
-                        onClick={() => setAbierta(abierta === i ? null : i)}
-                        aria-expanded={abierta === i}
-                        className="flex w-full items-center justify-between gap-6 py-5 text-left"
-                      >
-                        <span className="text-lg font-semibold leading-snug text-ink-900">{q}</span>
-                        <span
-                          className={cn(
-                            'grid h-7 w-7 shrink-0 place-items-center rounded-full border border-line text-ink-700 transition-transform duration-200',
-                            abierta === i && 'rotate-45 border-ink-900 bg-ink-900 text-ink-0',
-                          )}
-                          aria-hidden
-                        >
-                          <Plus size={14} strokeWidth={2.5} />
-                        </span>
-                      </button>
-                    </dt>
-                    <dd
-                      className={cn(
-                        'grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none',
-                        abierta === i ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
-                      )}
-                    >
-                      <div className="overflow-hidden">
-                        <p className="max-w-2xl pb-6 text-md leading-relaxed text-ink-700">{a}</p>
-                      </div>
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </Revelar>
+            <div className="mt-10 border-t border-line-sutil">
+              {FAQ.map(([p, r], i) => (
+                <div key={p} className="border-b border-line-sutil">
+                  <button
+                    type="button"
+                    onClick={() => setAbierta(abierta === i ? null : i)}
+                    aria-expanded={abierta === i}
+                    className="flex w-full items-start justify-between gap-5 py-5 text-left"
+                  >
+                    <span className="min-w-0 text-md text-ink-900">{p}</span>
+                    <span className="mt-0.5 shrink-0 text-ink-500">
+                      {abierta === i ? <Minus size={16} /> : <Plus size={16} />}
+                    </span>
+                  </button>
+                  {abierta === i && (
+                    <p className="animate-fade-up max-w-[62ch] pb-6 text-base leading-relaxed text-ink-700">
+                      {r}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* ── Llamada final ────────────────────────────────────────────── */}
-        <section className="bg-panel px-5 pb-20 lg:pb-28">
-          <Revelar>
-            <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-night px-6 py-16 text-center ring-1 ring-inset ring-white/10 sm:px-12 lg:py-24">
-              {/* Aquí subía un verde desde abajo, de la identidad anterior.
-                  Se queda el negro: el color de esta sección lo pone el botón,
-                  que es lo único que hay que pulsar. */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 opacity-[0.14] mix-blend-overlay"
-                style={{ backgroundImage: GRANO }}
-              />
-              <div className="relative">
-                <h2 className="mx-auto max-w-3xl font-display text-4xl font-extrabold leading-[1.04] tracking-[-0.035em] text-white sm:text-5xl">
-                  Crea tu club y monta la semana.
-                </h2>
-                <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/60">
-                  Empieza vacía y se llena con el trabajo real de tu club. Los datos de cada club
-                  están separados de los de cualquier otro.
-                </p>
+        {/* ── Cierre ────────────────────────────────────────────────────── */}
+        <section className="relative overflow-hidden border-t border-line-sutil">
+          <Ambiente intensidad={0.75} densidad={0.7} velo="centro" />
+          <div className="relative mx-auto max-w-3xl px-5 py-24 text-center lg:py-32">
+            <Revelar>
+              <h2 className="mx-auto max-w-[18ch] text-3xl text-ink-900 sm:text-5xl">
+                Empieza con tu club hoy.
+              </h2>
+              <p className="mx-auto mt-5 max-w-[46ch] text-md text-ink-700">
+                Creas la cuenta, creas el club y empiezas a montar la semana. No cuesta nada y no
+                hay nada que configurar antes.
+              </p>
+              <div className="mt-9 flex flex-wrap justify-center gap-3">
+                <Principal to="/entrar">
+                  Crear mi club
+                  <ArrowRight size={16} />
+                </Principal>
                 <Link
                   to="/entrar"
-                  className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-azul-600 px-8 py-4 text-md font-semibold text-night transition-colors hover:bg-azul-500"
+                  className="metal inline-flex h-12 items-center justify-center rounded-xl px-6 text-md font-medium text-ink-800"
                 >
-                  Empezar
-                  <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
+                  Ya tengo cuenta
                 </Link>
               </div>
-            </div>
-          </Revelar>
+            </Revelar>
+          </div>
         </section>
       </main>
 
-      {/* ── Pie ────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-line bg-panel">
-        <div className="mx-auto max-w-6xl px-5 py-14">
-          <div className="grid grid-cols-1 gap-10 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <Marca size={24} className="text-azul-500" />
-                <Wordmark />
-              </div>
-              <p className="mt-4 max-w-xs text-base leading-relaxed text-ink-600">
-                El sistema de trabajo del cuerpo técnico. Para cualquier club.
+      {/* ── Pie ──────────────────────────────────────────────────────────── */}
+      <footer className="border-t border-line-sutil">
+        <div className="mx-auto max-w-6xl px-5 py-12">
+          <div className="flex flex-wrap items-start justify-between gap-8">
+            <div className="min-w-0">
+              <Wordmark tone="light" size="sm" />
+              <p className="mt-3 max-w-[34ch] text-sm text-ink-600">
+                El sistema de trabajo del cuerpo técnico, para cualquier club.
               </p>
             </div>
 
-            <nav className="flex flex-col gap-3 text-base text-ink-700">
-              <span className="text-sm font-semibold uppercase tracking-[0.1em] text-muted">
-                Producto
-              </span>
+            <nav className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-ink-600">
               <a href="#producto" onClick={irA('producto')} className="hover:text-ink-900">
-                Qué hace
+                Producto
               </a>
               <a href="#limites" onClick={irA('limites')} className="hover:text-ink-900">
-                Qué no hace
+                Límites
               </a>
               <a href="#preguntas" onClick={irA('preguntas')} className="hover:text-ink-900">
                 Preguntas
               </a>
-            </nav>
-
-            <nav className="flex flex-col gap-3 text-base text-ink-700">
-              <span className="text-sm font-semibold uppercase tracking-[0.1em] text-muted">
-                Cuenta y legal
-              </span>
               <Link to="/entrar" className="inline-flex items-center gap-1 hover:text-ink-900">
-                Entrar <ArrowUpRight size={14} />
+                Entrar
+                <ArrowUpRight size={13} />
               </Link>
               <Link to="/aviso-legal" className="hover:text-ink-900">
                 Aviso legal
@@ -774,9 +698,8 @@ export default function Landing() {
             </nav>
           </div>
 
-          <p className="mt-12 border-t border-line pt-6 text-sm text-muted">
-            Los datos de cada club se guardan separados de los de cualquier otro y el aislamiento lo
-            impone la base de datos.
+          <p className="mt-10 border-t border-line-sutil pt-6 text-xs text-ink-500">
+            © {new Date().getFullYear()} Playoff360
           </p>
         </div>
       </footer>

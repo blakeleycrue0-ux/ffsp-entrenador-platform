@@ -15,7 +15,7 @@ import { Puntos, Teclado, LARGO, type Fase } from './Teclado';
 import { passcode } from '@/services/passcode';
 import { humanError } from '@/services/supabase';
 
-export function CodigoPanel() {
+export function CodigoPanel({ plano = false }: { plano?: boolean } = {}) {
   const toast = useToast();
   const [tiene, setTiene] = useState<boolean | null>(null);
   const [fallo, setFallo] = useState<string | null>(null);
@@ -31,15 +31,27 @@ export function CodigoPanel() {
 
   useEffect(mirar, []);
 
-  return (
-    <Panel>
-      <PanelHeader
-        title="Código de acceso"
-        description="Un candado de cuatro cifras al volver a la aplicación en este dispositivo."
-        actions={tiene ? <Tag tone="solid">Puesto</Tag> : undefined}
-      />
+  const cuerpo = (
+    <>
+      {plano ? (
+        <div>
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-lg text-ink-900">Código de acceso</h3>
+            {tiene ? <Tag tone="solid">Puesto</Tag> : null}
+          </div>
+          <p className="mt-1 text-sm text-ink-600">
+            Un candado de cuatro cifras al volver a la aplicación en este dispositivo.
+          </p>
+        </div>
+      ) : (
+        <PanelHeader
+          title="Código de acceso"
+          description="Un candado de cuatro cifras al volver a la aplicación en este dispositivo."
+          actions={tiene ? <Tag tone="solid">Puesto</Tag> : undefined}
+        />
+      )}
 
-      <div className="space-y-4 p-5">
+      <div className={plano ? 'mt-4 space-y-4' : 'space-y-4 p-5'}>
         <p className="text-base leading-relaxed text-ink-500">
           No sustituye a tu contraseña: tu cuenta sigue entrando con el correo y la contraseña de
           siempre. El código tapa la pantalla cuando el móvil anda de mano en mano.
@@ -90,8 +102,10 @@ export function CodigoPanel() {
           />
         </div>
       </Modal>
-    </Panel>
+    </>
   );
+
+  return plano ? <section>{cuerpo}</section> : <Panel>{cuerpo}</Panel>;
 }
 
 /** Para quitarlo hay que escribirlo: si no, cualquiera con el móvil lo quita. */

@@ -34,7 +34,7 @@ export function Topbar({ onSearch, onCreate }: { onSearch: () => void; onCreate:
        los iconos. Un fondo casi transparente en algo pegajoso no es un estilo,
        es un fallo. Cristal ahumado: tapa, desenfoca y se sigue notando poco. */
     <header
-      className="cristal sticky top-0 z-nav flex items-center gap-3 rounded-none border-x-0 border-t-0 px-4 lg:px-6"
+      className="cristal-firme sticky top-0 z-nav flex items-center gap-3 rounded-none border-x-0 border-t-0 px-4 lg:px-6"
       style={{ height: 'calc(var(--header-h) + var(--safe-top))', paddingTop: 'var(--safe-top)' }}
     >
       <Link to="/app" className="lg:hidden">

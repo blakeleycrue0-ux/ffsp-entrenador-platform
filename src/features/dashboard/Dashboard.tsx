@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight, CalendarClock, ChevronRight, ClipboardList, Clock, MapPin,
-  Plus, Send, Users,
+  Send, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { callupOfMatch, clubShortName, currentStaff, isClubAdmin, nextMatch, nextSession, nombreReal, squadOf, summarizeRecord, teamOverview, visibleTeams } from '@/store/selectors';
@@ -93,8 +93,8 @@ export default function Dashboard() {
   if (loadError) {
     return (
       <Panel className="border-bad/25 bg-bad/5 p-6">
-        <h2 className="text-[16px] font-semibold text-[#A63B34]">No hemos podido cargar tus datos</h2>
-        <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-[#A63B34]/90">{loadError}</p>
+        <h2 className="text-[16px] font-semibold text-bad">No hemos podido cargar tus datos</h2>
+        <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-bad/90">{loadError}</p>
         <Button variant="secondary" size="sm" className="mt-4" onClick={() => void actions.refresh()}>
           Reintentar
         </Button>
@@ -148,13 +148,9 @@ export default function Dashboard() {
             {firstName ? `Hola, ${firstName}` : 'Hola'}
           </h1>
         </div>
-        {/* En móvil ya está el botón flotante encima del dique: dos botones
-            de crear en la misma pantalla compiten sin motivo. */}
-        <div className="hidden items-center gap-2 lg:flex">
-          <Button icon={<Plus size={17} strokeWidth={2.3} />} onClick={() => setCreateOpen(true)}>
-            Crear
-          </Button>
-        </div>
+        {/* Aquí NO va un «Crear». La barra lateral ya tiene el suyo, y en el
+            móvil está en el menú: tres botones iguales en la misma pantalla no
+            dan tres caminos, dan una duda. Una acción principal por pantalla. */}
       </div>
 
       {/* Tarjetas principales */}
@@ -304,8 +300,12 @@ export default function Dashboard() {
           </Panel>
         )}
 
-        {/* Asistencia */}
-        <Panel className="p-5">
+        {/* ── Asistencia y convocatoria ────────────────────────────────────
+            Sin caja. Arriba están las dos piezas que de verdad lo merecen —lo
+            siguiente que toca hacer—; esto es contexto, y ponerlo en una
+            tarjeta idéntica a las de arriba hace que las cuatro pesen lo mismo
+            y que no se vea cuál es cuál. Lo separa un filete y el aire. */}
+        <section className="border-t border-line-sutil pt-6">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Asistencia</span>
             <Link to="/app/entrenamientos" className="text-[12.5px] font-medium text-ink-900 hover:text-ink-900">
@@ -323,9 +323,14 @@ export default function Dashboard() {
               </p>
 
               <div className="mt-3 space-y-2">
+                {/* El tramo de las que vinieron va en BLANCO, no en verde: es
+                    la parte normal de la barra y ocupa casi toda. En verde, lo
+                    primero que se ve de la pantalla es una barra de color que
+                    no avisa de nada; en blanco, lo que destaca es el trozo
+                    ámbar y el rojo, que es donde hay algo que mirar. */}
                 <SplitBar
                   segments={[
-                    { value: attCounts.present + attCounts.late, color: 'bg-ok', label: 'Vinieron' },
+                    { value: attCounts.present + attCounts.late, color: 'bg-ink-800', label: 'Vinieron' },
                     { value: attCounts.justified + attCounts.injured, color: 'bg-warn', label: 'Justificadas' },
                     { value: attCounts.absent, color: 'bg-bad', label: 'Ausentes' },
                     { value: attCounts.unregistered, color: 'bg-line', label: 'Sin registrar' },
@@ -333,7 +338,7 @@ export default function Dashboard() {
                 />
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
                   <span className="flex items-center gap-1.5 text-ink-600">
-                    <span className="h-2 w-2 rounded-full bg-ok" /> {attCounts.present} presentes
+                    <span className="h-2 w-2 rounded-full bg-ink-800" /> {attCounts.present} presentes
                   </span>
                   <span className="flex items-center gap-1.5 text-ink-600">
                     <span className="h-2 w-2 rounded-full bg-warn" /> {attCounts.justified + attCounts.injured}{' '}
@@ -347,10 +352,10 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        </Panel>
+        </section>
 
         {/* Convocatoria */}
-        <Panel className="p-5">
+        <section className="border-t border-line-sutil pt-6">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Convocatoria</span>
             {match0 && (
@@ -374,8 +379,8 @@ export default function Dashboard() {
 
               <div className="mt-3.5 grid grid-cols-3 gap-2 text-center">
                 {[
-                  { n: confirmed, l: 'Confirmadas', c: 'text-[#1F6B44]' },
-                  { n: pendingCallup, l: 'Pendientes', c: 'text-[#9A6412]' },
+                  { n: confirmed, l: 'Confirmadas', c: 'text-ok' },
+                  { n: pendingCallup, l: 'Pendientes', c: 'text-warn' },
                   { n: declined, l: 'No pueden', c: 'text-bad' },
                 ].map((x) => (
                   <div key={x.l} className="rounded-xl bg-ink-50 py-2.5">
@@ -413,12 +418,12 @@ export default function Dashboard() {
               }
             />
           )}
-        </Panel>
+        </section>
       </div>
 
       {/* Tareas + actividad */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
-        <Panel className="p-5 lg:col-span-2">
+        <section className="border-t border-line-sutil pt-6 lg:col-span-2">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Tareas pendientes</span>
             <span className="text-[12.5px] text-ink-400">{openTasks.length} abiertas</span>
@@ -439,9 +444,9 @@ export default function Dashboard() {
               ))}
             </ul>
           )}
-        </Panel>
+        </section>
 
-        <Panel className="p-5 lg:col-span-3">
+        <section className="border-t border-line-sutil pt-6 lg:col-span-3">
           <div className="flex items-center justify-between gap-3">
             <span className="eyebrow">Actividad reciente</span>
           </div>
@@ -472,7 +477,7 @@ export default function Dashboard() {
             ))}
           </ul>
           )}
-        </Panel>
+        </section>
       </div>
 
       {/* Mis equipos */}

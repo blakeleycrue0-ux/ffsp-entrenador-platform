@@ -30,7 +30,10 @@ export const AVAILABILITY: Record<
   AvailabilityStatus,
   { label: string; tone: 'ok' | 'warn' | 'bad' | 'neutral'; dot: string }
 > = {
-  disponible: { label: 'Disponible', tone: 'ok', dot: 'bg-ok' },
+  /* Neutro a propósito. Una plantilla de veinte jugadoras con dieciocho
+     etiquetas verdes no informa de nada: lo que hay que ver de un vistazo son
+     las dos que NO están disponibles. El color marca la excepción. */
+  disponible: { label: 'Disponible', tone: 'neutral', dot: 'bg-ink-600' },
   duda: { label: 'Duda', tone: 'warn', dot: 'bg-warn' },
   lesionada: { label: 'Lesionada', tone: 'bad', dot: 'bg-bad' },
   enferma: { label: 'Enferma', tone: 'bad', dot: 'bg-bad' },
@@ -112,7 +115,9 @@ export const ATTENDANCE: Record<
 > = {
   /* El `short` es para el móvil. Eran letras sueltas —P, T, J, L, A— que sin
      una leyenda al lado no se entienden; una palabra corta sí. */
-  presente: { label: 'Presente', short: 'Sí', tone: 'ok', bg: 'bg-ok', text: 'text-ok' },
+  /* Igual que arriba: presente es lo esperado, así que va en neutro y las
+     excepciones —tarde, justificada, lesión, falta— son las que llevan color. */
+  presente: { label: 'Presente', short: 'Sí', tone: 'neutral', bg: 'bg-ink-700', text: 'text-ink-800' },
   tarde: { label: 'Llegó tarde', short: 'Tarde', tone: 'warn', bg: 'bg-warn', text: 'text-warn' },
   justificada: { label: 'Justificada', short: 'Just.', tone: 'warn', bg: 'bg-warn', text: 'text-warn' },
   lesionada: { label: 'Lesionada', short: 'Lesión', tone: 'bad', bg: 'bg-bad', text: 'text-bad' },

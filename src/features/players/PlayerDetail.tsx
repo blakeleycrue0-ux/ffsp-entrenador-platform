@@ -87,7 +87,7 @@ export default function PlayerDetail() {
                   'mt-4 rounded-xl border px-3.5 py-2.5 text-[13px]',
                   player.availability.status === 'disponible'
                     ? 'border-line bg-ink-50 text-ink-600'
-                    : 'border-warn/30 bg-warn/5 text-[#8A5A10]',
+                    : 'border-warn/30 bg-warn/5 text-warn',
                 )}
               >
                 <strong className="font-medium">{disponibilidad(player.availability.status).label}:</strong>{' '}
@@ -169,7 +169,7 @@ export default function PlayerDetail() {
                 ))}
               </div>
               {(row?.streak ?? 0) >= 2 && (
-                <p className="mt-4 rounded-xl border border-warn/30 bg-warn/5 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[#8A5A10]">
+                <p className="mt-4 rounded-xl border border-warn/30 bg-warn/5 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-warn">
                   Acumula {row!.streak} ausencias consecutivas. Puede ser buen momento para hablar con ella o con su
                   familia.
                 </p>

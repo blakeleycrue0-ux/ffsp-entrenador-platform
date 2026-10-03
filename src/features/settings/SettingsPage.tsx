@@ -10,7 +10,7 @@ import { currentStaff, isClubAdmin, visibleTeams } from '@/store/selectors';
 import { ROLE_LABEL, auth } from '@/services/auth';
 import { humanError, supabase } from '@/services/supabase';
 import {
-  Button, Field, Figure, Input, PageHeader, Panel, PanelHeader, ScoreInput, Tabs, Tag, Textarea,
+  Button, Field, Input, PageHeader, Panel, PanelHeader, ScoreInput, Tabs, Tag, Textarea,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { PlanPanel } from '@/features/billing/PlanPanel';
@@ -74,15 +74,25 @@ export default function SettingsPage() {
         ]}
       />
 
+      {/* ── Cuenta ───────────────────────────────────────────────────────────
+          Filas separadas por filetes, no cuatro tarjetas en rejilla. Unos
+          ajustes son una LISTA de cosas que se pueden cambiar; meter cada una
+          en su caja con su borde y su fondo hace que todas pesen lo mismo y
+          que la página parezca un tablero en vez de una lista. */}
       {tab === 'cuenta' && (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-          <PlanPanel />
+        <div className="divide-y divide-line-sutil border-y border-line-sutil">
+          <div className="py-7">
+            <PlanPanel plano />
+          </div>
 
-          <CodigoPanel />
+          <div className="py-7">
+            <CodigoPanel plano />
+          </div>
 
-          <Panel>
-            <PanelHeader title="Contraseña" description="Se aplica la próxima vez que entres." />
-            <div className="space-y-3 p-4">
+          <div className="py-7">
+            <h3 className="text-lg text-ink-900">Contraseña</h3>
+            <p className="mt-1 text-sm text-ink-600">Se aplica la próxima vez que entres.</p>
+            <div className="mt-4 max-w-[380px] space-y-3">
               <Field label="Nueva contraseña" hint="Mínimo 6 caracteres.">
                 <Input
                   type="password"
@@ -114,27 +124,34 @@ export default function SettingsPage() {
                 Cambiar contraseña
               </Button>
             </div>
-          </Panel>
+          </div>
 
-          <Panel>
-            <PanelHeader
-              title="Lo que hay en tus equipos"
-              description="Cifras reales de lo que has registrado."
-              actions={
-                <Button variant="secondary" size="sm" onClick={() => void actions.refresh()}>
-                  Recargar
-                </Button>
-              }
-            />
-            <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3">
-              <Figure label="Equipos" value={data.teams.length} />
-              <Figure label="Jugadoras" value={data.players.filter((p) => !p.archivedAt).length} />
-              <Figure label="Ejercicios" value={data.drills.length} />
-              <Figure label="Entrenamientos" value={data.sessions.length} />
-              <Figure label="Partidos" value={data.matches.length} />
-              <Figure label="Asistencias" value={data.attendance.length} />
+          <div className="py-7">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="text-lg text-ink-900">Lo que hay en tus equipos</h3>
+                <p className="mt-1 text-sm text-ink-600">Cifras reales de lo que has registrado.</p>
+              </div>
+              <Button variant="secondary" size="sm" onClick={() => void actions.refresh()}>
+                Recargar
+              </Button>
             </div>
-          </Panel>
+            <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3">
+              {[
+                ['Equipos', data.teams.length],
+                ['Jugadoras', data.players.filter((p) => !p.archivedAt).length],
+                ['Ejercicios', data.drills.length],
+                ['Entrenamientos', data.sessions.length],
+                ['Partidos', data.matches.length],
+                ['Asistencias', data.attendance.length],
+              ].map(([etiqueta, valor]) => (
+                <div key={etiqueta as string} className="min-w-0">
+                  <dt className="eyebrow">{etiqueta}</dt>
+                  <dd className="cifra mt-2 text-3xl">{valor}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </div>
       )}
 

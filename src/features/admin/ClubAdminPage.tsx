@@ -56,10 +56,10 @@ export default function ClubAdminPage() {
 
       {unassigned.length > 0 && (
         <Panel className="mb-5 border-warn/30 bg-warn/5 p-4">
-          <p className="text-[14px] font-medium text-[#8A5A10]">
+          <p className="text-[14px] font-medium text-warn">
             {unassigned.length} {unassigned.length === 1 ? 'persona' : 'personas'} sin equipo asignado
           </p>
-          <p className="mt-1 text-[13px] leading-relaxed text-[#8A5A10]/85">
+          <p className="mt-1 text-[13px] leading-relaxed text-warn/85">
             Han creado su cuenta pero todavía no ven nada al entrar: {unassigned.map((s) => s.name).join(', ')}.
           </p>
         </Panel>
