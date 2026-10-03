@@ -45,8 +45,21 @@
 # Un 404 de verdad es más claro para depurar y, sobre todo, deja que el
 # navegador y `cargaDiferida` lo traten como lo que es: un archivo que no está.
 # El orden importa: esta regla va ANTES del comodín.
+#
+# ⚠ LA REGLA NECESITA DESTINO, Y SIN ÉL NO ES QUE FALLE: ES QUE NO EXISTE.
+# Esto se escribió primero sin `to`, pensando que con el estado bastaba. Netlify
+# la descartaba por inválida —«1 invalid redirect rule», en la comprobación de
+# cada publicación— y seguía adelante con las demás. O sea que durante varias
+# versiones el comodín de abajo se tragaba también los fragmentos que faltaban,
+# devolvía el índice con un 200, y el problema que esta regla venía a arreglar
+# seguía exactamente igual. Una regla inválida no avisa en el sitio donde se
+# usa: se cae en silencio y deja la impresión de estar protegido.
+#
+# `force = false` no sobra: hace que la regla sólo actúe cuando el archivo NO
+# está. Los que sí existen se sirven con normalidad.
 [[redirects]]
   from = "/assets/*"
+  to = "/404.html"
   status = 404
   force = false
 

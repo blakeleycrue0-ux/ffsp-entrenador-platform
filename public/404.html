@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>No encontrado · Playoff360</title>
+    <meta name="robots" content="noindex" />
+    <!-- El mismo icono que la aplicación: sin esta línea el navegador pide
+         `/favicon.ico`, que no existe, y la página de «no existe» acaba
+         provocando ella misma un segundo 404. -->
+    <link rel="icon" type="image/png" href="/playoff360.png" />
+    <!--
+      Página estática, a propósito.
+      ─────────────────────────────────────────────────────────────────────────
+      Esto lo sirve Netlify cuando se pide un archivo de `/assets` que ya no
+      existe, que es lo que pasa con una pestaña abierta desde antes de la
+      última publicación. En ese caso quien lo recibe NO es una persona: es el
+      navegador intentando cargar un fragmento de la aplicación, y lo que
+      necesita es un 404 de verdad para que `cargaDiferida` sepa que el archivo
+      no está y recargue. Por eso aquí no se carga la aplicación: cargarla para
+      decir que falta un trozo de ella sería dar vueltas.
+
+      Todo va en línea —estilos incluidos— porque esta página tiene que
+      funcionar precisamente cuando lo que falla es cargar archivos.
+    -->
+    <style>
+      :root { color-scheme: dark; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: #050505;
+        color: #f5f5f5;
+        font: 400 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+        text-align: center;
+      }
+      main { max-width: 360px; }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 21px;
+        font-weight: 500;
+        letter-spacing: -0.03em;
+      }
+      p { margin: 0; color: #999; }
+      a {
+        display: inline-block;
+        margin-top: 22px;
+        padding: 0 17px;
+        border-radius: 6px;
+        background: #f5f5f5;
+        color: #050505;
+        font-size: 13.5px;
+        font-weight: 500;
+        line-height: 43px;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Esta dirección no existe</h1>
+      <p>
+        Puede que el enlace esté mal escrito o que apunte a una versión
+        anterior de la aplicación.
+      </p>
+      <a href="/">Ir al inicio</a>
+    </main>
+  </body>
+</html>
