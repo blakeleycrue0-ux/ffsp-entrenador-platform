@@ -31,7 +31,7 @@ export function Puntos({ valor, fase }: { valor: string; fase: Fase }) {
       {/* Al acertar, los puntos se van y en su sitio queda el anillo. */}
       <div
         className={cn(
-          'flex items-center gap-4',
+          'flex items-center gap-5',
           fase === 'mal' && 'animate-temblor',
           fase === 'bien' && 'animate-juntar',
         )}
@@ -42,7 +42,7 @@ export function Puntos({ valor, fase }: { valor: string; fase: Fase }) {
             <span
               key={i}
               className={cn(
-                'block h-3.5 w-3.5 rounded-full border transition-all duration-150',
+                'block h-3 w-3 rounded-full border transition-all duration-150',
                 fase === 'mal'
                   ? 'border-bad bg-bad'
                   : lleno
@@ -128,7 +128,7 @@ export function Teclado({
   }, [borrar, escribir]);
 
   return (
-    <div className="mx-auto grid w-full max-w-[290px] grid-cols-3 gap-3">
+    <div className="mx-auto grid w-full max-w-[282px] grid-cols-3 gap-x-5 gap-y-4">
       {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
         <Tecla key={d} onClick={() => escribir(d)} disabled={disabled}>
           {d}
@@ -141,7 +141,7 @@ export function Teclado({
           onClick={extra.onClick}
           /* Cabe en una línea a propósito: partida en dos parece un fallo de
              maquetación al lado de unas teclas tan ordenadas. */
-          className="h-14 whitespace-nowrap rounded-2xl text-2xs font-medium text-ink-500 transition-colors hover:text-ink-800 active:scale-[0.97]"
+          className="mx-auto grid h-[68px] w-[68px] place-items-center whitespace-nowrap rounded-full px-1 text-[11px] font-medium leading-tight text-ink-500 transition-colors hover:bg-white/[0.06] hover:text-ink-800 active:scale-[0.95]"
         >
           {extra.label}
         </button>
@@ -159,8 +159,10 @@ export function Teclado({
         disabled={disabled || valor.length === 0}
         aria-label="Borrar la última cifra"
         className={cn(
-          'grid h-14 place-items-center rounded-2xl transition-all active:scale-[0.97]',
-          valor.length === 0 ? 'text-ink-400/40' : 'text-ink-600 hover:bg-panel hover:text-ink-900',
+          'mx-auto grid h-[68px] w-[68px] place-items-center rounded-full transition-all active:scale-[0.95]',
+          valor.length === 0
+            ? 'text-ink-400/35'
+            : 'text-ink-600 hover:bg-white/[0.06] hover:text-ink-900',
         )}
       >
         {/* Un icono funcional: la forma dice «borrar» más rápido que la palabra. */}
@@ -177,19 +179,34 @@ export function Teclado({
   );
 }
 
+/**
+ * Una tecla: un círculo grande de grafito con la cifra en grande.
+ *
+ * REDONDA Y GRANDE porque esto se usa con el pulgar, de pie y con prisa. Era
+ * un rectángulo de 56 px con esquinas redondeadas; el círculo de 68 px tiene
+ * más área donde acertar y, sobre todo, se reconoce de un vistazo como un
+ * teclado de código y no como un formulario.
+ */
 function Tecla({
-  children, onClick, disabled,
-}: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) {
+  children, onClick, disabled, etiqueta,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  etiqueta?: string;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-label={etiqueta}
       className={cn(
-        'h-14 rounded-2xl border border-line bg-panel font-display text-xl font-semibold text-ink-900',
-        'tabular-nums transition-all duration-100',
-        'hover:bg-raised active:scale-[0.95] active:bg-raised',
-        'disabled:text-ink-400 disabled:hover:bg-panel',
+        'mx-auto grid h-[68px] w-[68px] place-items-center rounded-full',
+        'bg-white/[0.07] font-display text-[27px] font-medium text-ink-900',
+        'tabular-nums transition-[transform,background-color] duration-120',
+        'hover:bg-white/[0.11] active:scale-[0.93] active:bg-white/[0.16]',
+        'disabled:text-ink-400 disabled:hover:bg-white/[0.07]',
       )}
     >
       {children}

@@ -15,6 +15,11 @@ export default {
       fontFamily: {
         sans: ['Schibsted Grotesk', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
         display: ['Schibsted Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
+        /* UNA excepción, y una sola: la segunda línea del titular de la
+           portada. Una serif en cursiva al lado de una grotesca da un
+           contraste que no se consigue con pesos, y basta con una frase. En
+           ningún otro sitio del producto se usa. */
+        serif: ['Instrument Serif', 'Georgia', 'serif'],
       },
       colors: {
         /* ────────────────────────────────────────────────────────────────────

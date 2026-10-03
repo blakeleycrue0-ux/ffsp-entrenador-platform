@@ -6,9 +6,9 @@
  * pueden abrir la ruta (lo impide el guardián de rutas y, sobre todo, RLS).
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardCopy, Plus, UserPlus, X } from 'lucide-react';
+import { ClipboardCopy, Image as ImageIcon, Plus, UserPlus, X } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { humanError } from '@/services/supabase';
@@ -565,6 +565,8 @@ function ClubDataTab() {
   const [season, setSeason] = useState(club?.season ?? '');
   const [crestUrl, setCrestUrl] = useState(club?.crestUrl ?? '');
   const [busy, setBusy] = useState(false);
+  const [subiendo, setSubiendo] = useState(false);
+  const archivoRef = useRef<HTMLInputElement>(null);
 
   if (!club) {
     return (
@@ -576,6 +578,41 @@ function ClubDataTab() {
       </Panel>
     );
   }
+
+  /* El escudo se guarda SOLO al subirlo, sin esperar al botón «Guardar»: se
+     acaba de elegir un archivo, y dejar la pantalla con la imagen puesta pero
+     sin guardar es la manera más fácil de perderla al salir. */
+  const subir = async (archivo: File) => {
+    if (!club) return;
+    setSubiendo(true);
+    try {
+      const url = await clubs.subirEscudo(club.id, archivo);
+      await clubs.update(club.id, { crestUrl: url });
+      setCrestUrl(url);
+      await actions.refresh();
+      toast.success('Escudo guardado');
+    } catch (e) {
+      toast.error('No hemos podido subirlo', humanError(e));
+    } finally {
+      setSubiendo(false);
+    }
+  };
+
+  const quitar = async () => {
+    if (!club) return;
+    const antes = crestUrl;
+    setSubiendo(true);
+    try {
+      await clubs.quitarEscudo(club.id, antes || undefined);
+      setCrestUrl('');
+      await actions.refresh();
+      toast.success('Escudo quitado');
+    } catch (e) {
+      toast.error('No hemos podido quitarlo', humanError(e));
+    } finally {
+      setSubiendo(false);
+    }
+  };
 
   const save = async () => {
     if (name.trim().length < 2) {
@@ -613,16 +650,58 @@ function ClubDataTab() {
           <Field label="Temporada" hint="Opcional. Aparece bajo el nombre del club.">
             <Input value={season} onChange={(e) => setSeason(e.target.value)} placeholder="2025/26" />
           </Field>
+          {/* ── Escudo ────────────────────────────────────────────────────────
+              Antes aquí sólo se podía PEGAR UNA DIRECCIÓN, con un texto que
+              decía «todavía no se pueden subir archivos». Eso no lo hace
+              nadie: había que subir la imagen a otro sitio, copiar el enlace y
+              volver, así que en la práctica los clubes se quedaban con sus
+              iniciales. Ahora se elige el archivo y ya está. */}
           <Field
             label="Escudo"
-            hint="Dirección de la imagen. Todavía no se pueden subir archivos: pega una URL pública."
+            hint="PNG, JPG o WEBP, hasta 2 MB. Se ve en la barra lateral, en el candado y en las convocatorias."
           >
-            <Input
-              value={crestUrl}
-              onChange={(e) => setCrestUrl(e.target.value)}
-              placeholder="https://…/escudo.png"
-              inputMode="url"
-            />
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl border border-line-sutil bg-raised">
+                {crestUrl ? (
+                  <img
+                    src={crestUrl}
+                    alt=""
+                    className="h-full w-full object-contain"
+                    draggable={false}
+                  />
+                ) : (
+                  <ImageIcon size={18} className="text-ink-500" aria-hidden />
+                )}
+              </span>
+
+              <input
+                ref={archivoRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = '';
+                  if (f) void subir(f);
+                }}
+              />
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={subiendo}
+                  onClick={() => archivoRef.current?.click()}
+                >
+                  {crestUrl ? 'Cambiar imagen' : 'Subir imagen'}
+                </Button>
+                {crestUrl && (
+                  <Button variant="ghost" size="sm" onClick={() => void quitar()}>
+                    Quitar
+                  </Button>
+                )}
+              </div>
+            </div>
           </Field>
           <Button loading={busy} onClick={save}>
             Guardar

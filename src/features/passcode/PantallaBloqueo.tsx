@@ -16,7 +16,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Field, Input } from '@/components/ui';
-import { Marca } from '@/components/ui/Brand';
+import { useClub } from '@/store/store';
+import { currentStaff, nombreReal } from '@/store/selectors';
 import { Puntos, Teclado, LARGO, type Fase } from './Teclado';
 import {
   cuantoQueda, marcarDesbloqueado, olvidarDesbloqueo, passcode,
@@ -104,25 +105,43 @@ export function PantallaBloqueo({ userId, onEntrar }: { userId: string; onEntrar
   }
 
   return (
-    <Marco>
-      <p className="mt-6 text-base leading-relaxed text-ink-500">
+    <Marco
+      pie={
+        /* La salida va al pie, separada del teclado: es lo último a lo que hay
+           que recurrir, no una tecla más. */
+        <button
+          type="button"
+          onClick={() => setOlvidado(true)}
+          className="mt-6 shrink-0 text-[13px] font-medium text-ink-600 transition-colors hover:text-ink-900"
+        >
+          ¿Has olvidado el código?
+        </button>
+      }
+    >
+      {/* El renglón del aviso reserva su alto siempre: si apareciera y
+          desapareciera, los puntos y el teclado darían un salto. */}
+      <p className="mt-3 min-h-[40px] max-w-[280px] text-[13.5px] leading-relaxed text-ink-500">
         {enEspera
           ? `Demasiados intentos. Vuelve a probar en ${queda}.`
           : (mensaje ?? 'Escribe tu código para entrar.')}
       </p>
 
-      <div className="mt-4">
+      <div className="mt-2">
         <Puntos valor={pin} fase={fase} />
       </div>
 
-      <div className="mt-8">
-        <Teclado
-          valor={pin}
-          onChange={escribir}
-          disabled={fase !== 'escribiendo' || enviando || enEspera}
-          extra={{ label: 'No lo recuerdo', onClick: () => setOlvidado(true) }}
-        />
-      </div>
+      {/* El hueco empuja el teclado a la mitad de abajo, que es donde llega el
+          pulgar. En una pantalla alta crece; en una baja se encoge solo.
+          En un ordenador se le pone tope: ahí no hay pulgar al que acercar el
+          teclado, y un hueco de 250 px entre los puntos y el 1 no es diseño,
+          es una columna de móvil estirada dentro de una ventana ancha. */}
+      <div className="min-h-[18px] flex-1 sm:max-h-[80px]" />
+
+      <Teclado
+        valor={pin}
+        onChange={escribir}
+        disabled={fase !== 'escribiendo' || enviando || enEspera}
+      />
     </Marco>
   );
 }
@@ -206,14 +225,73 @@ function OlvidadoElCodigo({ onVolver, onListo }: { onVolver: () => void; onListo
   );
 }
 
-function Marco({ children }: { children: React.ReactNode }) {
+/**
+ * El marco de la pantalla de bloqueo.
+ * ---------------------------------------------------------------------------
+ * Compuesta como la pantalla de bloqueo de un móvil, que es lo que es: el
+ * ESCUDO DEL CLUB arriba, el saludo debajo, los puntos en el centro, el
+ * teclado abajo y la salida al pie. Antes era la marca del producto y un
+ * párrafo, es decir, una página web con un teclado dentro.
+ *
+ * Arriba va el escudo del club, no el logotipo de Playoff360: quien desbloquea
+ * sabe de sobra en qué aplicación está: lo que le dice algo es de qué club es
+ * la pantalla que tiene delante, sobre todo si lleva dos.
+ *
+ * Todo cabe en una pantalla y el teclado queda SIEMPRE en la mitad de abajo,
+ * donde llega el pulgar.
+ */
+/** Hasta tres iniciales del club, para cuando no hay escudo subido. */
+const iniciales = (nombre?: string) =>
+  (nombre ?? '')
+    .split(/\s+/)
+    .filter((p) => p.length > 1 || /\d/.test(p))
+    .slice(0, 3)
+    .map((p) => p[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 3) || '—';
+
+function Marco({
+  children, pie,
+}: { children: React.ReactNode; pie?: React.ReactNode }) {
+  const { data } = useClub();
+  const club = data.club;
+  const nombre = nombreReal(currentStaff(data))?.split(' ')[0];
+
   return (
-    <div className="grid min-h-screen place-items-center bg-surface px-5 py-10">
-      <div className="w-full max-w-[340px] animate-fade-up text-center">
-        <Marca size={34} className="mx-auto text-ink-900" />
-        <h1 className="cifra mt-5 text-2xl">Playoff360</h1>
+    <div className="flex min-h-[100svh] flex-col items-center bg-surface px-5 pb-[max(22px,var(--safe-bottom))] pt-[max(68px,calc(var(--safe-top)+54px))] sm:justify-center sm:pt-[max(40px,var(--safe-top))]">
+      {/* En el móvil la columna ocupa la pantalla entera, que es lo que se
+          espera de un candado. En un ordenador se agrupa y se centra: el mismo
+          contenido, pero como un bloque, no desparramado de arriba abajo. */}
+      <div className="flex w-full max-w-[340px] flex-1 animate-fade-up flex-col items-center text-center sm:flex-none">
+        {club?.crestUrl ? (
+          <img
+            src={club.crestUrl}
+            alt={club.name ? `Escudo de ${club.name}` : 'Escudo del club'}
+            className="h-[72px] w-[72px] rounded-full object-cover"
+            draggable={false}
+          />
+        ) : (
+          /* Sin escudo subido, las iniciales del club en un disco de grafito.
+             No se usa `ClubCrest` porque ése va en cuadrado y en blanco: en
+             esta pantalla, un cuadrado blanco de 72 px es lo único que se ve.
+             Nunca un escudo prestado que no es de nadie. */
+          <span
+            aria-hidden
+            className="grid h-[72px] w-[72px] place-items-center rounded-full bg-white/[0.08] font-display text-[22px] font-medium tracking-[-0.02em] text-ink-800"
+          >
+            {iniciales(club?.name)}
+          </span>
+        )}
+
+        <h1 className="mt-5 text-xl text-ink-900" style={{ fontWeight: 560 }}>
+          {nombre ? `Hola, ${nombre}` : (club?.name ?? 'Playoff360')}
+        </h1>
+
         {children}
       </div>
+
+      {pie}
     </div>
   );
 }
