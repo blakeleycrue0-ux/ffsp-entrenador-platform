@@ -19,7 +19,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, Check, Minus, Plus, Shield, Smartphone, Zap } from 'lucide-react';
+import {
+  ArrowRight, ArrowUpRight, Check, Layers, Minus, Plus, Shield, ShieldCheck, Smartphone, Zap,
+} from 'lucide-react';
 import { Wordmark } from '@/components/ui/Brand';
 import { Ambiente } from '@/components/visual/Particulas';
 import { BoardDemo } from '@/features/board/BoardDemo';
@@ -169,13 +171,29 @@ const CAPACIDADES = [
 /**
  * Tres hechos del producto, no indicadores de uso. No hay cifras de clubes ni
  * de usuarias porque no están verificadas, y poner una inventada en la primera
- * pantalla es la manera más rápida de no merecer la siguiente.
+ * pantalla es la manera más rápida de no merecer la segunda. Cada uno se puede
+ * comprobar abriendo el producto.
+ *
+ * La versión corta es para el móvil: tres etiquetas largas en 390 px se parten
+ * en tres renglones y se comen la escultura.
  */
 const HECHOS = [
-  ['6', 'áreas en un mismo espacio'],
-  ['0 €', 'hoy, y sin pasarela de cobro'],
-  ['14', 'días que dura una invitación'],
+  { icono: Layers, corto: '6 áreas', largo: '6 áreas conectadas' },
+  { icono: ShieldCheck, corto: 'Club aislado', largo: 'Cada club, aislado' },
+  { icono: Smartphone, corto: 'En el móvil', largo: 'Funciona en el móvil' },
 ] as const;
+
+/** La marca del sello: un destello diminuto, dibujado, no un icono de librería. */
+function Sparkle() {
+  return (
+    <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden className="shrink-0 text-ink-500">
+      <path
+        d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 const PILARES = [
   {
@@ -257,35 +275,6 @@ function Principal({ to, children, className }: { to: string; children: React.Re
   );
 }
 
-/** El secundario: grafito con filo de luz. */
-function Secundario({
-  children, className, ...rest
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      className={cn(
-        'metal inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6',
-        'text-md font-medium text-ink-800',
-        className,
-      )}
-      {...rest}
-    >
-      {children}
-    </button>
-  );
-}
-
-/** El sello de arriba del titular. */
-function Sello({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-1.5 text-2xs font-semibold uppercase tracking-[0.14em] text-ink-600">
-      <span className="h-1 w-1 rounded-full bg-ink-600" />
-      {children}
-    </span>
-  );
-}
-
 /* ─────────────────────────────── Página ──────────────────────────────────── */
 
 export default function Landing() {
@@ -313,6 +302,17 @@ export default function Landing() {
           Flota sobre el ambiente en una cápsula de grafito. Al bajar se cierra
           un poco más para que el texto de la página no se pise con ella. */}
       <header className="fixed inset-x-0 top-0 z-nav px-4 pt-[max(14px,var(--safe-top))]">
+        {/* Un velo corto justo debajo de la cabecera. La cresta de la tela
+            llega a ponerse blanca ahí detrás y «Límites» se volvía ilegible.
+            Oscurecer toda la franja de arriba lo arreglaba también, pero a
+            costa de borrar la parte más bonita de la escultura. */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[130px]"
+          style={{
+            background:
+              'linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.42) 42%, rgba(0,0,0,0) 100%)',
+          }}
+        />
         <div
           className={cn(
             'mx-auto flex h-14 max-w-5xl items-center gap-5 rounded-2xl px-3 pl-4 transition-all duration-400 ease-suave',
@@ -350,9 +350,11 @@ export default function Landing() {
             >
               Iniciar sesión
             </Link>
+            {/* 42 px, no una cápsula gigante: en el móvil ocupaba un tercio
+                del ancho de la cabecera y se comía la marca. */}
             <Link
               to="/entrar"
-              className="metal-claro inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-ink-0"
+              className="metal-claro inline-flex h-[42px] items-center rounded-[7px] px-[17px] text-[14px] font-medium text-ink-0"
             >
               Crear mi club
             </Link>
@@ -362,64 +364,101 @@ export default function Landing() {
 
       <main>
         {/* ── Portada ────────────────────────────────────────────────────────
-            Pantalla completa, el ambiente detrás y el titular ABAJO. Centrado
-            vertical es lo que hace cualquier plantilla; bajarlo deja que la
-            imagen respire y que lo primero que se ve sea atmósfera. */}
-        {/* `min(100svh, 1000px)`: en una pantalla muy alta —un monitor girado,
-            una tableta de pie— un alto de pantalla completa dejaba un vacío de
-            metro y medio encima del titular. Con el tope, la portada deja de
-            crecer y empieza antes la sección siguiente. */}
-        <section className="relative flex min-h-[min(100svh,1000px)] flex-col justify-end overflow-hidden">
+            UN SOLO FOTOGRAMA. Todo cabe en una pantalla y nada de lo que
+            importa queda por debajo del pliegue: cabecera arriba, la escultura
+            de puntos ocupando el grueso del cuadro, el texto CENTRADO en el
+            tercio inferior y tres hechos al pie.
+
+            La escultura es la protagonista y el texto va encima; por eso el
+            titular no es lo más grande del cuadro ni va pegado a la izquierda.
+            El hueco vacío entre la cabecera y el texto no sobra: es lo que
+            deja respirar a la imagen, y se encoge solo en pantallas bajas. */}
+        <section className="relative flex h-[100svh] min-h-[560px] flex-col overflow-hidden bg-black">
           <Ambiente intensidad={1} velo="abajo" />
 
-          <div className="relative mx-auto w-full max-w-5xl px-5 pb-16 pt-32 sm:pb-20 lg:pb-24">
-            <div className="animate-entra" style={{ animationDelay: '120ms' }}>
-              <Sello>Para cuerpos técnicos</Sello>
-            </div>
+          {/* El hueco. `min-h-0` para que ceda el primero cuando la pantalla
+              es baja, en vez de empujar el texto fuera del cuadro. */}
+          <div className="min-h-0 flex-1" />
 
-            <h1
-              className="animate-entra mt-6 max-w-[16ch] text-4xl text-ink-900 sm:text-6xl lg:text-7xl"
-              style={{ animationDelay: '240ms', fontWeight: 540 }}
+          <div className="relative px-5 text-center">
+            <span
+              className="animate-entra inline-flex items-center gap-1.5 rounded-[5px] border border-white/12 bg-white/[0.045] px-3 text-[11.5px] font-medium tracking-[0.01em] text-ink-600 backdrop-blur-md"
+              style={{ animationDelay: '120ms', height: 31 }}
             >
-              Todo el cuerpo técnico.
+              <Sparkle />
+              Para cuerpos técnicos
+            </span>
+
+            {/* DOS LÍNEAS, en cualquier ancho. «Todo el cuerpo técnico» rompía
+                en dos a 34 px y el titular se comía tres renglones, lo que
+                además empujaba el bloque por encima del tercio inferior. Quién
+                lo usa ya lo dice el sello de arriba. */}
+            <h1
+              className="animate-entra mx-auto mt-6 text-[35px] leading-[1.1] text-ink-900 sm:text-[44px] lg:text-[52px]"
+              style={{ animationDelay: '240ms', fontWeight: 500, letterSpacing: '-0.045em' }}
+            >
+              Todo tu equipo.
               <br />
-              Un solo espacio.
+              {/* La única serif del producto. Gris, para que acompañe al
+                  titular en vez de competir con él. */}
+              <span className="font-serif italic text-[#999999]">En un solo lugar.</span>
             </h1>
 
             <p
-              className="animate-entra mt-6 max-w-[52ch] text-md text-ink-700 sm:text-lg"
+              className="animate-entra mx-auto mt-5 max-w-[330px] text-[14.5px] leading-[1.5] text-[#999999] sm:max-w-[470px] sm:text-[15.5px]"
               style={{ animationDelay: '380ms' }}
             >
-              Plantilla, asistencia, entrenamientos, disponibilidad, partidos, rendimiento y
-              pizarra táctica en un mismo sitio. Sin perder el contexto por el camino.
+              Plantilla, asistencia, entrenamientos, partidos y rendimiento.
+              Todo conectado en un mismo espacio.
             </p>
 
             <div
-              className="animate-entra mt-9 flex flex-wrap items-center gap-3"
+              className="animate-entra mt-8 flex flex-wrap items-center justify-center gap-2.5"
               style={{ animationDelay: '500ms' }}
             >
-              <Principal to="/entrar">
+              <Link
+                to="/entrar"
+                /* 6 px exactos: `rounded-md` vale 12 en este proyecto —la
+                   escala está redefinida— y salían esquinas del doble. */
+                className="metal-claro inline-flex h-[42px] items-center justify-center gap-1.5 rounded-[6px] px-5 text-[14px] font-medium text-ink-0"
+              >
                 Crear mi club
-                <ArrowRight size={16} />
-              </Principal>
-              <Secundario onClick={() => document.getElementById('producto')?.scrollIntoView({ behavior: 'smooth' })}>
-                Ver cómo funciona
-              </Secundario>
+                <ArrowRight size={15} />
+              </Link>
+              <button
+                type="button"
+                onClick={() => document.getElementById('producto')?.scrollIntoView({ behavior: 'smooth' })}
+                className="inline-flex h-[42px] items-center justify-center rounded-[6px] border border-white/14 bg-white/[0.045] px-5 text-[14px] font-medium text-ink-800 backdrop-blur-md transition-colors duration-250 ease-suave hover:border-white/24 hover:bg-white/[0.08]"
+              >
+                Ver producto
+              </button>
             </div>
+          </div>
 
-            {/* Tres hechos. No son indicadores de uso: son cosas que se pueden
-                comprobar abriendo el producto. */}
-            <dl
-              className="animate-entra mt-14 grid max-w-2xl grid-cols-1 gap-x-10 gap-y-7 border-t border-line-sutil pt-8 sm:grid-cols-3"
-              style={{ animationDelay: '640ms' }}
-            >
-              {HECHOS.map(([cifra, pie]) => (
-                <div key={pie} className="min-w-0">
-                  <dt className="cifra text-3xl">{cifra}</dt>
-                  <dd className="mt-2 text-sm text-ink-600">{pie}</dd>
-                </div>
-              ))}
-            </dl>
+          {/* Un hueco que SÓLO crece en pantallas altas. Con el hueco de arriba
+              como único repartidor, el texto se iba al 64 % del alto en un
+              monitor de 1080 y al 56 % en un móvil: medido. Esto se come el
+              exceso y deja el bloque entre el 55 % y el 60 % en los cinco
+              tamaños, que es donde tiene que estar. */}
+          <div
+            className="shrink-0"
+            style={{ height: 'clamp(0px, calc((100svh - 820px) * 0.17), 56px)' }}
+          />
+
+          {/* Los tres hechos, al pie. No son indicadores de uso: son cosas
+              comprobables abriendo el producto. En pantallas muy bajas
+              desaparecen antes que comerle sitio a la escultura. */}
+          <div
+            className="animate-entra relative mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 px-5 pb-[max(22px,var(--safe-bottom))] text-[11.5px] text-ink-600 [@media(max-height:620px)]:hidden"
+            style={{ animationDelay: '640ms' }}
+          >
+            {HECHOS.map(({ icono: Icono, corto, largo }) => (
+              <span key={largo} className="inline-flex items-center gap-1.5">
+                <Icono size={13} strokeWidth={1.7} className="shrink-0 text-ink-500" />
+                <span className="sm:hidden">{corto}</span>
+                <span className="hidden sm:inline">{largo}</span>
+              </span>
+            ))}
           </div>
         </section>
 
