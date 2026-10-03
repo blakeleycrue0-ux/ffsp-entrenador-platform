@@ -90,7 +90,7 @@ export function BottomNav() {
         /* `hidden` y no una animación: con el teclado abierto el dique estorba
            de verdad, y sacarlo del árbol evita además que el lector de
            pantalla lo recorra mientras se escribe. */
-        className={cn('cristal fixed inset-x-4 z-nav rounded-3xl lg:hidden', teclado && 'hidden')}
+        className={cn('cristal-firme fixed inset-x-4 z-nav rounded-3xl lg:hidden', teclado && 'hidden')}
         style={{
           height: 'var(--nav-h)',
           bottom: 'calc(var(--nav-gap) + var(--safe-bottom))',

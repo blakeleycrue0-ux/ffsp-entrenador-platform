@@ -218,10 +218,31 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
+  /* ── CRISTAL FIRME ────────────────────────────────────────────────────────
+     Para la NAVEGACIÓN, que no es un adorno: es lo que hay que poder leer
+     siempre. Con el cristal normal, al 80 %, se leían a través del dique las
+     etiquetas de los botones de debajo —«Ver partido» y «Crear convocatoria»
+     montados encima de «Agenda» y «Plantilla»—, y dos textos superpuestos no
+     se leen ninguno de los dos. Medido en un móvil de 390 px.
+
+     Al 93 % sigue cogiendo el tono de lo que pasa por debajo, que es para lo
+     que sirve el cristal, pero ya no deja leer nada a través. Un cristal que
+     deja ver el texto de detrás no es elegante, es un error. */
+  .cristal-firme {
+    background: rgba(8, 8, 8, 0.93);
+    backdrop-filter: blur(24px) saturate(120%);
+    -webkit-backdrop-filter: blur(24px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 10px 35px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
   /* Cuando el navegador no sabe desenfocar, el cristal se vuelve opaco: más
      vale una superficie sólida legible que una transparente ilegible. */
   @supports not (backdrop-filter: blur(1px)) {
     .cristal { background: #0F0F0F; }
+    .cristal-firme { background: #080808; }
   }
 
   /* ── METAL ────────────────────────────────────────────────────────────────
