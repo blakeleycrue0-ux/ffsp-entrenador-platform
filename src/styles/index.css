@@ -164,6 +164,57 @@
     @apply relative rounded-2xl border border-line bg-panel;
   }
 
+  /* ── Barra de ajuste ──────────────────────────────────────────────────────
+     La del navegador no se parece a nada de aquí: en Chrome es azul brillante
+     y en Firefox gris claro, y las dos cantan sobre negro. El carril es una
+     línea tenue y el tirador un disco blanco, porque blanco es «esto se
+     toca». El tirador mide 18 px pero el área sensible es la barra entera,
+     que es alta de verdad: con el dedo no se acierta en 18 px. */
+  .barra {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 22px;
+    background: transparent;
+    cursor: pointer;
+  }
+  .barra:disabled {
+    cursor: default;
+    opacity: 0.4;
+  }
+  .barra::-webkit-slider-runnable-track {
+    height: 2px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .barra::-moz-range-track {
+    height: 2px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .barra::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -6px;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: none;
+  }
+  .barra::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: none;
+  }
+  .barra:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+  }
+  .barra:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+  }
+
   /* Más tapado y menos saturado que antes. Al 60 % se leía el texto de la
      página a través del dique y de la cabecera, que es justo lo que no puede
      pasar; y el 140 % de saturación teñía de verde el cristal que se ponía

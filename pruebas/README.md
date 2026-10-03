@@ -53,6 +53,28 @@ comodín del hosting, y se exige que:
 - si siguen sin estar, no entre en bucle de recargas y diga la verdad, con un
   botón que recargue de verdad.
 
+## Qué comprueban `camara.mjs`, `pizarra.mjs` y `video.mjs`
+
+La pizarra se mira desde donde se quiera: la cámara gira y se inclina. Eso son
+cuentas, y las cuentas o cuadran o no:
+
+```sh
+npm run pizarra:camara   # sin navegador: proyectar, desproyectar, encuadre
+npm run pizarra          # las seis vistas en el navegador
+npm run pizarra:video    # que el vídeo encuadre igual que la pantalla
+```
+
+Lo que más importa de `pizarra.mjs` no es que se vea bonito —eso hay que
+mirarlo— sino que **siga siendo usable**: que al tocar una ficha se seleccione
+esa ficha y no la de al lado, con el campo girado e inclinado. Si la cuenta de
+ida y la de vuelta no encajaran, arrastrar se iría de sitio y la pizarra no
+serviría para nada. Con `CAPTURAS=<carpeta>` deja además una imagen por vista.
+
+Hay un detalle en el que se cayó esta prueba y conviene recordar: durante un
+rato **pasó mientras dibujaba siempre la vista cenital**, porque la escena
+perdía la cámara al cargarse. Una prueba que pasa no vale nada si no se ha
+comprobado que falla cuando tiene que fallar.
+
 ## Los datos son falsos
 
 `mock.mjs` intercepta las llamadas a Supabase y devuelve un club de ejemplo.

@@ -16,42 +16,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pitch } from './Pitch';
 import {
-  MOVE_DASH, PITCHES, type BoardObject, type DrawKind, type Drawing, type ObjectKind,
-  type Point, type Scene, sampleScene, sampleTrack, trackSegments,
+  MOVE_DASH, PITCHES, type DrawKind, type Drawing, type ObjectKind,
+  type Point, type Scene, medioDelTramo, sampleScene, sampleTrack, trackSegments,
 } from './scene';
+import { aPuntos, camaraDe, proyeccion, type Proyeccion } from './camara';
+import { ObjectShape } from './piezas';
 import { largo as largoDe } from './trazo';
 import type { Playback } from './playback';
 import { cn } from '@/lib/utils';
-
-/* ─────────────────────────────── Colores ─────────────────────────────────── */
-
-const FILL: Record<ObjectKind, string> = {
-  jugadora: '#101C2D',
-  rival: '#FFFFFF',
-  portera: '#E2A33C',
-  comodin: '#7FB2F0',
-  balon: '#FFFFFF',
-  cono: '#E2A33C',
-  pica: '#E8695C',
-  porteria: '#FFFFFF',
-  miniporteria: '#FFFFFF',
-  zona: '#3ECF8E',
-  nota: 'transparent',
-};
-
-const TEXT: Record<ObjectKind, string> = {
-  jugadora: '#FFFFFF',
-  rival: '#101C2D',
-  portera: '#101C2D',
-  comodin: '#101C2D',
-  balon: '#101C2D',
-  cono: '#101C2D',
-  pica: '#101C2D',
-  porteria: '#101C2D',
-  miniporteria: '#101C2D',
-  zona: '#101C2D',
-  nota: '#FFFFFF',
-};
 
 /* ──────────────────────────── Zoom y encuadre ────────────────────────────── */
 
@@ -124,6 +96,11 @@ export interface StageProps {
    * sólo se recoge el gesto.
    */
   onTrazo?: (id: string, crudos: Point[]) => void;
+  /**
+   * Dobla el tramo que termina en el fotograma `indice` para que pase por
+   * `por`. Sin `por`, lo devuelve a la recta.
+   */
+  onCurvar?: (id: string, indice: number, por: Point | null) => void;
   selectedDrawing?: string | null;
   onSelectDrawing?: (id: string | null) => void;
 
@@ -142,14 +119,14 @@ export interface StageProps {
 
 export function BoardStage({
   scene, playback, selected, onSelect, onMove, onDropNew, editable, showPaths, svgRef, className,
-  tool = null, drawColor = '#FFFFFF', drawWidth = 0.36, onDraw, onTrazo,
+  tool = null, drawColor = '#FFFFFF', drawWidth = 0.36, onDraw, onTrazo, onCurvar,
   selectedDrawing = null, onSelectDrawing, view = VIEW_INICIAL, onView, presenting, llenar,
 }: StageProps) {
   const spec = PITCHES[scene.pitch];
-  const vertical = scene.vertical === true;
   const innerRef = useRef<SVGSVGElement>(null);
   const svg = svgRef ?? innerRef;
   const world = useRef<SVGGElement>(null);
+  const fichas = useRef<SVGGElement>(null);
   const nodes = useRef(new Map<string, SVGGElement>());
   const dragging = useRef<{ id: string; pointerId: number } | null>(null);
   const panning = useRef<{ pointerId: number; x: number; y: number; from: View } | null>(null);
@@ -159,22 +136,28 @@ export function BoardStage({
      sólo cuando el dedo avanza de verdad. */
   const trazo = useRef<{ id: string; pointerId: number; puntos: Point[] } | null>(null);
   const [trazoVista, setTrazoVista] = useState<Point[] | null>(null);
+  /* El tirador que se está arrastrando para doblar un tramo. */
+  const curvando = useRef<{ indice: number; pointerId: number } | null>(null);
+  const [curvaVista, setCurvaVista] = useState<{ indice: number; por: Point } | null>(null);
 
   const margin = 3;
-  /* En vertical el lienzo cambia de proporción, pero las coordenadas no. */
-  const boxW = (vertical ? spec.width : spec.length) + margin * 2;
-  const boxH = (vertical ? spec.length : spec.width) + margin * 2;
-  const viewBox = `${-margin} ${-margin} ${boxW} ${boxH}`;
-  const ratio = boxW / boxH;
+  /* La cámara decide la forma del lienzo: girada cambia de proporción e
+     inclinada se convierte en un trapecio más ancho por delante. */
+  const camara = useMemo(() => camaraDe(scene), [scene]);
+  const proy = useMemo(() => proyeccion(spec, camara, margin), [spec, camara]);
+  const { caja } = proy;
+  const viewBox = `${caja.x} ${caja.y} ${caja.ancho} ${caja.alto}`;
+  const ratio = caja.ancho / caja.alto;
 
-  /** Giro del mundo: en vertical, (x,y) → (ancho − y, x). */
-  const worldTransform = [
-    `translate(${view.tx} ${view.ty})`,
-    `scale(${view.s})`,
-    vertical ? `translate(${spec.width} 0) rotate(90)` : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  /* El zoom se hace sobre el centro de lo que se ve, no sobre la esquina:
+     al ampliar, lo que estabas mirando se queda donde estaba. */
+  const cx = caja.x + caja.ancho / 2;
+  const cy = caja.y + caja.alto / 2;
+  const worldTransform =
+    `translate(${view.tx} ${view.ty}) translate(${cx} ${cy}) scale(${view.s}) translate(${-cx} ${-cy})`;
+
+  /** Dónde cae una posición del campo dentro del lienzo. */
+  const aLienzo = useCallback((p: Point) => proy.proyecta(p.x, p.y), [proy]);
 
   /** Convierte un punto de pantalla a metros sobre el campo. */
   const toPitch = useCallback(
@@ -187,26 +170,55 @@ export function BoardStage({
       const pt = root.createSVGPoint();
       pt.x = clientX;
       pt.y = clientY;
-      const p = pt.matrixTransform(ctm.inverse());
+      /* Dos pasos: el primero deshace el zoom y el desplazamiento, que son una
+         transformación corriente del SVG; el segundo deshace la cámara. Por
+         eso se puede arrastrar con la misma precisión con cualquier vista. */
+      const enLienzo = pt.matrixTransform(ctm.inverse());
+      const p = proy.desproyecta(enLienzo.x, enLienzo.y);
       return {
         x: Math.min(spec.length + 2, Math.max(-2, p.x)),
         y: Math.min(spec.width + 2, Math.max(-2, p.y)),
       };
     },
-    [spec.length, spec.width, svg],
+    [spec.length, spec.width, svg, proy],
+  );
+
+  /** Cómo se coloca una ficha: en su sitio y con el tamaño que le toca. */
+  const colocacion = useCallback(
+    (p: Point) => {
+      const q = proy.proyecta(p.x, p.y);
+      const k = proy.escala(p.x, p.y);
+      return proy.sinProfundidad
+        ? `translate(${q.x} ${q.y})`
+        : `translate(${q.x} ${q.y}) scale(${k.toFixed(4)})`;
+    },
+    [proy],
   );
 
   /* Cada fotograma: escribir las posiciones directamente en el SVG. */
   useEffect(() => {
+    const capa = fichas.current;
     const apply = (ms: number) => {
       const positions = sampleScene(scene, ms);
       for (const [id, node] of nodes.current) {
         const p = positions[id];
-        if (p) node.setAttribute('transform', `translate(${p.x} ${p.y})`);
+        if (p) node.setAttribute('transform', colocacion(p));
+      }
+
+      /* Con la cámara inclinada, quien está más cerca tapa a quien está más
+         lejos. En SVG eso es el orden de los elementos, así que hay que
+         reordenarlos; moverlos ya estando puestos cuesta muy poco y son
+         veinte, no veinte mil. Sin inclinación no hay nada que ordenar. */
+      if (capa && !proy.sinProfundidad) {
+        const orden = [...nodes.current.entries()]
+          .filter(([id]) => positions[id])
+          .sort((a, b) => proy.proyecta(positions[a[0]].x, positions[a[0]].y).y
+            - proy.proyecta(positions[b[0]].x, positions[b[0]].y).y);
+        for (const [, node] of orden) capa.appendChild(node);
       }
     };
     return playback.subscribe(apply);
-  }, [playback, scene]);
+  }, [playback, scene, colocacion, proy]);
 
   /* ──────────────────────────── Interacción ──────────────────────────────── */
 
@@ -252,6 +264,13 @@ export function BoardStage({
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
+    const cur = curvando.current;
+    if (cur && cur.pointerId === e.pointerId) {
+      const at = toPitch(e.clientX, e.clientY);
+      if (at) setCurvaVista({ indice: cur.indice, por: at });
+      return;
+    }
+
     const pan = panning.current;
     if (pan && pan.pointerId === e.pointerId) {
       onView?.({ ...pan.from, tx: pan.from.tx + (e.clientX - pan.x) * 0.06, ty: pan.from.ty + (e.clientY - pan.y) * 0.06 });
@@ -283,10 +302,19 @@ export function BoardStage({
     // Se pinta en el acto y se guarda en la jugada al mismo tiempo: no hay
     // desfase entre lo que se ve y lo que queda registrado.
     const node = nodes.current.get(drag.id);
-    if (node) node.setAttribute('transform', `translate(${at.x} ${at.y})`);
+    if (node) node.setAttribute('transform', colocacion(at));
   };
 
   const onPointerUp = (e: React.PointerEvent) => {
+    const cur = curvando.current;
+    if (cur && cur.pointerId === e.pointerId) {
+      curvando.current = null;
+      const at = toPitch(e.clientX, e.clientY);
+      setCurvaVista(null);
+      if (at && selected) onCurvar?.(selected, cur.indice, at);
+      return;
+    }
+
     if (panning.current?.pointerId === e.pointerId) {
       panning.current = null;
       return;
@@ -342,6 +370,59 @@ export function BoardStage({
   }, [scene, selected, showPaths, playback.playing]);
 
   const positions = useMemo(() => sampleScene(scene, playback.time), [scene, playback.time]);
+
+  /* De atrás hacia delante. Sin inclinación da igual —nada se solapa por
+     profundidad— y se deja el orden de la jugada, que es el que espera quien
+     la montó. */
+  const ordenadas = useMemo(() => {
+    if (proy.sinProfundidad) return scene.objects;
+    return [...scene.objects].sort((a, b) => {
+      const pa = positions[a.id];
+      const pb = positions[b.id];
+      if (!pa || !pb) return 0;
+      return proy.proyecta(pa.x, pa.y).y - proy.proyecta(pb.x, pb.y).y;
+    });
+  }, [scene.objects, positions, proy]);
+
+  /**
+   * Un tirador por tramo de la ficha seleccionada. Sólo en los tramos que se
+   * pueden doblar: donde hay un recorrido dibujado con el dedo manda ese
+   * recorrido, y poner ahí un tirador que no hiciera nada sería peor que no
+   * ponerlo.
+   */
+  const tiradores = useMemo(() => {
+    if (!editable || tool || playback.playing || !selected || !onCurvar) return [];
+    const track = scene.tracks[selected] ?? [];
+    const out: { indice: number; punto: Point; curvo: boolean }[] = [];
+    for (let i = 1; i < track.length; i += 1) {
+      if (track[i].path && track[i].path!.length > 0) continue;
+      const punto = medioDelTramo(track, i);
+      if (punto) out.push({ indice: i, punto, curvo: track[i].cx !== undefined });
+    }
+    return out;
+  }, [editable, tool, playback.playing, selected, onCurvar, scene.tracks]);
+
+  /** La curva que se vería al soltar: se dibuja mientras se arrastra. */
+  const vistaPreviaCurva = useMemo(() => {
+    if (!curvaVista || !selected) return [];
+    const track = scene.tracks[selected] ?? [];
+    const a = track[curvaVista.indice - 1];
+    const b = track[curvaVista.indice];
+    if (!a || !b) return [];
+    const c = {
+      x: 2 * curvaVista.por.x - (a.x + b.x) / 2,
+      y: 2 * curvaVista.por.y - (a.y + b.y) / 2,
+    };
+    return Array.from({ length: 33 }, (_, i) => {
+      const u = i / 32;
+      const m = 1 - u;
+      return {
+        x: m * m * a.x + 2 * m * u * c.x + u * u * b.x,
+        y: m * m * a.y + 2 * m * u * c.y + u * u * b.y,
+      };
+    });
+  }, [curvaVista, selected, scene.tracks]);
+
   const estela = (kind: ObjectKind) =>
     kind === 'balon' ? '#FFFFFF' : kind === 'rival' ? '#F0C3BE' : '#9FD9BB';
 
@@ -407,14 +488,14 @@ export function BoardStage({
       </defs>
 
       <g ref={world} transform={worldTransform}>
-        <Pitch spec={spec} surface={scene.surface ?? 'cesped'} />
+        <Pitch spec={spec} surface={scene.surface ?? 'cesped'} proy={proy} />
 
         {/* El trazo que se está dibujando AHORA: se ve crudo, tal cual sale
             del dedo, para que se entienda que lo que manda es el gesto. Al
             soltar se suaviza y pasa a ser la trayectoria de verdad. */}
         {trazoVista && trazoVista.length > 1 && (
           <polyline
-            points={trazoVista.map((p) => `${p.x},${p.y}`).join(' ')}
+            points={aPuntos(trazoVista.map(aLienzo))}
             fill="none"
             stroke="#0A8CFF"
             strokeWidth={0.5}
@@ -431,6 +512,7 @@ export function BoardStage({
             <DrawingShape
               key={d.id}
               d={d}
+              proy={proy}
               selected={d.id === selectedDrawing}
               onSelect={
                 editable && !tool && onSelectDrawing
@@ -445,6 +527,7 @@ export function BoardStage({
           ))}
           {draft && esDibujo(tool) && (
             <DrawingShape
+              proy={proy}
               d={{
                 id: 'borrador',
                 kind: tool,
@@ -468,12 +551,15 @@ export function BoardStage({
           )}
         </g>
 
-        {/* Estelas de la animación */}
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+        {/* Estelas de la animación.
+            La capa va marcada para poder medirla desde fuera: es la única
+            manera de comprobar «esto ya no va en línea recta» mirando lo que
+            se dibuja, y no lo que la aplicación cree que ha guardado. */}
+        <g data-capa="estelas" fill="none" strokeLinecap="round" strokeLinejoin="round">
           {paths.map((p) => (
             <polyline
               key={p.key}
-              points={p.points.map((q) => `${q.x},${q.y}`).join(' ')}
+              points={aPuntos(p.points.map(aLienzo))}
               stroke={estela(p.kind)}
               strokeWidth={0.36}
               strokeDasharray={p.kind === 'balon' ? MOVE_DASH.pase : MOVE_DASH[p.move]}
@@ -483,27 +569,75 @@ export function BoardStage({
           ))}
         </g>
 
-        {/* Objetos */}
-        {scene.objects.map((obj) => {
-          const p = positions[obj.id] ?? { x: spec.length / 2, y: spec.width / 2 };
-          return (
-            <g
-              key={obj.id}
-              ref={(el) => {
-                if (el) nodes.current.set(obj.id, el);
-                else nodes.current.delete(obj.id);
-              }}
-              transform={`translate(${p.x} ${p.y})`}
-              className={cn(editable && !tool && 'cursor-grab active:cursor-grabbing')}
-              onPointerDown={(e) => onPointerDownObject(e, obj.id)}
-            >
-              {/* En vertical se contragira para que dorsales y textos no salgan tumbados. */}
-              <g transform={vertical ? 'rotate(-90)' : undefined}>
-                <ObjectShape obj={obj} selected={obj.id === selected && !presenting} />
+        {/* Tiradores para doblar un tramo.
+            Un desplazamiento es recto mientras no se diga otra cosa, y casi
+            nada en un campo va recto. Esto permite agarrar el tramo por la
+            mitad y abrirlo sin rehacer el movimiento entero. */}
+        {tiradores.length > 0 && (
+          <g>
+            {curvaVista && (
+              <polyline
+                points={aPuntos(vistaPreviaCurva.map(aLienzo))}
+                fill="none"
+                stroke="#0A8CFF"
+                strokeWidth={0.34}
+                strokeDasharray="1 0.7"
+                opacity={0.9}
+                pointerEvents="none"
+              />
+            )}
+            {tiradores.map((t) => {
+              const q = aLienzo(curvaVista?.indice === t.indice ? curvaVista.por : t.punto);
+              const k = proy.escala(t.punto.x, t.punto.y);
+              return (
+                <circle
+                  key={t.indice}
+                  cx={q.x}
+                  cy={q.y}
+                  r={0.95 * k}
+                  fill={t.curvo ? '#0A8CFF' : 'rgba(10,140,255,0.28)'}
+                  stroke="#FFFFFF"
+                  strokeWidth={0.18 * k}
+                  className="cursor-grab active:cursor-grabbing"
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    curvando.current = { indice: t.indice, pointerId: e.pointerId };
+                    setCurvaVista({ indice: t.indice, por: t.punto });
+                    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    if (selected) onCurvar?.(selected, t.indice, null);
+                  }}
+                >
+                  <title>Arrastra para curvar este tramo. Doble clic para dejarlo recto.</title>
+                </circle>
+              );
+            })}
+          </g>
+        )}
+
+        {/* Objetos. Con la cámara inclinada se pintan de atrás hacia delante,
+            para que quien está más cerca tape a quien está más lejos. */}
+        <g ref={fichas}>
+          {ordenadas.map((obj) => {
+            const p = positions[obj.id] ?? { x: spec.length / 2, y: spec.width / 2 };
+            return (
+              <g
+                key={obj.id}
+                ref={(el) => {
+                  if (el) nodes.current.set(obj.id, el);
+                  else nodes.current.delete(obj.id);
+                }}
+                transform={colocacion(p)}
+                className={cn(editable && !tool && 'cursor-grab active:cursor-grabbing')}
+                onPointerDown={(e) => onPointerDownObject(e, obj.id)}
+              >
+                <ObjectShape obj={obj} selected={obj.id === selected && !presenting} proy={proy} />
               </g>
-            </g>
-          );
-        })}
+            );
+          })}
+        </g>
       </g>
     </svg>
   );
@@ -511,12 +645,22 @@ export function BoardStage({
 
 /* ─────────────────────────────── Dibujos ─────────────────────────────────── */
 
+/**
+ * Los dibujos están PINTADOS EN EL CÉSPED, como la cal: se tumban con el campo
+ * y se achatan con la cámara. Por eso todos pasan por la proyección en lugar
+ * de usar las coordenadas del campo tal cual.
+ *
+ * Las rectas siguen siendo rectas, así que basta con sus extremos. La curva y
+ * la elipse no, y se trocean: veinticuatro tramos no se distinguen de una
+ * curva ni con el campo ampliado cuatro veces.
+ */
 function DrawingShape({
-  d, selected, onSelect,
+  d, selected, onSelect, proy,
 }: {
   d: Drawing;
   selected: boolean;
   onSelect?: (e: React.PointerEvent) => void;
+  proy: Proyeccion;
 }) {
   // Seleccionado se engorda un poco: es la señal más clara sobre un campo verde.
   const común = {
@@ -526,194 +670,79 @@ function DrawingShape({
     onPointerDown: onSelect,
     style: onSelect ? { cursor: 'pointer' as const } : undefined,
   };
+  const P = (p: Point) => proy.proyecta(p.x, p.y);
+
   if (d.kind === 'zona') {
     const [a, b] = d.points;
+    const x0 = Math.min(a.x, b.x);
+    const y0 = Math.min(a.y, b.y);
+    const w = Math.abs(b.x - a.x);
+    const h = Math.abs(b.y - a.y);
+
     if (d.shape === 'circulo') {
+      const mx = (a.x + b.x) / 2;
+      const my = (a.y + b.y) / 2;
+      const borde = Array.from({ length: 48 }, (_, i) => {
+        const t = (i / 48) * Math.PI * 2;
+        return P({ x: mx + (w / 2) * Math.cos(t), y: my + (h / 2) * Math.sin(t) });
+      });
       return (
-        <>
-            <ellipse
-            cx={(a.x + b.x) / 2}
-            cy={(a.y + b.y) / 2}
-            rx={Math.abs(b.x - a.x) / 2}
-            ry={Math.abs(b.y - a.y) / 2}
-            fill={d.color}
-            fillOpacity={0.14}
-            strokeDasharray="1.2 0.8"
-            {...común}
-          />
-        </>
-      );
-    }
-    return (
-      <>
-        <rect
-          x={Math.min(a.x, b.x)}
-          y={Math.min(a.y, b.y)}
-          width={Math.abs(b.x - a.x)}
-          height={Math.abs(b.y - a.y)}
+        <polygon
+          points={aPuntos(borde)}
           fill={d.color}
           fillOpacity={0.14}
           strokeDasharray="1.2 0.8"
           {...común}
         />
-      </>
+      );
+    }
+    return (
+      <polygon
+        points={aPuntos([
+          P({ x: x0, y: y0 }), P({ x: x0 + w, y: y0 }),
+          P({ x: x0 + w, y: y0 + h }), P({ x: x0, y: y0 + h }),
+        ])}
+        fill={d.color}
+        fillOpacity={0.14}
+        strokeDasharray="1.2 0.8"
+        {...común}
+      />
     );
   }
 
   if (d.kind === 'curva') {
     const [a, c, b] = d.points;
+    const n = 24;
+    const puntos = Array.from({ length: n + 1 }, (_, i) => {
+      const u = i / n;
+      const m = 1 - u;
+      return P({
+        x: m * m * a.x + 2 * m * u * c.x + u * u * b.x,
+        y: m * m * a.y + 2 * m * u * c.y + u * u * b.y,
+      });
+    });
     return (
-      <>
-        <path
-          d={`M ${a.x} ${a.y} Q ${c.x} ${c.y} ${b.x} ${b.y}`}
-          markerEnd="url(#punta-dibujo)"
-          {...común}
-        />
-      </>
+      <polyline
+        points={aPuntos(puntos)}
+        fill="none"
+        markerEnd="url(#punta-dibujo)"
+        {...común}
+      />
     );
   }
 
   const [a, b] = d.points;
+  const pa = P(a);
+  const pb = P(b);
   return (
-    <>
-      <line
-        x1={a.x}
-        y1={a.y}
-        x2={b.x}
-        y2={b.y}
-        strokeDasharray={d.kind === 'discontinua' ? '1.4 0.9' : undefined}
-        markerEnd={d.kind === 'flecha' ? 'url(#punta-dibujo)' : undefined}
-        {...común}
-      />
-    </>
-  );
-}
-
-/* ─────────────────────────────── Fichas ──────────────────────────────────── */
-
-function ObjectShape({ obj, selected }: { obj: BoardObject; selected: boolean }) {
-  const ring = selected ? (
-    <circle r={2.5} fill="none" stroke="#FFFFFF" strokeWidth={0.3} strokeDasharray="0.8 0.6" />
-  ) : null;
-  const color = obj.color || FILL[obj.kind];
-  const giro = obj.rot ? `rotate(${obj.rot})` : undefined;
-
-  if (obj.kind === 'zona') {
-    const w = obj.w ?? 14;
-    const h = obj.h ?? 10;
-    return (
-      <g transform={giro}>
-        {ring}
-        {obj.shape === 'circulo' ? (
-          <ellipse
-            rx={w / 2}
-            ry={h / 2}
-            fill={color}
-            fillOpacity={0.16}
-            stroke={color}
-            strokeWidth={0.28}
-            strokeDasharray="1.2 0.8"
-          />
-        ) : (
-          <rect
-            x={-w / 2}
-            y={-h / 2}
-            width={w}
-            height={h}
-            fill={color}
-            fillOpacity={0.16}
-            stroke={color}
-            strokeWidth={0.28}
-            strokeDasharray="1.2 0.8"
-          />
-        )}
-        {obj.label && (
-          <text textAnchor="middle" dominantBaseline="middle" fontSize={1.8} fill={color} fontWeight={600}>
-            {obj.label}
-          </text>
-        )}
-      </g>
-    );
-  }
-
-  if (obj.kind === 'balon') {
-    return (
-      <>
-        {ring}
-        <circle r={0.95} fill="#FFFFFF" stroke="#101C2D" strokeWidth={0.18} />
-      </>
-    );
-  }
-
-  if (obj.kind === 'cono') {
-    return (
-      <>
-        {ring}
-        <polygon points="0,-1.4 1.2,1 -1.2,1" fill={color} stroke="#101C2D" strokeWidth={0.14} />
-      </>
-    );
-  }
-
-  if (obj.kind === 'pica') {
-    return (
-      <g transform={giro}>
-        {ring}
-        <rect x={-0.16} y={-1.8} width={0.32} height={3.6} rx={0.16} fill={color} />
-        <circle cy={1.9} r={0.42} fill={color} opacity={0.5} />
-      </g>
-    );
-  }
-
-  if (obj.kind === 'porteria' || obj.kind === 'miniporteria') {
-    const w = obj.w ?? (obj.kind === 'porteria' ? 1 : 0.7);
-    const h = obj.h ?? (obj.kind === 'porteria' ? 5 : 2);
-    return (
-      <g transform={giro}>
-        {ring}
-        <rect
-          x={-w / 2}
-          y={-h / 2}
-          width={w}
-          height={h}
-          fill="#FFFFFF"
-          stroke="#101C2D"
-          strokeWidth={0.12}
-        />
-      </g>
-    );
-  }
-
-  if (obj.kind === 'nota') {
-    return (
-      <>
-        {ring}
-        <text textAnchor="middle" dominantBaseline="middle" fontSize={2.4} fill={color === 'transparent' ? '#FFFFFF' : color} fontWeight={600}>
-          {obj.label}
-        </text>
-      </>
-    );
-  }
-
-  // Jugadoras, rivales, porteras y comodines
-  return (
-    <>
-      {ring}
-      <circle
-        r={1.75}
-        fill={color}
-        stroke={obj.kind === 'rival' ? '#101C2D' : '#FFFFFF'}
-        strokeWidth={0.22}
-      />
-      <text
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize={1.9}
-        fontWeight={600}
-        fill={obj.color ? '#FFFFFF' : TEXT[obj.kind]}
-        style={{ pointerEvents: 'none' }}
-      >
-        {obj.label}
-      </text>
-    </>
+    <line
+      x1={pa.x}
+      y1={pa.y}
+      x2={pb.x}
+      y2={pb.y}
+      strokeDasharray={d.kind === 'discontinua' ? '1.4 0.9' : undefined}
+      markerEnd={d.kind === 'flecha' ? 'url(#punta-dibujo)' : undefined}
+      {...común}
+    />
   );
 }

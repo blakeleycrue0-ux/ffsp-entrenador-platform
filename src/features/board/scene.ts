@@ -12,6 +12,7 @@
  */
 
 import { enLaFraccion } from './trazo';
+import { normalizaCamara, type Camara } from './camara';
 
 export type PitchKind = 'completo' | 'medio' | 'f7' | 'medio-f7' | 'vacio';
 
@@ -208,7 +209,15 @@ export type Track = Keyframe[];
 export interface Scene {
   version: 1;
   pitch: PitchKind;
-  /** En vertical el campo se dibuja girado; las coordenadas no cambian. */
+  /**
+   * Desde dónde se mira el campo. Sin ella se usa `vertical`, que es lo único
+   * que tienen las jugadas guardadas antes de que hubiera cámara.
+   */
+  camara?: Camara;
+  /**
+   * En vertical el campo se dibuja girado; las coordenadas no cambian.
+   * Se mantiene por las jugadas de antes: para las nuevas manda `camara`.
+   */
   vertical?: boolean;
   surface?: Surface;
   /** Duración total en milisegundos. */
@@ -399,6 +408,59 @@ export function putRuta(
 }
 
 /**
+ * Dobla un tramo recto para que pase por un punto.
+ * ---------------------------------------------------------------------------
+ * Un desplazamiento entre dos fotogramas es una recta mientras no se diga otra
+ * cosa, y casi nada en un campo va en línea recta: se sale por fuera, se
+ * ataca el espacio y se entra al primer palo. Dibujar el recorrido con el dedo
+ * ya servía para eso, pero obliga a rehacer el movimiento entero cuando lo
+ * único que falla es que la carrera tendría que abrirse un poco.
+ *
+ * Esto es lo otro: agarrar el tramo por la mitad y curvarlo. Para que la curva
+ * pase EXACTAMENTE por donde se suelta el dedo hay que resolver dónde va el
+ * punto de control, porque una Bézier cuadrática no pasa por él:
+ *
+ *     punto medio = (A + 2·C + B) / 4   ⟹   C = 2·M − (A + B) / 2
+ *
+ * El tramo `indice` es el que TERMINA en ese fotograma, igual que `path` y
+ * `move`, que es como lo entiende el resto del modelo.
+ */
+export function curvaTramo(scene: Scene, objectId: string, indice: number, por: Point): Scene {
+  const track = scene.tracks[objectId] ?? [];
+  if (indice <= 0 || indice >= track.length) return scene;
+  const a = track[indice - 1];
+  const b = track[indice];
+
+  const siguiente = [...track];
+  siguiente[indice] = {
+    ...b,
+    cx: 2 * por.x - (a.x + b.x) / 2,
+    cy: 2 * por.y - (a.y + b.y) / 2,
+    /* Un recorrido dibujado a mano manda sobre la curva, así que curvar a
+       mano lo sustituye: si no, se tocaría el tirador y no pasaría nada. */
+    path: undefined,
+  };
+  return { ...scene, tracks: { ...scene.tracks, [objectId]: siguiente } };
+}
+
+/** Devuelve un tramo a la línea recta. */
+export function enderezaTramo(scene: Scene, objectId: string, indice: number): Scene {
+  const track = scene.tracks[objectId] ?? [];
+  if (indice <= 0 || indice >= track.length) return scene;
+  const siguiente = [...track];
+  siguiente[indice] = { ...siguiente[indice], cx: undefined, cy: undefined, path: undefined };
+  return { ...scene, tracks: { ...scene.tracks, [objectId]: siguiente } };
+}
+
+/** Por dónde pasa ahora mismo la mitad del tramo que termina en `indice`. */
+export function medioDelTramo(track: Track, indice: number): Point | null {
+  if (indice <= 0 || indice >= track.length) return null;
+  const a = track[indice - 1];
+  const b = track[indice];
+  return sampleTrack(track, (a.t + b.t) / 2);
+}
+
+/**
  * Mueve un objeto en el instante `t`. Si aún no se mueve, sólo cambia su
  * posición de partida; en cuanto tiene recorrido, crea un fotograma.
  */
@@ -522,9 +584,20 @@ export function parseScene(value: unknown): Scene {
       )
     : [];
 
+  /* La cámara se comprueba a mano: viene de la base de datos y un número
+     disparatado —o un texto— mandaría el campo al infinito. Si no cuadra se
+     deja fuera y manda `vertical`, que es lo que tienen las jugadas de antes. */
+  const c = raw.camara;
+  const camara =
+    c && typeof c.giro === 'number' && Number.isFinite(c.giro)
+      && typeof c.inclinacion === 'number' && Number.isFinite(c.inclinacion)
+      ? normalizaCamara(c)
+      : undefined;
+
   return {
     version: 1,
     pitch,
+    camara,
     vertical: raw.vertical === true,
     surface: raw.surface === 'impresion' ? 'impresion' : 'cesped',
     durationMs: typeof raw.durationMs === 'number' && raw.durationMs > 0 ? raw.durationMs : 6000,

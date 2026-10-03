@@ -16,10 +16,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowUpRight, Copy, Hand, Image as ImageIcon, Maximize2, Minus, MousePointer2, Move,
   Pause, Play, Redo2, Repeat, RotateCcw, Slash, Spline, Square, Trash2, Undo2,
-  Download, X, ZoomIn, ZoomOut,
+  Box, Download, RotateCw, X, ZoomIn, ZoomOut,
 } from 'lucide-react';
 import { Button, Field, Input, Panel, PanelHeader, Segmented, Select, Tag, Toggle } from '@/components/ui';
 import { BoardStage, useBoardView, type Tool } from './BoardStage';
+import { MandoDeVista } from './Vista';
+import { camaraDe } from './camara';
 import { Isla, esEstrecha, useSitio } from './Flotantes';
 import { Exportar } from './Exportar';
 import { Timeline } from './Timeline';
@@ -27,7 +29,8 @@ import { formatSeconds, type Playback, type Speed } from './playback';
 import {
   DRAW_COLORS, DRAW_LABEL, KIND_LABEL, MOVE_LABEL, MOVES, PITCH_OPTIONS, RESIZABLE, ROTATABLE,
   type DrawKind, type Keyframe, type ObjectKind, type PitchKind, type Point, type Scene, type Surface,
-  addDrawing, addObject, duplicateObject, layoutSquad, layoutTeam, moveObject, patchDrawing,
+  addDrawing, addObject, curvaTramo, duplicateObject, enderezaTramo, layoutSquad, layoutTeam,
+  moveObject, patchDrawing,
   patchKeyframe, patchObject, putRuta, removeDrawing, removeKeyframe, removeObject,
 } from './scene';
 import { largo as largoTrazo, procesaTrazo } from './trazo';
@@ -205,6 +208,22 @@ export function BoardEditor({
     [commit, scene, playback.time],
   );
 
+  /**
+   * Doblar un tramo. Con un punto, la curva pasa por ahí; sin él, el tramo
+   * vuelve a ser recto.
+   */
+  /* La cámara de la jugada, y el siguiente escalón de inclinación: plano →
+     media → tumbada → plano otra vez. Tres paradas, no una barra: el botón
+     está para ir rápido, y afinar el grado se hace en el panel. */
+  const camara = camaraDe(scene);
+  const siguienteInclinacion = camara.inclinacion === 0 ? 40 : camara.inclinacion < 50 ? 56 : 0;
+
+  const onCurvar = useCallback(
+    (id: string, indice: number, por: Point | null) =>
+      commit(por ? curvaTramo(scene, id, indice, por) : enderezaTramo(scene, id, indice)),
+    [commit, scene],
+  );
+
   const onAdd = useCallback(
     (kind: ObjectKind, at?: Point) => {
       const esFicha = kind === 'jugadora' || kind === 'rival' || kind === 'portera' || kind === 'comodin';
@@ -305,17 +324,11 @@ export function BoardEditor({
           </Select>
         </Field>
 
-        <Field label="Orientación">
-          <Segmented<'h' | 'v'>
-            size="sm"
-            value={scene.vertical ? 'v' : 'h'}
-            onChange={(v) => commit({ ...scene, vertical: v === 'v' })}
-            options={[
-              { id: 'h', label: 'Horizontal' },
-              { id: 'v', label: 'Vertical' },
-            ]}
-          />
-        </Field>
+        <MandoDeVista
+          camara={camaraDe(scene)}
+          disabled={!editable}
+          onChange={(camara) => commit({ ...scene, camara, vertical: undefined })}
+        />
 
         <Field label="Superficie" hint="La de impresión se lee en papel sin gastar tinta.">
           <Segmented<Surface>
@@ -700,6 +713,35 @@ export function BoardEditor({
         <Move size={15} />
       </button>
 
+      {/* Cambiar de sitio para mirar, sin abrir el panel. Girar y tumbar son
+          lo que se toca a cada rato mientras se monta una jugada; entrar en
+          un panel para cada cuarto de vuelta no lo aguanta nadie. */}
+      {editable && (
+        <>
+          <span className="mx-0.5 h-6 w-px bg-line" />
+          <button
+            onClick={() => commit({ ...scene, camara: { ...camara, giro: camara.giro + 90 }, vertical: undefined })}
+            aria-label="Girar el campo un cuarto de vuelta"
+            title="Girar el campo un cuarto de vuelta"
+            className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+          >
+            <RotateCw size={15} />
+          </button>
+          <button
+            onClick={() => commit({ ...scene, camara: { ...camara, inclinacion: siguienteInclinacion }, vertical: undefined })}
+            aria-pressed={camara.inclinacion > 0}
+            aria-label={camara.inclinacion > 0 ? 'Poner el campo plano' : 'Inclinar el campo'}
+            title={camara.inclinacion > 0 ? `Inclinado ${Math.round(camara.inclinacion)}°` : 'Inclinar el campo'}
+            className={cn(
+              'grid h-9 w-9 place-items-center rounded-xl transition-colors hover:bg-white/[0.07]',
+              camara.inclinacion > 0 ? 'text-ink-900' : 'text-ink-700 hover:text-ink-900',
+            )}
+          >
+            <Box size={15} />
+          </button>
+        </>
+      )}
+
       {esDibujoActivo && (
         <>
           <span className="mx-0.5 h-6 w-px bg-line" />
@@ -872,6 +914,7 @@ export function BoardEditor({
         setTool(null);
       }}
       onTrazo={onTrazo}
+      onCurvar={onCurvar}
       selectedDrawing={selectedDrawing}
       onSelectDrawing={setSelectedDrawing}
       view={vista.view}

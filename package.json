@@ -13,7 +13,10 @@
     "maqueta:completo": "node pruebas/solapes.mjs --completo",
     "maqueta:contenido": "node pruebas/contenido.mjs",
     "maqueta:perfil": "node pruebas/perfil.mjs",
-    "maqueta:fragmentos": "node pruebas/fragmentos.mjs"
+    "maqueta:fragmentos": "node pruebas/fragmentos.mjs",
+    "pizarra": "node pruebas/camara.mjs && node pruebas/pizarra.mjs",
+    "pizarra:camara": "node pruebas/camara.mjs",
+    "pizarra:video": "node pruebas/video.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
