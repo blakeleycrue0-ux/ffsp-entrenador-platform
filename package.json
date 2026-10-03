@@ -14,6 +14,7 @@
     "maqueta:contenido": "node pruebas/contenido.mjs",
     "maqueta:perfil": "node pruebas/perfil.mjs",
     "maqueta:fragmentos": "node pruebas/fragmentos.mjs",
+    "maqueta:escudo": "node pruebas/escudo.mjs",
     "pizarra": "node pruebas/camara.mjs && node pruebas/pizarra.mjs",
     "pizarra:camara": "node pruebas/camara.mjs",
     "pizarra:video": "node pruebas/video.mjs"
