@@ -4,8 +4,11 @@
  * Hay dos marcas y no conviene mezclarlas:
  *
  *  · La del **producto** (`Wordmark`), igual para todos los clubes. Es
- *    tipográfica: «Playoff» con peso y «360» en el verde del campo. El nombre
- *    ya dice bastante; no hace falta meterlo dentro de un cuadrado.
+ *    tipográfica y MONOCROMA: el «360» iba en azul y ya no, porque el azul se
+ *    ha ido del producto entero. La diferencia entre las dos mitades la hace
+ *    ahora el peso y el tono de gris, que es más difícil de hacer bien y se
+ *    nota más cuando sale. El nombre ya dice bastante; no hace falta meterlo
+ *    dentro de un cuadrado.
  *  · La del **club** (`ClubCrest`), que cambia en cada instalación. Sin escudo
  *    subido, sus iniciales sobre navy: sobria y siempre disponible, nunca un
  *    escudo prestado que no es de nadie.
@@ -13,7 +16,7 @@
  * `Marca` es el símbolo: el archivo real del logo, no una aproximación
  * dibujada a ojo. Se pinta como MÁSCARA CSS en vez de como imagen, por dos
  * motivos: así toma el color de donde esté (`currentColor`) —blanco sobre
- * negro, azul cuando toca— y así una sola imagen sirve para todos los casos
+ * negro, gris apagado donde acompaña— y así una sola imagen sirve para todos
  * en vez de tener una copia por color.
  */
 
@@ -45,9 +48,12 @@ export function Wordmark({
     >
       <span className="inline-flex items-center gap-2">
         <Marca size={marca} className={tone === 'light' ? 'text-white' : 'text-ink-900'} />
-        <span className={cn('font-display font-extrabold tracking-[-0.035em]', tipo)}>
+        {/* Peso 560 en vez de extranegrita: una grotesca en negrita a tamaño
+            grande se lee como un grito. La cifra va al mismo peso pero más
+            apagada, de modo que «Playoff» manda y «360» acompaña. */}
+        <span className={cn('font-display tracking-[-0.045em]', tipo)} style={{ fontWeight: 560 }}>
           <span className={tone === 'light' ? 'text-white' : 'text-ink-900'}>Playoff</span>
-          <span className="text-azul-500">360</span>
+          <span className={tone === 'light' ? 'text-white/55' : 'text-ink-600'}>360</span>
         </span>
       </span>
       {showSubtitle && (
@@ -123,7 +129,7 @@ export function ClubCrest({
     <span
       aria-hidden
       className={cn(
-        'grid shrink-0 place-items-center rounded-md bg-ink-900 font-display font-bold leading-none text-ink-0',
+        'grid shrink-0 place-items-center rounded-md bg-ink-900 font-display font-semibold leading-none text-ink-0',
         className,
       )}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}

@@ -300,8 +300,8 @@ export default function MatchDetail() {
 
                   <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                     {[
-                      [confirmed, 'Confirmadas', 'text-[#1F6B44]'],
-                      [pending, 'Pendientes', 'text-[#9A6412]'],
+                      [confirmed, 'Confirmadas', 'text-ok'],
+                      [pending, 'Pendientes', 'text-warn'],
                       [declined, 'No pueden', 'text-bad'],
                     ].map(([n, l, c]) => (
                       <div key={l as string} className="rounded-xl bg-ink-50 py-2.5">

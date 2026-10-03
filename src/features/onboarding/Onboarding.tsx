@@ -258,12 +258,12 @@ export default function Onboarding() {
                     className={cn(
                       'flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left transition-all',
                       cargo === c
-                        ? 'border-azul-600/60 bg-azul-600/10 text-ink-900'
-                        : 'border-line bg-panel text-ink-700 hover:bg-raised',
+                        ? 'border-line-fuerte bg-raised text-ink-900'
+                        : 'border-line-sutil bg-panel text-ink-700 hover:bg-raised',
                     )}
                   >
                     <span className="text-base font-medium">{ROLE_LABEL[c]}</span>
-                    {cargo === c && <Check size={16} className="text-azul-500" />}
+                    {cargo === c && <Check size={16} className="text-ink-900" />}
                   </button>
                 ))}
               </div>
@@ -406,7 +406,7 @@ export default function Onboarding() {
           {paso === 'listo' && (
             <Bloque clave="listo">
               <div className="pt-4 text-center">
-                <Marca size={40} className="mx-auto animate-pop-in text-azul-500" />
+                <Marca size={40} className="mx-auto animate-pop-in text-ink-900" />
                 <h1 className="cifra mt-6 text-3xl">Todo listo</h1>
                 <p className="mx-auto mt-3 max-w-[320px] text-md leading-relaxed text-ink-500">
                   Tu espacio está montado. Esto es lo que hay dentro ahora mismo.
@@ -538,7 +538,7 @@ function Progreso({ actual, total }: { actual: number; total: number }) {
       className="h-[3px] w-full overflow-hidden rounded-full bg-white/10"
     >
       <div
-        className="h-full rounded-full bg-azul-600 transition-[width] duration-[450ms] ease-[cubic-bezier(.22,1,.36,1)]"
+        className="h-full rounded-full bg-ink-900 transition-[width] duration-[450ms] ease-suave"
         style={{ width: `${parte * 100}%` }}
       />
     </div>

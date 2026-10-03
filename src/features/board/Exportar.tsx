@@ -229,7 +229,7 @@ function Aro({ parte }: { parte: number }) {
         <circle cx="46" cy="46" r={r} fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="5" />
         <circle
           cx="46" cy="46" r={r}
-          fill="none" stroke="#0A8CFF" strokeWidth="5" strokeLinecap="round"
+          fill="none" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round"
           strokeDasharray={vuelta}
           strokeDashoffset={vuelta * (1 - Math.min(1, Math.max(0, parte)))}
           style={{ transition: 'stroke-dashoffset .12s linear' }}

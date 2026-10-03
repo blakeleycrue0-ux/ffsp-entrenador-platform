@@ -85,7 +85,7 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
       <div className="px-3 pb-2">
         <button
           onClick={onCreate}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-ink-900 px-3 text-base font-semibold text-ink-0 transition-colors hover:bg-ink-800"
+          className="metal-claro flex h-11 w-full items-center justify-center gap-2 rounded-xl px-3 text-base font-medium text-ink-0"
         >
           <Plus size={16} strokeWidth={2.2} />
           Crear

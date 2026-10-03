@@ -103,7 +103,7 @@ export default function PlayersPage() {
                 </option>
               ))}
             </Select>
-            <Select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className="w-full sm:w-[170px]">
+            <Select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className="w-full sm:w-[200px]">
               <option value="todas">Cualquier estado</option>
               {(Object.keys(AVAILABILITY) as AvailabilityStatus[]).map((s) => (
                 <option key={s} value={s}>
@@ -194,7 +194,10 @@ export default function PlayersPage() {
                   <span
                     className={cn(
                       'text-[14px] font-semibold tabular-nums',
-                      rate(p.id) >= 85 ? 'text-ok' : rate(p.id) >= 70 ? 'text-warn' : 'text-bad',
+                      /* Una columna donde casi todo sale verde no señala
+                          nada. Blanco por defecto, y color sólo cuando el dato
+                          pide mirarlo: por debajo del 70 % hay un problema. */
+                      rate(p.id) >= 85 ? 'text-ink-900' : rate(p.id) >= 70 ? 'text-warn' : 'text-bad',
                     )}
                   >
                     {rate(p.id)}%

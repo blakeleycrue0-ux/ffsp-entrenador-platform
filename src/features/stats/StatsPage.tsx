@@ -17,7 +17,7 @@ import {
   type PlayerAttendance,
 } from '@/store/selectors';
 import {
-  EmptyState, Figure, PageHeader, Panel, PanelHeader, Segmented, Select, Tooltip,
+  EmptyState, PageHeader, Panel, PanelHeader, Segmented, Select, Tooltip,
 } from '@/components/ui';
 import { Avatar, Meter } from '@/components/ui';
 import { BarTrend, LineTrend } from '@/components/domain/Charts';
@@ -128,51 +128,56 @@ export default function StatsPage() {
         }
       />
 
-      {/* Cifras principales */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Panel className="p-4">
-          <Figure
-            label="Asistencia media"
-            value={<Pct value={rate} />}
-            hint={
+      {/* ── Las cifras ───────────────────────────────────────────────────────
+          Cuatro cifras, no cuatro tarjetas. Estaban cada una dentro de su caja
+          con su borde y su fondo, y cuatro cajas iguales en fila no ordenan
+          nada: lo que las separa ahora es un filete y el aire, y lo que manda
+          es el tamaño del número. Es la misma información con mucho menos
+          dibujo alrededor. */}
+      <dl className="grid grid-cols-1 gap-x-8 gap-y-7 border-y border-line-sutil py-7 sm:grid-cols-2 xl:grid-cols-4 xl:divide-x xl:divide-line-sutil">
+        {[
+          {
+            label: 'Asistencia media',
+            value: <Pct value={rate} />,
+            hint: (
               <>
                 {records.length === 1 ? '1 sesión registrada' : `${records.length} sesiones registradas`}
                 {delta !== null && (
                   <>
                     {' · '}
-                    <span className={delta >= 0 ? 'text-ok' : 'text-bad'}>
+                    <span className={delta >= 0 ? 'text-ink-800' : 'text-warn'}>
                       {delta >= 0 ? '+' : ''}
                       {delta} puntos respecto al periodo anterior
                     </span>
                   </>
                 )}
               </>
-            }
-          />
-        </Panel>
-        <Panel className="p-4">
-          <Figure
-            label="En plantilla"
-            value={squad.length}
-            hint={`${squad.filter((p) => !['disponible', 'duda'].includes(p.availability.status)).length} no disponibles hoy`}
-          />
-        </Panel>
-        <Panel className="p-4">
-          <Figure
-            label="Mejor asistencia"
-            value={best[0] ? <Pct value={best[0].rate} /> : '—'}
-            hint={best[0]?.player.shortName ?? 'Sin datos suficientes'}
-          />
-        </Panel>
-        <Panel className="p-4">
-          <Figure
-            label="Con ausencias repetidas"
-            value={atencion.length}
-            hint="Dos faltas seguidas sin justificar, o menos del 60 % con tres sesiones o más"
-            tone={atencion.length > 0 ? 'warn' : undefined}
-          />
-        </Panel>
-      </div>
+            ),
+          },
+          {
+            label: 'En plantilla',
+            value: squad.length,
+            hint: `${squad.filter((p) => !['disponible', 'duda'].includes(p.availability.status)).length} no disponibles hoy`,
+          },
+          {
+            label: 'Mejor asistencia',
+            value: best[0] ? <Pct value={best[0].rate} /> : '—',
+            hint: best[0]?.player.shortName ?? 'Sin datos suficientes',
+          },
+          {
+            label: 'Con ausencias repetidas',
+            value: atencion.length,
+            hint: 'Dos faltas seguidas sin justificar, o menos del 60 % con tres sesiones o más',
+            alerta: atencion.length > 0,
+          },
+        ].map((c, i) => (
+          <div key={c.label} className={cn('min-w-0', i > 0 && 'xl:pl-8')}>
+            <dt className="eyebrow">{c.label}</dt>
+            <dd className={cn('cifra mt-3 text-4xl', c.alerta && 'text-warn')}>{c.value}</dd>
+            <dd className="mt-3 text-sm leading-relaxed text-ink-600">{c.hint}</dd>
+          </div>
+        ))}
+      </dl>
 
       <Panel className="mt-3 px-4 py-3">
         <p className="text-sm leading-relaxed text-ink-700">
@@ -215,7 +220,7 @@ export default function StatsPage() {
       </div>
 
       <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <RankingPanel title="Mayor asistencia" rows={best} tone="ok" />
+        <RankingPanel title="Mayor asistencia" rows={best} tone="solid" />
         <RankingPanel title="Menor asistencia" rows={worst} tone="bad" detail />
       </div>
 
@@ -315,7 +320,7 @@ export default function StatsPage() {
 
 function RankingPanel({
   title, rows, tone, detail,
-}: { title: string; rows: PlayerAttendance[]; tone: 'ok' | 'bad'; detail?: boolean }) {
+}: { title: string; rows: PlayerAttendance[]; tone: 'solid' | 'bad'; detail?: boolean }) {
   return (
     <Panel>
       <PanelHeader title={title} />

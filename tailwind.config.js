@@ -18,63 +18,67 @@ export default {
       },
       colors: {
         /* ────────────────────────────────────────────────────────────────────
-           NEGRO · BLANCO · AZUL ELÉCTRICO · CRISTAL
+           NEGRO · BLANCO · GRAFITO
            ────────────────────────────────────────────────────────────────────
-           La escala `ink` va AL REVÉS: el 900 es blanco y el 50 casi negro.
-           Así las clases de toda la aplicación (`text-ink-900` = «lo que más
-           se lee») siguen significando lo mismo sobre negro. */
+           No hay color de marca. Ninguno. La jerarquía la hacen el negro, el
+           blanco y lo que hay entre medias; el color queda reservado a lo que
+           SIGNIFICA algo —una lesión, un aviso, un borrado— y aun ahí va
+           apagado. Un producto que usa un cuerpo técnico todos los días no
+           necesita que la interfaz llame la atención: necesita que no la
+           llame.
+
+           La escala `ink` va AL REVÉS: el 900 es blanco y el 0 negro. Así las
+           clases de toda la aplicación (`text-ink-900` = «lo que más se lee»)
+           siguen significando lo mismo sobre negro. */
         ink: {
-          0:   '#050506',  // texto sobre claro
-          50:  '#09090B',
-          100: '#101014',
-          200: '#1C1C21',  // separadores fuertes, esqueletos
-          300: '#33333B',
-          400: '#5E5E69',  // texto terciario
-          500: '#8A8A96',  // texto secundario
-          600: '#A8A8B4',
-          700: '#C8C8D0',  // párrafos
-          800: '#E6E6EA',
-          900: '#FFFFFF',
+          0:   '#000000',  // texto sobre blanco
+          50:  '#0A0A0A',
+          100: '#141414',
+          200: '#1E1E1E',  // esqueletos, separadores fuertes
+          300: '#2E2E2E',
+          400: '#4A4A4A',
+          500: '#696969',  // terciario: sellos, marcas de tiempo
+          600: '#8A8A8A',
+          700: '#A1A1A1',  // secundario: párrafos, descripciones
+          800: '#F5F5F5',  // primario
+          900: '#FFFFFF',  // énfasis y lo que se pulsa
         },
 
-        /* NIVEL 0 · el fondo. Casi negro, no negro puro: el negro absoluto
-           aplasta el cristal que va encima, porque no hay nada que filtrar. */
-        surface: '#050506',
+        /* LAS CUATRO SUPERFICIES. Opacas y numeradas, no transparencias
+           sueltas: así dos paneles anidados no se suman y acaban más claros
+           que el de al lado. */
+        surface: '#050505',   // nivel 0 · el fondo
+        panel: '#0A0A0A',     // nivel 1 · un bloque
+        raised: '#101010',    // nivel 2 · algo por encima
+        sunken: '#171717',    // nivel 3 · un hueco: campos, celdas
 
-        /* NIVEL 1 · superficie normal. Es BLANCO AL 4,5 %, no un gris opaco:
-           así se funde con el fondo en vez de recortarse contra él, y coge el
-           tono de lo que tenga detrás. */
-        panel: 'rgba(255,255,255,0.045)',
-        raised: 'rgba(255,255,255,0.075)',
-        line: 'rgba(255,255,255,0.07)',
-        muted: '#8A8A96',
+        /* Tres bordes y nada más. El sutil agrupa, el normal separa, el
+           fuerte marca lo que está seleccionado. */
+        line: 'rgba(255,255,255,0.12)',
+        'line-sutil': 'rgba(255,255,255,0.08)',
+        'line-fuerte': 'rgba(255,255,255,0.20)',
 
-        /* EL AZUL. Es el acento del producto, no su fondo: va en lo que se
-           pulsa, lo que está activo y lo que avanza. Nunca en una tarjeta
-           entera ni en un titular. */
-        azul: {
-          300: '#7FC2FF',
-          400: '#3FA3FF',
-          500: '#168BFF',
-          600: '#0A8CFF',
-          700: '#006FE8',
-          800: '#0058B8',
-        },
+        muted: '#A1A1A1',
+        night: '#050505',
 
-        night: '#050506',
-
-        /* Color CON SIGNIFICADO: la línea del campo de cada posición. */
+        /* LAS POSICIONES, en grises. Eran cuatro colores —naranja, azul,
+           verde, rojo— y cuatro colores en una plantilla es un semáforo. En
+           grises se leen igual de bien y además se ordenan solas: la portera
+           es la más clara y la delantera la más apagada, que es el orden en
+           el que están sobre el campo. */
         pos: {
-          portera: '#E0913D',
-          defensa: '#5AA0FF',
-          medio: '#3FD08A',
-          delantera: '#FF7A70',
+          portera: '#FFFFFF',
+          defensa: '#C8C8C8',
+          medio: '#919191',
+          delantera: '#636363',
         },
 
-        ok: '#3FD08A',
-        warn: '#E8B23F',
-        bad: '#FF6B5E',
-        info: '#0A8CFF',
+        /* Color SÓLO donde significa algo, y apagado. Un verde chillón de
+           «disponible» al lado de un rojo de «lesionada» convierte una
+           plantilla en un árbol de Navidad. */
+        ok: '#4F9E78',
+        warn: '#B48A2E',
+        bad: '#C4564C',
       },
       boxShadow: {
         card: 'none',
@@ -116,26 +120,40 @@ export default {
         '3xl': '22px',
         '4xl': '28px',
       },
-      /* Escala contenida. Nada de titulares de 60 px en un móvil: lo que
-         ordena la pantalla es el contraste entre tamaños, no el tamaño. */
+      /* ESCALA TIPOGRÁFICA.
+         El interletraje va EN LA ESCALA, no suelto por los archivos: una
+         grotesca a 64 px con el espaciado de un párrafo se deshace, y a 12 px
+         con el espaciado de un titular se junta. Cuanto más grande, más
+         apretado. Es casi toda la diferencia entre una tipografía que parece
+         cara y una que parece la de por defecto. */
       fontSize: {
-        '2xs': ['11px', '15px'],   // rótulo
-        xs:   ['12px', '17px'],
-        sm:   ['13px', '19px'],    // secundario
-        base: ['15px', '22px'],    // cuerpo
-        md:   ['16px', '24px'],
-        lg:   ['18px', '25px'],    // H3
-        xl:   ['21px', '28px'],
-        '2xl':['25px', '31px'],    // H2
-        '3xl':['31px', '35px'],    // H1
-        '4xl':['40px', '42px'],    // display
-        '5xl':['52px', '52px'],
-        '6xl':['64px', '1.02'],
-        '7xl':['76px', '1.01'],
-        '8xl':['96px', '0.98'],
+        '2xs': ['11px', { lineHeight: '15px', letterSpacing: '0.04em' }],
+        xs:   ['12px', { lineHeight: '17px', letterSpacing: '0' }],
+        sm:   ['13px', { lineHeight: '19px', letterSpacing: '-0.004em' }],
+        base: ['15px', { lineHeight: '23px', letterSpacing: '-0.008em' }],
+        md:   ['16px', { lineHeight: '24px', letterSpacing: '-0.011em' }],
+        lg:   ['18px', { lineHeight: '26px', letterSpacing: '-0.016em' }],
+        xl:   ['21px', { lineHeight: '28px', letterSpacing: '-0.021em' }],
+        '2xl':['25px', { lineHeight: '31px', letterSpacing: '-0.026em' }],
+        '3xl':['31px', { lineHeight: '35px', letterSpacing: '-0.031em' }],
+        '4xl':['40px', { lineHeight: '42px', letterSpacing: '-0.036em' }],
+        '5xl':['52px', { lineHeight: '1.02', letterSpacing: '-0.04em' }],
+        '6xl':['64px', { lineHeight: '1.0', letterSpacing: '-0.042em' }],
+        '7xl':['76px', { lineHeight: '0.98', letterSpacing: '-0.044em' }],
+        '8xl':['88px', { lineHeight: '0.96', letterSpacing: '-0.046em' }],
       },
       transitionDuration: {
         120: '120ms',
+        250: '250ms',
+        400: '400ms',
+        700: '700ms',
+        900: '900ms',
+      },
+      /* UNA SOLA CURVA para todo el producto. Sale despacio y frena largo:
+         es lo que hace que un movimiento parezca que tiene peso en vez de
+         parecer que el navegador ha terminado de calcular. Nada rebota. */
+      transitionTimingFunction: {
+        suave: 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
       keyframes: {
         'fade-in': { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
@@ -180,6 +198,17 @@ export default {
           '100%': { transform: 'scale(1)', opacity: 1 },
         },
         'trazo': { '0%': { strokeDashoffset: '26' }, '100%': { strokeDashoffset: '0' } },
+        /* La entrada de la portada: aparece desde abajo y de desenfocado a
+           nítido. El desenfoque es lo que hace que no parezca un `fade`. */
+        'entra': {
+          '0%': { opacity: '0', transform: 'translateY(14px)', filter: 'blur(6px)' },
+          '100%': { opacity: '1', transform: 'none', filter: 'blur(0)' },
+        },
+        /* El reflejo que cruza un control metálico al pasar por encima. */
+        'reflejo': {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-60% 0' },
+        },
       },
       animation: {
         'fade-in': 'fade-in .15s ease-out both',
@@ -192,6 +221,7 @@ export default {
         'juntar': 'juntar .22s cubic-bezier(.4,0,1,1) both',
         'anillo': 'anillo .34s cubic-bezier(.34,1.56,.64,1) .14s both',
         'trazo': 'trazo .26s ease-out .34s both',
+        'entra': 'entra .9s cubic-bezier(0.16,1,0.3,1) both',
       },
     },
   },

@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight, CalendarClock, ChevronRight, ClipboardList, Clock, MapPin,
-  Plus, Send, Users,
+  Send, Users,
 } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { callupOfMatch, clubShortName, currentStaff, isClubAdmin, nextMatch, nextSession, nombreReal, squadOf, summarizeRecord, teamOverview, visibleTeams } from '@/store/selectors';
@@ -93,8 +93,8 @@ export default function Dashboard() {
   if (loadError) {
     return (
       <Panel className="border-bad/25 bg-bad/5 p-6">
-        <h2 className="text-[16px] font-semibold text-[#A63B34]">No hemos podido cargar tus datos</h2>
-        <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-[#A63B34]/90">{loadError}</p>
+        <h2 className="text-[16px] font-semibold text-bad">No hemos podido cargar tus datos</h2>
+        <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-bad/90">{loadError}</p>
         <Button variant="secondary" size="sm" className="mt-4" onClick={() => void actions.refresh()}>
           Reintentar
         </Button>
@@ -148,13 +148,9 @@ export default function Dashboard() {
             {firstName ? `Hola, ${firstName}` : 'Hola'}
           </h1>
         </div>
-        {/* En móvil ya está el botón flotante encima del dique: dos botones
-            de crear en la misma pantalla compiten sin motivo. */}
-        <div className="hidden items-center gap-2 lg:flex">
-          <Button icon={<Plus size={17} strokeWidth={2.3} />} onClick={() => setCreateOpen(true)}>
-            Crear
-          </Button>
-        </div>
+        {/* Aquí NO va un «Crear». La barra lateral ya tiene el suyo, y en el
+            móvil está en el menú: tres botones iguales en la misma pantalla no
+            dan tres caminos, dan una duda. Una acción principal por pantalla. */}
       </div>
 
       {/* Tarjetas principales */}
@@ -374,8 +370,8 @@ export default function Dashboard() {
 
               <div className="mt-3.5 grid grid-cols-3 gap-2 text-center">
                 {[
-                  { n: confirmed, l: 'Confirmadas', c: 'text-[#1F6B44]' },
-                  { n: pendingCallup, l: 'Pendientes', c: 'text-[#9A6412]' },
+                  { n: confirmed, l: 'Confirmadas', c: 'text-ok' },
+                  { n: pendingCallup, l: 'Pendientes', c: 'text-warn' },
                   { n: declined, l: 'No pueden', c: 'text-bad' },
                 ].map((x) => (
                   <div key={x.l} className="rounded-xl bg-ink-50 py-2.5">

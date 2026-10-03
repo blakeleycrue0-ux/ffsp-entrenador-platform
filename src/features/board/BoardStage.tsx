@@ -497,11 +497,15 @@ export function BoardStage({
           <polyline
             points={aPuntos(trazoVista.map(aLienzo))}
             fill="none"
-            stroke="#0A8CFF"
+            stroke="#FFFFFF"
             strokeWidth={0.5}
             strokeLinecap="round"
             strokeLinejoin="round"
-            opacity={0.9}
+            opacity={0.95}
+            /* El reborde oscuro no es decoración: sobre el césped hay líneas
+               de cal blancas, y sin él el trazo que estás dibujando se
+               confunde con el área. */
+            style={{ paintOrder: 'stroke', filter: 'drop-shadow(0 0 1.2px rgba(0,0,0,0.9))' }}
             pointerEvents="none"
           />
         )}
@@ -579,10 +583,11 @@ export function BoardStage({
               <polyline
                 points={aPuntos(vistaPreviaCurva.map(aLienzo))}
                 fill="none"
-                stroke="#0A8CFF"
+                stroke="#FFFFFF"
                 strokeWidth={0.34}
                 strokeDasharray="1 0.7"
-                opacity={0.9}
+                opacity={0.95}
+                style={{ filter: 'drop-shadow(0 0 1.2px rgba(0,0,0,0.9))' }}
                 pointerEvents="none"
               />
             )}
@@ -595,7 +600,9 @@ export function BoardStage({
                   cx={q.x}
                   cy={q.y}
                   r={0.95 * k}
-                  fill={t.curvo ? '#0A8CFF' : 'rgba(10,140,255,0.28)'}
+                  /* Lleno cuando el tramo ya está curvado, hueco cuando
+                     sigue recto: la forma dice el estado sin necesitar color. */
+                  fill={t.curvo ? '#FFFFFF' : 'rgba(0,0,0,0.45)'}
                   stroke="#FFFFFF"
                   strokeWidth={0.18 * k}
                   className="cursor-grab active:cursor-grabbing"

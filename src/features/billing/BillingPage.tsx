@@ -129,7 +129,7 @@ export default function BillingPage() {
                 <div
                   className={cn(
                     'h-full rounded-full transition-[width] duration-500',
-                    per.equipos >= per.limiteDeEquipos ? 'bg-warn' : 'bg-azul-600',
+                    per.equipos >= per.limiteDeEquipos ? 'bg-warn' : 'bg-ink-800',
                   )}
                   style={{ width: `${Math.min(100, (per.equipos / per.limiteDeEquipos) * 100)}%` }}
                 />

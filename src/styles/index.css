@@ -64,52 +64,37 @@
   }
 
   /* ── ATMÓSFERA ────────────────────────────────────────────────────────────
-     Un negro plano y uniforme es lo que hace que una pantalla oscura parezca
-     apagada. Debajo de todo van dos capas fijas, que no se tocan ni capturan
-     el ratón:
+     El fondo es negro, y debajo de todo va una sola capa: grano. Es ruido
+     generado en el propio SVG, sin ninguna imagen que descargar, al 3 % de
+     opacidad. A ese nivel no se «ve»: se nota. Es lo que quita el aspecto de
+     plástico de un negro plano.
 
-     1. Una luz gris muy tenue arriba, que cae hacia abajo. Da la sensación de
-        que la pantalla está iluminada desde algún sitio en vez de ser un
-        agujero negro.
-     2. Grano. Es ruido generado en el propio SVG, sin ninguna imagen que
-        descargar, al 3,5 % de opacidad. A ese nivel no se «ve»: se nota. Es
-        lo que quita el aspecto de plástico. No se mueve: una animación
-        infinita que nadie llega a ver sólo gasta batería.
-
-     Nada de esto brilla ni tiene color. En cuanto un fondo oscuro tiene un
-     halo de color, deja de parecer caro y parece una plantilla. */
-  body::before,
+     Lo que había antes era además un halo de luz gris cayendo desde arriba.
+     Se quita: el ambiente lo pone ahora el campo de partículas donde toca
+     —portada, entrada, bienvenida— y dos atmósferas superpuestas se pelean.
+     Dentro de la aplicación el fondo tiene que estar callado. */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 0;
-  }
-
-  /* La luz de la pantalla: gris, no azul. El halo azul del 10 % se leía como
-     una mancha de color en la esquina —un «blob»— y el azul de esta marca es
-     para lo que se pulsa, no para decorar el fondo. Queda un 4 % de blanco
-     cayendo desde arriba, que es lo que quita el aspecto de agujero negro. */
-  body::before {
-    background: radial-gradient(120% 70% at 50% -12%, rgba(255, 255, 255, 0.045), transparent 60%);
-  }
-
-  body::after {
-    opacity: 0.035;
+    opacity: 0.03;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23r)'/%3E%3C/svg%3E");
   }
 
-  /* El contenido va por encima de las dos capas. */
+  /* El contenido va por encima del grano. */
   #root { position: relative; z-index: 1; }
 
   /* Jerarquía contenida: nada de titulares enormes dentro de la aplicación.
      El color NO se fija aquí: se hereda, para que un titular sobre fondo
      oscuro no acabe siendo navy sobre navy. */
+  /* Peso 500–600, nunca más. Una grotesca en negrita a tamaño grande se lee
+     como un grito; el tamaño ya hace la jerarquía. El interletraje lo pone la
+     escala, no esta regla, porque depende del tamaño. */
   h1, h2, h3, h4 {
-    @apply font-semibold;
+    font-weight: 560;
     color: inherit;
-    letter-spacing: -0.006em;
   }
 
   ::selection {
@@ -134,9 +119,12 @@
   }
   *::-webkit-scrollbar-thumb:hover { background-color: #56565D; }
 
+  /* El foco es BLANCO. Era un aro azul, y el azul se ha ido del producto
+     entero; además, sobre negro, el blanco es lo que más se ve, que es
+     justo lo único que se le pide a un indicador de foco. */
   :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(10, 140, 255, 0.35);
+    box-shadow: 0 0 0 1px #050505, 0 0 0 3px rgba(255, 255, 255, 0.55);
     border-radius: 12px;
   }
 
@@ -161,7 +149,7 @@
      Un cristal que no deja ver nada detrás no es cristal, es una caja opaca
      con un nombre bonito. */
   .panel {
-    @apply relative rounded-2xl border border-line bg-panel;
+    @apply relative rounded-2xl border border-line-sutil bg-panel;
   }
 
   /* ── Barra de ajuste ──────────────────────────────────────────────────────
@@ -221,7 +209,7 @@
      encima del campo. Ni brillo, ni color: el material tiene que desaparecer
      cuando no se está mirando. */
   .cristal {
-    background: rgba(18, 18, 22, 0.78);
+    background: rgba(10, 10, 10, 0.80);
     backdrop-filter: blur(20px) saturate(125%);
     -webkit-backdrop-filter: blur(20px) saturate(125%);
     border: 1px solid rgba(255, 255, 255, 0.07);
@@ -233,7 +221,48 @@
   /* Cuando el navegador no sabe desenfocar, el cristal se vuelve opaco: más
      vale una superficie sólida legible que una transparente ilegible. */
   @supports not (backdrop-filter: blur(1px)) {
-    .cristal { background: #121216; }
+    .cristal { background: #0F0F0F; }
+  }
+
+  /* ── METAL ────────────────────────────────────────────────────────────────
+     El único «efecto» del producto, y va contado: la navegación flotante de
+     la portada, el plan recomendado, un segmento seleccionado. Nada más.
+
+     No es un degradado de colores: es grafito con una veta más clara cruzada
+     en diagonal, un filo de luz arriba y una sombra interior abajo, que es lo
+     que hace una superficie metálica de verdad. Al pasar por encima, el
+     reflejo se desplaza. Si esto se pusiera en todos los botones, el producto
+     dejaría de parecer caro y pasaría a parecer cromado. */
+  .metal {
+    position: relative;
+    background-image: linear-gradient(110deg, #080808 0%, #202020 46%, #3C3C3C 100%);
+    background-size: 220% 100%;
+    background-position: 100% 0;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+    transition: background-position .7s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color .25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .metal:hover {
+    background-position: 0 0;
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+
+  /* La versión clara: para la acción principal. Blanco con texto negro, que
+     es lo que sustituye al azul en todo el producto. */
+  .metal-claro {
+    background-image: linear-gradient(110deg, #E8E8E8 0%, #FFFFFF 42%, #CFCFCF 100%);
+    background-size: 220% 100%;
+    background-position: 100% 0;
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+    transition: background-position .7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .metal-claro:hover { background-position: 0 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .metal, .metal-claro { transition: none; }
   }
 
   .panel-hover {
@@ -244,24 +273,28 @@
     @apply block text-sm font-medium text-ink-700 mb-2;
   }
 
-  /* Campos altos, en cápsula y sin borde, como en la referencia. El foco se
-     marca con un aro claro, no cambiando el borde de sitio. */
-  /* Campos de 56 px, radio contenido y foco AZUL en vez de un aro blanco de
-     tres píxeles. En reposo son callados; al enfocarlos se encienden. */
+  /* ── CAMPOS ───────────────────────────────────────────────────────────────
+     56 px de alto —el dedo no acierta en 40—, grafito opaco, radio contenido
+     y un borde fino. En reposo son callados. Al enfocarlos, el borde SUBE DE
+     BRILLO: no cambia de color, porque no hay color al que cambiar. Eso es
+     más difícil de hacer bien que un aro azul y se nota más cuando sale. */
   .field {
-    @apply h-14 w-full rounded-2xl px-4 text-md text-ink-900 placeholder:text-ink-500
-           transition-[border-color,box-shadow] duration-150
+    @apply h-14 w-full rounded-xl px-4 text-md text-ink-800 placeholder:text-ink-500
+           transition-[border-color,background-color] duration-250 ease-suave
            focus:outline-none disabled:text-ink-400;
-    background: rgba(255, 255, 255, 0.055);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: #171717;
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
   textarea.field { @apply h-auto py-3.5; }
   select.field { @apply pr-10; }
 
+  .field:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.17); }
+
   .field:focus,
   .field:focus-visible {
-    border-color: rgba(10, 140, 255, 0.8);
-    box-shadow: 0 0 0 3px rgba(10, 140, 255, 0.10);
+    border-color: rgba(255, 255, 255, 0.45);
+    background: #1C1C1C;
+    box-shadow: none;
   }
 
   /* ── CIFRAS ───────────────────────────────────────────────────────────────
@@ -270,10 +303,10 @@
      tipografía sustituye al contenedor. */
   .cifra {
     @apply font-display text-ink-900;
-    font-weight: 680;
-    letter-spacing: -0.03em;
+    font-weight: 540;
+    letter-spacing: -0.04em;
     font-variant-numeric: tabular-nums;
-    line-height: 0.95;
+    line-height: 0.92;
   }
 
   /* El rótulo que acompaña a una cifra. Pequeño, en mayúsculas y apagado:

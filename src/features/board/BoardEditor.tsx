@@ -681,7 +681,7 @@ export function BoardEditor({
           title={h.id === 'movimiento' && !selected ? 'Elige antes una ficha' : h.label}
           className={cn(
             'grid h-9 w-9 place-items-center rounded-xl transition-colors disabled:opacity-35',
-            tool === h.id ? 'bg-azul-600 text-white' : 'text-ink-700 hover:bg-white/[0.07] hover:text-ink-900',
+            tool === h.id ? 'bg-ink-900 text-ink-0' : 'text-ink-700 hover:bg-white/[0.07] hover:text-ink-900',
           )}
         >
           {h.icon}
@@ -763,7 +763,7 @@ export function BoardEditor({
       <button
         onClick={playback.toggle}
         aria-label={playback.playing ? 'Pausar' : 'Reproducir'}
-        className="grid h-9 w-9 place-items-center rounded-xl bg-azul-600 text-white transition-transform active:scale-95"
+        className="grid h-9 w-9 place-items-center rounded-xl bg-ink-900 text-ink-0 transition-transform active:scale-95"
       >
         {playback.playing ? <Pause size={15} /> : <Play size={15} />}
       </button>

@@ -93,7 +93,7 @@ export function SelectorDePlanes({
             className={cn(
               'relative flex-1 rounded-xl py-2.5 text-base font-semibold transition-all duration-200',
               p.tier === elegido
-                ? 'bg-azul-600 text-white'
+                ? 'bg-ink-900 text-ink-0'
                 : 'text-ink-600 hover:bg-white/[0.06] hover:text-ink-900',
             )}
           >
@@ -106,7 +106,7 @@ export function SelectorDePlanes({
           de que salten las cifras de una a otra. */}
       <div key={plan.tier} className="mt-7 animate-paso">
         {plan.tier === 'pro' && (
-          <p className="rotulo mb-2 text-azul-400">El más usado para varios equipos</p>
+          <p className="rotulo mb-2 text-ink-800">El más usado para varios equipos</p>
         )}
 
         <div className="flex items-end gap-2.5">
@@ -150,8 +150,10 @@ export function SelectorDePlanes({
             </div>
             {/* Sólo si el ahorro es cierto. Se calcula, no se escribe. */}
             {ahorro !== null && (
-              /* En azul, no en verde: el verde se quitó del producto entero. */
-              <span className="text-sm font-semibold text-azul-400">Ahorras un {ahorro} %</span>
+              /* En blanco. El ahorro es un dato, no una alarma: ni verde ni
+                 ningún otro color, que un porcentaje en color se lee como una
+                 oferta y esto es una resta. */
+              <span className="text-sm font-medium text-ink-900">Ahorras un {ahorro} %</span>
             )}
           </div>
         )}
@@ -174,7 +176,7 @@ export function SelectorDePlanes({
         )}
 
         {nivelActual === plan.tier && (
-          <p className="mt-4 text-sm font-medium text-azul-400">Es el plan que tienes ahora.</p>
+          <p className="mt-4 text-sm font-medium text-ink-800">Es el plan que tienes ahora.</p>
         )}
       </div>
     </div>

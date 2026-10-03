@@ -117,9 +117,7 @@ export function BoardDemo({
           }}
           className={cn(
             'inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors',
-            oscuro
-              ? 'bg-azul-600 text-white hover:bg-azul-500'
-              : 'bg-ink-900 text-ink-0 hover:bg-ink-800',
+            'bg-ink-900 text-ink-0 hover:bg-ink-800',
           )}
         >
           {playback.playing ? <Pause size={14} /> : <Play size={14} />}
