@@ -204,10 +204,18 @@ export default {
         },
         'trazo': { '0%': { strokeDashoffset: '26' }, '100%': { strokeDashoffset: '0' } },
         /* La entrada de la portada: aparece desde abajo y de desenfocado a
-           nítido. El desenfoque es lo que hace que no parezca un `fade`. */
+           nítido. El desenfoque es lo que hace que no parezca un `fade`.
+           ⚠ EL ÚLTIMO FOTOGRAMA ACABA EN `none`, NO EN `blur(0)`. No es lo
+           mismo, y la diferencia se ve. La animación lleva `both`, así que el
+           valor final se queda puesto para siempre; y `filter`, aunque sea de
+           cero, basta para que el elemento pase a su propia capa compuesta.
+           Safari rasteriza esa capa y la deja fija, con lo que el texto pierde
+           el suavizado subpíxel y TODA la portada se ve blanda —sin que nada
+           aparente estar desenfocado—. Con `none` no hay capa y el texto lo
+           pinta el motor de tipografía, como debe. */
         'entra': {
           '0%': { opacity: '0', transform: 'translateY(14px)', filter: 'blur(6px)' },
-          '100%': { opacity: '1', transform: 'none', filter: 'blur(0)' },
+          '100%': { opacity: '1', transform: 'none', filter: 'none' },
         },
         /* El reflejo que cruza un control metálico al pasar por encima. */
         'reflejo': {
@@ -226,7 +234,19 @@ export default {
         'juntar': 'juntar .22s cubic-bezier(.4,0,1,1) both',
         'anillo': 'anillo .34s cubic-bezier(.34,1.56,.64,1) .14s both',
         'trazo': 'trazo .26s ease-out .34s both',
-        'entra': 'entra .9s cubic-bezier(0.16,1,0.3,1) both',
+        /* `backwards`, NO `both`, y la diferencia se ve en la pantalla.
+           Con `both` el último fotograma se queda puesto para siempre, y
+           `filter: none` al final de una animación que empieza en `blur(6px)`
+           NO computa como `none`: el motor interpola hacia la identidad del
+           filtro de origen, o sea `blur(0px)`. Un filtro de cero sigue siendo
+           un filtro: promueve el elemento a su propia capa compuesta, Safari la
+           rasteriza y el texto pierde el suavizado subpíxel. Resultado: toda la
+           portada se ve blanda sin que nada parezca desenfocado.
+           Con `backwards` el primer fotograma sigue aplicándose durante la
+           espera —que es lo que hace falta para escalonar las entradas— y, al
+           acabar, el elemento vuelve a su estilo normal: sin filtro y sin capa.
+           Lo comprueba `pruebas/portada.mjs`. */
+        'entra': 'entra .9s cubic-bezier(0.16,1,0.3,1) backwards',
       },
     },
   },

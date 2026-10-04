@@ -183,7 +183,10 @@ const CAPACIDADES = [
 /** La marca del sello: un destello diminuto, dibujado, no un icono de librería. */
 function Sparkle() {
   return (
-    <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden className="shrink-0 text-ink-500">
+    /* Más claro que el texto del sello a propósito: es lo único con brillo ahí
+       dentro, y si va al mismo gris que las letras deja de ser un destello y
+       pasa a ser una mota. */
+    <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden className="shrink-0" style={{ color: '#E5E5E5' }}>
       <path
         d="M5 0 L6.1 3.9 L10 5 L6.1 6.1 L5 10 L3.9 6.1 L0 5 L3.9 3.9 Z"
         fill="currentColor"
@@ -353,10 +356,7 @@ export default function Landing() {
                 titular—. Un botón de cabecera es un sitio al que volver, no la
                 llamada principal; la llamada principal está abajo, con la
                 tela detrás. */}
-            <Link
-              to="/entrar"
-              className="metal-claro inline-flex h-[40px] items-center rounded-[7px] px-[16px] text-[13.5px] font-medium text-ink-0"
-            >
+            <Link to="/entrar" className="control control-primario control-cabecera">
               Crear mi club
             </Link>
           </div>
@@ -394,16 +394,20 @@ export default function Landing() {
           <div className="min-h-0 flex-1" />
 
           <div className="relative px-5 text-center">
-            {/* Casi invisible, a propósito: es una nota al pie de quién usa
-                esto, no un botón. Antes tenía borde claro y fondo propio y
-                parecía un campo de formulario vacío. */}
+            {/* Callado, a propósito: es una nota de a quién va dirigido esto,
+                no un botón. Pero callado no es turbio: el fondo sube a .72 y
+                el desenfoque baja a 8, porque con el velo anterior el texto se
+                quedaba a medias entre el sello y la tela y no se leía ni como
+                una cosa ni como la otra. */}
             <span
-              className="animate-entra inline-flex h-[29px] items-center gap-1.5 rounded-[5px] px-[11px] text-[11px] font-medium tracking-[0.015em] text-ink-600"
+              className="animate-entra inline-flex h-[29px] items-center gap-1.5 rounded-[5px] px-[11px] text-[11px] font-medium tracking-[0.015em]"
               style={{
                 animationDelay: '120ms',
-                background: 'rgba(20,20,20,0.65)',
-                border: '1px solid rgba(255,255,255,0.14)',
-                backdropFilter: 'blur(6px)',
+                background: 'rgba(10,10,10,0.72)',
+                border: '1px solid rgba(255,255,255,0.16)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                color: '#A8A8A8',
               }}
             >
               <Sparkle />
@@ -415,7 +419,16 @@ export default function Landing() {
                 La cursiva va en UNA palabra y al mismo tamaño óptico que el
                 resto (la Instrument Serif pinta más grande al mismo cuerpo, de
                 ahí el 0.94). Una línea entera en cursiva de palo seco a serif
-                convertía esto en un anuncio de perfume. */}
+                convertía esto en un anuncio de perfume.
+
+                EL PUNTO VA DENTRO DE LA CURSIVA. Medido, no hay ni un píxel de
+                espacio entre la «a» y el punto —el hueco real es de −0,02 px—,
+                pero se LEÍA separado, y con razón: una itálica se inclina a la
+                derecha y deja aire bajo el trazo final, y un punto redondo de
+                palo seco plantado ahí cae en mitad de ese aire. Metiéndolo en
+                la misma fuente y la misma inclinación, el espaciado lo resuelve
+                la tipografía en vez de quedar a merced de dos fuentes distintas
+                pegadas. */}
             <h1
               className="animate-entra mx-auto mt-6 text-[35px] leading-[1.08] text-ink-900 sm:mt-7 sm:text-[44px] lg:text-[52px]"
               style={{ animationDelay: '240ms', fontWeight: 500, letterSpacing: '-0.045em' }}
@@ -423,7 +436,7 @@ export default function Landing() {
               Prepara la semana.
               <br />
               Dibuja la{' '}
-              <span className="font-serif italic" style={{ fontSize: '0.94em' }}>jugada</span>.
+              <span className="font-serif italic" style={{ fontSize: '0.94em' }}>jugada.</span>
             </h1>
 
             <p
@@ -434,26 +447,24 @@ export default function Landing() {
               Todo tu equipo, en un mismo espacio.
             </p>
 
-            {/* Uno al lado del otro también en el móvil: `flex-nowrap`. Y sin
-                flecha en el principal, que sólo servía para hacerlo más ancho
-                que el secundario sin decir nada. */}
+            {/* CONTROLES, NO BOTONES DE FORMULARIO. Uno al lado del otro
+                también en el móvil, los dos del mismo tamaño, anchura según su
+                texto y nada de ocupar la pantalla de lado a lado. Sin flecha en
+                el principal: sólo servía para hacerlo más ancho que el otro sin
+                decir nada. `flex-wrap` sigue puesto para una pantalla
+                verdaderamente estrecha, pero a 390 px caben los dos en una
+                línea con sitio de sobra. */}
             <div
-              className="animate-entra mt-7 flex flex-nowrap items-center justify-center gap-2.5"
+              className="animate-entra mt-7 flex flex-wrap items-center justify-center gap-2"
               style={{ animationDelay: '500ms' }}
             >
-              <Link
-                to="/entrar"
-                /* 6 px exactos: `rounded-md` vale 12 en este proyecto —la
-                   escala está redefinida— y salían esquinas del doble. */
-                className="metal-claro inline-flex h-[43px] items-center justify-center rounded-[6px] px-[17px] text-[13.5px] font-medium text-ink-0"
-              >
+              <Link to="/entrar" className="control control-primario">
                 Crear mi club
               </Link>
               <button
                 type="button"
                 onClick={() => document.getElementById('producto')?.scrollIntoView({ behavior: 'smooth' })}
-                className="inline-flex h-[43px] items-center justify-center rounded-[6px] px-[17px] text-[13.5px] font-medium text-ink-800 backdrop-blur-md transition-colors duration-250 ease-suave"
-                style={{ background: 'rgba(10,10,10,0.5)', border: '1px solid rgba(255,255,255,0.25)' }}
+                className="control control-secundario"
               >
                 Ver producto
               </button>
