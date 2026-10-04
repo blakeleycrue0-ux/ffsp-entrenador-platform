@@ -96,6 +96,49 @@ for (const [etiqueta, w, h, escala] of TAMANOS) {
       cabeceraCta: caja('header a[href="/entrar"]:last-of-type'),
       lienzo: caja('main > section canvas'),
       desborde: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+
+      /* ── NITIDEZ ───────────────────────────────────────────────────────
+         Tres cosas distintas que se ven igual —todo blando— y que hay que
+         mirar por separado:
+
+         · El lienzo dibujado por debajo de la resolución de pantalla y
+           estirado por CSS. Es lo que hacía la versión anterior, a propósito,
+           y de ahí salía la «imagen pequeña ampliada».
+         · Un `filter` sobre el texto, aunque sea de cero. La animación de
+           entrada acababa en `blur(0)` con `both`, así que se quedaba puesto:
+           basta eso para que el elemento pase a su capa compuesta y Safari lo
+           rasterice, perdiendo el suavizado subpíxel.
+         · Un `transform` que no vuelve a `none` al terminar la entrada. */
+      lienzoNitido: (() => {
+        const c = document.querySelector('main > section canvas');
+        const r = c.getBoundingClientRect();
+        return {
+          almacen: [c.width, c.height],
+          css: [Math.round(r.width), Math.round(r.height)],
+          dpr: Math.min(window.devicePixelRatio || 1, 2),
+          estilo: getComputedStyle(c).filter,
+        };
+      })(),
+      sucios: [...portada.querySelectorAll('h1, p, span, a, button, svg')]
+        .map((el) => {
+          const c = getComputedStyle(el);
+          const mal = [];
+          if (c.filter !== 'none' && !/blur\(0/.test(c.filter)) mal.push(`filter:${c.filter}`);
+          if (c.filter !== 'none') mal.push(`filter:${c.filter}`);
+          if (c.transform !== 'none' && c.transform !== 'matrix(1, 0, 0, 1, 0, 0)') mal.push(`transform:${c.transform}`);
+          return mal.length ? `${el.tagName}.${el.className.toString().slice(0, 24)} → ${mal.join(' ')}` : null;
+        })
+        .filter(Boolean),
+
+      /* Nada de imagen de fondo ni de instantánea estática tapando el lienzo:
+         lo que se ve tiene que venir del renderizador vivo. */
+      imagenes: [...portada.querySelectorAll('*')]
+        .filter((el) => {
+          const f = getComputedStyle(el).backgroundImage;
+          return el.tagName === 'IMG' || (f !== 'none' && !f.startsWith('linear-gradient') && !f.startsWith('radial-gradient'));
+        })
+        .map((el) => el.tagName + ' ' + getComputedStyle(el).backgroundImage.slice(0, 60)),
+      lienzos: portada.querySelectorAll('canvas').length,
     };
   });
 
@@ -111,6 +154,17 @@ for (const [etiqueta, w, h, escala] of TAMANOS) {
   comprueba('un solo fotograma', Math.abs(m.portadaAlto - m.vh) < 2, `${Math.round(m.portadaAlto)} ≠ ${m.vh}`);
   comprueba('sin desborde horizontal', m.desborde <= 0, `${m.desborde} px`);
   comprueba('sin errores de consola', errores.length === 0, errores.join(' | '));
+
+  /* ── NITIDEZ ─────────────────────────────────────────────────────────── */
+  const ln = m.lienzoNitido;
+  comprueba('el lienzo va a resolución de pantalla',
+    ln.almacen[0] === Math.round(ln.css[0] * ln.dpr) && ln.almacen[1] === Math.round(ln.css[1] * ln.dpr),
+    `almacén ${ln.almacen.join('×')} para ${ln.css.join('×')} css a dpr ${ln.dpr}`);
+  comprueba('el lienzo no lleva filtro', ln.estilo === 'none', ln.estilo);
+  comprueba('ni filtros ni transformaciones sobre el texto de la portada',
+    m.sucios.length === 0, m.sucios.join(' · '));
+  comprueba('un solo lienzo, sin duplicados', m.lienzos === 1, `${m.lienzos}`);
+  comprueba('sin imágenes de fondo en la portada', m.imagenes.length === 0, m.imagenes.join(' · '));
 
   /* ── LA TELA CRUZA POR DETRÁS DEL TEXTO ──────────────────────────────
      Ésta es la que importa y la que fallaba: si el lienzo se corta por
@@ -136,14 +190,20 @@ for (const [etiqueta, w, h, escala] of TAMANOS) {
   comprueba('cuerpo del sello', entre(parseFloat(m.sello.fontSize), 11, 12), m.sello.fontSize);
   comprueba('radio del sello', m.sello.borderRadius === '5px', m.sello.borderRadius);
 
+  /* Controles pequeños y precisos, no botones de formulario. El móvil y el
+     escritorio no llevan la misma medida: 40/13 y 42/13,5. */
+  const movil = w < 640;
   comprueba('dos botones', bot.length === 2, `${bot.length}`);
   for (const b of bot) {
-    comprueba(`alto de «${b.texto}»`, entre(b.alto, 42, 44), `${b.alto}`);
-    comprueba(`radio de «${b.texto}»`, b.radio === '6px', b.radio);
-    comprueba(`cuerpo de «${b.texto}»`, entre(parseFloat(b.tipo), 13.5, 14), b.tipo);
+    comprueba(`alto de «${b.texto}»`, b.alto === (movil ? 40 : 42), `${b.alto}`);
+    comprueba(`radio de «${b.texto}»`, b.radio === '5px', b.radio);
+    comprueba(`cuerpo de «${b.texto}»`, parseFloat(b.tipo) === (movil ? 13 : 13.5), b.tipo);
   }
   comprueba('botones en una fila', Math.abs(bot[0].arriba - bot[1].arriba) < 1, 'apilados');
-  comprueba('alto de la llamada de cabecera', entre(m.cabeceraCta.alto, 39, 41), `${m.cabeceraCta.alto}`);
+  /* Y que NO ocupen la pantalla de lado a lado: son controles, no barras. */
+  const anchoBotones = bot[1].der - bot[0].izq;
+  comprueba('los botones no se comen el ancho', anchoBotones < w * 0.74, `${Math.round(anchoBotones)} de ${w} px`);
+  comprueba('alto de la llamada de cabecera', m.cabeceraCta.alto === 38, `${m.cabeceraCta.alto}`);
 
   /* ── El texto, tal cual se pidió ─────────────────────────────────────── */
   comprueba('sin espacio antes de la puntuación', !/\s+[,.;:!?]/.test(m.parrafo.texto), m.parrafo.texto);
@@ -215,8 +275,16 @@ for (const [etiqueta, w, h, escala] of TAMANOS) {
   console.log(`    la forma se desplaza ${pxPorSegundo.toFixed(2)} px de pantalla por segundo`);
   console.log(`    (${(pxPorSegundo * 5).toFixed(1)} px si apartas la vista cinco segundos)`);
 
-  comprueba('la tela se mueve', pxPorSegundo > 0.05, `${pxPorSegundo.toFixed(2)} px/s — parece congelada`);
-  comprueba('pero apenas se nota', pxPorSegundo < 2.2, `${pxPorSegundo.toFixed(2)} px/s — ondea`);
+  /* ── DÓNDE ESTÁ EL SITIO, Y POR QUÉ ESTOS DOS NÚMEROS ────────────────
+     Por arriba ya se sabe qué pasa: a nueve píxeles por segundo la tela
+     ondeaba. Por abajo también: se bajó a uno «para que no se notara», y lo
+     que se consiguió fue que no se viera —quien lo miraba daba por hecho que
+     la animación estaba rota, y tenía razón—. El objetivo no es que no se
+     note; es que no moleste. Entre cuatro y ocho: en cinco segundos la forma
+     se mueve entre veinte y cuarenta píxeles, que es de sobra para ver que un
+     pliegue ha cambiado de curvatura, y poco para distraer de leer. */
+  comprueba('la tela se mueve y se nota', pxPorSegundo > 3.5, `${pxPorSegundo.toFixed(2)} px/s — parece congelada`);
+  comprueba('pero no ondea', pxPorSegundo < 8.5, `${pxPorSegundo.toFixed(2)} px/s — ondea`);
   await ctx.close();
 }
 

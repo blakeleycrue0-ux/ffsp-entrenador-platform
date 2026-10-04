@@ -29,6 +29,10 @@ export function Particulas({ intensidad = 1, densidad = 1, className }: Props) {
       ref={ref}
       aria-hidden="true"
       className={className}
+      /* Ni `filter`, ni `transform`, ni `opacity` aquí ni en ningún padre que
+         contenga también el texto: cualquiera de los tres promueve una capa y
+         Safari rasteriza lo de dentro, con lo que la tipografía se ablanda. El
+         lienzo va en su propia capa, al fondo, y el texto en la suya. */
       style={{ display: 'block', width: '100%', height: '100%', pointerEvents: 'none' }}
     />
   );
@@ -64,13 +68,19 @@ export function Ambiente({
   className = '',
 }: Props & { velo?: keyof typeof VELOS | 'ninguno' }) {
   return (
+    /* Las capas, explícitas: lienzo al 0, velo al 1, y el contenido de la
+       portada al 2 por su cuenta. Van escritas porque dependían del orden del
+       documento, y eso se rompe en cuanto alguien mueve un bloque. Lo que NO
+       lleva este contenedor es `opacity` ni `filter`: envolvería al lienzo en
+       una capa compuesta y, si algún día el texto cayera dentro, Safari lo
+       rasterizaría y se ablandaría la tipografía. */
     <div
-      className={`pointer-events-none absolute inset-0 overflow-hidden bg-black ${className}`}
+      className={`pointer-events-none absolute inset-0 z-0 overflow-hidden bg-black ${className}`}
       aria-hidden="true"
     >
       <Particulas intensidad={intensidad} densidad={densidad} />
       {velo !== 'ninguno' && (
-        <div className="absolute inset-0" style={{ background: VELOS[velo] }} />
+        <div className="absolute inset-0 z-[1]" style={{ background: VELOS[velo] }} />
       )}
     </div>
   );
