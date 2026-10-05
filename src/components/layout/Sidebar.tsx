@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronsUpDown, LogOut, Plus, UserRound } from 'lucide-react';
+import { ChevronsUpDown, LogOut, PanelLeftClose, Plus, UserRound } from 'lucide-react';
 import { ClubCrest } from '@/components/ui/Brand';
 import { Avatar, Dropdown, MenuItem } from '@/components/ui';
 import { NAV, isActive } from './navigation';
@@ -8,7 +8,7 @@ import { clubName, currentStaff, visibleTeams } from '@/store/selectors';
 import { ROLE_LABEL } from '@/services/auth';
 import { cn } from '@/lib/utils';
 
-export function Sidebar({ onCreate }: { onCreate: () => void }) {
+export function Sidebar({ onCreate, onPlegar }: { onCreate: () => void; onPlegar: () => void }) {
   const { data, teamId, setTeamId, signOut } = useClub();
   const { pathname } = useLocation();
   const staff = currentStaff(data);
@@ -24,12 +24,22 @@ export function Sidebar({ onCreate }: { onCreate: () => void }) {
       {/* El club de quien trabaja aquí, no la marca del producto */}
       <div className="flex items-center gap-2.5 px-4 py-4">
         <ClubCrest name={clubName(data)} src={data.club?.crestUrl} size={30} />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-base font-semibold leading-tight text-ink-900">
             {clubName(data)}
           </p>
           {data.club?.season && <p className="text-xs text-ink-500">{data.club.season}</p>}
         </div>
+        {/* 236 px de menú permanente son 236 px que no tiene la pizarra, y en un
+            portátil eso es la diferencia entre ver el campo y mirarlo de lejos. */}
+        <button
+          onClick={onPlegar}
+          aria-label="Plegar el menú"
+          title="Plegar el menú (⌘B)"
+          className="-mr-1 grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-500 transition-colors hover:bg-raised hover:text-ink-900"
+        >
+          <PanelLeftClose size={16} />
+        </button>
       </div>
 
       {/* Equipo activo: da contexto a todas las pantallas */}

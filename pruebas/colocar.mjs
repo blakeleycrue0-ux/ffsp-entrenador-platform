@@ -215,7 +215,14 @@ async function arrastra(page, id, dx, dy) {
   const { ctx, page } = await abre();
   console.log('\n  añadir sin apilar');
 
+  /* El botón «Panel» sólo existe cuando el panel está CERRADO: pulsarlo a
+     ciegas lo cerraba. Se mira si la paleta está a la vista, que es lo que de
+     verdad hace falta. */
   const panel = page.getByRole('button', { name: 'Cono', exact: true }).first();
+  if (await panel.count() === 0) {
+    await page.getByRole('button', { name: 'Panel' }).click();
+    await page.waitForTimeout(600);
+  }
   for (let i = 0; i < 3; i++) { await panel.click(); await page.waitForTimeout(350); }
 
   const puntos = await page.evaluate(() =>
@@ -229,6 +236,48 @@ async function arrastra(page, id, dx, dy) {
   comprueba('no se apilan unos encima de otros', !juntos,
     puntos.map((p) => `${p.x},${p.y}`).join(' · '));
   await page.screenshot({ path: `${SALIDA}/anadir.png`, animations: 'disabled' });
+  await ctx.close();
+}
+
+{
+  const { ctx, page } = await abre();
+  console.log('\n  plegar el menú');
+
+  /* CUÁNTO CAMPO SE VE, que es de lo que iba la queja. Se mide el campo
+     DIBUJADO, no el lienzo: el lienzo crece con la ventana, pero el campo se
+     centra dentro conservando su proporción, así que un lienzo más ancho no
+     significa un campo más grande. Medir lo segundo y no lo primero habría
+     dado por bueno un cambio que no se nota. */
+  const anchoCampo = () => page.evaluate(() => {
+    const r = document.querySelector('main svg g [data-objeto]')?.ownerSVGElement.getBoundingClientRect();
+    const caja = document.querySelector('main svg').getBBox?.();
+    const svg = document.querySelector('main svg').getBoundingClientRect();
+    /* El campo ocupa el alto entero o el ancho entero, lo que toque por
+       proporción. Se deduce del `viewBox`. */
+    const vb = document.querySelector('main svg').getAttribute('viewBox').split(' ').map(Number);
+    const prop = vb[2] / vb[3];
+    return Math.round(Math.min(svg.width, svg.height * prop));
+  });
+
+  const antes = await anchoCampo();
+  const plegar = page.getByRole('button', { name: 'Plegar el menú' });
+  comprueba('hay un botón para plegar el menú', await plegar.count() > 0);
+  await plegar.click();
+  await page.waitForTimeout(600);
+  const despues = await anchoCampo();
+
+  comprueba('plegado, el campo se ve más grande', despues > antes * 1.15,
+    `${antes} → ${despues} px`);
+  comprueba('y hay un botón para traerlo de vuelta',
+    await page.getByRole('button', { name: 'Mostrar el menú' }).count() > 0);
+
+  /* Y que se acuerde: quien trabaja en un portátil pequeño no quiere volver a
+     plegarlo en cada pantalla. */
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(1200);
+  comprueba('el menú sigue plegado al recargar',
+    await page.getByRole('button', { name: 'Mostrar el menú' }).count() > 0);
+  await page.screenshot({ path: `${SALIDA}/menu-plegado.png`, animations: 'disabled' });
   await ctx.close();
 }
 
