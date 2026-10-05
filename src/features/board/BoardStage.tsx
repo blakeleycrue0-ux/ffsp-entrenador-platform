@@ -632,6 +632,11 @@ export function BoardStage({
             return (
               <g
                 key={obj.id}
+                /* Para poder señalar una ficha concreta desde una prueba. Lo
+                   que se comprueba de esta pantalla es dónde cae cada cosa al
+                   arrastrarla, y sin un asidero habría que buscarla por su
+                   aspecto, que cambia con cada vista. */
+                data-objeto={obj.id}
                 ref={(el) => {
                   if (el) nodes.current.set(obj.id, el);
                   else nodes.current.delete(obj.id);

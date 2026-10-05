@@ -142,15 +142,67 @@ export async function exportaVideo({
 const limpiarNombre = (nombre: string) =>
   nombre.replace(/[^\p{L}\p{N} _-]/gu, '').trim() || 'jugada';
 
-/** Descarga el archivo con la extensión que de verdad tiene. */
-export function guardaArchivo(blob: Blob, nombre: string, ext: string): void {
+/**
+ * Guardar el archivo, por el camino que funcione en ESTE aparato.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * POR QUÉ NO BASTA CON `a.download`. En el escritorio funciona y en el iPhone
+ * no: Safari de iOS **ignora el atributo `download` en direcciones `blob:`**.
+ * El enlace se pulsa, no pasa nada visible, y el vídeo se queda dentro de la
+ * página. Desde fuera eso se ve exactamente como «no se puede descargar», y
+ * por eso costó encontrarlo: el vídeo se grababa bien, lo que fallaba era el
+ * último paso.
+ *
+ * Lo que sí funciona en el móvil es compartir: `navigator.share` con el
+ * archivo abre la hoja del sistema, y desde ahí se guarda en Archivos o en
+ * Fotos, se manda por WhatsApp o se sube donde sea. Que es, además, lo que se
+ * quiere hacer con la jugada en el 90 % de los casos.
+ *
+ * El orden es: compartir si el aparato sabe → descargar si no → y si tampoco,
+ * abrir el vídeo en otra pestaña para que al menos se pueda guardar a mano.
+ * Devuelve por cuál se ha ido, para poder decirlo en pantalla en vez de dejar
+ * a la persona mirando un botón que no hace nada.
+ */
+export type Guardado = 'compartido' | 'descargado' | 'abierto' | 'cancelado';
+
+export async function guardaArchivo(blob: Blob, nombre: string, ext: string): Promise<Guardado> {
+  const archivo = `${limpiarNombre(nombre)}.${ext}`;
+
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    try {
+      const fichero = new File([blob], archivo, { type: blob.type });
+      /* `canShare` con el archivo delante: hay aparatos que comparten texto y
+         no archivos, y preguntarlo en general devuelve `true` y luego falla. */
+      if (!navigator.canShare || navigator.canShare({ files: [fichero] })) {
+        await navigator.share({ files: [fichero], title: archivo });
+        return 'compartido';
+      }
+    } catch (e) {
+      /* Cerrar la hoja de compartir no es un error: es que no querían. */
+      if ((e as Error)?.name === 'AbortError') return 'cancelado';
+      /* Cualquier otro fallo cae al camino de abajo. */
+    }
+  }
+
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${limpiarNombre(nombre)}.${ext}`;
-  a.click();
   // Revocar en el acto cancela la descarga en algunos navegadores.
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  const luego = () => setTimeout(() => URL.revokeObjectURL(url), 30_000);
+
+  const a = document.createElement('a');
+  if ('download' in a) {
+    a.href = url;
+    a.download = archivo;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    luego();
+    return 'descargado';
+  }
+
+  window.open(url, '_blank', 'noopener');
+  luego();
+  return 'abierto';
 }
 
 /** «2,4 MB», para que se sepa lo que se va a guardar. */
