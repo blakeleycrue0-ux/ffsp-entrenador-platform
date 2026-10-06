@@ -29,8 +29,8 @@ import { formatSeconds, type Playback, type Speed } from './playback';
 import {
   DRAW_COLORS, DRAW_LABEL, KIND_LABEL, MOVE_LABEL, MOVES, PITCH_OPTIONS, RESIZABLE, ROTATABLE,
   type DrawKind, type Keyframe, type ObjectKind, type PitchKind, type Point, type Scene, type Surface,
-  addDrawing, addObject, curvaTramo, duplicateObject, enderezaTramo, layoutSquad, layoutTeam,
-  moveObject, patchDrawing,
+  addDrawing, addObject, colocaObjeto, curvaTramo, duplicateObject, enderezaTramo, layoutSquad,
+  layoutTeam, moveObject, patchDrawing, PITCHES, quitaRecorrido, sitioLibre,
   patchKeyframe, patchObject, putRuta, removeDrawing, removeKeyframe, removeObject,
 } from './scene';
 import { largo as largoTrazo, procesaTrazo } from './trazo';
@@ -161,6 +161,14 @@ export function BoardEditor({
      nada que mirar y todo que añadir. En el móvil NO, porque ahí el panel es
      una hoja que tapa media pizarra y lo primero que se ve sería el panel en
      vez del campo; el botón «Panel» queda a la vista. */
+  /* ── COLOCAR O ANIMAR ─────────────────────────────────────────────────────
+     Arrastrar una ficha puede querer decir dos cosas opuestas, y antes sólo
+     hacía una: crear movimiento. De ahí venía que no se pudiera recolocar nada
+     sin que apareciera un recorrido.
+     Ahora se dice cuál de las dos. Y por defecto COLOCAR, porque al montar una
+     jugada lo primero y lo más frecuente es poner las cosas en su sitio; animar
+     viene después y es una decisión consciente. */
+  const [modo, setModo] = useState<'colocar' | 'animar'>('colocar');
   const [cajon, setCajon] = useState(() => scene.objects.length === 0 && !esEstrecha());
   const [exportando, setExportando] = useState(false);
 
@@ -172,8 +180,11 @@ export function BoardEditor({
   const drawing = (scene.drawings ?? []).find((d) => d.id === selectedDrawing) ?? null;
 
   const onMove = useCallback(
-    (id: string, at: Point) => commit(moveObject(scene, id, Math.round(playback.time), at)),
-    [commit, scene, playback.time],
+    (id: string, at: Point) => {
+      const t = Math.round(playback.time);
+      commit(modo === 'colocar' ? colocaObjeto(scene, id, t, at) : moveObject(scene, id, t, at));
+    },
+    [commit, scene, playback.time, modo],
   );
 
   /**
@@ -232,7 +243,11 @@ export function BoardEditor({
         : kind === 'nota'
           ? 'Texto'
           : '';
-      const point = at ?? { x: scene.pitch.startsWith('medio') ? 18 : 30, y: 22 };
+      /* Desde el panel no hay punto, así que se busca uno libre: si no, todo
+         lo que se añade cae en el mismo sitio y tapa lo anterior. Arrastrando
+         desde la paleta sí lo hay, y manda ése. */
+      const point = at
+        ?? sitioLibre(scene, { x: scene.pitch.startsWith('medio') ? 18 : 30, y: 22 }, PITCHES[scene.pitch]);
       commit(addObject(scene, { kind, label }, point));
     },
     [commit, scene],
@@ -537,11 +552,25 @@ export function BoardEditor({
         )}
 
         <div>
-          <p className="eyebrow mb-1.5">Movimiento</p>
+          <div className="mb-1.5 flex items-center justify-between gap-2">
+            <p className="eyebrow">Movimiento</p>
+            {selectedTrack.length >= 2 && (
+              /* Deshacer un movimiento entero borrando sus marcas de una en una
+                 son cinco o seis gestos, y el primero no es evidente. */
+              <button
+                onClick={() => commit(quitaRecorrido(scene, selectedObject.id))}
+                disabled={!editable}
+                className="inline-flex items-center gap-1 text-xs font-medium text-ink-600 transition-colors hover:text-bad disabled:opacity-40"
+              >
+                <Trash2 size={12} />
+                Quitar recorrido
+              </button>
+            )}
+          </div>
           {selectedTrack.length < 2 ? (
             <p className="text-sm leading-relaxed text-muted">
-              Todavía no se mueve. Lleva el cabezal a un instante posterior y arrástrala a su nueva
-              posición: ese recorrido se reproducirá de forma continua.
+              Todavía no se mueve. Pon el modo en <strong className="text-ink-800">Animar</strong>,
+              lleva el cabezal a un instante posterior y arrástrala a su nueva posición.
             </p>
           ) : (
             <ul className="space-y-2">
@@ -667,11 +696,41 @@ export function BoardEditor({
     </div>
   );
 
+  /* ── EL INTERRUPTOR QUE FALTABA ───────────────────────────────────────────
+     Va EN LA BARRA y no escondido en un panel, porque es lo que decide qué
+     pasa al arrastrar, que es el gesto que más se hace. Dice en una palabra en
+     qué modo estás, y se cambia de un toque. */
+  const interruptorModo = (
+    <div className="flex shrink-0 items-center rounded-xl bg-white/[0.05] p-0.5">
+      {([
+        ['colocar', 'Colocar', Move, 'Arrastrar lleva la ficha a otro sitio, sin crear movimiento'],
+        ['animar', 'Animar', Spline, 'Arrastrar crea un fotograma en este instante: la ficha se moverá hasta aquí'],
+      ] as const).map(([id, texto, Icono, ayuda]) => (
+        <button
+          key={id}
+          onClick={() => setModo(id)}
+          disabled={!editable}
+          aria-pressed={modo === id}
+          title={ayuda}
+          className={cn(
+            'inline-flex h-8 items-center gap-1.5 rounded-[10px] px-2.5 text-sm font-medium transition-colors disabled:opacity-35',
+            modo === id ? 'bg-ink-900 text-ink-0' : 'text-ink-600 hover:text-ink-900',
+          )}
+        >
+          <Icono size={14} />
+          {texto}
+        </button>
+      ))}
+    </div>
+  );
+
   /* Las mismas herramientas, sin barra: van dentro de una isla de cristal. */
   const herramientas = (
     /* Una sola fila, siempre. Envuelta, en un móvil se convierte en un bloque
        de tres filas encima del campo; sin envolver, se desliza. */
     <div className="flex flex-nowrap items-center gap-1">
+      {interruptorModo}
+      <span className="mx-0.5 h-6 w-px shrink-0 bg-line" />
       {HERRAMIENTAS.map((h) => (
         <button
           key={h.label}
@@ -1172,8 +1231,13 @@ function KeyframeRow({
         {first ? (
           <Tag size="sm">Inicio</Tag>
         ) : (
-          <button onClick={onRemove} className="text-xs text-muted hover:text-bad">
-            Quitar
+          <button
+            onClick={onRemove}
+            title="Borrar este fotograma"
+            className="inline-flex items-center gap-1 rounded-md border border-line px-1.5 py-1 text-xs font-medium text-ink-600 transition-colors hover:border-bad/50 hover:text-bad"
+          >
+            <Trash2 size={11} />
+            Borrar
           </button>
         )}
       </div>

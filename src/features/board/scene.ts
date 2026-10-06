@@ -472,6 +472,64 @@ export function moveObject(scene: Scene, objectId: string, t: number, at: Point)
   return putKeyframe(scene, objectId, t, at);
 }
 
+/**
+ * COLOCAR: llevar algo a otro sitio sin que eso cree movimiento.
+ * ---------------------------------------------------------------------------
+ * Es la otra mitad de `moveObject`, y faltaba. Arrastrar creaba SIEMPRE un
+ * fotograma en el instante del cabezal, así que no había manera de decir
+ * «esto no está donde quiero, ponlo aquí»: cada intento de recolocar una ficha
+ * le añadía un recorrido, y si el cabezal no estaba en cero, además dejaba la
+ * ficha quieta al principio y moviéndose a partir de ahí. Con el balón era
+ * peor, porque lo que se quiere casi siempre es mover DE DÓNDE SALE.
+ *
+ * Aquí se traslada el recorrido ENTERO: todos los fotogramas, los puntos de
+ * control de las curvas y los trazos dibujados a mano se desplazan lo mismo.
+ * El movimiento se conserva tal cual —misma forma, mismos tiempos— y sólo
+ * cambia de sitio. Mover sólo el primer fotograma deformaría la jugada, que es
+ * justo lo que no se pide cuando se dice «ponlo aquí».
+ *
+ * El desplazamiento se calcula contra DÓNDE ESTÁ EN ESTE INSTANTE, no contra
+ * el principio: lo que se arrastra es lo que se ve, y tiene que acabar bajo el
+ * dedo aunque el cabezal esté a mitad de la jugada.
+ */
+export function colocaObjeto(scene: Scene, objectId: string, t: number, at: Point): Scene {
+  const track = scene.tracks[objectId] ?? [];
+  if (track.length === 0) {
+    return { ...scene, tracks: { ...scene.tracks, [objectId]: [{ t: 0, x: at.x, y: at.y }] } };
+  }
+
+  const ahora = sampleTrack(track, t) ?? { x: track[0]!.x, y: track[0]!.y };
+  const dx = at.x - ahora.x;
+  const dy = at.y - ahora.y;
+  if (dx === 0 && dy === 0) return scene;
+
+  const movido = track.map((k) => ({
+    ...k,
+    x: k.x + dx,
+    y: k.y + dy,
+    ...(k.cx !== undefined ? { cx: k.cx + dx } : null),
+    ...(k.cy !== undefined ? { cy: k.cy + dy } : null),
+    ...(k.path ? { path: k.path.map((p) => ({ x: p.x + dx, y: p.y + dy })) } : null),
+  }));
+  return { ...scene, tracks: { ...scene.tracks, [objectId]: movido } };
+}
+
+/**
+ * Deja la ficha quieta donde empieza: fuera todos los fotogramas menos el
+ * primero, y fuera el recorrido que llevaba el primero.
+ *
+ * Borrar las marcas de una en una funciona, pero cuando lo que se quiere es
+ * deshacer un movimiento entero son cinco o seis gestos, y el primero de ellos
+ * no es evidente.
+ */
+export function quitaRecorrido(scene: Scene, objectId: string): Scene {
+  const track = scene.tracks[objectId] ?? [];
+  if (track.length <= 1) return scene;
+  const primero = track[0]!;
+  const limpio: Keyframe = { t: primero.t, x: primero.x, y: primero.y };
+  return { ...scene, tracks: { ...scene.tracks, [objectId]: [limpio] } };
+}
+
 /** Cambia el instante o el tipo de un fotograma sin tocar el resto. */
 export function patchKeyframe(
   scene: Scene, objectId: string, t: number, patch: Partial<Keyframe>,
@@ -485,6 +543,41 @@ export function patchKeyframe(
 export function removeKeyframe(scene: Scene, objectId: string, t: number): Scene {
   const track = (scene.tracks[objectId] ?? []).filter((k) => k.t !== t);
   return { ...scene, tracks: { ...scene.tracks, [objectId]: track } };
+}
+
+/**
+ * Un hueco libre cerca del sitio pedido.
+ *
+ * POR QUÉ HACE FALTA. Todo lo que se añadía desde el panel caía en el MISMO
+ * punto fijo. El segundo cono se ponía encima del primero, el balón encima del
+ * cono, y lo que se veía era una sola ficha: por eso parecía que «aparecían
+ * donde querían». Aparecían siempre en el mismo sitio, que es peor, porque
+ * además tapaban lo anterior.
+ *
+ * Se busca en espiral desde el punto pedido, en pasos de tres metros, hasta
+ * encontrar sitio donde no haya nada en el instante cero. Si no lo hay —un
+ * campo llenísimo—, se devuelve el punto pedido: mejor encima de algo que no
+ * añadir nada.
+ */
+export function sitioLibre(scene: Scene, cerca: Point, spec: PitchSpec): Point {
+  const ocupados = Object.values(scene.tracks)
+    .map((tr) => tr[0])
+    .filter((k): k is Keyframe => !!k);
+  const libre = (p: Point) =>
+    p.x >= 2 && p.x <= spec.length - 2 && p.y >= 2 && p.y <= spec.width - 2
+    && ocupados.every((k) => (k.x - p.x) ** 2 + (k.y - p.y) ** 2 > 9);
+
+  if (libre(cerca)) return cerca;
+  /* Espiral cuadrada: anillos cada vez más anchos alrededor del punto. */
+  for (let anillo = 1; anillo <= 12; anillo++) {
+    const r = anillo * 3;
+    for (let a = 0; a < 12; a++) {
+      const ang = (a / 12) * Math.PI * 2;
+      const p = { x: cerca.x + Math.cos(ang) * r, y: cerca.y + Math.sin(ang) * r * 0.6 };
+      if (libre(p)) return { x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10 };
+    }
+  }
+  return cerca;
 }
 
 export function addObject(scene: Scene, obj: Omit<BoardObject, 'id'>, at: Point): Scene {

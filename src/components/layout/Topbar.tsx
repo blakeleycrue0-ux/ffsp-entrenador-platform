@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Bell, CheckCheck, Plus, Search } from 'lucide-react';
+import { Bell, CheckCheck, PanelLeftOpen, Plus, Search } from 'lucide-react';
 import { Avatar, Button, Dot, Dropdown } from '@/components/ui';
 import { Wordmark } from '@/components/ui/Brand';
 import { useClub } from '@/store/store';
@@ -15,7 +15,15 @@ const NOTIF_TONE: Record<Notification['icon'], 'bad' | 'info' | 'neutral' | 'war
   partido: 'warn',
 };
 
-export function Topbar({ onSearch, onCreate }: { onSearch: () => void; onCreate: () => void }) {
+export function Topbar({
+  onSearch, onCreate, menu, onMenu,
+}: {
+  onSearch: () => void;
+  onCreate: () => void;
+  /** Si el menú de la izquierda está desplegado. */
+  menu: boolean;
+  onMenu: () => void;
+}) {
   const { data, actions } = useClub();
   const navigate = useNavigate();
   const staff = currentStaff(data);
@@ -40,6 +48,19 @@ export function Topbar({ onSearch, onCreate }: { onSearch: () => void; onCreate:
       <Link to="/app" className="lg:hidden">
         <Wordmark size="sm" showSubtitle={false} />
       </Link>
+
+      {/* Sólo cuando está plegado: con el menú a la vista, el botón de
+          desplegarlo no dice nada y el de plegarlo ya está dentro de él. */}
+      {!menu && (
+        <button
+          onClick={onMenu}
+          aria-label="Mostrar el menú"
+          title="Mostrar el menú (⌘B)"
+          className="hidden h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-500 transition-colors hover:bg-raised hover:text-ink-900 lg:grid"
+        >
+          <PanelLeftOpen size={16} />
+        </button>
+      )}
 
       <button
         onClick={onSearch}

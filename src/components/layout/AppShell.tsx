@@ -62,13 +62,41 @@ export function useAnchura(a: Anchura) {
   }, [a, set]);
 }
 
+/**
+ * ¿Está desplegado el menú de la izquierda?
+ * ---------------------------------------------------------------------------
+ * Va en `localStorage` y no en la base de datos a propósito: es una comodidad
+ * de ESTE aparato, no un dato del club. Quien trabaja en un portátil pequeño lo
+ * quiere plegado y en un monitor grande desplegado, y es la misma persona.
+ *
+ * La lectura va envuelta porque en una ventana privada o con el almacenamiento
+ * bloqueado `localStorage` lanza en vez de devolver nulo, y eso tumbaría la
+ * aplicación entera antes de pintar nada.
+ */
+const LLAVE_MENU = 'p360.menu';
+function menuGuardado(): boolean {
+  try {
+    return window.localStorage.getItem(LLAVE_MENU) !== 'plegado';
+  } catch {
+    return true;
+  }
+}
+
 export function AppShell() {
   const [search, setSearch] = useState(false);
+  const [menu, setMenu] = useState(menuGuardado);
   const [create, setCreate] = useState(false);
   const [anchura, setAnchura] = useState<Anchura>('ancho');
   const { pathname } = useLocation();
 
-  // Atajos: ⌘K buscar · ⌘I crear
+  const alternaMenu = useCallback(() => {
+    setMenu((m) => {
+      try { window.localStorage.setItem(LLAVE_MENU, m ? 'plegado' : 'abierto'); } catch { /* da igual */ }
+      return !m;
+    });
+  }, []);
+
+  // Atajos: ⌘K buscar · ⌘I crear · ⌘B plegar el menú
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
@@ -80,10 +108,16 @@ export function AppShell() {
         e.preventDefault();
         setCreate(true);
       }
+      /* ⌘B, como en todos los editores. Quien trabaja en la pizarra lo va a
+         usar cada dos por tres y no quiere ir a buscar el botón. */
+      if (mod && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        alternaMenu();
+      }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, []);
+  }, [alternaMenu]);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -95,11 +129,23 @@ export function AppShell() {
 
   return (
     <AnchuraContexto.Provider value={valor}>
-      <div className="min-h-screen bg-surface">
-        <Sidebar onCreate={openCreate} />
+      {/* Plegar el menú es poner su ancho a cero: todo lo que se aparta de él
+          —el contenido, la cabecera, el espacio de trabajo de la pizarra— lo
+          hace leyendo esta misma variable, así que no hay dos sitios donde
+          acordarse del número. */}
+      <div
+        className="min-h-screen bg-surface"
+        style={menu ? undefined : ({ '--sidebar-w': '0px' } as React.CSSProperties)}
+      >
+        {menu && <Sidebar onCreate={openCreate} onPlegar={alternaMenu} />}
 
         <div className="lg:pl-[var(--sidebar-w)]">
-          <Topbar onSearch={() => setSearch(true)} onCreate={openCreate} />
+          <Topbar
+            onSearch={() => setSearch(true)}
+            onCreate={openCreate}
+            menu={menu}
+            onMenu={alternaMenu}
+          />
 
           <main
             className="mx-auto w-full"

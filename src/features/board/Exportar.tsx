@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, Checkbox, Segmented } from '@/components/ui';
 import { AJUSTES_POR_DEFECTO, type Ajustes } from './lienzo';
 import {
-  exportaVideo, formatoDisponible, guardaArchivo, tamano, type Resultado,
+  exportaVideo, formatoDisponible, guardaArchivo, tamano, type Guardado, type Resultado,
 } from './exportVideo';
 import type { Scene } from './scene';
 import { cn } from '@/lib/utils';
@@ -41,6 +41,7 @@ export function Exportar({
   const [error, setError] = useState<string | null>(null);
   const [salida, setSalida] = useState<Resultado | null>(null);
   const [url, setUrl] = useState<string | null>(null);
+  const [guardado, setGuardado] = useState<Guardado | null>(null);
   const aborto = useRef<AbortController | null>(null);
 
   const formato = formatoDisponible();
@@ -204,10 +205,20 @@ export function Exportar({
               <Button
                 size="lg"
                 block
-                onClick={() => guardaArchivo(salida.blob, nombre, salida.formato.ext)}
+                onClick={async () => setGuardado(await guardaArchivo(salida.blob, nombre, salida.formato.ext))}
               >
                 Guardar vídeo
               </Button>
+              {/* SE DICE POR DÓNDE HA SALIDO. En el móvil no hay carpeta de
+                  descargas a la vista, así que un botón que no deja rastro se
+                  lee como un botón roto —y es justo lo que pasaba—. */}
+              {guardado && guardado !== 'cancelado' && (
+                <p className="text-center text-sm text-ink-500">
+                  {guardado === 'compartido' && 'Elige dónde guardarlo en la hoja de tu móvil.'}
+                  {guardado === 'descargado' && 'Guardado en tus descargas.'}
+                  {guardado === 'abierto' && 'Se ha abierto en otra pestaña: manténlo pulsado para guardarlo.'}
+                </p>
+              )}
               <Button size="lg" block variant="ghost" onClick={() => { setEstado('eligiendo'); setSalida(null); }}>
                 Hacer otra
               </Button>
