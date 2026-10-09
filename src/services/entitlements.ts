@@ -37,13 +37,16 @@ export type Capacidad =
   | 'calendario'
   | 'pizarra'
   | 'analiticas'
-  | 'cuerpo-tecnico'
+  | 'valoraciones'
   /* De Pro en adelante */
   | 'pizarra-avanzada'
   | 'exportar-video'
-  | 'analiticas-avanzadas'
-  | 'informes'
   /* De Max en adelante */
+  | 'cuerpo-tecnico'
+  | 'analiticas-avanzadas'
+  | 'comparativas'
+  | 'informes'
+  | 'historial'
   | 'panel-de-club'
   | 'analiticas-entre-equipos'
   | 'roles-y-permisos';
@@ -74,19 +77,47 @@ export const CAPACIDADES: Record<Capacidad, Ficha> = {
   calendario: { nombre: 'Calendario', desde: 'free', lista: true },
   pizarra: { nombre: 'Pizarra táctica', desde: 'free', lista: true },
   analiticas: { nombre: 'Analíticas', desde: 'free', lista: true },
-  'cuerpo-tecnico': { nombre: 'Cuerpo técnico', desde: 'free', lista: true },
+
+  /* LA TABLA EXISTE Y LA PANTALLA NO. `session_player_ratings` está creada,
+     con su clave única por sesión y jugadora y su `check (rating between 1
+     and 10)`, pero NINGUNA línea del código de la aplicación la lee ni la
+     escribe: buscado «rating» en todo `src/` y no aparece una sola vez. Así
+     que esto todavía no se puede usar, y por eso va a `lista: false`. Se
+     pondrá a `true` el día que haya dónde meter la nota, no antes. */
+  valoraciones: { nombre: 'Evaluaciones de jugadoras (1–10)', desde: 'free', lista: false },
 
   /* Ya construidas: trayectorias a mano alzada y exportación de vídeo. */
   'pizarra-avanzada': { nombre: 'Trayectorias a mano alzada', desde: 'pro', lista: true },
   'exportar-video': { nombre: 'Exportar jugadas en vídeo', desde: 'pro', lista: true },
 
-  /* Aún por construir. No se anuncian todavía. */
-  'analiticas-avanzadas': { nombre: 'Analíticas avanzadas', desde: 'pro', lista: false },
-  informes: { nombre: 'Informes', desde: 'pro', lista: false },
+  /* ── De Max en adelante ────────────────────────────────────────────────
+     Encuadre comercial de octubre de 2026: Pro es un entrenador con su
+     equipo; Max es un club con varios equipos y varias personas.
 
+     OJO CON `cuerpo-tecnico`. Es la única de esta lista que está CONSTRUIDA
+     y que hasta ahora venía en Gratis. Moverla aquí es una decisión
+     comercial, no un arreglo: el día que se abra el cobro, un club en Gratis
+     o en Pro dejará de poder tener dos entrenadores en el mismo equipo. Hoy
+     no cambia nada —no hay nada contratable y `puede()` dice que sí a todo—
+     y además ninguna pantalla llama todavía a `puede()`, así que esto sólo
+     afecta a lo que se enseña en la comparativa de planes. Volver a dejarla
+     en `free` es cambiar una palabra. */
+  'cuerpo-tecnico': { nombre: 'Acceso para varios entrenadores', desde: 'max', lista: true },
+
+  /* Aún por construir. No se anuncian en ninguna lista. */
+  'analiticas-avanzadas': { nombre: 'Estadísticas avanzadas', desde: 'max', lista: false },
+  comparativas: { nombre: 'Comparativas de rendimiento', desde: 'max', lista: false },
+  informes: { nombre: 'Informes exportables en PDF', desde: 'max', lista: false },
+  historial: { nombre: 'Historial completo de rendimiento', desde: 'max', lista: false },
   'panel-de-club': { nombre: 'Panel del club', desde: 'max', lista: false },
   'analiticas-entre-equipos': { nombre: 'Analíticas entre equipos', desde: 'max', lista: false },
   'roles-y-permisos': { nombre: 'Roles y permisos', desde: 'max', lista: false },
+
+  /* NO ESTÁ AQUÍ, Y NO ES UN OLVIDO: «soporte prioritario». No es una
+     capacidad del producto —no hay sistema de soporte de ninguna clase en
+     este código— sino un compromiso de atender antes a quien paga. Eso lo
+     promete una persona, no una tabla, y ponerlo en la lista de funciones
+     sería vender algo que el programa no hace. */
 };
 
 const ORDEN: Record<PlanTier, number> = { free: 0, pro: 1, max: 2 };

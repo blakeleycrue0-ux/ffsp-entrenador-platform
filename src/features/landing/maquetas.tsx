@@ -159,8 +159,22 @@ export function MaquetaPanel({ className = '' }: { className?: string }) {
 
 /* ═════════════════════════ 2 · Ficha de jugadora ═════════════════════════ */
 
+/**
+ * AQUÍ HABÍA UNA «VALORACIÓN POR SESIÓN» QUE NO EXISTE.
+ *
+ * La tarjeta enseñaba un gráfico de notas por entrenamiento. La tabla
+ * `session_player_ratings` está creada en la base, con su `check (rating
+ * between 1 and 10)`, pero no hay NI UNA línea de la aplicación que la lea o
+ * la escriba: buscado «rating» en todo `src/`, cero resultados. O sea que la
+ * portada estaba enseñando una pantalla que nadie puede abrir.
+ *
+ * Lo que la sustituye —quién vino a cada uno de los últimos entrenamientos—
+ * sí está construido y es `attendance`, que la aplicación lee y guarda todos
+ * los días.
+ */
 export function MaquetaJugadora({ className = '' }: { className?: string }) {
-  const sesiones = [0.8, 0.6, 0.75, 0.9, 0.7, 0.95, 0.85];
+  /* Siete sesiones: vino, vino, faltó, vino… */
+  const sesiones = [true, true, false, true, true, true, false];
   return (
     <Marco className={className}>
       <Barra titulo="Plantilla · Ficha" />
@@ -197,19 +211,23 @@ export function MaquetaJugadora({ className = '' }: { className?: string }) {
         </div>
 
         <div>
-          <Rotulo>Valoración por sesión</Rotulo>
-          {/* Un gráfico de barras de verdad, dibujado con cajas: ni librería
-              ni imagen. Siete sesiones, que es lo que cabe sin apretarlo. */}
+          <Rotulo>Asistencia por sesión</Rotulo>
+          {/* Dibujado con cajas: ni librería ni imagen. Siete sesiones, que
+              es lo que cabe sin apretarlo. Alta = vino, baja = faltó. */}
           <div className="mt-[0.571em] flex h-[3.429em] items-end gap-[0.429em]" aria-hidden>
-            {sesiones.map((v, i) => (
+            {sesiones.map((vino, i) => (
               <span
                 key={i}
-                className="flex-1 rounded-[0.143em] bg-gradient-to-t from-marca-600 to-cielo"
-                style={{ height: `${Math.round(v * 100)}%` }}
+                className={`flex-1 rounded-[0.143em] ${
+                  vino ? 'bg-gradient-to-t from-marca-600 to-cielo' : 'bg-white/12'
+                }`}
+                style={{ height: vino ? '100%' : '22%' }}
               />
             ))}
           </div>
-          <p className="mt-[0.429em] text-[0.714em] text-white/40">Últimas siete sesiones</p>
+          <p className="mt-[0.429em] text-[0.714em] text-white/40">
+            Últimas siete sesiones · faltó a dos
+          </p>
         </div>
       </div>
     </Marco>

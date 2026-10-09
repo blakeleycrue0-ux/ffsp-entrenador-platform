@@ -181,6 +181,13 @@ const FAQ: [string, string][] = [
     '¿Valora lesiones o predice el rendimiento?',
     'No. Guarda lo que anota el cuerpo técnico, con sus fechas y sus limitaciones. No emite diagnósticos ni estimaciones: eso es competencia del personal sanitario del club.',
   ],
+  /* SIN CIFRAS EN ESTE TEXTO, A PROPÓSITO. Los importes están en la tabla
+     `plans` y la sección de precios los lee de ahí; repetirlos aquí a mano
+     garantiza que algún día uno de los dos sitios mienta. */
+  [
+    '¿Cuánto cuesta y qué pasa si no pago?',
+    'Hay un plan gratuito con un equipo, para siempre y sin tarjeta, y dos de pago con los importes que verás más arriba. Ahora mismo la pasarela de cobro no está abierta: no se puede contratar nada y no hay ninguna función cerrada. Cuando se abra, dejar de pagar nunca borrará nada: se conservan los equipos y los datos, y simplemente no se crean equipos nuevos por encima del límite del plan.',
+  ],
 ];
 
 /* ───────────────────────────────── Piezas ────────────────────────────────── */
@@ -812,11 +819,23 @@ function Historia({
 /**
  * Los planes, de la base de datos.
  *
- * NO HAY PRECIOS INVENTADOS. `plans.price_monthly` está a nulo porque todavía
- * no hay una decisión, así que donde iría la cifra pone lo que pasa de verdad:
- * que no se puede contratar. Poner «9 €/mes» de adorno en una portada es
- * publicidad engañosa, y además el día que el precio sea otro, alguien ya lo
- * habrá leído.
+ * LAS CIFRAS SALEN DE `plans`, NO DE AQUÍ. Ni una sola está escrita en este
+ * fichero: el importe, el importe anual, cuántos equipos caben y los días de
+ * prueba se leen de la tabla, que es donde los decidió quien manda en el
+ * producto (migración 0012). Si mañana Pro cuesta otra cosa, se cambia una
+ * fila y esta sección cuenta la verdad sin desplegar nada. Escribir «5,99 €»
+ * en el HTML sería garantizar que algún día la portada mienta.
+ *
+ * Y SI LA CONSULTA FALLA, NO SE INVENTA NADA. Sin red, `planes` llega a nulo y
+ * la tarjeta dice que el precio no se ha podido cargar, en vez de enseñar una
+ * cifra de repuesto.
+ *
+ * PRECIO PUESTO NO ES CAJA ABIERTA. Son dos columnas distintas: el importe
+ * vive en `price_monthly`, y poder pagar depende de `stripe_price_monthly`,
+ * que sigue vacía porque la cuenta de Stripe no está terminada. De ahí
+ * `contratable`. Mientras sea falso, ninguna tarjeta ofrece pagar y la
+ * aplicación no cierra ninguna función: se dice arriba, en grande, en vez de
+ * dejar que alguien lo descubra al pulsar.
  *
  * Lo que trae cada plan tampoco se escribe aquí: sale de `todoLoQueTrae`, el
  * mismo catálogo que usa la pantalla de facturación dentro de la aplicación, y
@@ -836,30 +855,56 @@ function Precios({ planes }: { planes: Plan[] | null }) {
   return (
     <section id="precios" className="scroll-mt-24 border-t border-black/[0.06] bg-white">
       <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
-        <Revelar className="max-w-[44rem]">
+        <Revelar className="max-w-[46rem]">
           <Rotulo>Precios</Rotulo>
-          <Titular>Hoy, todo gratis.</Titular>
-          <Parrafo className="mt-4 max-w-[48ch]">
-            No hay planes de pago decididos ni pasarela de cobro. Mientras no la haya, ningún plan
-            cierra nada: las tres columnas dan lo mismo, y se dice en vez de disimularlo con
-            tres listas iguales.
+          <Titular>
+            Un plan gratis de verdad,
+            <br />y dos que no asustan.
+          </Titular>
+          <Parrafo className="mt-4 max-w-[52ch]">
+            Pensados para un entrenador de fútbol base y para clubes pequeños, que es quien va a
+            usar esto. Gratis no es una prueba: es un plan, con un equipo, para siempre.
           </Parrafo>
         </Revelar>
 
-        <div className="mt-12 grid gap-4 lg:grid-cols-3">
+        {/* EL AVISO VA ARRIBA Y NO EN LA LETRA PEQUEÑA. Hay precios puestos y
+            no hay forma de pagarlos: quien lea las tarjetas tiene que saberlo
+            antes de buscar el botón, no después. */}
+        {!seVende && (
+          <Revelar delay={80}>
+            <p className="mt-7 max-w-[52rem] rounded-2xl border border-marca-600/20 bg-marca-50 px-4 py-3.5 text-[14px] leading-relaxed text-tinta sm:px-5">
+              <span className="font-semibold">Todavía no se puede pagar.</span>{' '}
+              La pasarela de cobro no está abierta, así que hoy no hay nada que contratar y
+              <span className="font-semibold"> no hay ninguna función cerrada</span>: se use el
+              plan que se use, está todo disponible. Estos son los precios que se aplicarán
+              cuando se abra.
+            </p>
+          </Revelar>
+        )}
+
+        <div className="mt-8 grid gap-4 lg:grid-cols-3">
           {niveles.map((tier, i) => {
             const plan = buscar(tier);
             const destacado = tier === 'pro';
-            const precio = importe(plan?.priceMonthly ?? null, plan?.currency ?? 'eur');
+            const moneda = plan?.currency ?? 'eur';
+            const mensual = importe(plan?.priceMonthly ?? null, moneda);
+            const anual = importe(plan?.priceYearly ?? null, moneda);
+            /* El ahorro no se escribe: se resta. Doce mensualidades menos lo
+               que cuesta el año. Así no puede quedarse desfasado respecto a
+               los dos importes que tiene al lado. */
+            const ahorro =
+              plan && plan.priceMonthly !== null && plan.priceYearly !== null && plan.priceMonthly > 0
+                ? importe(plan.priceMonthly * 12 - plan.priceYearly, moneda)
+                : null;
+            const gratis = plan?.priceMonthly === 0;
             const equipos = equiposDe(plan?.maxTeams);
-            /* Gratis enseña TODO lo que hay construido. Los de arriba enseñan
-               sólo lo que añadirían el día que se puedan contratar: repetir
-               debajo de Pro las mismas diez líneas obliga a leerlas dos veces
-               para descubrir que son las mismas. */
-            const lista = tier === 'free' ? todoLoQueTrae('free', false) : loQueFalta(tier, true);
+            /* Gratis enseña lo suyo; los de arriba, sólo lo que AÑADEN.
+               Repetir debajo de Pro las mismas diez líneas obliga a leerlas
+               dos veces para descubrir que son las mismas. */
+            const lista = tier === 'free' ? todoLoQueTrae('free') : loQueFalta(tier);
 
             return (
-              <Revelar key={tier} delay={i * 80}>
+              <Revelar key={tier} delay={160 + i * 80}>
                 <article
                   className={cn(
                     'flex h-full flex-col rounded-3xl border p-6 sm:p-7',
@@ -879,15 +924,23 @@ function Precios({ planes }: { planes: Plan[] | null }) {
                     )}
                   </div>
 
-                  <p className="mt-3 text-[32px] font-semibold leading-none tracking-[-0.03em] text-tinta">
-                    {tier === 'free' ? '0 €' : (precio ?? 'Sin precio')}
+                  <p className="mt-3 flex items-baseline gap-1.5">
+                    <span className="text-[34px] font-semibold leading-none tracking-[-0.03em] text-tinta">
+                      {mensual ?? 'Sin precio'}
+                    </span>
+                    {mensual && !gratis && (
+                      <span className="text-[14px] font-medium text-grisis">/mes</span>
+                    )}
                   </p>
-                  <p className="mt-1.5 text-[13px] text-grisis">
-                    {tier === 'free'
-                      ? 'Para siempre, sin tarjeta'
-                      : precio
-                        ? 'al mes'
-                        : 'todavía no se puede contratar'}
+
+                  <p className="mt-1.5 min-h-[1.25rem] text-[13px] text-grisis">
+                    {!plan
+                      ? 'No hemos podido cargar el precio'
+                      : gratis
+                        ? 'Para siempre, sin tarjeta'
+                        : anual
+                          ? `o ${anual} al año${ahorro ? ` — ahorras ${ahorro}` : ''}`
+                          : 'Sin precio anual'}
                   </p>
 
                   {equipos && (
@@ -897,7 +950,7 @@ function Precios({ planes }: { planes: Plan[] | null }) {
                   )}
 
                   <p className="mt-4 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-grisis">
-                    {tier === 'free' ? 'Incluye' : 'Añadiría'}
+                    {tier === 'free' ? 'Incluye' : `Todo lo de ${tier === 'pro' ? 'Gratis' : 'Pro'}, y además`}
                   </p>
 
                   {lista.length > 0 ? (
@@ -910,23 +963,31 @@ function Precios({ planes }: { planes: Plan[] | null }) {
                       ))}
                     </ul>
                   ) : (
-                    /* Max hoy no añade ninguna función construida: lo que lo
-                       distingue es cuántos equipos caben. Decirlo es mejor que
-                       rellenar la tarjeta con promesas. */
+                    /* Si un plan no añade NINGUNA función construida, lo que
+                       lo distingue es cuántos equipos caben. Decirlo es mejor
+                       que rellenar la tarjeta con promesas. */
                     <p className="mt-2.5 flex-1 text-[14px] leading-relaxed text-grisis">
-                      Nada que no esté ya en Pro. Lo que cambia es cuántos equipos caben.
+                      Ninguna función nueva de momento: lo que cambia es cuántos equipos caben.
+                    </p>
+                  )}
+
+                  {/* Los días de prueba salen de la tabla, igual que todo lo
+                      demás, y sólo se enseñan cuando haya algo que probar. */}
+                  {seVende && !gratis && (plan?.trialDays ?? 0) > 0 && (
+                    <p className="mt-3 text-[12.5px] text-grisis">
+                      {plan?.trialDays} días de prueba antes del primer cobro
                     </p>
                   )}
 
                   <div className="mt-6">
-                    {tier === 'free' ? (
+                    {gratis ? (
                       <Link to="/entrar" className="boton-azul h-11 w-full text-[14.5px]">
                         Empezar gratis
                       </Link>
                     ) : (
                       <p className="rounded-xl border border-black/[0.08] bg-[#F6F8FC] px-3 py-2.5 text-center text-[13px] leading-relaxed text-grisis">
                         {seVende
-                          ? 'Disponible desde la aplicación'
+                          ? 'Se contrata desde la aplicación'
                           : 'Hoy ya lo tienes, sin pagar nada'}
                       </p>
                     )}
