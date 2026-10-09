@@ -66,6 +66,36 @@ export default {
         muted: '#A1A1A1',
         night: '#050505',
 
+        /* ────────────────────────────────────────────────────────────────────
+           EL AZUL, Y DÓNDE VIVE
+           ────────────────────────────────────────────────────────────────────
+           SÓLO EN LA PORTADA. La aplicación por dentro sigue siendo negra,
+           blanca y grafito, y eso no es incoherencia: son dos trabajos
+           distintos. La portada tiene que detener a alguien que no sabe qué es
+           esto; la herramienta tiene que desaparecer mientras se usa ocho
+           horas a la semana. Stripe hace exactamente lo mismo: una portada
+           llena de color y un panel de control casi gris.
+           Por eso el azul va en su propio espacio de nombres —`marca-*`— y no
+           sustituye a `ink`. Así es imposible que se cuele dentro por un
+           descuido: una clase `bg-marca-600` en una pantalla del producto se
+           ve a la legua en una revisión. */
+        marca: {
+          50:  '#EFF5FF',
+          100: '#DCE8FF',
+          200: '#C0D6FF',
+          300: '#94BCFF',
+          400: '#5F98FF',
+          500: '#168BFF',  // azul eléctrico
+          600: '#0868F9',  // el azul de marca
+          700: '#0A52CC',
+          800: '#0F449F',
+          900: '#123B7D',
+        },
+        cielo: '#36C8FF',    // el claro, para los realces
+        lavanda: '#6965FF',  // el frío, sólo en los degradados
+        tinta: '#10131A',    // el casi negro de la portada
+        grisis: '#727988',   // el gris de los párrafos sobre blanco
+
         /* LAS POSICIONES, en grises. Eran cuatro colores —naranja, azul,
            verde, rojo— y cuatro colores en una plantilla es un semáforo. En
            grises se leen igual de bien y además se ordenan solas: la portera

@@ -514,6 +514,150 @@
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   LA PORTADA
+   ══════════════════════════════════════════════════════════════════════════
+   Todo lo de aquí abajo es SÓLO de la página pública. Va al final y agrupado
+   a propósito: la aplicación por dentro no usa ni una de estas clases, y
+   tenerlas juntas hace evidente de un vistazo que el azul no se ha colado en
+   el producto.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* El cielo de la cabecera. Tres paradas y no cinco: un degradado con muchos
+     colores se convierte en un arcoíris y deja de leerse como luz. */
+  .cielo-marca {
+    background-image:
+      radial-gradient(120% 90% at 85% 8%, rgba(54, 200, 255, 0.55) 0%, rgba(54, 200, 255, 0) 55%),
+      radial-gradient(90% 80% at 8% 0%, rgba(105, 101, 255, 0.5) 0%, rgba(105, 101, 255, 0) 60%),
+      linear-gradient(115deg, #5145FF 0%, #0878FF 45%, #28CBF8 100%);
+  }
+
+  /* El mismo cielo, más apagado, para el cierre: si los dos pesan igual, la
+     página empieza y acaba con la misma nota y no se nota que ha avanzado. */
+  .cielo-cierre {
+    background-image:
+      radial-gradient(100% 120% at 15% 110%, rgba(54, 200, 255, 0.45) 0%, rgba(54, 200, 255, 0) 60%),
+      linear-gradient(110deg, #123B7D 0%, #0868F9 55%, #168BFF 100%);
+  }
+
+  /* EL CORTE DIAGONAL. Es lo que hace que la cabecera no parezca una caja de
+     color: la frontera con el blanco de abajo no es recta. Va en un
+     pseudoelemento del contenedor y no en una imagen, para que siga el ancho
+     de la ventana sin pixelarse ni pesar nada. */
+  .corte-diagonal::after {
+    content: '';
+    position: absolute;
+    inset-inline: -2px;
+    bottom: -1px;
+    height: clamp(44px, 7vw, 120px);
+    background: #FFFFFF;
+    clip-path: polygon(0 100%, 100% 0, 100% 100%);
+  }
+
+  /* El texto que cambia de color dentro del titular. Sobre el cielo, blanco
+     puro para lo que manda y cielo claro para lo que acompaña: dos pesos, no
+     dos colores de marca. */
+  .realce-claro { color: #BFE6FF; }
+
+  /* ── Los controles de la portada ──────────────────────────────────────── */
+  .boton-marca {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl font-semibold;
+    background-image: linear-gradient(180deg, #FFFFFF 0%, #F2F6FF 100%);
+    color: #0A52CC;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 6px 20px -6px rgba(8, 40, 110, 0.45),
+      0 2px 6px -2px rgba(8, 40, 110, 0.3);
+    transition: transform .22s cubic-bezier(.16, 1, .3, 1), box-shadow .22s cubic-bezier(.16, 1, .3, 1);
+  }
+  .boton-marca:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 1) inset,
+      0 10px 26px -8px rgba(8, 40, 110, 0.5),
+      0 3px 8px -2px rgba(8, 40, 110, 0.35);
+  }
+
+  .boton-vidrio {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl font-semibold text-white;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background .22s ease, border-color .22s ease;
+  }
+  .boton-vidrio:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* El azul sólido, para los botones sobre blanco. */
+  .boton-azul {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl font-semibold text-white;
+    background-image: linear-gradient(180deg, #168BFF 0%, #0868F9 100%);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.28) inset,
+      0 8px 22px -8px rgba(8, 104, 249, 0.55);
+    transition: transform .22s cubic-bezier(.16, 1, .3, 1), box-shadow .22s cubic-bezier(.16, 1, .3, 1);
+  }
+  .boton-azul:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.35) inset,
+      0 12px 28px -8px rgba(8, 104, 249, 0.65);
+  }
+
+  /* ── Las maquetas que flotan ──────────────────────────────────────────── */
+  /* Las tarjetas de producto son OSCURAS porque el producto es oscuro. Una
+     maqueta clara aquí vendería una aplicación que no existe, y la primera
+     pantalla después de registrarse desmentiría la portada. */
+  .maqueta {
+    background: linear-gradient(180deg, #0D1117 0%, #080B10 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.07) inset,
+      0 30px 60px -24px rgba(6, 24, 66, 0.6),
+      0 12px 24px -12px rgba(6, 24, 66, 0.45);
+  }
+
+  /* UNA MAQUETA ESTRECHA NO ES LA MISMA CON LA LETRA IGUAL DE GRANDE.
+     Las tarjetas flotantes miden 348 px en un escritorio ancho y 216 en un
+     iPad, y con los tamaños clavados en píxeles los rótulos de tres columnas
+     («DISPONIBLES», «LESIONADAS») se salían de su caja y se pisaban unos a
+     otros. La proporción es lo que hace que parezcan capturas, así que la
+     tarjeta se mide a sí misma y TODO dentro va en `em`: a 348 px la base
+     son los 14 px de diseño y a 216 px son 8,7 px, con las cajas, los huecos
+     y los puntos encogiendo en el mismo porcentaje. Nada se sale, porque la
+     relación entre el rótulo y su caja no cambia.
+
+     El mínimo de 8 px es el suelo: por debajo se dejaría de leer del todo y
+     es mejor que se recorte un nombre a que se vuelva invisible. El máximo
+     de 14 px evita que la tarjeta ancha de la sección de analíticas infle la
+     letra hasta parecer otra cosa. */
+  .maqueta-escala { container-type: inline-size; }
+  .maqueta-base { font-size: clamp(8px, 4.02cqw, 14px); }
+
+  /* Flotar: dos recorridos distintos y lentos, para que las tarjetas no suban
+     y bajen a la vez como un ascensor. */
+  .flota-a { animation: flota-a 9s ease-in-out infinite; }
+  .flota-b { animation: flota-b 11s ease-in-out infinite; }
+  .flota-c { animation: flota-c 13s ease-in-out infinite; }
+}
+
+@keyframes flota-a {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -12px, 0); }
+}
+@keyframes flota-b {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, 10px, 0); }
+}
+@keyframes flota-c {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -7px, 0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
