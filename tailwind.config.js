@@ -15,11 +15,27 @@ export default {
       fontFamily: {
         sans: ['Schibsted Grotesk', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
         display: ['Schibsted Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
-        /* UNA excepción, y una sola: la segunda línea del titular de la
-           portada. Una serif en cursiva al lado de una grotesca da un
-           contraste que no se consigue con pesos, y basta con una frase. En
-           ningún otro sitio del producto se usa. */
-        serif: ['Instrument Serif', 'Georgia', 'serif'],
+
+        /* ── LA PORTADA TIENE SU PROPIA LETRA, Y NO ES UN CAPRICHO ──────────
+           Dentro de la aplicación manda Schibsted Grotesk y no se toca: hay
+           un sistema entero medido alrededor de ella, y cambiarla movería
+           cada tabla y cada botón de sitio.
+
+           Pero una portada no es una herramienta. Lo que allí hace falta es
+           carácter en dos palabras, no neutralidad en mil pantallas. Así que
+           la portada —y sólo la portada— va con otras dos:
+
+             `titulo`  Space Grotesk. Una grotesca con rarezas a propósito
+                       (la «a», la «g», el «1», el «ó») que a cuerpo grande
+                       se reconoce. A cuerpo pequeño sería ruido; por eso no
+                       entra en la aplicación.
+             `prosa`   Plus Jakarta Sans. Humanista y abierta, descansa al
+                       lado de la anterior sin parecer la misma mal elegida.
+
+           Dos grotescas PARECIDAS se leen como descuido; dos que contrastan
+           de verdad se leen como intención. De ahí el salto. */
+        titulo: ['Space Grotesk', 'Schibsted Grotesk', 'system-ui', 'sans-serif'],
+        prosa: ['Plus Jakarta Sans', 'Schibsted Grotesk', 'system-ui', 'sans-serif'],
       },
       colors: {
         /* ────────────────────────────────────────────────────────────────────
@@ -95,6 +111,17 @@ export default {
         lavanda: '#6965FF',  // el frío, sólo en los degradados
         tinta: '#10131A',    // el casi negro de la portada
         grisis: '#727988',   // el gris de los párrafos sobre blanco
+        /* El azul profundo de las secciones oscuras de la portada. No es el
+           negro de la aplicación: lleva azul dentro, para que una captura de
+           la aplicación puesta encima se vea COMO UNA PANTALLA y no como un
+           agujero del mismo color que el fondo. */
+        abismo: '#060C1B',
+        abismo2: '#0A1427',
+        /* UN SOLO ACENTO, Y CASI NUNCA. Verde lima: aparece en un sello, en
+           un subrayado y en el punto de «en directo». En cuanto se usa en
+           tres sitios más deja de ser un acento y pasa a ser un segundo color
+           de marca, que es justo lo que no queremos. */
+        lima: '#CFFF48',
 
         /* LAS POSICIONES, en grises. Eran cuatro colores —naranja, azul,
            verde, rojo— y cuatro colores en una plantilla es un semáforo. En

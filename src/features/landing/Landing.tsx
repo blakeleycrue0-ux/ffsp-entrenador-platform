@@ -16,17 +16,41 @@
  * una pantalla de la aplicación, se ve a la legua en una revisión.
  *
  * ───────────────────────────────────────────────────────────────────────────
+ * CÓMO ESTÁ CONSTRUIDA, PARA NO VOLVER A HACERLA DE BLOQUES
+ *
+ * La versión anterior se parecía a cualquier otra: titular, párrafo, tres
+ * tarjetas blancas, captura, tres tarjetas blancas. Eso no es una página, es
+ * una plantilla rellena. Lo que hay ahora se apoya en cuatro cosas:
+ *
+ *  1. UN SOLO RITMO. `--aire` en `.portada` manda el aire vertical de todas
+ *     las secciones. Antes cada una elegía su `py-20 lg:py-28` y acababa
+ *     habiendo cuatro ritmos, que es lo que hace que una página parezca
+ *     montada con piezas sueltas.
+ *
+ *  2. TRES TAMAÑOS DE LETRA Y NINGUNO MÁS. `.t-xl`, `.t-l`, `.t-m`. La
+ *     jerarquía se lee porque hay pocos escalones, no porque haya muchos.
+ *
+ *  3. NINGUNA SECCIÓN SE PARECE A LA DE AL LADO. Texto a la izquierda,
+ *     después visual a la izquierda, después una franja oscura a sangre,
+ *     después una lista numerada sin cajas. Si dos seguidas tienen la misma
+ *     forma, una de las dos sobra.
+ *
+ *  4. LAS CAPTURAS SON EL PRODUCTO, NO UN ADORNO. Van en marco, con barra de
+ *     ventana, superpuestas y con sombra de dos capas. Una captura pegada
+ *     tal cual es un rectángulo flotando; enmarcada y apoyada, es una
+ *     pantalla.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
  * LO QUE ESTA PÁGINA NO TIENE, Y NO ES UN DESCUIDO
  *
  * No hay número de clubes, ni valoraciones, ni logotipos de nadie, ni
  * testimonios, ni «+4.900 equipos confían en nosotros». No porque no quepan:
  * porque no existen. Una cifra inventada en la primera pantalla es la forma
- * más rápida de no merecer la segunda.
+ * más rápida de no merecer la segunda. Donde la referencia pone una fila de
+ * logotipos de clientes, aquí pasa una tira con los módulos que sí existen.
  *
- * Los planes salen de la base de datos (`plans`, legible por `anon`), no de
- * una constante escrita aquí. Hoy no tienen precio decidido, así que la
- * sección de precios lo dice en vez de poner una cifra de adorno; el día que
- * haya precios, esta página los enseña sin tocar una línea.
+ * Los planes y sus importes salen de la base de datos (`plans`, legible por
+ * `anon`), no de una constante escrita aquí.
  *
  * Y «Lo que no hace» se queda en la portada, no en la letra pequeña:
  * descubrir un límite después de meter la plantilla entera es lo que hace
@@ -35,25 +59,24 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, ChevronDown, Minus, Plus } from 'lucide-react';
+import { ArrowRight, Check, Menu, Minus, Plus, X } from 'lucide-react';
 import { Wordmark } from '@/components/ui/Brand';
 import { billing, importe, type Plan } from '@/services/billing';
 import { loQueFalta, todoLoQueTrae } from '@/services/entitlements';
-import {
-  MaquetaAsistencia, MaquetaCifras, MaquetaJugadora, MaquetaPanel, MaquetaPizarra,
-} from './maquetas';
+import { MaquetaAsistencia, MaquetaJugadora, MaquetaPanel, MaquetaPizarra } from './maquetas';
 import { cn } from '@/lib/utils';
 
 /* ─────────────────────────── Aparecer al llegar ──────────────────────────── */
 
 function Revelar({
-  children, delay = 0, className,
+  children, delay = 0, className, as: Tag = 'div',
 }: {
   children: React.ReactNode;
   delay?: number;
   className?: string;
+  as?: 'div' | 'li';
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const [visto, setVisto] = useState(false);
 
   useEffect(() => {
@@ -70,30 +93,30 @@ function Revelar({
           obs.disconnect();
         }
       },
-      { rootMargin: '0px 0px -10% 0px' },
+      { rootMargin: '0px 0px -8% 0px' },
     );
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
   return (
-    <div
-      ref={ref}
+    <Tag
+      ref={ref as never}
       className={className}
       style={{
         opacity: visto ? 1 : 0,
-        transform: visto ? 'none' : 'translateY(16px)',
+        transform: visto ? 'none' : 'translateY(18px)',
         /* Acaba en `none`, no en `blur(0)`: un filtro de cero sigue siendo un
            filtro, promueve la capa y Safari rasteriza el texto dejándolo
            blando sin que nada parezca desenfocado. */
         filter: visto ? 'none' : 'blur(6px)',
-        transition: `opacity .75s cubic-bezier(0.16,1,0.3,1) ${delay}ms,
-                     transform .75s cubic-bezier(0.16,1,0.3,1) ${delay}ms,
-                     filter .75s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        transition: `opacity .8s cubic-bezier(0.16,1,0.3,1) ${delay}ms,
+                     transform .8s cubic-bezier(0.16,1,0.3,1) ${delay}ms,
+                     filter .8s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
       }}
     >
       {children}
-    </div>
+    </Tag>
   );
 }
 
@@ -102,147 +125,169 @@ function Revelar({
 const NAV: [string, string][] = [
   ['plataforma', 'Plataforma'],
   ['funciones', 'Funciones'],
-  ['clubes', 'Para clubes'],
+  ['clubes', 'Clubes'],
   ['precios', 'Precios'],
 ];
 
-/** Las cuatro áreas. Todo lo que se describe existe y funciona hoy. */
-const AREAS = [
-  {
-    titulo: 'Gestión de jugadoras',
-    texto:
-      'Ficha con dorsal, posición e historial. La disponibilidad se lleva aparte, con sus fechas y sus limitaciones.',
-    pie: 'Importa desde CSV con vista previa',
-  },
-  {
-    titulo: 'Planificación de entrenamientos',
-    texto:
-      'Cada sesión se monta por bloques —duración, material y objetivo— tirando de la biblioteca de ejercicios.',
-    pie: 'Biblioteca reutilizable entre equipos',
-  },
-  {
-    titulo: 'Estadísticas y rendimiento',
-    texto:
-      'Cada cifra explica de dónde sale. Lo que falta se escribe «sin datos»; no se convierte en un cero.',
-    pie: 'Sin predicciones ni diagnósticos',
-  },
-  {
-    titulo: 'Control de asistencia',
-    texto:
-      'Pasar lista son dos toques en el campo: todas presentes y corriges las excepciones. Seis estados, no dos.',
-    pie: '«Sin registrar» no es una ausencia',
-  },
-] as const;
-
-const PILARES: [string, string][] = [
-  [
-    'Cada club, aislado',
-    'El aislamiento lo imponen las políticas de acceso de la base de datos, no la interfaz. Esconder un botón nunca ha sido autorización.',
-  ],
-  [
-    'Varios equipos, un club',
-    'Cada persona del cuerpo técnico ve sólo los equipos que tiene asignados. La administración del club reparte.',
-  ],
-  [
-    'Invitaciones con caducidad',
-    'Un enlace ligado a un correo que caduca a los catorce días. Sin cuentas sueltas ni contraseñas compartidas.',
-  ],
-  [
-    'En el campo, desde el móvil',
-    'Todo el trabajo cabe en el bolsillo y no hay que instalar nada. Se abre en el navegador y ya está.',
-  ],
+/** Lo que pasa en la tira. Son los módulos que existen, uno por uno. */
+const MODULOS = [
+  'Plantilla', 'Asistencia', 'Entrenamientos', 'Pizarra táctica', 'Partidos',
+  'Convocatorias', 'Calendario', 'Disponibilidad y lesiones', 'Biblioteca de ejercicios',
+  'Analíticas', 'Cuerpo técnico',
 ];
 
-const NO_HACE = [
-  'No envía mensajes ni correos a las familias.',
-  'No genera diagnósticos ni recomendaciones médicas.',
-  'No calcula métricas físicas ni rendimiento predictivo.',
-  'No convierte en ceros los datos que faltan.',
+const CLUB: [string, string, string][] = [
+  ['01', 'Cada club, en su sitio', 'Lo tuyo no lo ve nadie de fuera. Y dentro, cada entrenador ve los equipos que le tocan.'],
+  ['02', 'Varios equipos, una cuenta', 'Cadete, juvenil, femenino. Cambias de equipo desde arriba y sigues donde estabas.'],
+  ['03', 'Se entra por invitación', 'Un enlace a un correo, con fecha de caducidad. Sin contraseñas compartidas por el grupo.'],
+  ['04', 'En el campo, desde el móvil', 'Se abre en el navegador. No hay nada que instalar ni que actualizar.'],
+];
+
+const NO_HACE: [string, string][] = [
+  ['No manda mensajes a las familias', 'Preparas la convocatoria y la copias donde ya habléis.'],
+  ['No valora lesiones', 'Guarda lo que anota el cuerpo técnico. El criterio médico es del club.'],
+  ['No analiza vídeo de partidos', 'La pizarra es para dibujar jugadas, no para leer un partido grabado.'],
 ];
 
 const FAQ: [string, string][] = [
   [
     '¿Puede otro club ver lo nuestro?',
-    'No. Cada club está aislado del resto, y el aislamiento lo imponen las políticas de acceso de la base de datos: no depende de que la aplicación se comporte bien. Dentro del club, cada persona ve sólo los equipos que tiene asignados.',
+    'No. Cada club está separado del resto, y la separación no depende de que la aplicación se porte bien: la impone la base de datos. Dentro del club, cada persona ve sólo los equipos que tiene asignados.',
   ],
   [
-    '¿Cómo empiezo con mi club?',
-    'Creas tu cuenta, creas tu club y quedas como su administración. Desde ahí montas los equipos e invitas al resto del cuerpo técnico con un enlace que caduca a los catorce días.',
+    '¿Cómo empiezo?',
+    'Creas tu cuenta, creas tu club y quedas como su administración. Desde ahí montas los equipos e invitas al resto del cuerpo técnico.',
   ],
   [
-    '¿Envía las convocatorias a las familias?',
-    'No. Prepara la lista y la copias para compartirla por donde ya habléis con el equipo. No prometemos un envío que no hacemos.',
+    '¿Hace falta instalar algo?',
+    'No. Se abre en el navegador, en el móvil igual que en el ordenador, y no hay nada que actualizar.',
   ],
   [
-    '¿Se puede exportar la animación en vídeo?',
-    'Sí. Se graba la jugada tal cual se reproduce y se descarga; el formato depende de lo que sepa grabar tu navegador, así que la aplicación dice cuál va a salir antes de empezar. También se exporta una imagen del instante que elijas.',
-  ],
-  [
-    '¿Valora lesiones o predice el rendimiento?',
-    'No. Guarda lo que anota el cuerpo técnico, con sus fechas y sus limitaciones. No emite diagnósticos ni estimaciones: eso es competencia del personal sanitario del club.',
+    '¿Se puede exportar la jugada en vídeo?',
+    'Sí. Se graba tal cual se reproduce y se descarga. También se exporta una imagen del instante que elijas.',
   ],
   /* SIN CIFRAS EN ESTE TEXTO, A PROPÓSITO. Los importes están en la tabla
      `plans` y la sección de precios los lee de ahí; repetirlos aquí a mano
      garantiza que algún día uno de los dos sitios mienta. */
   [
-    '¿Cuánto cuesta y qué pasa si no pago?',
-    'Hay un plan gratuito con un equipo, para siempre y sin tarjeta, y dos de pago con los importes que verás más arriba. Ahora mismo la pasarela de cobro no está abierta: no se puede contratar nada y no hay ninguna función cerrada. Cuando se abra, dejar de pagar nunca borrará nada: se conservan los equipos y los datos, y simplemente no se crean equipos nuevos por encima del límite del plan.',
+    '¿Qué pasa si dejo de pagar?',
+    'No se borra nada. Conservas los equipos y los datos; sólo dejas de crear equipos nuevos por encima del límite del plan.',
   ],
 ];
 
 /* ───────────────────────────────── Piezas ────────────────────────────────── */
 
-function Rotulo({ children, tono = 'azul' }: { children: React.ReactNode; tono?: 'azul' | 'claro' }) {
+function Rotulo({ children, tono = 'azul' }: { children: React.ReactNode; tono?: 'azul' | 'claro' | 'lima' }) {
   return (
-    <p
-      className={cn(
-        'text-[11px] font-semibold uppercase tracking-[0.16em]',
-        tono === 'azul' ? 'text-marca-600' : 'text-white/70',
-      )}
-    >
+    <p className={cn('rotulo', tono === 'azul' ? 'text-marca-600' : tono === 'lima' ? 'text-lima' : 'text-white/60')}>
       {children}
     </p>
   );
 }
 
-function Titular({ children, className }: { children: React.ReactNode; className?: string }) {
+/**
+ * La barra de ventana de un marco de producto.
+ *
+ * Cuesta veinte píxeles de alto y es lo que convierte un rectángulo en «una
+ * aplicación». Sin ella, una captura recortada parece un trozo de imagen; con
+ * ella, parece una pantalla abierta.
+ */
+function BarraVentana({ titulo, claro = false }: { titulo: string; claro?: boolean }) {
   return (
-    <h2
-      className={cn('mt-3 text-[30px] leading-[1.08] text-tinta sm:text-[40px] lg:text-[46px]', className)}
-      style={{ fontWeight: 600, letterSpacing: '-0.035em' }}
-    >
-      {children}
-    </h2>
+    <div className={cn('marco-barra', claro && 'border-black/[0.07]')}>
+      <span className="flex gap-1.5" aria-hidden>
+        <i className={cn('block h-2 w-2 rounded-full', claro ? 'bg-black/12' : 'bg-white/18')} />
+        <i className={cn('block h-2 w-2 rounded-full', claro ? 'bg-black/12' : 'bg-white/18')} />
+        <i className={cn('block h-2 w-2 rounded-full', claro ? 'bg-black/12' : 'bg-white/18')} />
+      </span>
+      <span className={cn('ml-1 truncate text-[11.5px] font-medium', claro ? 'text-grisis' : 'text-white/45')}>
+        {titulo}
+      </span>
+    </div>
   );
 }
 
-function Parrafo({ children, className }: { children: React.ReactNode; className?: string }) {
+/**
+ * Una captura, enmarcada.
+ *
+ * Todas las de la página pasan por aquí para que no haya dos tratamientos
+ * distintos. `prioridad` carga la imagen de inmediato en vez de esperar al
+ * desplazamiento: sólo para la de la primera pantalla.
+ */
+function Captura({
+  src, alt, titulo, className, prioridad = false, recorta = true,
+}: {
+  src: string; alt: string; titulo: string; className?: string;
+  prioridad?: boolean;
+  /**
+   * EN EL MÓVIL SE RECORTA LA BARRA LATERAL.
+   *
+   * Las capturas son de 2048 px de ancho y el menú de la izquierda ocupa el
+   * 18 %. Metidas enteras en 350 px, ese 18 % son sesenta píxeles de lista
+   * de enlaces ilegible, y lo que de verdad hay que ver —la tabla, el campo,
+   * el gráfico— se queda en 290. Desplazando la imagen a la izquierda y
+   * ensanchándola, se tira el menú y lo que importa crece un 22 %.
+   *
+   * A partir de `sm` entra entera: ahí ya se lee, y el menú cuenta algo
+   * —que esto tiene secciones—.
+   */
+  recorta?: boolean;
+}) {
   return (
-    <p className={cn('text-[15px] leading-relaxed text-grisis sm:text-[16.5px]', className)}>
-      {children}
-    </p>
+    <div className={cn('marco', className)}>
+      <BarraVentana titulo={titulo} />
+      <div className="overflow-hidden">
+        <img
+          src={src}
+          alt={alt}
+          width={2048}
+          height={1296}
+          loading={prioridad ? 'eager' : 'lazy'}
+          decoding={prioridad ? 'sync' : 'async'}
+          {...(prioridad ? { fetchPriority: 'high' as const } : {})}
+          className={cn(
+            'block w-full',
+            /* 23 y 128 son el 18 % de menú por la izquierda más el 4 % de
+               margen vacío de la aplicación por la derecha. */
+            recorta && '-ml-[23%] w-[128%] max-w-none sm:ml-0 sm:w-full',
+          )}
+        />
+      </div>
+    </div>
   );
 }
 
-/* ════════════════════════════════ La página ══════════════════════════════ */
+/** Un móvil, con su captura vertical dentro. */
+function Movil({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  return (
+    <div className={cn('telefono', className)}>
+      <img
+        src={src} alt={alt} width={780} height={1560}
+        loading="lazy" decoding="async"
+        className="block w-full"
+      />
+    </div>
+  );
+}
+
+/* ══════════════════════════════ La página ════════════════════════════════ */
 
 export default function Landing() {
-  const [abierta, setAbierta] = useState<number | null>(0);
-  const [conFondo, setConFondo] = useState(false);
-  const [menu, setMenu] = useState(false);
   const [planes, setPlanes] = useState<Plan[] | null>(null);
+  const [menu, setMenu] = useState(false);
+  const [conFondo, setConFondo] = useState(false);
 
   useEffect(() => {
-    const alScroll = () => setConFondo(window.scrollY > 16);
+    const alScroll = () => setConFondo(window.scrollY > 24);
     alScroll();
     window.addEventListener('scroll', alScroll, { passive: true });
     return () => window.removeEventListener('scroll', alScroll);
   }, []);
 
-  /* Los planes, de la base. Si no hay red o la tabla no responde, la sección
-     se dibuja igual con lo que se sabe sin preguntar a nadie —los nombres y lo
-     que trae cada plan son código, no datos—. Una portada que se queda a
-     medias porque falla una consulta es peor que una sin precios. */
+  /* Los planes, de la base. Si no hay red o la tabla no responde, la página se
+     dibuja igual con lo que se sabe sin preguntar a nadie —los nombres y lo que
+     trae cada plan son código, no datos—. Una portada que se queda a medias
+     porque falla una consulta es peor que una sin precios. */
   useEffect(() => {
     let vivo = true;
     billing.planes()
@@ -258,17 +303,17 @@ export default function Landing() {
   }, []);
 
   return (
-    <div className="bg-white">
-      {/* ══════════════════════════ Navegación ══════════════════════════════
-          Al bajar se convierte en una cápsula blanca translúcida. Arriba del
-          todo va sin fondo: ahí está sobre el cielo, y un rectángulo blanco
-          cortaría el degradado justo donde empieza. */}
-      <header className="fixed inset-x-0 top-0 z-nav px-3 pt-[max(10px,var(--safe-top))] sm:px-5 sm:pt-3">
+    <div className="portada bg-white">
+      {/* ═══════════════════════════ Navegación ═══════════════════════════
+          Arriba del todo va sin fondo: está sobre el cielo, y un rectángulo
+          blanco cortaría el degradado justo donde empieza. Al bajar se
+          convierte en una cápsula blanca translúcida. */}
+      <header className="fixed inset-x-0 top-0 z-nav px-3 pt-[max(10px,var(--safe-top))] sm:px-6 sm:pt-4">
         <div
           className={cn(
-            'mx-auto flex h-14 max-w-6xl items-center gap-4 rounded-2xl px-3 transition-all duration-300 sm:px-4',
+            'mx-auto flex h-[58px] max-w-[77.5rem] items-center gap-5 rounded-full px-3 transition-all duration-300 sm:px-5',
             conFondo
-              ? 'border border-black/[0.07] bg-white/85 shadow-[0_8px_30px_-12px_rgba(16,19,26,0.18)] backdrop-blur-xl'
+              ? 'border border-black/[0.06] bg-white/80 shadow-[0_10px_34px_-14px_rgba(16,19,26,0.22)] backdrop-blur-xl'
               : 'border border-transparent',
           )}
         >
@@ -276,7 +321,7 @@ export default function Landing() {
             <Wordmark tone={conFondo ? 'tinta' : 'light'} size="sm" />
           </a>
 
-          <nav className="mx-auto hidden items-center gap-7 lg:flex">
+          <nav className="mx-auto hidden items-center gap-8 lg:flex">
             {NAV.map(([id, texto]) => (
               <a
                 key={id}
@@ -284,7 +329,7 @@ export default function Landing() {
                 onClick={irA(id)}
                 className={cn(
                   'text-[14.5px] font-medium transition-colors',
-                  conFondo ? 'text-grisis hover:text-tinta' : 'text-white/80 hover:text-white',
+                  conFondo ? 'text-grisis hover:text-tinta' : 'text-white/75 hover:text-white',
                 )}
               >
                 {texto}
@@ -296,7 +341,7 @@ export default function Landing() {
             <Link
               to="/entrar"
               className={cn(
-                'hidden h-10 items-center rounded-xl px-3.5 text-[14px] font-semibold transition-colors sm:inline-flex',
+                'hidden h-10 items-center rounded-full px-4 text-[14px] font-semibold transition-colors sm:inline-flex',
                 conFondo ? 'text-tinta hover:bg-black/[0.04]' : 'text-white hover:bg-white/10',
               )}
             >
@@ -308,12 +353,11 @@ export default function Landing() {
             <Link
               to="/entrar"
               className={cn(
-                'h-9 whitespace-nowrap px-3 text-[13px] sm:h-10 sm:px-4 sm:text-[14px]',
-                conFondo ? 'boton-azul' : 'boton-marca',
+                'btn h-9 px-3.5 text-[13px] sm:h-10 sm:px-5 sm:text-[14px]',
+                conFondo ? 'btn-azul' : 'btn-claro',
               )}
             >
               Empezar gratis
-              <ArrowRight size={14} className="shrink-0" />
             </Link>
 
             <button
@@ -322,14 +366,11 @@ export default function Landing() {
               aria-expanded={menu}
               aria-label={menu ? 'Cerrar el menú' : 'Abrir el menú'}
               className={cn(
-                'grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors lg:hidden',
+                'grid h-10 w-10 shrink-0 place-items-center rounded-full transition-colors lg:hidden',
                 conFondo ? 'text-tinta hover:bg-black/[0.04]' : 'text-white hover:bg-white/10',
               )}
             >
-              <ChevronDown
-                size={18}
-                className={cn('transition-transform duration-300', menu && 'rotate-180')}
-              />
+              {menu ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </div>
@@ -337,20 +378,20 @@ export default function Landing() {
         {/* El menú del móvil: una hoja debajo de la cápsula, no a pantalla
             completa. A pantalla completa se pierde dónde estabas. */}
         {menu && (
-          <div className="mx-auto mt-2 max-w-6xl overflow-hidden rounded-2xl border border-black/[0.07] bg-white/95 p-2 shadow-[0_18px_50px_-18px_rgba(16,19,26,0.3)] backdrop-blur-xl lg:hidden">
+          <div className="mx-auto mt-2 max-w-[77.5rem] overflow-hidden rounded-3xl border border-black/[0.07] bg-white/95 p-2 shadow-[0_18px_50px_-18px_rgba(16,19,26,0.3)] backdrop-blur-xl lg:hidden">
             {NAV.map(([id, texto]) => (
               <a
                 key={id}
                 href={`#${id}`}
                 onClick={irA(id)}
-                className="block rounded-xl px-3 py-2.5 text-[15px] font-medium text-tinta transition-colors hover:bg-black/[0.04]"
+                className="block rounded-2xl px-4 py-3 text-[15.5px] font-medium text-tinta transition-colors hover:bg-black/[0.04]"
               >
                 {texto}
               </a>
             ))}
             <Link
               to="/entrar"
-              className="mt-1 block rounded-xl px-3 py-2.5 text-[15px] font-medium text-grisis transition-colors hover:bg-black/[0.04] sm:hidden"
+              className="mt-1 block rounded-2xl px-4 py-3 text-[15.5px] font-medium text-grisis transition-colors hover:bg-black/[0.04] sm:hidden"
             >
               Iniciar sesión
             </Link>
@@ -359,407 +400,23 @@ export default function Landing() {
       </header>
 
       <main>
-        {/* ═══════════════════════════ Portada ═══════════════════════════════ */}
-        <section id="plataforma" className="cielo-marca corte-diagonal relative overflow-hidden">
-          {/* Dos formas sueltas y muy suaves, para que el degradado no sea
-              plano. Sin bordes ni brillos: sólo luz. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -left-[12%] top-[8%] h-[46vw] w-[46vw] rounded-full opacity-60 blur-[90px]"
-            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 70%)' }}
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-[10%] top-[32%] h-[38vw] w-[38vw] rounded-full opacity-50 blur-[90px]"
-            style={{ background: 'radial-gradient(circle, rgba(54,200,255,0.75) 0%, rgba(54,200,255,0) 70%)' }}
-          />
-
-          <div className="relative mx-auto max-w-6xl px-5 pb-[clamp(72px,12vw,170px)] pt-[clamp(88px,11vw,136px)]">
-            <div className="mx-auto max-w-[60rem] text-center">
-              <Revelar>
-                <span className="inline-flex items-center rounded-full border border-white/25 bg-white/12 px-3 py-1 text-[11.5px] font-semibold tracking-[0.02em] text-white backdrop-blur-md">
-                  Para cuerpos técnicos de fútbol base
-                </span>
-              </Revelar>
-
-              <Revelar delay={90}>
-                {/* DOS LÍNEAS, NO CUATRO. A 38 px en un móvil de 390, «Tu
-                    equipo. Tus decisiones.» se partía en dos y el titular
-                    entero ocupaba cuatro renglones: deja de leerse de un
-                    vistazo y empuja los botones fuera de la primera pantalla.
-                    32 en el móvil y 64 en el escritorio, con el contenedor
-                    ensanchado para que la primera línea quepa entera. */}
-                <h1
-                  className="mt-5 text-[32px] leading-[1.06] text-white sm:text-[52px] lg:text-[64px]"
-                  style={{ fontWeight: 600, letterSpacing: '-0.04em' }}
-                >
-                  Tu equipo. Tus decisiones.
-                  <br />
-                  <span className="realce-claro">Todo bajo control.</span>
-                </h1>
-              </Revelar>
-
-              <Revelar delay={180}>
-                <p className="mx-auto mt-4 max-w-[22rem] text-[15px] leading-relaxed text-white/80 sm:mt-5 sm:max-w-[34rem] sm:text-[17.5px]">
-                  Gestiona jugadoras, entrenamientos, partidos y estadísticas desde una única
-                  plataforma. Menos trabajo administrativo. Más tiempo para el fútbol.
-                </p>
-              </Revelar>
-
-              <Revelar delay={260}>
-                <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
-                  <Link to="/entrar" className="boton-marca h-12 px-5 text-[15px]">
-                    Empieza gratis
-                    <ArrowRight size={16} />
-                  </Link>
-                  <a
-                    href="#funciones"
-                    onClick={irA('funciones')}
-                    className="boton-vidrio h-12 px-5 text-[15px]"
-                  >
-                    Descubre Playoff360
-                  </a>
-                </div>
-              </Revelar>
-            </div>
-
-            {/* ── Las maquetas ───────────────────────────────────────────────
-                EN EL MÓVIL NO ES LO MISMO ENCOGIDO. Tres tarjetas superpuestas
-                en 390 px no se leen: se amontonan y queda una mancha. Ahí va
-                una sola —la pizarra, que es lo que distingue a esto— y las
-                demás aparecen a partir de tablet, cuando hay sitio de verdad
-                para una composición. */}
-            {/* El hueco de los lados no es decorativo: las tarjetas vuelan
-                hacia fuera de la pizarra y necesitan sitio DENTRO de la
-                ventana. Entre 768 y 1279 px el contenedor ya toca los bordes,
-                así que se estrecha 80 px por lado y la pizarra encoge; a
-                partir de 1280 sobra margen y se quita el relleno. Sin esto,
-                en el iPad la tarjeta de la izquierda se sale de pantalla. */}
-            <div className="mx-auto mt-10 max-w-5xl sm:mt-16 md:px-20 xl:px-0">
-              <div className="relative">
-                <Revelar delay={320}>
-                  <div className="flota-a">
-                    <MaquetaPizarra />
-                  </div>
-                </Revelar>
-
-                <Revelar delay={420} className="hidden md:block">
-                  <div className="flota-b absolute -left-[6%] bottom-[-14%] w-[40%] xl:-left-[10%] xl:w-[34%]">
-                    <MaquetaPanel />
-                  </div>
-                </Revelar>
-
-                <Revelar delay={500} className="hidden md:block">
-                  <div className="flota-c absolute -right-[5%] top-[-9%] w-[36%] xl:-right-[9%] xl:w-[31%]">
-                    <MaquetaAsistencia />
-                  </div>
-                </Revelar>
-
-                <Revelar delay={580} className="hidden lg:block">
-                  <div className="flota-b absolute -right-[8%] bottom-[-17%] w-[30%]">
-                    <MaquetaJugadora />
-                  </div>
-                </Revelar>
-              </div>
-            </div>
-
-            <p className="relative mt-10 text-center text-[11.5px] text-white/55 md:mt-24 lg:mt-32">
-              Las pantallas muestran un equipo de ejemplo. Playoff360 empieza vacío.
-            </p>
-          </div>
-        </section>
-
-        {/* ══════════════════════ Todo en un solo lugar ══════════════════════ */}
-        <section id="funciones" className="scroll-mt-24 bg-white">
-          <div className="mx-auto max-w-6xl px-5 pb-20 pt-[clamp(56px,8vw,104px)] lg:pb-28">
-            <Revelar className="max-w-[40rem]">
-              <Rotulo>Una nueva forma de gestionar tu equipo</Rotulo>
-              <Titular>
-                Todo lo que necesitas.
-                <br />
-                En un solo lugar.
-              </Titular>
-            </Revelar>
-
-            {/* Rejilla asimétrica: la primera ocupa dos huecos. Cuatro cajas
-                iguales en fila son una plantilla; esto no. */}
-            <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Revelar className="lg:col-span-2">
-                <article className="flex h-full flex-col justify-between gap-6 overflow-hidden rounded-3xl border border-black/[0.07] bg-marca-50 p-6 sm:p-8">
-                  <div className="max-w-[30rem]">
-                    <h3 className="text-[20px] font-semibold leading-snug tracking-[-0.02em] text-tinta sm:text-[23px]">
-                      {AREAS[0].titulo}
-                    </h3>
-                    <Parrafo className="mt-2.5">{AREAS[0].texto}</Parrafo>
-                    <p className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-marca-600">
-                      <Check size={14} />
-                      {AREAS[0].pie}
-                    </p>
-                  </div>
-                  <MaquetaJugadora className="w-full max-w-[22rem] self-end" />
-                </article>
-              </Revelar>
-
-              <Revelar delay={80}>
-                <article className="flex h-full flex-col justify-between gap-6 overflow-hidden rounded-3xl border border-black/[0.07] bg-[#F6F8FC] p-6 sm:p-8">
-                  <div>
-                    <h3 className="text-[20px] font-semibold leading-snug tracking-[-0.02em] text-tinta sm:text-[23px]">
-                      {AREAS[3].titulo}
-                    </h3>
-                    <Parrafo className="mt-2.5">{AREAS[3].texto}</Parrafo>
-                    <p className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-marca-600">
-                      <Check size={14} />
-                      {AREAS[3].pie}
-                    </p>
-                  </div>
-                  <MaquetaAsistencia className="w-full" />
-                </article>
-              </Revelar>
-
-              <Revelar delay={120}>
-                <article className="h-full rounded-3xl border border-black/[0.07] bg-white p-6 sm:p-8">
-                  <h3 className="text-[20px] font-semibold leading-snug tracking-[-0.02em] text-tinta sm:text-[23px]">
-                    {AREAS[1].titulo}
-                  </h3>
-                  <Parrafo className="mt-2.5">{AREAS[1].texto}</Parrafo>
-                  <p className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-marca-600">
-                    <Check size={14} />
-                    {AREAS[1].pie}
-                  </p>
-                </article>
-              </Revelar>
-
-              {/* La ancha lleva maqueta. Una caja de dos columnas con tres
-                  líneas de texto dentro deja un hueco que no se lee como aire:
-                  se lee como que falta algo. */}
-              <Revelar delay={200} className="lg:col-span-2">
-                <article className="grid h-full items-center gap-6 rounded-3xl border border-black/[0.07] bg-[#F6F8FC] p-6 sm:p-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-                  <div className="min-w-0">
-                    <h3 className="text-[20px] font-semibold leading-snug tracking-[-0.02em] text-tinta sm:text-[23px]">
-                      {AREAS[2].titulo}
-                    </h3>
-                    <Parrafo className="mt-2.5">{AREAS[2].texto}</Parrafo>
-                    <p className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-marca-600">
-                      <Check size={14} />
-                      {AREAS[2].pie}
-                    </p>
-                  </div>
-                  <MaquetaCifras className="min-w-0" />
-                </article>
-              </Revelar>
-            </div>
-          </div>
-        </section>
-
-        {/* ════════════════════════ El producto ══════════════════════════════
-            Capturas de la aplicación DE VERDAD, hechas con
-            `pruebas/capturas.mjs` desde el producto montado. Por eso son
-            oscuras: el producto es oscuro. Enseñar aquí una maqueta clara
-            sería vender otra cosa, y la primera pantalla después de
-            registrarse desmentiría la portada. */}
-        <section className="bg-[#0B0E14]">
-          <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
-            <Revelar className="max-w-[40rem]">
-              <Rotulo tono="claro">El producto</Rotulo>
-              <h2
-                className="mt-3 text-[30px] leading-[1.08] text-white sm:text-[40px] lg:text-[46px]"
-                style={{ fontWeight: 600, letterSpacing: '-0.035em' }}
-              >
-                El control de tu equipo,
-                <br />
-                como nunca antes.
-              </h2>
-              <p className="mt-4 max-w-[36rem] text-[15px] leading-relaxed text-white/55 sm:text-[16.5px]">
-                No es una maqueta. Son capturas de la aplicación, hechas automáticamente desde el
-                producto montado para que no puedan quedarse viejas.
-              </p>
-            </Revelar>
-
-            <Revelar delay={100} className="mt-12">
-              <div className="relative">
-                <div className="overflow-hidden rounded-2xl border border-white/10 shadow-[0_50px_120px_-40px_rgba(0,0,0,0.9)]">
-                  <img
-                    src="/producto/analiticas.png"
-                    alt="Panel de analíticas de Playoff360, con la asistencia por jugadora y por sesión."
-                    loading="lazy"
-                    decoding="async"
-                    className="block w-full"
-                  />
-                </div>
-                {/* El móvil, encima y a un lado. Fuera de pantallas pequeñas:
-                    superpuesto en 390 px taparía la captura que acompaña. */}
-                {/* -right-8 sólo a partir de 1280: por debajo el contenedor ya
-                    ocupa toda la ventana y 32 px de salida desbordan la página. */}
-                <div className="absolute -bottom-8 -right-2 hidden w-[22%] max-w-[180px] overflow-hidden rounded-[1.6rem] border-[6px] border-[#1A1F2B] shadow-[0_30px_70px_-24px_rgba(0,0,0,0.95)] md:block xl:-right-8">
-                  <img
-                    src="/producto/plantilla-movil.png"
-                    alt="La plantilla, en el móvil."
-                    loading="lazy"
-                    decoding="async"
-                    className="block w-full"
-                  />
-                </div>
-              </div>
-            </Revelar>
-          </div>
-        </section>
-
-        {/* ══════════════════ Las tres historias ═════════════════════════════ */}
-        <section className="bg-white">
-          <div className="mx-auto max-w-6xl space-y-20 px-5 py-20 lg:space-y-28 lg:py-28">
-            <Historia
-              rotulo="Jugadoras"
-              titulo="Conoce mejor a cada jugadora."
-              texto="Dorsal, posición, pie, historial de asistencia y las valoraciones de cada sesión. La disponibilidad va aparte, con sus fechas y lo que puede o no puede hacer, porque una lesión no es un estado permanente."
-              puntos={[
-                'Ficha completa con historial',
-                'Disponibilidad con fechas y limitaciones',
-                'Importación desde CSV con vista previa',
-              ]}
-              maqueta={<MaquetaJugadora />}
-            />
-            <Historia
-              invertida
-              rotulo="Entrenamientos"
-              titulo="Cada entrenamiento cuenta."
-              texto="La sesión se monta por bloques con su duración, su material y su objetivo, tirando de la biblioteca de ejercicios. Al acabar se pasa lista en dos toques, y lo que no se registró se queda como «sin registrar», no como una falta."
-              puntos={[
-                'Bloques con duración y material',
-                'Biblioteca de ejercicios reutilizable',
-                'Seis estados de asistencia',
-              ]}
-              maqueta={<MaquetaPanel />}
-            />
-            <Historia
-              ancha
-              rotulo="Pizarra táctica"
-              titulo="De la pizarra al campo."
-              texto="Coloca a las jugadoras, muévelas en distintos instantes y dale a reproducir. El campo se mira desde donde haga falta —cenital, de banda, tras la portería— y la jugada se exporta a imagen o a vídeo para mandarla al grupo."
-              puntos={[
-                'Carrera, conducción, pase y desmarque',
-                'Trayectorias curvas, a mano o con el tirador',
-                'Exporta a imagen o a vídeo',
-              ]}
-              maqueta={<MaquetaPizarra />}
-            />
-          </div>
-        </section>
-
-        {/* ═══════════════════════ Para clubes ═══════════════════════════════ */}
-        <section id="clubes" className="scroll-mt-24 border-t border-black/[0.06] bg-[#F6F8FC]">
-          <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
-            <Revelar className="max-w-[52rem]">
-              <Rotulo>Para clubes</Rotulo>
-              <Titular>
-                Varios equipos. Un solo sitio,
-                <br />
-                y separado del resto.
-              </Titular>
-            </Revelar>
-
-            <div className="mt-12 grid gap-4 sm:grid-cols-2">
-              {PILARES.map(([titulo, texto], i) => (
-                <Revelar key={titulo} delay={i * 70}>
-                  <article className="h-full rounded-2xl border border-black/[0.07] bg-white p-6">
-                    <h3 className="text-[17px] font-semibold tracking-[-0.015em] text-tinta">
-                      {titulo}
-                    </h3>
-                    <Parrafo className="mt-2 text-[14.5px]">{texto}</Parrafo>
-                  </article>
-                </Revelar>
-              ))}
-            </div>
-
-            <Revelar delay={160} className="mt-10">
-              <div className="rounded-2xl border border-black/[0.07] bg-white p-6 sm:p-8">
-                <h3 className="text-[17px] font-semibold tracking-[-0.015em] text-tinta">
-                  Lo que no hace, dicho aquí
-                </h3>
-                <Parrafo className="mt-2 max-w-[48ch] text-[14.5px]">
-                  Está en la portada y no en la letra pequeña. Descubrir un límite después de meter
-                  la plantilla entera es lo que hace perder la confianza.
-                </Parrafo>
-                <ul className="mt-5 grid gap-2.5 sm:grid-cols-2">
-                  {NO_HACE.map((t) => (
-                    <li key={t} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-grisis">
-                      <Minus size={14} className="mt-1 shrink-0 text-marca-400" />
-                      <span className="min-w-0">{t}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Revelar>
-          </div>
-        </section>
-
+        <Portada />
+        <Tira />
+        <Declaracion />
+        <Historias />
+        <Pizarra />
+        <Clubes />
         <Precios planes={planes} />
-
-        {/* ═══════════════════════════ Preguntas ═════════════════════════════ */}
-        <section className="border-t border-black/[0.06] bg-white">
-          <div className="mx-auto max-w-3xl px-5 py-20 lg:py-28">
-            <Revelar>
-              <Rotulo>Preguntas</Rotulo>
-              <Titular>Lo que se suele preguntar.</Titular>
-            </Revelar>
-
-            <div className="mt-10 border-t border-black/[0.08]">
-              {FAQ.map(([p, r], i) => (
-                <div key={p} className="border-b border-black/[0.08]">
-                  <button
-                    type="button"
-                    onClick={() => setAbierta(abierta === i ? null : i)}
-                    aria-expanded={abierta === i}
-                    className="flex w-full items-start justify-between gap-5 py-5 text-left"
-                  >
-                    <span className="min-w-0 text-[16px] font-medium text-tinta">{p}</span>
-                    <span className="mt-0.5 shrink-0 text-marca-600">
-                      {abierta === i ? <Minus size={17} /> : <Plus size={17} />}
-                    </span>
-                  </button>
-                  {abierta === i && (
-                    <p className="max-w-[62ch] pb-6 text-[15px] leading-relaxed text-grisis">{r}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═════════════════════════════ Cierre ══════════════════════════════ */}
-        <section className="cielo-cierre relative overflow-hidden">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-[8%] -top-[20%] h-[40vw] w-[40vw] rounded-full opacity-45 blur-[90px]"
-            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 70%)' }}
-          />
-          <div className="relative mx-auto max-w-3xl px-5 py-24 text-center lg:py-32">
-            <Revelar>
-              <h2
-                className="mx-auto max-w-[20ch] text-[30px] leading-[1.08] text-white sm:text-[44px]"
-                style={{ fontWeight: 600, letterSpacing: '-0.035em' }}
-              >
-                El próximo paso de tu equipo empieza aquí.
-              </h2>
-              <p className="mx-auto mt-5 max-w-[34rem] text-[15.5px] leading-relaxed text-white/80 sm:text-[17px]">
-                Empieza a gestionar tu equipo de una forma más sencilla, inteligente y organizada.
-              </p>
-              <div className="mt-8 flex justify-center">
-                <Link to="/entrar" className="boton-marca h-12 px-6 text-[15px]">
-                  Crear cuenta gratis
-                  <ArrowRight size={16} />
-                </Link>
-              </div>
-            </Revelar>
-          </div>
-        </section>
+        <Preguntas />
+        <Cierre />
       </main>
 
-      <footer className="border-t border-black/[0.06] bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-10 sm:flex-row sm:items-center sm:justify-between">
+      <footer className="border-t border-black/[0.07] bg-white">
+        <div className="cauce flex flex-col gap-5 py-10 sm:flex-row sm:items-center sm:justify-between">
           <Wordmark tone="tinta" size="sm" />
-          <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] text-grisis">
-            <Link to="/aviso-legal" className="transition-colors hover:text-tinta">Aviso legal</Link>
-            <Link to="/privacidad" className="transition-colors hover:text-tinta">Privacidad</Link>
+          <nav className="flex flex-wrap items-center gap-x-7 gap-y-2 text-[14px] text-grisis">
+            <Link to="/legal" className="transition-colors hover:text-tinta">Aviso legal</Link>
+            <Link to="/legal#privacidad" className="transition-colors hover:text-tinta">Privacidad</Link>
             <Link to="/entrar" className="transition-colors hover:text-tinta">Iniciar sesión</Link>
           </nav>
         </div>
@@ -768,53 +425,487 @@ export default function Landing() {
   );
 }
 
-/* ──────────────────────────── Una historia ───────────────────────────────── */
+/* ════════════════════════════════ 1 · Portada ═════════════════════════════ */
 
-function Historia({
-  rotulo, titulo, texto, puntos, maqueta, invertida, ancha,
-}: {
-  rotulo: string;
-  titulo: string;
-  texto: string;
-  puntos: string[];
-  maqueta: React.ReactNode;
-  invertida?: boolean;
-  /** Para la pizarra, que necesita más sitio que una tarjeta estrecha. */
-  ancha?: boolean;
-}) {
+/**
+ * La primera pantalla.
+ *
+ * TRES CAPAS, Y CADA UNA HACE UNA COSA: el cielo (degradado), las nubes
+ * (elipses difuminadas, sin una sola imagen) y la escena de producto en
+ * perspectiva. El corte diagonal de abajo es lo que impide que esto se lea
+ * como «una caja azul encima de la página».
+ *
+ * LA ESCENA NO ES UNA CAPTURA PEGADA. Es un abanico: la pizarra de frente y
+ * adelantada, las otras cuatro piezas giradas hacia dentro con `rotateY`. Con
+ * las cinco planas sería una fila de rectángulos; con la perspectiva es una
+ * composición y se entiende de un vistazo que hay un producto detrás.
+ *
+ * EN EL MÓVIL NO ES LO MISMO ENCOGIDO. Cinco piezas superpuestas en 390 px no
+ * se leen: se amontonan y queda una mancha. Ahí va una sola —la pizarra, que
+ * es lo que distingue a esto— y las demás entran a partir de tablet.
+ */
+function Portada() {
   return (
-    <Revelar>
-      <div
-        className={cn(
-          'grid items-center gap-10 lg:gap-16',
-          ancha ? 'lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]' : 'lg:grid-cols-2',
-        )}
-      >
-        <div className={cn('min-w-0', invertida && 'lg:order-2')}>
-          <Rotulo>{rotulo}</Rotulo>
-          <Titular className="max-w-[16ch]">{titulo}</Titular>
-          <Parrafo className="mt-4 max-w-[46ch]">{texto}</Parrafo>
-          <ul className="mt-6 space-y-2.5">
-            {puntos.map((p) => (
-              <li key={p} className="flex items-start gap-2.5 text-[14.5px] text-tinta">
-                <span
-                  className="mt-0.5 grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-marca-600 text-white"
-                  aria-hidden
-                >
-                  <Check size={11} strokeWidth={3} />
-                </span>
-                <span className="min-w-0">{p}</span>
-              </li>
-            ))}
-          </ul>
+    <section id="plataforma" className="cielo corte-abajo relative overflow-hidden">
+      <div className="nubes nubes-mueve" aria-hidden />
+
+      <div className="cauce relative pb-[clamp(60px,9vw,120px)] pt-[clamp(118px,15vw,180px)]">
+        <div className="mx-auto max-w-[58rem] text-center">
+          <Revelar>
+            <span className="sello">
+              <i className="block h-1.5 w-1.5 rounded-full bg-lima" aria-hidden />
+              Para cuerpos técnicos de fútbol base
+            </span>
+          </Revelar>
+
+          <Revelar delay={90}>
+            <h1 className="t-xl mt-6 text-white">
+              Todo tu fútbol.
+              <br />
+              <span className="text-white/70">Un solo sistema.</span>
+            </h1>
+          </Revelar>
+
+          <Revelar delay={170}>
+            <p className="mx-auto mt-6 max-w-[34rem] text-[16.5px] leading-[1.55] text-white/80 sm:text-[18px]">
+              Plantilla, entrenamientos, asistencia, partidos y pizarra táctica.
+              Menos gestión. Más fútbol.
+            </p>
+          </Revelar>
+
+          <Revelar delay={250}>
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+              <Link to="/entrar" className="btn btn-claro h-12 px-6 text-[15px]">
+                Empezar gratis
+                <ArrowRight size={16} />
+              </Link>
+              <a href="#funciones" onClick={(e) => { e.preventDefault(); document.getElementById('funciones')?.scrollIntoView({ behavior: 'smooth' }); }} className="btn btn-vidrio h-12 px-6 text-[15px]">
+                Ver la plataforma
+              </a>
+            </div>
+          </Revelar>
         </div>
-        <div className={cn('min-w-0', invertida && 'lg:order-1')}>{maqueta}</div>
+
+        {/* ── El abanico ─────────────────────────────────────────────────────
+            Cinco piezas, de fuera hacia dentro: tarjeta · móvil · PIZARRA ·
+            tarjeta · tarjeta. Se solapan con márgenes negativos; si fueran de
+            lado a lado sin tocarse sería una fila, no una composición.
+
+            Los extremos entran a partir de `lg` y el segundo anillo a partir
+            de `md`. En 390 px queda sólo la pizarra: cinco piezas superpuestas
+            en un móvil no se leen, se amontonan y queda una mancha. */}
+        <Revelar delay={340}>
+          <div className="escena relative mt-[clamp(40px,5.5vw,74px)]">
+            <div className="flex items-center justify-center">
+
+              <div className="ala-2-izq hidden w-[17%] shrink-0 lg:block">
+                <div className="flota-c"><MaquetaAsistencia /></div>
+              </div>
+
+              <div className="ala-1-izq -mr-[3%] hidden w-[16%] shrink-0 md:block lg:-ml-[2%]">
+                <div className="flota-b">
+                  <Movil
+                    src="/producto/plantilla-movil.png"
+                    alt="La plantilla del equipo en el móvil, con la asistencia de cada jugadora."
+                    className="!rounded-[1.5rem] !border-[5px]"
+                  />
+                </div>
+              </div>
+
+              {/* EL CENTRO. De frente, adelantado y el más grande: es lo
+                  primero que tiene que mirarse. */}
+              <div className="ala-centro relative z-10 w-full shrink-0 md:w-[44%]">
+                <div className="flota-a">
+                  <Captura
+                    src="/producto/pizarra.png"
+                    alt="La pizarra táctica de Playoff360, con una salida desde atrás dibujada sobre el campo en perspectiva."
+                    titulo="Pizarra táctica · Salida desde atrás"
+                    prioridad
+                  />
+                </div>
+              </div>
+
+              <div className="ala-1-der -ml-[3%] hidden w-[20%] shrink-0 md:block lg:-mr-[2%]">
+                <div className="flota-c"><MaquetaPanel /></div>
+              </div>
+
+              <div className="ala-2-der hidden w-[17%] shrink-0 lg:block">
+                <div className="flota-b"><MaquetaJugadora /></div>
+              </div>
+            </div>
+          </div>
+        </Revelar>
+
+        <p className="relative mt-9 text-center text-[12px] text-white/60">
+          Las pantallas son del producto, con un equipo de ejemplo. Playoff360 empieza vacío.
+        </p>
       </div>
-    </Revelar>
+    </section>
   );
 }
 
-/* ─────────────────────────────── Precios ─────────────────────────────────── */
+/* ═════════════════════════════════ 2 · Tira ═══════════════════════════════ */
+
+/**
+ * Donde la referencia pone una fila de logotipos de clientes, aquí pasan los
+ * módulos.
+ *
+ * Es la misma función —«esto hace muchas cosas»— sin inventarse a nadie. Y
+ * dice algo que una fila de logotipos no dice: QUÉ hace.
+ *
+ * El contenido va dos veces en el marcado y la tira se desplaza media
+ * anchura: así el bucle cierra sin salto. La copia va con `aria-hidden` para
+ * que un lector de pantalla no lea la lista dos veces.
+ */
+function Tira() {
+  const fila = (oculta: boolean) => (
+    <ul
+      className="flex shrink-0 items-center gap-10 pr-10 sm:gap-14 sm:pr-14"
+      aria-hidden={oculta || undefined}
+    >
+      {MODULOS.map((m) => (
+        <li key={m} className="flex shrink-0 items-center gap-3">
+          <i className="block h-1 w-1 rounded-full bg-marca-500" aria-hidden />
+          <span className="whitespace-nowrap font-titulo text-[14px] font-medium tracking-[-0.01em] text-grisis">
+            {m}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+
+  return (
+    <section className="border-b border-black/[0.06] bg-white py-7">
+      <div className="tira overflow-hidden">
+        <div className="tira-mueve flex w-max">
+          {fila(false)}
+          {fila(true)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════ 3 · La declaración ═══════════════════════════ */
+
+/**
+ * La segunda pantalla: tipografía grande, mucho aire y una sola imagen.
+ *
+ * Asimétrica a propósito. Una rejilla de dos columnas iguales con texto a un
+ * lado y foto al otro es la forma más rápida de que algo parezca una
+ * plantilla; siete y cinco columnas, con la imagen desbordando hacia fuera,
+ * se lee como una página compuesta.
+ *
+ * Las tres cifras de abajo son ESTRUCTURALES, no de negocio: cuántos módulos
+ * hay, cuántos sitios hacen falta y cuánto hay que instalar. Son
+ * comprobables mirando el producto. No hay ni un «+500 clubes».
+ */
+function Declaracion() {
+  return (
+    <section className="seccion bg-white">
+      <div className="cauce">
+        <div className="grid items-end gap-10 lg:grid-cols-12 lg:gap-14">
+          <Revelar className="lg:col-span-7">
+            <Rotulo>La plataforma</Rotulo>
+            <h2 className="t-l mt-5">
+              Diseñado para entrenadores.
+              <br />
+              Preparado para <span className="lima-bajo">clubes</span>.
+            </h2>
+          </Revelar>
+
+          <Revelar delay={110} className="lg:col-span-5">
+            <p className="entradilla lg:ml-auto">
+              Un sitio para la plantilla, la semana de entrenamientos, la convocatoria del
+              sábado y la jugada que quieres que salga. Lo mismo para un equipo que para
+              todo un club.
+            </p>
+          </Revelar>
+        </div>
+
+        <Revelar delay={160}>
+          <div className="relative mt-12 lg:mt-16">
+            <Captura
+              src="/producto/plantilla.png"
+              alt="La pantalla de plantilla, con las dieciséis jugadoras, su posición, su asistencia y su estado."
+              titulo="Plantilla · Cadete A"
+            />
+            {/* El móvil asomando por la esquina. Desborda el marco a
+                propósito: es lo que impide que la composición se lea como un
+                rectángulo dentro de otro. */}
+            <div className="absolute -bottom-10 -right-2 hidden w-[17%] max-w-[168px] md:block xl:-right-10">
+              <Movil
+                src="/producto/plantilla-movil.png"
+                alt="La misma plantilla, en el móvil."
+              />
+            </div>
+          </div>
+        </Revelar>
+
+        <div className="mt-20 grid gap-px overflow-hidden rounded-2xl bg-black/[0.07] sm:grid-cols-3 lg:mt-24">
+          {([
+            ['Once módulos', 'Plantilla, asistencia, entrenamientos, ejercicios, partidos, convocatorias, calendario, disponibilidad, pizarra, analíticas y cuerpo técnico.'],
+            ['Un solo sitio', 'Nada de una hoja de cálculo para la asistencia y un grupo de mensajería para todo lo demás.'],
+            ['Cero instalación', 'Se abre en el navegador. En el campo, desde el móvil; en casa, desde el ordenador.'],
+          ] as [string, string][]).map(([t, d], i) => (
+            <Revelar key={t} delay={i * 80} className="bg-white p-6 sm:p-7">
+              <h3 className="t-m">{t}</h3>
+              <p className="mt-2.5 text-[14.5px] leading-relaxed text-grisis">{d}</p>
+            </Revelar>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════ 4 · Las historias ════════════════════════════ */
+
+/**
+ * Dos secciones seguidas que NO se parecen.
+ *
+ * La primera lleva el texto a la izquierda y el producto a la derecha, sobre
+ * blanco. La segunda invierte el orden y cambia de fondo. Es lo mínimo para
+ * que al bajar no dé la sensación de estar viendo la misma caja otra vez.
+ */
+function Historias() {
+  return (
+    <>
+      <section id="funciones" className="seccion scroll-mt-24 bg-[#F4F7FC]">
+        <div className="cauce">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            {/* El producto a la IZQUIERDA aquí: en la sección anterior iba a
+                la derecha, y alternar es lo que da ritmo. */}
+            <Revelar className="relative lg:col-span-7">
+              <Captura
+                src="/producto/entrenamientos.png"
+                alt="La pantalla de entrenamientos, con la sesión dividida en bloques y sus minutos."
+                titulo="Entrenamientos · Semana 14"
+              />
+              <div className="absolute -bottom-8 -left-4 hidden w-[20%] max-w-[150px] sm:block lg:-left-12">
+                <Movil
+                  src="/producto/entrenamientos-movil.png"
+                  alt="La sesión del día en el móvil, bloque por bloque."
+                />
+              </div>
+            </Revelar>
+
+            <Revelar delay={120} className="lg:col-span-5">
+              <Rotulo>Entrenamientos</Rotulo>
+              <h2 className="t-l mt-5">Cada sesión, en bloques.</h2>
+              <p className="entradilla mt-5">
+                Activación, parte principal, competición. Con sus minutos, su material y los
+                ejercicios de tu biblioteca. La preparas el martes y el jueves la tienes en
+                el bolsillo.
+              </p>
+              <ul className="mt-7 space-y-3">
+                {['Biblioteca de ejercicios reutilizables', 'Lista de asistencia de la sesión', 'Quién está disponible y quién no'].map((t) => (
+                  <li key={t} className="flex items-start gap-3 text-[15px] text-tinta">
+                    <Check size={17} className="mt-0.5 shrink-0 text-marca-600" />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </Revelar>
+          </div>
+        </div>
+      </section>
+
+      <section className="seccion bg-white">
+        <div className="cauce">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <Revelar className="lg:col-span-5">
+              <Rotulo>Partidos y analíticas</Rotulo>
+              <h2 className="t-l mt-5">
+                El sábado
+                <br />
+                empieza el martes.
+              </h2>
+              <p className="entradilla mt-5">
+                Convocatoria, alineación y resultado. Y después, lo que de verdad dice la
+                temporada: quién viene a entrenar, quién se lo está ganando y a quién hay
+                que preguntarle qué le pasa.
+              </p>
+              <Link to="/entrar" className="btn btn-linea mt-8 h-11 px-5 text-[14.5px]">
+                Probarlo gratis
+                <ArrowRight size={15} />
+              </Link>
+            </Revelar>
+
+            {/* DOS CAPTURAS SOLAPADAS cuentan «hay más pantallas» sin tener
+                que escribirlo. El calendario va detrás y asomando por arriba
+                a la derecha.
+
+                `isolate` + `z-0`/`z-10` y NO `-z-10`: un hijo con z-index
+                negativo se va detrás del fondo opaco de la sección y
+                desaparece. Con un contexto de apilamiento propio, «detrás»
+                significa detrás de su hermano, que es lo que se quería. */}
+            <Revelar delay={120} className="relative isolate lg:col-span-7">
+              <div className="absolute -right-2 -top-14 z-0 hidden w-[58%] lg:block">
+                <Captura
+                  src="/producto/calendario.png"
+                  alt=""
+                  titulo="Calendario"
+                  className="opacity-80"
+                />
+              </div>
+              <div className="relative z-10">
+                <Captura
+                  src="/producto/analiticas.png"
+                  alt="El panel de analíticas, con la asistencia por jugadora y por sesión."
+                  titulo="Analíticas · Cadete A"
+                />
+              </div>
+            </Revelar>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+/* ══════════════════════════════ 5 · La pizarra ════════════════════════════ */
+
+/**
+ * La franja oscura. Es el punto de inflexión de la página y la única sección
+ * a sangre completa.
+ *
+ * Y AQUÍ NO HAY CAPTURA: hay pizarra. `MaquetaPizarra` envuelve `BoardDemo`,
+ * que es el mismo motor que está dentro de la aplicación, con la misma cámara
+ * y las mismas piezas. Es la mejor demostración que tiene este producto, y
+ * enseñarla quieta en un PNG cuando se puede enseñar moviéndose sería tirarla.
+ *
+ * El azul del fondo no es el negro de la aplicación: `abismo` lleva azul
+ * dentro, para que la pizarra puesta encima se lea COMO UNA PANTALLA y no
+ * como un agujero del mismo color que el fondo.
+ */
+function Pizarra() {
+  return (
+    <section className="corte-arriba corte-abajo relative overflow-hidden bg-abismo">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-[10%] top-[6%] h-[46vw] w-[46vw] rounded-full opacity-40 blur-[110px]"
+        style={{ background: 'radial-gradient(circle, rgba(8,104,249,0.9) 0%, rgba(8,104,249,0) 70%)' }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-[8%] bottom-[0%] h-[40vw] w-[40vw] rounded-full opacity-30 blur-[110px]"
+        style={{ background: 'radial-gradient(circle, rgba(54,200,255,0.9) 0%, rgba(54,200,255,0) 70%)' }}
+      />
+
+      <div className="cauce relative pb-[clamp(90px,11vw,150px)] pt-[clamp(110px,13vw,170px)]">
+        <div className="grid items-end gap-8 lg:grid-cols-12">
+          <Revelar className="lg:col-span-7">
+            <Rotulo tono="lima">Pizarra táctica</Rotulo>
+            <h2 className="t-l mt-5 text-white">
+              De la idea al campo,
+              <br />
+              en movimiento.
+            </h2>
+          </Revelar>
+          <Revelar delay={110} className="lg:col-span-5">
+            <p className="entradilla text-white/60">
+              Dibuja la jugada, dale a reproducir y mírala salir. Después la exportas en
+              vídeo y la mandas al grupo del equipo.
+            </p>
+          </Revelar>
+        </div>
+
+        {/* A 1240 px de ancho el campo salía de 800 px de alto y se comía la
+            pantalla entera: dejaba de ser una demostración y pasaba a ser una
+            pared verde. Acotado a 60rem respira, y el azul que queda a los
+            lados es lo que hace que se lea como una pantalla encendida en una
+            habitación a oscuras. */}
+        <Revelar delay={180}>
+          <div className="relative mx-auto mt-10 max-w-[60rem] lg:mt-14">
+            <MaquetaPizarra />
+            <span className="absolute -top-3 left-5 flex items-center gap-2 rounded-full border border-white/15 bg-abismo2 px-3 py-1.5 text-[11.5px] font-medium text-white/75">
+              <i className="pulso block h-1.5 w-1.5 shrink-0 rounded-full bg-lima" aria-hidden />
+              En directo
+            </span>
+          </div>
+        </Revelar>
+
+        <Revelar delay={240}>
+          <p className="mx-auto mt-7 max-w-[46ch] text-center text-[13.5px] leading-relaxed text-white/50">
+            No es un vídeo ni una captura: es el mismo componente que hay dentro de la
+            aplicación, moviéndose aquí.
+          </p>
+        </Revelar>
+      </div>
+    </section>
+  );
+}
+
+/* ══════════════════════════════ 6 · Los clubes ════════════════════════════ */
+
+/**
+ * Una lista numerada, sin una sola tarjeta.
+ *
+ * Es a propósito: a estas alturas de la página ya se han visto marcos,
+ * capturas y una franja oscura. Otra rejilla de cajas blancas sería la cuarta
+ * vez que aparece la misma forma. Aquí manda la tipografía y las líneas
+ * finas; el número grande en gris claro hace de ancla visual y no necesita
+ * ninguna caja alrededor.
+ */
+function Clubes() {
+  return (
+    <section id="clubes" className="seccion scroll-mt-24 bg-white">
+      <div className="cauce">
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
+          <Revelar className="lg:col-span-5">
+            <Rotulo>Para clubes</Rotulo>
+            <h2 className="t-l mt-5">
+              Varios equipos.
+              <br />
+              Un solo club.
+            </h2>
+            <p className="entradilla mt-5">
+              Lo que un club necesita no es más funciones: es saber quién ve qué.
+            </p>
+          </Revelar>
+
+          <div className="lg:col-span-7">
+            <ul>
+              {CLUB.map(([n, titulo, texto], i) => (
+                <Revelar as="li" key={n} delay={i * 70} className="flex gap-6 border-t border-black/[0.09] py-7 first:border-t-0 first:pt-0 sm:gap-10">
+                  <span className="font-titulo text-[13px] font-medium tabular-nums text-marca-300">{n}</span>
+                  <div className="min-w-0">
+                    <h3 className="t-m">{titulo}</h3>
+                    <p className="mt-2 max-w-[44ch] text-[15px] leading-relaxed text-grisis">{texto}</p>
+                  </div>
+                </Revelar>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* LO QUE NO HACE, EN LA PORTADA Y NO EN LA LETRA PEQUEÑA.
+            Descubrir un límite después de meter la plantilla entera es lo que
+            hace perder la confianza. Puesto aquí, al lado de lo que sí hace,
+            cuesta tres líneas y se gana una. */}
+        <Revelar delay={120}>
+          <div className="mt-20 rounded-3xl bg-[#F4F7FC] p-7 sm:p-10 lg:mt-24">
+            <h3 className="t-m">Lo que no hace, dicho aquí</h3>
+            <div className="mt-7 grid gap-7 sm:grid-cols-3 sm:gap-10">
+              {NO_HACE.map(([t, d]) => (
+                <div key={t}>
+                  <p className="flex items-start gap-2.5 text-[15px] font-semibold text-tinta">
+                    <Minus size={16} className="mt-1 shrink-0 text-grisis" />
+                    {t}
+                  </p>
+                  <p className="ml-[26px] mt-1.5 text-[14.5px] leading-relaxed text-grisis">{d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Revelar>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════ 7 · Precios ══════════════════════════════ */
 
 /**
  * Los planes, de la base de datos.
@@ -837,103 +928,126 @@ function Historia({
  * aplicación no cierra ninguna función: se dice arriba, en grande, en vez de
  * dejar que alguien lo descubra al pulsar.
  *
- * Lo que trae cada plan tampoco se escribe aquí: sale de `todoLoQueTrae`, el
- * mismo catálogo que usa la pantalla de facturación dentro de la aplicación, y
- * ese catálogo sólo lista lo que está CONSTRUIDO. Una capacidad a medias no
- * aparece, por muy bien que vendiera.
+ * ───────────────────────────────────────────────────────────────────────────
+ * POR QUÉ NO SON TRES TARJETAS IGUALES
+ *
+ * Tres cajas con el mismo borde, el mismo relleno y la misma sombra se leen
+ * como un formulario de elección, no como una oferta. Aquí hay UNA pieza con
+ * tres columnas separadas por filetes de un píxel, y la del medio sale del
+ * plano: fondo oscuro, un poco más alta y con su propio sello. El ojo va
+ * primero al plan recomendado, que es justo para lo que sirve destacarlo.
  */
 function Precios({ planes }: { planes: Plan[] | null }) {
   const NOMBRES: Record<string, string> = { free: 'Gratis', pro: 'Pro', max: 'Max' };
+  /* PARA QUIÉN ES CADA UNO, en una línea.
+     No es relleno: las columnas de Pro y Max añaden una o dos funciones, así
+     que sin esto quedaban medio vacías y el hueco se leía como «aquí falta
+     algo». Y responde a la pregunta que de verdad se hace quien mira una
+     tabla de precios, que no es «qué trae» sino «cuál es el mío». */
+  const PARA_QUIEN: Record<string, string> = {
+    free: 'Para empezar con un equipo y ver si esto te sirve.',
+    pro: 'Para el entrenador que lleva su equipo y quiere la pizarra entera.',
+    max: 'Para el club con varios equipos y varias personas en el cuerpo técnico.',
+  };
   const niveles = ['free', 'pro', 'max'] as const;
   const seVende = (planes ?? []).some((p) => p.contratable);
   const buscar = (t: string) => (planes ?? []).find((p) => p.tier === t);
 
-  /** Cuántos equipos caben, dicho en una línea. `null` es sin límite. */
   const equiposDe = (n: number | null | undefined) =>
     n === null ? 'Equipos sin límite' : n === 1 ? 'Un equipo' : typeof n === 'number' ? `Hasta ${n} equipos` : null;
 
   return (
-    <section id="precios" className="scroll-mt-24 border-t border-black/[0.06] bg-white">
-      <div className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
-        <Revelar className="max-w-[46rem]">
-          <Rotulo>Precios</Rotulo>
-          <Titular>
-            Un plan gratis de verdad,
-            <br />y dos que no asustan.
-          </Titular>
-          <Parrafo className="mt-4 max-w-[52ch]">
-            Pensados para un entrenador de fútbol base y para clubes pequeños, que es quien va a
-            usar esto. Gratis no es una prueba: es un plan, con un equipo, para siempre.
-          </Parrafo>
-        </Revelar>
+    <section id="precios" className="seccion scroll-mt-24 bg-[#F4F7FC]">
+      <div className="cauce">
+        <div className="grid items-end gap-8 lg:grid-cols-12">
+          <Revelar className="lg:col-span-7">
+            <Rotulo>Precios</Rotulo>
+            <h2 className="t-l mt-5">
+              Gratis de verdad.
+              <br />
+              Y barato en serio.
+            </h2>
+          </Revelar>
+          <Revelar delay={100} className="lg:col-span-5">
+            <p className="entradilla lg:ml-auto">
+              Pensado para un entrenador de fútbol base y para clubes pequeños. Gratis no es
+              una prueba de quince días: es un plan, con un equipo, para siempre.
+            </p>
+          </Revelar>
+        </div>
 
         {/* EL AVISO VA ARRIBA Y NO EN LA LETRA PEQUEÑA. Hay precios puestos y
             no hay forma de pagarlos: quien lea las tarjetas tiene que saberlo
             antes de buscar el botón, no después. */}
         {!seVende && (
-          <Revelar delay={80}>
-            <p className="mt-7 max-w-[52rem] rounded-2xl border border-marca-600/20 bg-marca-50 px-4 py-3.5 text-[14px] leading-relaxed text-tinta sm:px-5">
+          <Revelar delay={150}>
+            <p className="mt-9 rounded-2xl border border-marca-600/20 bg-marca-50 px-5 py-4 text-[14.5px] leading-relaxed text-tinta">
               <span className="font-semibold">Todavía no se puede pagar.</span>{' '}
-              La pasarela de cobro no está abierta, así que hoy no hay nada que contratar y
-              <span className="font-semibold"> no hay ninguna función cerrada</span>: se use el
-              plan que se use, está todo disponible. Estos son los precios que se aplicarán
-              cuando se abra.
+              No hay pasarela de cobro abierta, así que hoy no hay nada que contratar y
+              <span className="font-semibold"> no hay ninguna función cerrada</span>: se use
+              el plan que se use, está todo disponible. Estos son los precios que se
+              aplicarán cuando se abra.
             </p>
           </Revelar>
         )}
 
-        <div className="mt-8 grid gap-4 lg:grid-cols-3">
-          {niveles.map((tier, i) => {
-            const plan = buscar(tier);
-            const destacado = tier === 'pro';
-            const moneda = plan?.currency ?? 'eur';
-            const mensual = importe(plan?.priceMonthly ?? null, moneda);
-            const anual = importe(plan?.priceYearly ?? null, moneda);
-            /* El ahorro no se escribe: se resta. Doce mensualidades menos lo
-               que cuesta el año. Así no puede quedarse desfasado respecto a
-               los dos importes que tiene al lado. */
-            const ahorro =
-              plan && plan.priceMonthly !== null && plan.priceYearly !== null && plan.priceMonthly > 0
-                ? importe(plan.priceMonthly * 12 - plan.priceYearly, moneda)
-                : null;
-            const gratis = plan?.priceMonthly === 0;
-            const equipos = equiposDe(plan?.maxTeams);
-            /* Gratis enseña lo suyo; los de arriba, sólo lo que AÑADEN.
-               Repetir debajo de Pro las mismas diez líneas obliga a leerlas
-               dos veces para descubrir que son las mismas. */
-            const lista = tier === 'free' ? todoLoQueTrae('free') : loQueFalta(tier);
+        <Revelar delay={200}>
+          <div className="mt-10 overflow-hidden rounded-[26px] border border-black/[0.08] bg-white lg:grid lg:grid-cols-3">
+            {niveles.map((tier) => {
+              const plan = buscar(tier);
+              const destacado = tier === 'pro';
+              const moneda = plan?.currency ?? 'eur';
+              const mensual = importe(plan?.priceMonthly ?? null, moneda);
+              const anual = importe(plan?.priceYearly ?? null, moneda);
+              /* El ahorro no se escribe: se resta. Doce mensualidades menos lo
+                 que cuesta el año. Así no puede quedarse desfasado respecto a
+                 los dos importes que tiene al lado. */
+              const ahorro =
+                plan && plan.priceMonthly !== null && plan.priceYearly !== null && plan.priceMonthly > 0
+                  ? importe(plan.priceMonthly * 12 - plan.priceYearly, moneda)
+                  : null;
+              const gratis = plan?.priceMonthly === 0;
+              const equipos = equiposDe(plan?.maxTeams);
+              /* Gratis enseña lo suyo; los de arriba, sólo lo que AÑADEN.
+                 Repetir debajo de Pro las mismas once líneas obliga a leerlas
+                 dos veces para descubrir que son las mismas. */
+              const lista = tier === 'free' ? todoLoQueTrae('free') : loQueFalta(tier);
 
-            return (
-              <Revelar key={tier} delay={160 + i * 80}>
+              return (
                 <article
+                  key={tier}
                   className={cn(
-                    'flex h-full flex-col rounded-3xl border p-6 sm:p-7',
+                    'flex flex-col p-7 sm:p-9',
                     destacado
-                      ? 'border-marca-600/30 bg-marca-50 shadow-[0_20px_50px_-28px_rgba(8,104,249,0.45)]'
-                      : 'border-black/[0.08] bg-white',
+                      ? 'bg-abismo text-white lg:-my-4 lg:rounded-[26px] lg:py-12 lg:shadow-[0_30px_70px_-30px_rgba(6,12,27,0.55)]'
+                      : 'border-t border-black/[0.08] lg:border-l lg:border-t-0 lg:first:border-l-0',
                   )}
                 >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-[15px] font-semibold uppercase tracking-[0.08em] text-grisis">
+                  <div className="flex items-center gap-3">
+                    <h3 className={cn('font-titulo text-[15px] font-semibold tracking-[-0.01em]', destacado ? 'text-white' : 'text-tinta')}>
                       {plan?.name ?? NOMBRES[tier]}
                     </h3>
                     {destacado && (
-                      <span className="rounded-full bg-marca-600 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white">
+                      <span className="rounded-full bg-lima px-2.5 py-0.5 font-titulo text-[10.5px] font-semibold uppercase tracking-[0.1em] text-abismo">
                         Recomendado
                       </span>
                     )}
                   </div>
 
-                  <p className="mt-3 flex items-baseline gap-1.5">
-                    <span className="text-[34px] font-semibold leading-none tracking-[-0.03em] text-tinta">
+                  <p className={cn('mt-3 min-h-[2.6em] max-w-[30ch] text-[14px] leading-snug', destacado ? 'text-white/55' : 'text-grisis')}>
+                    {PARA_QUIEN[tier]}
+                  </p>
+
+                  <p className="mt-5 flex items-baseline gap-1.5">
+                    <span className={cn('font-titulo text-[42px] font-semibold leading-none tracking-[-0.04em]', destacado ? 'text-white' : 'text-tinta')}>
                       {mensual ?? 'Sin precio'}
                     </span>
                     {mensual && !gratis && (
-                      <span className="text-[14px] font-medium text-grisis">/mes</span>
+                      <span className={cn('text-[14px] font-medium', destacado ? 'text-white/55' : 'text-grisis')}>/mes</span>
                     )}
                   </p>
 
-                  <p className="mt-1.5 min-h-[1.25rem] text-[13px] text-grisis">
+                  <p className={cn('mt-2 min-h-[1.25rem] text-[13.5px]', destacado ? 'text-white/55' : 'text-grisis')}>
                     {!plan
                       ? 'No hemos podido cargar el precio'
                       : gratis
@@ -944,29 +1058,29 @@ function Precios({ planes }: { planes: Plan[] | null }) {
                   </p>
 
                   {equipos && (
-                    <p className="mt-4 border-t border-black/[0.07] pt-4 text-[14px] font-semibold text-tinta">
+                    <p className={cn('mt-6 font-titulo text-[15px] font-semibold', destacado ? 'text-white' : 'text-tinta')}>
                       {equipos}
                     </p>
                   )}
 
-                  <p className="mt-4 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-grisis">
-                    {tier === 'free' ? 'Incluye' : `Todo lo de ${tier === 'pro' ? 'Gratis' : 'Pro'}, y además`}
+                  <p className={cn('mt-6 rotulo', destacado ? 'text-white/45' : 'text-grisis')}>
+                    {tier === 'free' ? 'Incluye' : `Todo lo de ${tier === 'pro' ? 'Gratis' : 'Pro'}, y`}
                   </p>
 
                   {lista.length > 0 ? (
-                    <ul className="mt-2.5 flex-1 space-y-2">
+                    <ul className="mt-4 flex-1 space-y-2.5">
                       {lista.map((t) => (
-                        <li key={t} className="flex items-start gap-2 text-[14px] leading-relaxed text-grisis">
-                          <Check size={14} className="mt-1 shrink-0 text-marca-600" />
+                        <li key={t} className={cn('flex items-start gap-2.5 text-[14.5px] leading-snug', destacado ? 'text-white/80' : 'text-grisis')}>
+                          <Check size={15} className={cn('mt-0.5 shrink-0', destacado ? 'text-lima' : 'text-marca-600')} />
                           <span className="min-w-0">{t}</span>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    /* Si un plan no añade NINGUNA función construida, lo que
-                       lo distingue es cuántos equipos caben. Decirlo es mejor
-                       que rellenar la tarjeta con promesas. */
-                    <p className="mt-2.5 flex-1 text-[14px] leading-relaxed text-grisis">
+                    /* Si un plan no añade NINGUNA función construida, lo que lo
+                       distingue es cuántos equipos caben. Decirlo es mejor que
+                       rellenar la columna con promesas. */
+                    <p className={cn('mt-4 flex-1 text-[14.5px] leading-relaxed', destacado ? 'text-white/70' : 'text-grisis')}>
                       Ninguna función nueva de momento: lo que cambia es cuántos equipos caben.
                     </p>
                   )}
@@ -974,29 +1088,109 @@ function Precios({ planes }: { planes: Plan[] | null }) {
                   {/* Los días de prueba salen de la tabla, igual que todo lo
                       demás, y sólo se enseñan cuando haya algo que probar. */}
                   {seVende && !gratis && (plan?.trialDays ?? 0) > 0 && (
-                    <p className="mt-3 text-[12.5px] text-grisis">
+                    <p className={cn('mt-4 text-[13px]', destacado ? 'text-white/55' : 'text-grisis')}>
                       {plan?.trialDays} días de prueba antes del primer cobro
                     </p>
                   )}
 
-                  <div className="mt-6">
+                  <div className="mt-8">
                     {gratis ? (
-                      <Link to="/entrar" className="boton-azul h-11 w-full text-[14.5px]">
+                      <Link to="/entrar" className="btn btn-azul h-11 w-full text-[14.5px]">
                         Empezar gratis
                       </Link>
                     ) : (
-                      <p className="rounded-xl border border-black/[0.08] bg-[#F6F8FC] px-3 py-2.5 text-center text-[13px] leading-relaxed text-grisis">
-                        {seVende
-                          ? 'Se contrata desde la aplicación'
-                          : 'Hoy ya lo tienes, sin pagar nada'}
+                      <p className={cn(
+                        'rounded-full px-4 py-2.5 text-center text-[13px]',
+                        destacado ? 'bg-white/[0.07] text-white/60' : 'bg-black/[0.03] text-grisis',
+                      )}>
+                        {seVende ? 'Se contrata desde la aplicación' : 'Hoy ya lo tienes, sin pagar nada'}
                       </p>
                     )}
                   </div>
                 </article>
-              </Revelar>
-            );
-          })}
+              );
+            })}
+          </div>
+        </Revelar>
+      </div>
+    </section>
+  );
+}
+
+/* ══════════════════════════════ 8 · Preguntas ═════════════════════════════ */
+
+/**
+ * Sin cajas, sin acordeón de tarjetas: filetes finos y tipografía. Es la
+ * tercera forma distinta de presentar una lista en esta página, y a estas
+ * alturas lo que hace falta es que descanse la vista.
+ */
+function Preguntas() {
+  const [abierta, setAbierta] = useState<number | null>(0);
+  return (
+    <section className="seccion-corta bg-white">
+      <div className="cauce">
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
+          <Revelar className="lg:col-span-4">
+            <Rotulo>Preguntas</Rotulo>
+            <h2 className="t-l mt-5">Lo que se suele preguntar.</h2>
+          </Revelar>
+
+          <div className="lg:col-span-8">
+            <ul>
+              {FAQ.map(([p, r], i) => {
+                const activa = abierta === i;
+                return (
+                  <li key={p} className="border-t border-black/[0.09] first:border-t-0">
+                    <button
+                      type="button"
+                      onClick={() => setAbierta(activa ? null : i)}
+                      aria-expanded={activa}
+                      className="flex w-full items-center justify-between gap-6 py-5 text-left"
+                    >
+                      <span className="font-titulo text-[16.5px] font-medium tracking-[-0.02em] text-tinta sm:text-[18px]">
+                        {p}
+                      </span>
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-black/[0.1] text-marca-600">
+                        {activa ? <Minus size={14} /> : <Plus size={14} />}
+                      </span>
+                    </button>
+                    {activa && (
+                      <p className="max-w-[62ch] pb-6 text-[15px] leading-relaxed text-grisis">{r}</p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════ 9 · El cierre ════════════════════════════ */
+
+function Cierre() {
+  return (
+    <section className="cielo corte-arriba relative overflow-hidden">
+      <div className="nubes" aria-hidden />
+      <div className="cauce relative pb-[clamp(90px,11vw,140px)] pt-[clamp(110px,13vw,170px)] text-center">
+        <Revelar>
+          <h2 className="t-xl mx-auto max-w-[22ch] text-white">
+            El próximo paso de tu equipo empieza aquí.
+          </h2>
+        </Revelar>
+        <Revelar delay={110}>
+          <p className="mx-auto mt-6 max-w-[34rem] text-[16.5px] leading-[1.55] text-white/80 sm:text-[17.5px]">
+            Creas tu club, montas el equipo y empiezas. Sin tarjeta y sin que nadie te llame.
+          </p>
+        </Revelar>
+        <Revelar delay={190}>
+          <Link to="/entrar" className="btn btn-claro mt-9 h-12 px-7 text-[15px]">
+            Crear cuenta gratis
+            <ArrowRight size={16} />
+          </Link>
+        </Revelar>
       </div>
     </section>
   );

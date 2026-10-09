@@ -26,16 +26,27 @@
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <!-- EJE VARIABLE, no seis pesos sueltos. Con los pesos sueltos, pedir 540
+    <!-- LAS TIPOGRAFÍAS VIVEN AQUÍ, NO EN GOOGLE.
+         Antes se pedían a fonts.googleapis.com: dos viajes de ida y vuelta a
+         otro dominio (DNS, TLS, la hoja de estilo y sólo entonces el archivo)
+         antes de poder pintar una sola letra, y la portada entera dependía de
+         que un tercero respondiera. Ahora son cuatro archivos del mismo
+         servidor, 90 kB en total, declarados en `index.css` y precargados
+         aquí: la letra sale a la primera y sin pedir permiso a nadie.
+
+         EJE VARIABLE, no seis pesos sueltos. Con los pesos sueltos, pedir 540
          redondeaba a 500 y pedir 560 a 600, así que dos titulares seguidos
          salían con pesos distintos sin que nadie lo hubiera pedido. Con el eje
-         continuo, 540 es 540. Además es un archivo en vez de seis. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=Schibsted+Grotesk:wght@400..900&display=swap"
-      rel="stylesheet"
-    />
+         continuo, 540 es 540. Y es un archivo por familia en vez de seis.
+
+         Sólo se precarga el subconjunto latino: el extendido lo pide el
+         navegador si hace falta, y en castellano casi nunca hace falta. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+          href="/fuentes/space-grotesk-latin.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+          href="/fuentes/jakarta-latin.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+          href="/fuentes/schibsted-latin.woff2" />
   </head>
   <body>
     <div id="root"></div>

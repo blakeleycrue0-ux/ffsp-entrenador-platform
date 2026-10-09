@@ -1,3 +1,82 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   LAS TIPOGRAFÍAS
+   ═══════════════════════════════════════════════════════════════════════════
+   Tres familias de eje variable, servidas desde `/fuentes` y no desde Google:
+   un dominio menos que resolver antes de pintar la primera letra, y una cosa
+   menos de la que depender.
+
+     Space Grotesk      los titulares de la portada. Es una grotesca con
+                        carácter —la «a», la «g», el «1»— y da el aire de
+                        producto técnico sin ponerse juguetona.
+     Plus Jakarta Sans  el texto de la portada. Humanista, abierta, se lee
+                        bien en párrafo corto y no pelea con la anterior.
+     Schibsted Grotesk  la aplicación. No se toca: dentro ya hay un sistema
+                        montado y medido alrededor de ella.
+
+   `font-display: swap` a propósito: antes que una página en blanco esperando
+   a una fuente, el texto con la del sistema y luego el cambio.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fuentes/space-grotesk-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fuentes/space-grotesk-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fuentes/jakarta-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fuentes/jakarta-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Schibsted Grotesk';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('/fuentes/schibsted-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Schibsted Grotesk';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('/fuentes/schibsted-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -286,104 +365,6 @@
     .metal, .metal-claro { transition: none; }
   }
 
-  /* ── LOS CONTROLES DE LA PORTADA ──────────────────────────────────────────
-     Clases propias, SEPARADAS de `.metal`/`.metal-claro`, que son las del
-     producto entero. Son dos lenguajes distintos a propósito: dentro de la
-     aplicación un botón tiene que ser cómodo de acertar con el dedo —56 px en
-     los campos, 44 en las acciones—, y en la portada tiene que ser PEQUEÑO y
-     preciso, porque compite con una imagen y lo que se pide de él es que no
-     grite. Los de la portada venían heredando los del producto y por eso
-     parecían botones de formulario: 43 px de alto y radio 6 en un sitio donde
-     40 y 5 es lo que toca.
-
-     Lo que sí comparten es el principio: sin color de marca, sólo metal y
-     grafito. */
-  .control {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    height: 40px;
-    padding-inline: 16px;
-    border-radius: 5px;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    white-space: nowrap;
-    transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color .25s cubic-bezier(0.16, 1, 0.3, 1),
-                background-image .25s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow .25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  @media (min-width: 640px) {
-    .control { height: 42px; padding-inline: 18px; font-size: 13.5px; }
-  }
-
-  /* El reflejo. SÓLO AL PASAR POR ENCIMA: un destello que cruza solo cada pocos
-     segundos convierte un control en un anuncio. Vive en un pseudoelemento, no
-     en el botón, para que mover una capa no obligue a rasterizar su texto. */
-  .control::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, .38) 48%, transparent 72%);
-    transform: translateX(-150%);
-    transition: transform .65s cubic-bezier(.16, 1, .3, 1);
-  }
-  .control:hover::before { transform: translateX(150%); }
-
-  .control-primario {
-    background-image: linear-gradient(180deg, #ffffff 0%, #eeeeee 48%, #d2d2d2 100%);
-    color: #111111;
-    border: 1px solid rgba(255, 255, 255, .9);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, .95),
-      0 1px 2px rgba(0, 0, 0, .35);
-  }
-  .control-primario:hover {
-    background-image: linear-gradient(180deg, #ffffff, #f2f2f2 45%, #dcdcdc);
-    box-shadow:
-      inset 0 1px 0 #ffffff,
-      0 0 18px rgba(255, 255, 255, .12);
-    transform: translateY(-1px);
-  }
-
-  .control-secundario {
-    background-image: linear-gradient(135deg, rgba(255, 255, 255, .08), rgba(10, 10, 10, .45) 52%, rgba(255, 255, 255, .04));
-    color: #f5f5f5;
-    border: 1px solid rgba(255, 255, 255, .22);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-  .control-secundario:hover {
-    border-color: rgba(255, 255, 255, .42);
-    background-image: linear-gradient(135deg, rgba(255, 255, 255, .13), rgba(15, 15, 15, .5) 52%, rgba(255, 255, 255, .07));
-  }
-  /* En el oscuro el reflejo tiene que ser la mitad de evidente: sobre blanco
-     apenas se ve y sobre grafito sería un faro. */
-  .control-secundario::before {
-    background-image: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, .16) 48%, transparent 72%);
-  }
-
-  /* El de la cabecera es el mismo control, más pequeño: es una acción de
-     servicio —un sitio al que volver—, no la llamada principal de la página. */
-  .control-cabecera {
-    height: 38px;
-    padding-inline: 14px;
-    font-size: 12.5px;
-  }
-  @media (min-width: 640px) {
-    .control-cabecera { height: 38px; padding-inline: 14px; font-size: 12.5px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .control, .control::before { transition: none; }
-    .control-primario:hover { transform: none; }
-  }
-
   .panel-hover {
     @apply transition-colors duration-150 hover:bg-raised;
   }
@@ -514,6 +495,7 @@
   }
 }
 
+
 /* ══════════════════════════════════════════════════════════════════════════
    LA PORTADA
    ══════════════════════════════════════════════════════════════════════════
@@ -524,94 +506,220 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 @layer components {
-  /* El cielo de la cabecera. Tres paradas y no cinco: un degradado con muchos
-     colores se convierte en un arcoíris y deja de leerse como luz. */
-  .cielo-marca {
-    background-image:
-      radial-gradient(120% 90% at 85% 8%, rgba(54, 200, 255, 0.55) 0%, rgba(54, 200, 255, 0) 55%),
-      radial-gradient(90% 80% at 8% 0%, rgba(105, 101, 255, 0.5) 0%, rgba(105, 101, 255, 0) 60%),
-      linear-gradient(115deg, #5145FF 0%, #0878FF 45%, #28CBF8 100%);
+
+  /* ── EL RITMO ───────────────────────────────────────────────────────────
+     Una sola escala de aire vertical para toda la página. Antes cada sección
+     elegía su `py-20 lg:py-28` y acababa habiendo cuatro ritmos distintos,
+     que es lo que hace que una página parezca montada con piezas sueltas.
+     Con `clamp` el salto entre el móvil y el escritorio es continuo: no hay
+     un punto donde la página «da un tirón». */
+  .portada {
+    @apply font-prosa text-tinta;
+    --aire: clamp(72px, 9vw, 132px);
+    --aire-corto: clamp(48px, 6vw, 88px);
+    /* Las cifras con el mismo ancho: un marcador que baila al cambiar de
+       número se lee como un fallo. */
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .seccion { padding-top: var(--aire); padding-bottom: var(--aire); }
+  .seccion-corta { padding-top: var(--aire-corto); padding-bottom: var(--aire-corto); }
+
+  /* El ancho de lectura. 1240 y no 1152: con los titulares a 72 px, 1152 se
+     queda corto y la primera línea se parte donde no debe. */
+  .cauce { @apply mx-auto w-full max-w-[77.5rem] px-5 sm:px-8; }
+
+  /* ── LA TIPOGRAFÍA DE LA PORTADA ────────────────────────────────────────
+     Tres tamaños y nada más. Un titular, un subtitular y un rótulo: en
+     cuanto hay cinco, la jerarquía deja de leerse.
+
+     El interletraje se APRIETA cuando el cuerpo crece. Es lo que distingue
+     un titular compuesto de uno escrito: a 72 px el espaciado normal de una
+     grotesca deja huecos que a 16 px no se ven. */
+  .t-xl {
+    @apply font-titulo;
+    font-size: clamp(2.5rem, 7.2vw, 4.75rem);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+    font-weight: 600;
+  }
+  .t-l {
+    @apply font-titulo;
+    font-size: clamp(1.9rem, 4.2vw, 3.1rem);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    font-weight: 600;
+  }
+  .t-m {
+    @apply font-titulo;
+    font-size: clamp(1.3rem, 2.2vw, 1.65rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    font-weight: 600;
+  }
+  /* El rótulo de sección. Mayúsculas pequeñas muy separadas: es la señal de
+     «empieza algo» que no necesita una línea ni una caja. */
+  .rotulo {
+    @apply font-titulo text-[11px] font-medium uppercase;
+    letter-spacing: 0.22em;
+  }
+  .entradilla {
+    @apply text-[16px] leading-[1.55] text-grisis sm:text-[17.5px];
+    max-width: 46ch;
   }
 
-  /* El mismo cielo, más apagado, para el cierre: si los dos pesan igual, la
-     página empieza y acaba con la misma nota y no se nota que ha avanzado. */
-  .cielo-cierre {
+  /* ── EL CIELO ───────────────────────────────────────────────────────────
+     Tres paradas y no cinco: un degradado con muchos colores se convierte en
+     un arcoíris y deja de leerse como luz. */
+  .cielo {
     background-image:
-      radial-gradient(100% 120% at 15% 110%, rgba(54, 200, 255, 0.45) 0%, rgba(54, 200, 255, 0) 60%),
-      linear-gradient(110deg, #123B7D 0%, #0868F9 55%, #168BFF 100%);
+      radial-gradient(120% 90% at 85% 6%, rgba(54, 200, 255, 0.60) 0%, rgba(54, 200, 255, 0) 55%),
+      radial-gradient(90% 80% at 6% 0%, rgba(105, 101, 255, 0.55) 0%, rgba(105, 101, 255, 0) 62%),
+      linear-gradient(118deg, #4A3DFF 0%, #0878FF 46%, #2ECBF8 100%);
   }
 
-  /* EL CORTE DIAGONAL. Es lo que hace que la cabecera no parezca una caja de
-     color: la frontera con el blanco de abajo no es recta. Va en un
-     pseudoelemento del contenedor y no en una imagen, para que siga el ancho
-     de la ventana sin pixelarse ni pesar nada. */
-  .corte-diagonal::after {
-    content: '';
+  /* LAS NUBES, SIN UNA SOLA IMAGEN.
+     La referencia tiene cielo con nubes, y sin ellas esto es un degradado
+     plano: bonito, pero sin aire. Una foto de nubes serían 400 kB en lo
+     primero que se ve, se pixelaría al ampliarla y habría que buscarle
+     licencia. Esto son diez elipses de degradado radial: pesa cero, es
+     nítido a cualquier resolución y se puede mover.
+
+     UNA NUBE NO ES UNA ELIPSE BLANCA DIFUMINADA. El primer intento lo era y
+     no se veía nada: una sola mancha suave sobre azul claro desaparece. Lo
+     que la hace nube son dos cosas que están aquí:
+
+       · VARIAS ELIPSES SOLAPADAS por nube, de tamaños distintos. El borde
+         irregular que sale de superponerlas es lo que el ojo reconoce.
+       · EL BORDE DE ABAJO MÁS DURO QUE EL DE ARRIBA. En una nube de verdad
+         la base es plana porque ahí condensa. Por eso cada elipse corta
+         antes por abajo (`at X 50%` con radio vertical corto) y se difumina
+         largo por arriba.
+
+     Van agrupadas en dos bandas —el tercio alto y el tercio bajo— y el medio
+     se deja despejado: es donde va el titular, y una nube detrás de un texto
+     blanco se lo come. */
+  .nubes {
     position: absolute;
-    inset-inline: -2px;
-    bottom: -1px;
-    height: clamp(44px, 7vw, 120px);
-    background: #FFFFFF;
-    clip-path: polygon(0 100%, 100% 0, 100% 100%);
+    inset: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-image:
+      /* Banda alta, suelta y tenue: da profundidad sin competir. */
+      radial-gradient(26% 9% at 12% 16%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.22) 45%, rgba(255,255,255,0) 72%),
+      radial-gradient(16% 6% at 20% 19%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 70%),
+      radial-gradient(30% 8% at 86% 11%, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0) 70%),
+      radial-gradient(18% 6% at 74% 14%, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 72%),
+      /* Banda baja: la que de verdad se ve, por detrás de las maquetas. */
+      radial-gradient(30% 11% at 16% 76%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.40) 42%, rgba(255,255,255,0) 70%),
+      radial-gradient(20% 8% at 27% 79%, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0) 68%),
+      radial-gradient(14% 6% at 7% 80%, rgba(255,255,255,0.66) 0%, rgba(255,255,255,0) 70%),
+      radial-gradient(34% 12% at 84% 72%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.35) 44%, rgba(255,255,255,0) 70%),
+      radial-gradient(18% 7% at 70% 77%, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0) 68%),
+      radial-gradient(24% 9% at 50% 88%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0) 70%);
+    /* Que se deshagan antes del corte diagonal: si llegaran enteras hasta el
+       filo, se vería dónde acaban. */
+    -webkit-mask-image: linear-gradient(to bottom, #000 72%, rgba(0,0,0,0.55) 90%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 72%, rgba(0,0,0,0.55) 90%, transparent 100%);
+  }
+  /* Deriva muy lenta: minuto y medio para cruzar. Se nota si te quedas
+     mirando y no si estás leyendo, que es exactamente lo que debe pasar. */
+  .nubes-mueve { animation: deriva 90s linear infinite alternate; }
+
+  /* ── EL CORTE DIAGONAL ──────────────────────────────────────────────────
+     Lo de Stripe. Una sección que acaba en recto se lee como una caja; una
+     que acaba en diagonal se lee como una composición. El ángulo es el mismo
+     arriba y abajo en toda la página —2,8 grados— porque dos diagonales
+     distintas no parecen un sistema, parecen dos decisiones. */
+  .corte-abajo { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4.4vw), 0 100%); }
+  .corte-arriba { clip-path: polygon(0 4.4vw, 100% 0, 100% 100%, 0 100%); }
+  /* En el móvil la diagonal se come demasiado alto si se deja en vw. */
+  @media (max-width: 640px) {
+    .corte-abajo { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 26px), 0 100%); }
+    .corte-arriba { clip-path: polygon(0 26px, 100% 0, 100% 100%, 0 100%); }
   }
 
-  /* El texto que cambia de color dentro del titular. Sobre el cielo, blanco
-     puro para lo que manda y cielo claro para lo que acompaña: dos pesos, no
-     dos colores de marca. */
-  .realce-claro { color: #BFE6FF; }
-
-  /* ── Los controles de la portada ──────────────────────────────────────── */
-  .boton-marca {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl font-semibold;
-    background-image: linear-gradient(180deg, #FFFFFF 0%, #F2F6FF 100%);
-    color: #0A52CC;
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.9) inset,
-      0 6px 20px -6px rgba(8, 40, 110, 0.45),
-      0 2px 6px -2px rgba(8, 40, 110, 0.3);
-    transition: transform .22s cubic-bezier(.16, 1, .3, 1), box-shadow .22s cubic-bezier(.16, 1, .3, 1);
+  /* ── LOS BOTONES ────────────────────────────────────────────────────────
+     Tres, y cada uno para un sitio. No son «primario, secundario, terciario»
+     en abstracto: son el de sobre azul, el fantasma de sobre azul y el de
+     sobre blanco. */
+  .btn {
+    @apply inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap font-prosa font-semibold;
+    border-radius: 999px;
+    transition: transform 0.16s ease, box-shadow 0.22s ease, background-color 0.18s ease;
   }
-  .boton-marca:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 1) inset,
-      0 10px 26px -8px rgba(8, 40, 110, 0.5),
-      0 3px 8px -2px rgba(8, 40, 110, 0.35);
-  }
+  .btn:active { transform: translateY(1px); }
 
-  .boton-vidrio {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl font-semibold text-white;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.38);
+  /* Blanco sobre el cielo. El que más pesa. */
+  .btn-claro {
+    @apply bg-white text-marca-700;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 10px 30px -10px rgba(6,24,66,0.55);
+  }
+  .btn-claro:hover { box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 16px 38px -12px rgba(6,24,66,0.65); transform: translateY(-1px); }
+
+  /* Vidrio sobre el cielo. */
+  .btn-vidrio {
+    @apply text-white;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.30);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    transition: background .22s ease, border-color .22s ease;
   }
-  .boton-vidrio:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.6);
+  .btn-vidrio:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
+
+  /* Azul sobre el blanco. */
+  .btn-azul {
+    @apply text-white;
+    background: linear-gradient(180deg, #2A86FF 0%, #0868F9 100%);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.28) inset, 0 10px 26px -10px rgba(8,104,249,0.70);
+  }
+  .btn-azul:hover { transform: translateY(-1px); box-shadow: 0 1px 0 rgba(255,255,255,0.28) inset, 0 16px 34px -12px rgba(8,104,249,0.80); }
+
+  /* Contorno sobre el blanco. */
+  .btn-linea {
+    @apply border border-black/[0.12] bg-white text-tinta;
+  }
+  .btn-linea:hover { @apply border-black/25 bg-black/[0.02]; transform: translateY(-1px); }
+
+  /* ── LOS MARCOS DE PRODUCTO ─────────────────────────────────────────────
+     UNA CAPTURA SUELTA NO ES UNA COMPOSICIÓN. Pegar el PNG tal cual deja un
+     rectángulo flotando sin peso ni sitio. El marco le da tres cosas: un
+     borde claro que la separa del fondo, una barra de ventana que dice «esto
+     es una pantalla», y una sombra larga y baja que la apoya en la página.
+
+     La sombra tiene dos capas a propósito: una corta y densa que la pega, y
+     otra larga y suave que la levanta. Con una sola, o flota o está pegada;
+     con las dos, descansa. */
+  .marco {
+    @apply overflow-hidden rounded-[18px];
+    background: linear-gradient(180deg, #0D1117 0%, #080B10 100%);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.08) inset,
+      0 18px 40px -22px rgba(6,20,54,0.55),
+      0 56px 110px -40px rgba(6,20,54,0.65);
+  }
+  .marco-claro {
+    @apply overflow-hidden rounded-[18px] bg-white;
+    border: 1px solid rgba(16,19,26,0.09);
+    box-shadow:
+      0 18px 40px -24px rgba(16,19,26,0.22),
+      0 56px 110px -46px rgba(16,19,26,0.28);
+  }
+  /* La barra de ventana: tres puntos y un título. Cuesta 20 píxeles de alto
+     y es lo que convierte un rectángulo en «una aplicación». */
+  .marco-barra {
+    @apply flex items-center gap-2 border-b px-3.5 py-2.5;
+    border-color: rgba(255,255,255,0.10);
   }
 
-  /* El azul sólido, para los botones sobre blanco. */
-  .boton-azul {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-xl font-semibold text-white;
-    background-image: linear-gradient(180deg, #168BFF 0%, #0868F9 100%);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.28) inset,
-      0 8px 22px -8px rgba(8, 104, 249, 0.55);
-    transition: transform .22s cubic-bezier(.16, 1, .3, 1), box-shadow .22s cubic-bezier(.16, 1, .3, 1);
-  }
-  .boton-azul:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.35) inset,
-      0 12px 28px -8px rgba(8, 104, 249, 0.65);
-  }
+  /* ── LAS MAQUETAS DIBUJADAS ─────────────────────────────────────────────
+     Las tarjetas pequeñas del abanico no son capturas: son trozos de
+     interfaz dibujados con texto y rectángulos (`features/landing/maquetas`).
+     Una captura encogida al 17 % se ve borrosa y pesa; esto es nítido a
+     cualquier tamaño y se lee con un lector de pantalla.
 
-  /* ── Las maquetas que flotan ──────────────────────────────────────────── */
-  /* Las tarjetas de producto son OSCURAS porque el producto es oscuro. Una
-     maqueta clara aquí vendería una aplicación que no existe, y la primera
-     pantalla después de registrarse desmentiría la portada. */
+     SON OSCURAS PORQUE EL PRODUCTO ES OSCURO. Una maqueta clara aquí estaría
+     vendiendo una aplicación que no existe, y la primera pantalla después de
+     registrarse desmentiría la portada. */
   .maqueta {
     background: linear-gradient(180deg, #0D1117 0%, #080B10 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -622,27 +730,112 @@
   }
 
   /* UNA MAQUETA ESTRECHA NO ES LA MISMA CON LA LETRA IGUAL DE GRANDE.
-     Las tarjetas flotantes miden 348 px en un escritorio ancho y 216 en un
-     iPad, y con los tamaños clavados en píxeles los rótulos de tres columnas
+     La misma tarjeta mide 348 px en un escritorio ancho y 216 en un iPad, y
+     con los tamaños clavados en píxeles los rótulos de tres columnas
      («DISPONIBLES», «LESIONADAS») se salían de su caja y se pisaban unos a
      otros. La proporción es lo que hace que parezcan capturas, así que la
      tarjeta se mide a sí misma y TODO dentro va en `em`: a 348 px la base
-     son los 14 px de diseño y a 216 px son 8,7 px, con las cajas, los huecos
-     y los puntos encogiendo en el mismo porcentaje. Nada se sale, porque la
+     son los 14 px de diseño y a 216 px son 8,7, con las cajas, los huecos y
+     los puntos encogiendo en el mismo porcentaje. Nada se sale, porque la
      relación entre el rótulo y su caja no cambia.
 
      El mínimo de 8 px es el suelo: por debajo se dejaría de leer del todo y
      es mejor que se recorte un nombre a que se vuelva invisible. El máximo
-     de 14 px evita que la tarjeta ancha de la sección de analíticas infle la
-     letra hasta parecer otra cosa. */
+     de 14 px evita que una tarjeta ancha infle la letra hasta parecer otra
+     cosa. */
   .maqueta-escala { container-type: inline-size; }
   .maqueta-base { font-size: clamp(8px, 4.02cqw, 14px); }
 
-  /* Flotar: dos recorridos distintos y lentos, para que las tarjetas no suban
-     y bajen a la vez como un ascensor. */
+  /* El teléfono. Borde grueso y radio grande: a tamaño pequeño es lo único
+     que distingue un móvil de una tarjeta estrecha. */
+  .telefono {
+    @apply overflow-hidden rounded-[2rem];
+    border: 7px solid #141A26;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.10),
+      0 30px 70px -26px rgba(6,20,54,0.75);
+  }
+
+  /* ── LA COMPOSICIÓN EN PERSPECTIVA ──────────────────────────────────────
+     Lo de la referencia: las piezas no están en fila, están en un abanico
+     con el centro adelantado y los extremos cayendo hacia fuera.
+
+     DOS INTENTOS, Y POR QUÉ ÉSTE. El primero puso una pizarra enorme en el
+     centro y cuatro tarjetas al 14 % a los lados: giradas 17 grados, esas
+     tarjetas quedaban en 120 px de ancho útil y no se leía ni un rótulo. Se
+     veían como manchas oscuras, que es peor que no ponerlas.
+
+     Ahora los tamaños están más cerca —el centro manda, pero los lados son
+     piezas de verdad— y el giro baja según se aleja del centro, no al revés:
+     lo de fuera gira MÁS pero es lo que menos tiene que leerse. Cada una
+     baja un poco respecto a la anterior, y eso es lo que dibuja el arco. */
+  .escena { perspective: 2400px; perspective-origin: 50% 46%; }
+  .ala-2-izq { transform: rotateY(26deg) rotateZ(-2deg) translateY(7%); transform-origin: right center; }
+  .ala-1-izq { transform: rotateY(14deg) rotateZ(-1deg) translateY(2.5%); transform-origin: right center; }
+  .ala-centro { transform: translateZ(70px); }
+  .ala-1-der { transform: rotateY(-14deg) rotateZ(1deg) translateY(2.5%); transform-origin: left center; }
+  .ala-2-der { transform: rotateY(-26deg) rotateZ(2deg) translateY(7%); transform-origin: left center; }
+
+  /* ── FLOTAR ─────────────────────────────────────────────────────────────
+     Tres recorridos distintos y lentos, para que las tarjetas no suban y
+     bajen a la vez como un ascensor. */
   .flota-a { animation: flota-a 9s ease-in-out infinite; }
   .flota-b { animation: flota-b 11s ease-in-out infinite; }
   .flota-c { animation: flota-c 13s ease-in-out infinite; }
+
+  /* ── EL SELLO ───────────────────────────────────────────────────────────
+     Una píldora de vidrio. Sobre el cielo necesita fondo oscuro, no claro:
+     un sello blanco sobre azul claro desaparece. */
+  .sello {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-prosa text-[12.5px] font-medium text-white;
+    background: rgba(8, 16, 40, 0.34);
+    border: 1px solid rgba(255,255,255,0.22);
+    backdrop-filter: blur(10px);
+  }
+
+  /* ── LA TIRA QUE SE DESLIZA ─────────────────────────────────────────────
+     En lugar de logotipos de clientes que no existen, los módulos que SÍ
+     existen, pasando despacio. Dice lo mismo —«esto hace muchas cosas»— y no
+     hay que inventarse a nadie.
+
+     Se duplica el contenido en el marcado y se desplaza media anchura: así
+     el bucle no tiene salto. */
+  .tira { mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+  .tira-mueve { animation: tira 42s linear infinite; }
+
+  /* ── EL SUBRAYADO DE LIMA ───────────────────────────────────────────────
+     El acento, en el único sitio donde aparece sobre blanco: debajo de una
+     palabra del titular. Es un trazo que cruza por detrás de las letras, no
+     un resaltador que las tapa.
+
+     VA EN EL FONDO, NO EN UN `::after` CON `z-index: -1`. Se probó así y no
+     se veía: un hijo con z-index negativo se va DETRÁS del fondo opaco de la
+     sección, no detrás de su propio texto. Pintado como degradado de dos
+     paradas duras sobre el mismo elemento del texto, queda donde tiene que
+     quedar y no hay capas que ordenar. */
+  .lima-bajo {
+    display: inline;
+    padding-inline: 0.06em;
+    background-image: linear-gradient(#CFFF48, #CFFF48);
+    background-repeat: no-repeat;
+    background-size: 100% 0.22em;
+    /* 86 % y no 100 %: el trazo tiene que cruzar el pie de las letras, no
+       quedarse flotando debajo en el hueco del descendente. */
+    background-position: 0 86%;
+  }
+
+  /* ── EL PUNTO DE «ESTO SE MUEVE» ────────────────────────────────────────
+     Para la pizarra, que es el componente de verdad y está animándose. */
+  .pulso { position: relative; }
+  .pulso::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 999px;
+    background: #CFFF48;
+    opacity: 0.35;
+    animation: pulso 2.4s ease-out infinite;
+  }
 }
 
 @keyframes flota-a {
@@ -657,11 +850,24 @@
   0%, 100% { transform: translate3d(0, 0, 0); }
   50%      { transform: translate3d(0, -7px, 0); }
 }
+@keyframes deriva {
+  from { transform: translate3d(-2.5%, 0, 0) scale(1.04); }
+  to   { transform: translate3d(2.5%, 0, 0) scale(1.04); }
+}
+@keyframes tira {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes pulso {
+  0%   { transform: scale(0.7); opacity: 0.5; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
 
+/* QUIEN HA PEDIDO MENOS MOVIMIENTO NO QUIERE NADA DE ESTO. No se atenúa: se
+   quita. Una animación «suave» sigue siendo una animación para quien se marea
+   con ellas. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .flota-a, .flota-b, .flota-c, .nubes-mueve, .tira-mueve, .pulso::before {
+    animation: none !important;
   }
 }

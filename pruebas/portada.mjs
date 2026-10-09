@@ -70,6 +70,13 @@ for (const [etiqueta, w, h, escala] of TAMANOS) {
   page.on('console', (m) => { if (m.type() === 'error' && !RUIDO.test(m.text())) errores.push(m.text()); });
   page.on('pageerror', (e) => errores.push(String(e)));
 
+  /* Las tipografías se sirven desde `/fuentes`. Que no se cuele otra vez una
+     petición a un dominio de terceros en lo primero que se pinta. */
+  const peticiones = [];
+  page.on('request', (r) => {
+    if (/fonts\.(googleapis|gstatic)\.com/.test(r.url())) peticiones.push(r.url().slice(0, 80));
+  });
+
   await page.goto(BASE, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1500);
 
@@ -116,7 +123,7 @@ for (const [etiqueta, w, h, escala] of TAMANOS) {
     /* Los dos botones grandes de la portada, en su fila. */
     const botones = [...portada.querySelectorAll('a')].filter((a) => {
       const c = a.className.toString();
-      return c.includes('boton-marca') || c.includes('boton-vidrio');
+      return c.includes('btn-claro') || c.includes('btn-vidrio');
     });
 
     /* El botón de la cabecera: el que no debe partirse nunca en dos renglones. */
@@ -131,10 +138,17 @@ for (const [etiqueta, w, h, escala] of TAMANOS) {
       },
       botones: botones.map((b) => ({ ...caja(b), texto: b.textContent.trim() })),
       ctaCab: ctaCab ? { ...caja(ctaCab), renglones: renglones(ctaCab), texto: ctaCab.textContent.trim() } : null,
-      /* Las maquetas que acompañan al titular. En el móvil sólo debe quedar
-         la pizarra: tres tarjetas superpuestas en 390 px no se leen. */
-      maquetasPortada: [...portada.querySelectorAll('.maqueta')]
+      /* Las piezas del abanico: capturas enmarcadas, móviles y maquetas
+         dibujadas. En 390 px sólo debe quedar una —la pizarra—: cinco
+         superpuestas en un móvil no se leen, se amontonan. */
+      maquetasPortada: [...portada.querySelectorAll('.marco, .maqueta, .telefono')]
         .filter((el) => el.getBoundingClientRect().width > 0).length,
+
+      /* LA LETRA SE SIRVE DESDE AQUÍ, NO DESDE GOOGLE. Si alguien vuelve a
+         meter el `<link>` a fonts.googleapis.com, la portada pasa a depender
+         de un tercero para pintar la primera línea. */
+      fuenteTitular: getComputedStyle(h1).fontFamily,
+      spaceGroteskCargada: document.fonts.check('600 60px "Space Grotesk"'),
       /* El aviso de que los datos son de ejemplo tiene que estar donde están
          los datos de ejemplo, no en la letra pequeña del pie. */
       avisoEjemplo: /equipo de ejemplo/i.test(portada.textContent),
@@ -167,8 +181,18 @@ for (const [etiqueta, w, h, escala] of TAMANOS) {
   } else {
     comprueba('el titular no se desmigaja', entre(m.h1.lineas, 2, 4), `${m.h1.lineas} líneas con cuerpo ${m.h1.cuerpo}`);
   }
+
+  /* ── LA LETRA ────────────────────────────────────────────────────────── */
+  comprueba('el titular va en Space Grotesk', /Space Grotesk/.test(m.fuenteTitular), m.fuenteTitular);
+  comprueba('y la fuente ha cargado de verdad', m.spaceGroteskCargada,
+    'el navegador está usando la de reserva');
+  comprueba('ninguna petición a Google Fonts', peticiones.length === 0, peticiones.join(' · '));
   comprueba('el titular cabe de lado a lado', m.h1.izq >= -0.5 && m.h1.der <= w + 0.5, `${Math.round(m.h1.izq)}..${Math.round(m.h1.der)} en ${w}`);
-  comprueba('tamaño del titular', w < 640 ? entre(m.h1.cuerpo, 28, 36) : entre(m.h1.cuerpo, 44, 70), `${m.h1.cuerpo} px`);
+  /* `clamp(2.5rem, 7.2vw, 4.75rem)`: 40 px clavados hasta los 556 px de
+     ancho, luego crece con la ventana y se para en 76. Las holguras son
+     estrechas a propósito: si alguien toca el `clamp`, esto lo dice. */
+  comprueba('tamaño del titular',
+    w < 640 ? entre(m.h1.cuerpo, 38, 44) : entre(m.h1.cuerpo, 52, 80), `${m.h1.cuerpo} px`);
 
   /* ── Los dos botones de la portada ───────────────────────────────────── */
   comprueba('dos botones en la portada', bot.length === 2, `${bot.length}`);
