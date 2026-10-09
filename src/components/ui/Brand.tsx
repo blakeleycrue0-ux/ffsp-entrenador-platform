@@ -27,8 +27,17 @@ export function Wordmark({
 }: {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showSubtitle?: boolean;
-  /** `dark`: letras navy sobre claro. `light`: letras blancas sobre oscuro. */
-  tone?: 'dark' | 'light';
+  /**
+   * `light`: letras blancas, para fondo oscuro —que es toda la aplicación—.
+   * `dark`: usa la escala `ink`, pensada para el tema oscuro.
+   * `tinta`: negro de verdad, para la PÁGINA PÚBLICA, que es clara.
+   *
+   * Hace falta el tercero porque en este proyecto la escala está invertida:
+   * `text-ink-900` es BLANCO. Pedir `dark` sobre una cabecera blanca dejaba el
+   * logotipo blanco sobre blanco, o sea invisible, y el nombre del tono no
+   * ayudaba a verlo venir.
+   */
+  tone?: 'dark' | 'light' | 'tinta';
   className?: string;
 }) {
   const tipo = {
@@ -47,13 +56,20 @@ export function Wordmark({
       aria-label="Playoff360"
     >
       <span className="inline-flex items-center gap-2">
-        <Marca size={marca} className={tone === 'light' ? 'text-white' : 'text-ink-900'} />
+        <Marca
+          size={marca}
+          className={tone === 'light' ? 'text-white' : tone === 'tinta' ? 'text-[#10131A]' : 'text-ink-900'}
+        />
         {/* Peso 560 en vez de extranegrita: una grotesca en negrita a tamaño
             grande se lee como un grito. La cifra va al mismo peso pero más
             apagada, de modo que «Playoff» manda y «360» acompaña. */}
         <span className={cn('font-display tracking-[-0.045em]', tipo)} style={{ fontWeight: 560 }}>
-          <span className={tone === 'light' ? 'text-white' : 'text-ink-900'}>Playoff</span>
-          <span className={tone === 'light' ? 'text-white/55' : 'text-ink-600'}>360</span>
+          <span className={tone === 'light' ? 'text-white' : tone === 'tinta' ? 'text-[#10131A]' : 'text-ink-900'}>
+            Playoff
+          </span>
+          <span className={tone === 'light' ? 'text-white/55' : tone === 'tinta' ? 'text-[#727988]' : 'text-ink-600'}>
+            360
+          </span>
         </span>
       </span>
       {showSubtitle && (
@@ -61,7 +77,9 @@ export function Wordmark({
           className={cn(
             'mt-2 whitespace-nowrap font-medium uppercase tracking-[0.14em]',
             pie,
-            tone === 'light' ? 'text-white/55' : 'text-muted',
+            /* `text-muted` está pensado para el fondo oscuro de la
+               aplicación: sobre blanco no se leería. */
+            tone === 'light' ? 'text-white/55' : tone === 'tinta' ? 'text-[#727988]' : 'text-muted',
           )}
         >
           Sistema para entrenadores

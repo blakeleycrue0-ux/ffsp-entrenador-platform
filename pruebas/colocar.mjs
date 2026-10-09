@@ -243,31 +243,53 @@ async function arrastra(page, id, dx, dy) {
   const { ctx, page } = await abre();
   console.log('\n  plegar el menú');
 
-  /* CUÁNTO CAMPO SE VE, que es de lo que iba la queja. Se mide el campo
-     DIBUJADO, no el lienzo: el lienzo crece con la ventana, pero el campo se
-     centra dentro conservando su proporción, así que un lienzo más ancho no
-     significa un campo más grande. Medir lo segundo y no lo primero habría
-     dado por bueno un cambio que no se nota. */
-  const anchoCampo = () => page.evaluate(() => {
-    const r = document.querySelector('main svg g [data-objeto]')?.ownerSVGElement.getBoundingClientRect();
-    const caja = document.querySelector('main svg').getBBox?.();
-    const svg = document.querySelector('main svg').getBoundingClientRect();
-    /* El campo ocupa el alto entero o el ancho entero, lo que toque por
-       proporción. Se deduce del `viewBox`. */
-    const vb = document.querySelector('main svg').getAttribute('viewBox').split(' ').map(Number);
+  /* CUÁNTO SITIO HAY Y CUÁNTO CAMPO SE VE: no son lo mismo, y confundirlos
+     fue el error de la primera versión de esta prueba.
+
+     El campo conserva su proporción dentro del lienzo, así que sólo crece si
+     crece la dimensión que lo está limitando. Medido a 1440×900, 1280×800 y
+     1920×1080 con el menú abierto, el campo YA ESTÁ LIMITADO POR EL ALTO: a
+     1440 el lienzo mide 1138×702 y el campo 1053, que es exactamente el alto
+     por la proporción. Plegar el menú lleva el lienzo a 1374×702 — doscientos
+     treinta y seis píxeles más de ancho— y el campo se queda en 1053, porque
+     lo que falta es alto, no ancho.
+
+     Así que lo que se comprueba es lo que de verdad hace el botón: devolver
+     el ancho que ocupaba el menú, y acordarse. Exigir aquí un campo más
+     grande sería exigir algo que este botón no puede dar, y la prueba estaría
+     mintiendo sobre qué arregla.
+
+     (Para ver el campo de verdad grande mientras se edita hace falta ALTO:
+     eso es lo que da «Presentar», que se lleva la cabecera y los paneles.) */
+  const medidas = () => page.evaluate(() => {
+    const svg = document.querySelector('main svg');
+    const r = svg.getBoundingClientRect();
+    const vb = svg.getAttribute('viewBox').split(' ').map(Number);
     const prop = vb[2] / vb[3];
-    return Math.round(Math.min(svg.width, svg.height * prop));
+    return {
+      sitio: Math.round(document.querySelector('main').getBoundingClientRect().width),
+      campo: Math.round(Math.min(r.width, r.height * prop)),
+      limita: r.width < r.height * prop ? 'ancho' : 'alto',
+    };
   });
 
-  const antes = await anchoCampo();
+  const antes = await medidas();
   const plegar = page.getByRole('button', { name: 'Plegar el menú' });
   comprueba('hay un botón para plegar el menú', await plegar.count() > 0);
   await plegar.click();
   await page.waitForTimeout(600);
-  const despues = await anchoCampo();
+  const despues = await medidas();
 
-  comprueba('plegado, el campo se ve más grande', despues > antes * 1.15,
-    `${antes} → ${despues} px`);
+  comprueba('plegado, el tablero recupera el ancho del menú', despues.sitio - antes.sitio > 180,
+    `${antes.sitio} → ${despues.sitio} px de tablero`);
+  /* Y si en algún momento el campo deja de estar limitado por el alto, que
+     se note: entonces plegar SÍ tiene que hacerlo más grande. */
+  if (antes.limita === 'ancho') {
+    comprueba('y entonces el campo se ve más grande', despues.campo > antes.campo * 1.15,
+      `${antes.campo} → ${despues.campo} px`);
+  } else {
+    console.log(`    · el campo lo limita el alto (${antes.campo} px): plegar da ancho, no tamaño`);
+  }
   comprueba('y hay un botón para traerlo de vuelta',
     await page.getByRole('button', { name: 'Mostrar el menú' }).count() > 0);
 

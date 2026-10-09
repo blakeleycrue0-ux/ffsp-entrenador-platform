@@ -49,10 +49,13 @@ export const DRILLS = [
 ];
 export const PERFIL = { id:USER, full_name:'Marta Vives', role:'coordinadora', email:'e@e.test', licence:'UEFA B', phone:null };
 export const CLUB_ROW = { role:'admin', clubs:{ id:CLUB, name:'Club Esportiu Exemple', short_name:'CE Exemple', city:'Palma', season:'2026/27', crest_url:null } };
+/* Los planes tal y como están en la base después de la migración 0012: con
+   precio puesto y SIN precio de Stripe, que es lo que hace que todavía no se
+   pueda contratar nada. Los importes van en céntimos. */
 export const PLANES = [
-  { tier:'free', name:'Gratis', max_teams:1, currency:'eur', trial_days:0, price_monthly:null, price_yearly:null, stripe_price_monthly:null, stripe_price_yearly:null },
-  { tier:'pro', name:'Pro', max_teams:5, currency:'eur', trial_days:7, price_monthly:null, price_yearly:null, stripe_price_monthly:null, stripe_price_yearly:null },
-  { tier:'max', name:'Max', max_teams:null, currency:'eur', trial_days:7, price_monthly:null, price_yearly:null, stripe_price_monthly:null, stripe_price_yearly:null },
+  { tier:'free', name:'Gratis', max_teams:1, currency:'eur', trial_days:0, price_monthly:0, price_yearly:0, stripe_price_monthly:null, stripe_price_yearly:null },
+  { tier:'pro', name:'Pro', max_teams:1, currency:'eur', trial_days:7, price_monthly:599, price_yearly:5999, stripe_price_monthly:null, stripe_price_yearly:null },
+  { tier:'max', name:'Max', max_teams:5, currency:'eur', trial_days:7, price_monthly:1299, price_yearly:12999, stripe_price_monthly:null, stripe_price_yearly:null },
 ];
 
 export async function mock(page, o = {}) {
