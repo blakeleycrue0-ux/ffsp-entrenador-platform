@@ -35,7 +35,7 @@ import { humanError } from '@/services/supabase';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { Button, Field, Input, Select } from '@/components/ui';
 import { Marca, Wordmark } from '@/components/ui/Brand';
-import { Ambiente } from '@/components/visual/Particulas';
+import { Cielo } from '@/components/visual/Cielo';
 import { ConfigurarCodigo } from '@/features/passcode/ConfigurarCodigo';
 import { PasoPlan } from './PasoPlan';
 import { cn } from '@/lib/utils';
@@ -186,7 +186,7 @@ export default function Onboarding() {
        producto. El velo central deja el centro oscuro para que el formulario
        se lea sin competir con el fondo. */
     <div className="relative flex min-h-[100svh] flex-col overflow-hidden bg-surface">
-      <Ambiente intensidad={0.8} densidad={0.75} velo="centro" />
+      <Cielo velo="fuerte" />
       <header className="relative mx-auto flex w-full max-w-[460px] items-center justify-between px-5 pb-1 pt-[max(20px,var(--safe-top))]">
         <Wordmark tone="light" />
         <button

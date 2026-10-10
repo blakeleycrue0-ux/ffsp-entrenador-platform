@@ -59,7 +59,13 @@ export const PLANES = [
 ];
 
 export async function mock(page, o = {}) {
-  const { equipos = TEAMS, sub = null, planes = PLANES, club = CLUB_ROW, players = PLAYERS } = o;
+  const {
+    equipos = TEAMS, sub = null, planes = PLANES, club = CLUB_ROW, players = PLAYERS,
+    /* Sesiones, partidos y listas también se pueden sustituir: hacen falta
+       para comprobar que la guía de primeros pasos mira el DATO y no una
+       marca guardada, sirviendo el club entero menos una cosa cada vez. */
+    sessions = SESSIONS, matches = MATCHES, attendance = ATTENDANCE,
+  } = o;
   await page.route(`${SUPA}/**`, async route => {
     const u = new URL(route.request().url()); const p = u.pathname;
     if (p.startsWith('/auth/v1/user')) return route.fulfill(j(USUARIO));
@@ -70,9 +76,9 @@ export async function mock(page, o = {}) {
     if (p === '/rest/v1/plans') return route.fulfill(j(planes));
     if (p === '/rest/v1/subscriptions') return route.fulfill(j(sub));
     if (p === '/rest/v1/players') return route.fulfill(j(players));
-    if (p === '/rest/v1/sessions') return route.fulfill(j(SESSIONS));
-    if (p === '/rest/v1/matches') return route.fulfill(j(MATCHES));
-    if (p === '/rest/v1/attendance') return route.fulfill(j(ATTENDANCE));
+    if (p === '/rest/v1/sessions') return route.fulfill(j(sessions));
+    if (p === '/rest/v1/matches') return route.fulfill(j(matches));
+    if (p === '/rest/v1/attendance') return route.fulfill(j(attendance));
     if (p === '/rest/v1/drills') return route.fulfill(j(DRILLS));
     if (p === '/rest/v1/team_staff') return route.fulfill(j([{ team_id:'t1', profile_id:USER, role:'coordinadora' }]));
     return route.fulfill(j([]));

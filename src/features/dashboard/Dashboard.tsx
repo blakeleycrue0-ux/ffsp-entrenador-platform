@@ -22,6 +22,7 @@ import { cn, daysFromToday, longDate, minutesToLabel, relativeDay, relativeTime,
 import { CreateMenu } from '@/components/layout/CreateMenu';
 import type { CoachTask } from '@/types';
 import { useAnchura } from '@/components/layout/AppShell';
+import { PrimerosPasos } from './PrimerosPasos';
 
 export default function Dashboard() {
   /* El ancho lo decide la tarea, no la pantalla. */
@@ -106,6 +107,13 @@ export default function Dashboard() {
   if (teams.length === 0) {
     return (
       <div className="space-y-7">
+        {/* LA GUÍA TAMBIÉN AQUÍ, y sobre todo aquí: es el momento en el que
+            más falta hace saber qué viene después de crear el equipo. Se
+            pinta antes del saludo por lo mismo que en la pantalla llena.
+            Para quien no administra el club, `PrimerosPasos` no enseña nada
+            —no puede crear equipos— y debajo queda el aviso de siempre. */}
+        <PrimerosPasos />
+
         <div>
           <h1 className="text-[26px] font-semibold leading-tight sm:text-[30px]">
             Hola{firstName ? `, ${firstName}` : ''}
@@ -137,6 +145,12 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-7">
+      {/* ARRIBA DEL TODO, Y ANTES DEL SALUDO. Mientras falte algo por montar,
+          lo que esta pantalla tiene que decir no es «hola»: es qué falta.
+          Cuando está todo hecho desaparece sola y el saludo pasa a ser lo
+          primero, que es lo que toca a partir de entonces. */}
+      <PrimerosPasos />
+
       {/* Saludo */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>

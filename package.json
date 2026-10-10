@@ -19,6 +19,7 @@
     "maqueta:maquetas": "node pruebas/maquetas.mjs",
     "maqueta:precios": "node pruebas/precios.mjs",
     "app:menu": "node pruebas/menu.mjs",
+    "app:pasos": "node pruebas/primeros-pasos.mjs",
     "capturas": "node pruebas/capturas.mjs",
     "maqueta:enteras": "node pruebas/capturas-enteras.mjs",
     "pizarra:colocar": "node pruebas/colocar.mjs",

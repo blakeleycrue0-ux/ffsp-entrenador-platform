@@ -29,6 +29,13 @@ export interface Staff {
   /** Equipos asignados en `team_staff`. Base del control de acceso. */
   teamIds: string[];
   createdAt?: string;
+  /**
+   * Cuándo apagó esta persona la guía de primeros pasos de Inicio. Nulo o
+   * ausente = la sigue viendo. Es suyo y de ningún otro: vive en su fila de
+   * `profiles`, no en el navegador, para que apagarla en el móvil valga
+   * también en el ordenador.
+   */
+  setupHiddenAt?: string | null;
 }
 
 /**

@@ -18,7 +18,7 @@ import {
 import { ArrowLeft } from 'lucide-react';
 import { Button, Field, Input, Tag } from '@/components/ui';
 import { Wordmark } from '@/components/ui/Brand';
-import { Ambiente } from '@/components/visual/Particulas';
+import { Cielo } from '@/components/visual/Cielo';
 import { cn } from '@/lib/utils';
 
 type Mode = 'entrar' | 'registro' | 'recuperar';
@@ -170,7 +170,7 @@ export default function Login() {
           maqueta que sólo «responde»— sino que se convierte en la cabecera:
           una franja de ambiente detrás de la marca, y el formulario debajo. */}
       <div className="relative hidden overflow-hidden rounded-3xl border border-line-sutil bg-panel lg:flex lg:flex-col lg:justify-between">
-        <Ambiente intensidad={0.95} velo="centro" />
+        <Cielo />
 
         <div className="relative p-10">
           <Link
@@ -225,11 +225,11 @@ export default function Login() {
         {/* La franja de ambiente del móvil: ocupa la parte de arriba y lleva la
             marca encima. En escritorio no existe. */}
         <div className="relative h-[30svh] min-h-[180px] shrink-0 overflow-hidden lg:hidden">
-          <Ambiente intensidad={0.95} densidad={0.8} velo="abajo" />
+          <Cielo velo="franja" />
           <div className="relative flex h-full flex-col justify-between p-5 pt-[max(20px,var(--safe-top))]">
             <Link
               to="/"
-              className="inline-flex w-fit items-center gap-2 text-sm text-ink-600 transition-colors hover:text-ink-900"
+              className="inline-flex w-fit items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
             >
               <ArrowLeft size={14} />
               Volver
