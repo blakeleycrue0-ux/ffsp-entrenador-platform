@@ -185,12 +185,12 @@ export function PrimerosPasos() {
       aria-labelledby="primeros-pasos"
       className="overflow-hidden rounded-3xl border border-marca-600/25 bg-marca-600/[0.07]"
     >
-      <div className="flex items-start gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
+      <div className="flex items-start gap-4 px-4 pt-4 sm:px-6 sm:pt-6">
         <div className="min-w-0 flex-1">
-          <h2 id="primeros-pasos" className="text-lg font-semibold text-ink-900">
+          <h2 id="primeros-pasos" className="text-md font-semibold text-ink-900 sm:text-lg">
             Pon tu equipo en marcha
           </h2>
-          <p className="mt-1 text-base text-ink-600">
+          <p className="mt-0.5 text-sm leading-relaxed text-ink-600 sm:text-base">
             {hechos === 0
               ? `${total} cosas y lo tienes funcionando.`
               : `Llevas ${hechos} de ${total}. Esto desaparece solo al terminar.`}
@@ -207,7 +207,7 @@ export function PrimerosPasos() {
       </div>
 
       {/* La barra: cuánto llevas, sin tener que contar las marcas. */}
-      <div className="px-5 pt-4 sm:px-6">
+      <div className="px-4 pt-3.5 sm:px-6">
         <div
           className="h-1.5 w-full overflow-hidden rounded-full bg-ink-200"
           role="progressbar"
@@ -223,7 +223,7 @@ export function PrimerosPasos() {
         </div>
       </div>
 
-      <ul className="mt-4 px-2 pb-3 sm:px-3 sm:pb-4">
+      <ul className="mt-3 px-1.5 pb-3 sm:px-3 sm:pb-4">
         {estado.map((p) => {
           const esSiguiente = p.id === siguiente?.id;
           return (
@@ -236,7 +236,7 @@ export function PrimerosPasos() {
                   texto cuando no hay sitio, que es lo que tiene que hacer. */}
               <div
                 className={cn(
-                  'grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 rounded-2xl px-3 py-3 sm:grid-cols-[auto_1fr_auto]',
+                  'grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2.5 rounded-2xl px-2.5 py-2.5 sm:gap-x-4 sm:px-3 sm:py-3 sm:grid-cols-[auto_1fr_auto]',
                   esSiguiente && 'bg-panel',
                 )}
               >
@@ -257,7 +257,7 @@ export function PrimerosPasos() {
                 <span className="min-w-0">
                   <span
                     className={cn(
-                      'block text-md font-medium',
+                      'block text-base font-medium sm:text-md',
                       p.ok ? 'text-ink-500 line-through decoration-ink-400' : 'text-ink-900',
                     )}
                   >

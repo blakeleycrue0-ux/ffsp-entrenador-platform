@@ -97,19 +97,25 @@
     --header-h: 56px;
     --sidebar-w: 236px;
 
-    /* YA NO HAY DIQUE. En el móvil había una barra fija abajo de 64 px más
-       12 de separación: cien píxeles de alto que no tenía la página, en
-       todas las pantallas y sin manera de quitarlos. Ahora la navegación del
-       móvil es un cajón que se abre desde la cabecera y se cierra, así que
-       por abajo no hay nada que esquivar.
+    /* LA BARRA FLOTANTE DEL MÓVIL.
+       ─────────────────────────────────────────────────────────────────────
+       Aquí hubo un dique pegado al borde inferior, se quitó, y ahora vuelve
+       otra cosa: una pastilla que FLOTA, con aire alrededor y tres destinos.
+       No es lo mismo y conviene no confundirlo.
 
-       Las variables se quedan a cero y NO se borran: hay sitios que se
-       colocan «por encima de lo que haya abajo» —la barra de guardar de
-       asistencia, el alto útil de la pizarra— y leyendo de aquí siguen
-       funcionando sin saber si hay dique o no. El día que vuelva algo fijo
-       abajo, se cambia este número y se mueve todo a la vez. */
-    --nav-h: 0px;
-    --nav-gap: 0px;
+       El dique era una barra de borde a borde con cuatro atajos y una hoja
+       «Más» que escondía otras siete secciones en otro orden que el del
+       escritorio. Esto son tres sitios —Inicio, Calendario, Plantilla—, la
+       lista completa sigue estando en el cajón de la cabecera, y la pastilla
+       es un objeto con esquinas, no un suelo.
+
+       Se reserva su alto aquí y en un solo sitio: 68 de pastilla —52 de
+       destino, 6+6 de relleno y 1+1 de borde, medido— y 12 de aire. Todo lo que se coloca «por encima de lo que haya abajo» —los
+       avisos, la barra de guardar de asistencia, el alto útil de la
+       pizarra— lo lee de `--sobre-nav` y se ha movido solo. Por eso estas
+       variables nunca se borraron. */
+    --nav-h: 68px;
+    --nav-gap: 12px;
 
     /* Desde el borde inferior de la ventana hasta donde empieza la
        navegación. Cualquier cosa que quiera quedarse POR ENCIMA parte de
@@ -129,8 +135,12 @@
     :root { --pagina-x: 24px; }
   }
 
+  /* En el escritorio la navegación es la barra lateral: abajo no hay nada
+     que esquivar, así que la pastilla no existe y su hueco tampoco. */
   @media (min-width: 1024px) {
     :root {
+      --nav-h: 0px;
+      --nav-gap: 0px;
       --hueco-inferior: 48px;
       --pagina-x: 24px;
       --pagina-top: 24px;

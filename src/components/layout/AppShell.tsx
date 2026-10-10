@@ -26,6 +26,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { MenuMovil } from './MenuMovil';
+import { NavFlotante } from './NavFlotante';
 import { CreateMenu } from './CreateMenu';
 import { GlobalSearch } from './GlobalSearch';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -170,6 +171,7 @@ export function AppShell() {
           </main>
         </div>
 
+        <NavFlotante />
         <MenuMovil abierto={cajon} onCerrar={() => setCajon(false)} onCreate={openCreate} />
         <GlobalSearch open={search} onClose={() => setSearch(false)} />
         <CreateMenu open={create} onClose={() => setCreate(false)} />

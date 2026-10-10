@@ -40,17 +40,13 @@
  * que sus jugadoras no van a entrenar.
  */
 
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CalendarPlus, ChevronRight, ChevronsUpDown, ClipboardList, Clock, LayoutGrid,
   MapPin, Users,
 } from 'lucide-react';
-import { useClub } from '@/store/store';
-import {
-  callupOfMatch, clubShortName, currentStaff, isClubAdmin, nextMatch, nextSession,
-  nombreReal, squadOf, summarizeRecord, teamOverview, visibleTeams,
-} from '@/store/selectors';
+import { teamOverview } from '@/store/selectors';
 
 import { humanError } from '@/services/supabase';
 import { useToast } from '@/components/ui/Toast';
@@ -64,75 +60,83 @@ import {
 } from '@/lib/utils';
 import type { CoachTask, Match, TrainingSession } from '@/types';
 import { useAnchura } from '@/components/layout/AppShell';
+import { CreateMenu } from '@/components/layout/CreateMenu';
 import { hayGuia, PrimerosPasos } from './PrimerosPasos';
+import { useInicio } from './datos';
+import { InicioMovil } from './InicioMovil';
 
+/**
+ * DOS COMPOSICIONES, LOS MISMOS DATOS.
+ *
+ * El móvil tiene su propia pantalla —`InicioMovil`— y no es la de escritorio
+ * encogida: en un teléfono, de pie y con una mano, lo único que importa es
+ * cuándo es lo siguiente y poder pasar lista de un toque. En un portátil hay
+ * sitio para el día entero a la vez, y encogerlo sería desperdiciarlo.
+ *
+ * Lo que NO cambia es lo que cuentan: las dos leen de `useInicio`, así que no
+ * puede pasar que una diga 90 % y la otra 89.
+ */
 export default function Dashboard() {
   useAnchura('ancho');
-  const { data, loading, loadError, teamId, setTeamId, actions } = useClub();
-  const ownName = clubShortName(data);
-  const admin = isClubAdmin(data);
+  const d = useInicio();
   const toast = useToast();
+  const [creando, setCreando] = useState(false);
 
-  const staff = currentStaff(data);
-  const teams = useMemo(() => visibleTeams(data), [data]);
-  const activeTeam = teams.find((t) => t.id === teamId) ?? teams[0];
-  const scope = activeTeam ? [activeTeam.id] : teams.map((t) => t.id);
+  /* Los nombres de siempre, para no reescribir la composición de escritorio
+     entera: son los mismos valores con el nombre que ya tenían. */
+  const {
+    data, loading, loadError, actions, setTeamId, teams, equipo: activeTeam, resumen,
+    sesion: session0, partido: match0, callup, convocadas, confirmadas,
+    plantilla: squad, ultimaLista, marcas, tareasAbiertas, admin,
+    nombreClub: ownName, nombre,
+  } = d;
 
-  const resumen = useMemo(
-    () => (activeTeam ? teamOverview(data, activeTeam) : null),
-    [data, activeTeam],
+  /* A PARTIR DE AQUÍ, SÓLO ESCRITORIO. El móvil se va por su camino antes
+     de las ramas de carga y error porque las suyas son distintas: el
+     esqueleto tiene la forma del héroe, no la de una rejilla. */
+  const movil = (
+    <div className="lg:hidden">
+      <InicioMovil d={d} onCrear={() => setCreando(true)} />
+      <CreateMenu open={creando} onClose={() => setCreando(false)} />
+    </div>
   );
-
-  const session0 = nextSession(data, scope);
-  const match0 = nextMatch(data, scope);
-  const callup = callupOfMatch(data, match0?.id);
-  const squad = activeTeam ? squadOf(data, activeTeam.id) : [];
-
-  const ultimaLista = useMemo(
-    () =>
-      data.attendance
-        .filter((a) => a.teamId === activeTeam?.id)
-        .sort((a, b) => b.date.localeCompare(a.date))[0],
-    [data.attendance, activeTeam],
-  );
-  const marcas = useMemo(() => summarizeRecord(ultimaLista, squad.length), [ultimaLista, squad.length]);
-
-  const convocadas = callup?.entries.filter((e) => e.selected) ?? [];
-  const confirmadas = convocadas.filter((e) => e.response === 'confirmada').length;
-
-  const tareasAbiertas = data.tasks.filter((t) => !t.done);
-  /* Saludar con «Hola, marta.vives@gmail.com» es peor que no saludar con
-     nombre. Qué cuenta como nombre de verdad lo decide `nombreReal`. */
-  const nombre = nombreReal(staff)?.split(' ')[0] ?? '';
 
   if (loading) {
     return (
-      <div className="space-y-5">
+      <>
+      {movil}
+      <div className="hidden space-y-5 lg:block">
         <Skeleton className="h-7 w-56" />
         <Skeleton className="h-[168px] w-full" />
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[76px]" />)}
         </div>
       </div>
+      </>
     );
   }
 
   if (loadError) {
     return (
-      <Panel className="border-bad/25 bg-bad/5 p-5">
+      <>
+      {movil}
+      <Panel className="hidden border-bad/25 bg-bad/5 p-5 lg:block">
         <h2 className="text-md font-semibold text-bad">No hemos podido cargar tus datos</h2>
         <p className="mt-2 max-w-2xl text-base leading-relaxed text-bad/90">{loadError}</p>
         <Button variant="secondary" size="sm" className="mt-4" onClick={() => void actions.refresh()}>
           Reintentar
         </Button>
       </Panel>
+      </>
     );
   }
 
   /* ── Sin equipos todavía ─────────────────────────────────────────────── */
   if (teams.length === 0) {
     return (
-      <div className="space-y-6">
+      <>
+      {movil}
+      <div className="hidden space-y-6 lg:block">
         <PrimerosPasos />
         <Saludo nombre={nombre} />
         {/* CON LA GUÍA DELANTE, ESTO SOBRA: su primer paso dice lo mismo, con
@@ -157,11 +161,14 @@ export default function Dashboard() {
           </Panel>
         )}
       </div>
+      </>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <>
+    {movil}
+    <div className="hidden space-y-6 lg:block">
       <PrimerosPasos />
 
       <Saludo
@@ -369,6 +376,7 @@ export default function Dashboard() {
         </section>
       )}
     </div>
+    </>
   );
 }
 
