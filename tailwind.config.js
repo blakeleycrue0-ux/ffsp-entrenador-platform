@@ -12,89 +12,98 @@ export default {
          Se elige ésta por sus cifras: los números grandes son la mitad de
          este producto —una hora, un porcentaje, un dorsal— y aquí salen
          limpios y de ancho constante. */
+      /* ── UNA SOLA PAREJA PARA TODO: PORTADA Y APLICACIÓN ─────────────────
+         Durante un tiempo hubo dos sistemas: Space Grotesk y Plus Jakarta
+         Sans en la portada, Schibsted Grotesk dentro. Se hizo así para no
+         mover de sitio cada tabla del producto, y el resultado fue que la
+         página de entrada y la herramienta parecían dos productos: te
+         registrabas y la letra cambiaba.
+
+         Ahora es una sola pareja en los dos sitios:
+
+           `display` / `titulo`  Space Grotesk. Una grotesca con rarezas a
+                 propósito —la «a», la «g», el «1»— que a cuerpo grande se
+                 reconoce. Va en titulares, cifras y rótulos; sus números son
+                 de ancho constante, que es media aplicación: una hora, un
+                 porcentaje, un dorsal.
+           `sans` / `prosa`      Plus Jakarta Sans. Humanista y abierta, para
+                 todo lo que se lee seguido: párrafos, celdas, formularios.
+
+         Dos grotescas PARECIDAS se leen como descuido; dos que contrastan de
+         verdad se leen como intención. `titulo` y `prosa` se quedan como
+         alias de `display` y `sans` para no tener que tocar la portada. */
       fontFamily: {
-        sans: ['Schibsted Grotesk', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
-        display: ['Schibsted Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
-
-        /* ── LA PORTADA TIENE SU PROPIA LETRA, Y NO ES UN CAPRICHO ──────────
-           Dentro de la aplicación manda Schibsted Grotesk y no se toca: hay
-           un sistema entero medido alrededor de ella, y cambiarla movería
-           cada tabla y cada botón de sitio.
-
-           Pero una portada no es una herramienta. Lo que allí hace falta es
-           carácter en dos palabras, no neutralidad en mil pantallas. Así que
-           la portada —y sólo la portada— va con otras dos:
-
-             `titulo`  Space Grotesk. Una grotesca con rarezas a propósito
-                       (la «a», la «g», el «1», el «ó») que a cuerpo grande
-                       se reconoce. A cuerpo pequeño sería ruido; por eso no
-                       entra en la aplicación.
-             `prosa`   Plus Jakarta Sans. Humanista y abierta, descansa al
-                       lado de la anterior sin parecer la misma mal elegida.
-
-           Dos grotescas PARECIDAS se leen como descuido; dos que contrastan
-           de verdad se leen como intención. De ahí el salto. */
-        titulo: ['Space Grotesk', 'Schibsted Grotesk', 'system-ui', 'sans-serif'],
-        prosa: ['Plus Jakarta Sans', 'Schibsted Grotesk', 'system-ui', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        display: ['Space Grotesk', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        titulo: ['Space Grotesk', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        prosa: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
         /* ────────────────────────────────────────────────────────────────────
-           NEGRO · BLANCO · GRAFITO
+           AZUL NOCHE · BLANCO · EL AZUL DE MARCA
            ────────────────────────────────────────────────────────────────────
-           No hay color de marca. Ninguno. La jerarquía la hacen el negro, el
-           blanco y lo que hay entre medias; el color queda reservado a lo que
-           SIGNIFICA algo —una lesión, un aviso, un borrado— y aun ahí va
-           apagado. Un producto que usa un cuerpo técnico todos los días no
-           necesita que la interfaz llame la atención: necesita que no la
-           llame.
+           Esto era gris puro, sin una gota de color: la portada iba de azul y
+           la aplicación de grafito, y al registrarte cambiaba el producto.
+           Ahora las superficies son el MISMO azul noche de la portada
+           (`abismo`), y el azul de marca pasa a significar «esto está
+           activo, esto es lo que se pulsa».
+
+           Sigue sin ser una interfaz de colorines: el azul aparece en lo
+           seleccionado y en la acción principal, y nada más. Una herramienta
+           que se usa ocho horas a la semana necesita que la interfaz no
+           llame la atención; lo que necesita es RECONOCERSE.
 
            La escala `ink` va AL REVÉS: el 900 es blanco y el 0 negro. Así las
            clases de toda la aplicación (`text-ink-900` = «lo que más se lee»)
-           siguen significando lo mismo sobre negro. */
+           siguen significando lo mismo sobre oscuro. Los grises llevan ahora
+           un punto de azul —no son neutros— para que no se vean sucios sobre
+           un fondo que sí lo tiene. */
         ink: {
-          0:   '#000000',  // texto sobre blanco
-          50:  '#0A0A0A',
-          100: '#141414',
-          200: '#1E1E1E',  // esqueletos, separadores fuertes
-          300: '#2E2E2E',
-          400: '#4A4A4A',
-          500: '#696969',  // terciario: sellos, marcas de tiempo
-          600: '#8A8A8A',
-          700: '#A1A1A1',  // secundario: párrafos, descripciones
-          800: '#F5F5F5',  // primario
+          0:   '#04070F',  // texto sobre claro
+          50:  '#070C17',
+          100: '#0E1524',
+          200: '#172032',  // esqueletos, separadores fuertes
+          300: '#27334A',
+          400: '#44536E',  // iconos apagados
+          500: '#6B7A96',  // terciario: sellos, marcas de tiempo
+          600: '#8D9BB5',
+          700: '#A8B4CA',  // secundario: párrafos, descripciones
+          800: '#EDF1F8',  // primario
           900: '#FFFFFF',  // énfasis y lo que se pulsa
         },
 
         /* LAS CUATRO SUPERFICIES. Opacas y numeradas, no transparencias
            sueltas: así dos paneles anidados no se suman y acaban más claros
-           que el de al lado. */
-        surface: '#050505',   // nivel 0 · el fondo
-        panel: '#0A0A0A',     // nivel 1 · un bloque
-        raised: '#101010',    // nivel 2 · algo por encima
-        sunken: '#171717',    // nivel 3 · un hueco: campos, celdas
+           que el de al lado. Son las mismas que usa la franja oscura de la
+           portada, para que una captura puesta allí encaje sin retoques. */
+        surface: '#060C1B',   // nivel 0 · el fondo
+        panel: '#0A1427',     // nivel 1 · un bloque
+        raised: '#101C33',    // nivel 2 · algo por encima
+        sunken: '#16233D',    // nivel 3 · un hueco: campos, celdas
 
         /* Tres bordes y nada más. El sutil agrupa, el normal separa, el
            fuerte marca lo que está seleccionado. */
-        line: 'rgba(255,255,255,0.12)',
-        'line-sutil': 'rgba(255,255,255,0.08)',
-        'line-fuerte': 'rgba(255,255,255,0.20)',
+        line: 'rgba(148,180,255,0.14)',
+        'line-sutil': 'rgba(148,180,255,0.09)',
+        'line-fuerte': 'rgba(148,180,255,0.24)',
 
-        muted: '#A1A1A1',
-        night: '#050505',
+        muted: '#A8B4CA',
+        night: '#060C1B',
 
         /* ────────────────────────────────────────────────────────────────────
            EL AZUL, Y DÓNDE VIVE
            ────────────────────────────────────────────────────────────────────
-           SÓLO EN LA PORTADA. La aplicación por dentro sigue siendo negra,
-           blanca y grafito, y eso no es incoherencia: son dos trabajos
-           distintos. La portada tiene que detener a alguien que no sabe qué es
-           esto; la herramienta tiene que desaparecer mientras se usa ocho
-           horas a la semana. Stripe hace exactamente lo mismo: una portada
-           llena de color y un panel de control casi gris.
-           Por eso el azul va en su propio espacio de nombres —`marca-*`— y no
-           sustituye a `ink`. Así es imposible que se cuele dentro por un
-           descuido: una clase `bg-marca-600` en una pantalla del producto se
-           ve a la legua en una revisión. */
+           EN LOS DOS SITIOS, PERO CON DISTINTO TRABAJO. En la portada el azul
+           es el fondo: ocupa pantallas enteras y está para detener a alguien
+           que no sabe qué es esto. Dentro de la aplicación es SEÑAL, no
+           decorado: marca la sección abierta, la acción principal y el foco
+           del teclado, y no aparece en ningún otro sitio. Una herramienta que
+           se usa ocho horas a la semana tiene que desaparecer mientras se
+           usa; lo que no puede es parecer otro producto.
+
+           Sigue en su propio espacio de nombres —`marca-*`— y no sustituye a
+           `ink`: el texto, los bordes y las superficies se piden por su
+           nombre de siempre, y el azul hay que escribirlo a propósito. */
         marca: {
           50:  '#EFF5FF',
           100: '#DCE8FF',
@@ -188,21 +197,32 @@ export default {
          con el espaciado de un titular se junta. Cuanto más grande, más
          apretado. Es casi toda la diferencia entre una tipografía que parece
          cara y una que parece la de por defecto. */
+      /* EL INTERLETRAJE SE AFLOJÓ AL CAMBIAR DE LETRA, y hubo que medirlo.
+         Esta escala estaba ajustada para Schibsted Grotesk, que es estrecha.
+         Space Grotesk no lo es: su «1» lleva pie —una barra horizontal
+         abajo— y ocupa casi lo mismo que un «0». Con los valores de antes,
+         en la pantalla de analíticas «16» salía con el pie del uno metido
+         dentro del seis: medido a 40 px, −0,036 em son −1,44 px de hueco y
+         el hueco real entre los dos glifos quedaba en −0,02 px, o sea que se
+         tocaban.
+         Los tamaños grandes bajan a dos tercios de lo que tenían. Siguen
+         apretados —un titular a 64 px con el espaciado de un párrafo se
+         deshace— pero ya no se comen entre sí. */
       fontSize: {
         '2xs': ['11px', { lineHeight: '15px', letterSpacing: '0.04em' }],
         xs:   ['12px', { lineHeight: '17px', letterSpacing: '0' }],
-        sm:   ['13px', { lineHeight: '19px', letterSpacing: '-0.004em' }],
-        base: ['15px', { lineHeight: '23px', letterSpacing: '-0.008em' }],
-        md:   ['16px', { lineHeight: '24px', letterSpacing: '-0.011em' }],
-        lg:   ['18px', { lineHeight: '26px', letterSpacing: '-0.016em' }],
-        xl:   ['21px', { lineHeight: '28px', letterSpacing: '-0.021em' }],
-        '2xl':['25px', { lineHeight: '31px', letterSpacing: '-0.026em' }],
-        '3xl':['31px', { lineHeight: '35px', letterSpacing: '-0.031em' }],
-        '4xl':['40px', { lineHeight: '42px', letterSpacing: '-0.036em' }],
-        '5xl':['52px', { lineHeight: '1.02', letterSpacing: '-0.04em' }],
-        '6xl':['64px', { lineHeight: '1.0', letterSpacing: '-0.042em' }],
-        '7xl':['76px', { lineHeight: '0.98', letterSpacing: '-0.044em' }],
-        '8xl':['88px', { lineHeight: '0.96', letterSpacing: '-0.046em' }],
+        sm:   ['13px', { lineHeight: '19px', letterSpacing: '-0.002em' }],
+        base: ['15px', { lineHeight: '23px', letterSpacing: '-0.005em' }],
+        md:   ['16px', { lineHeight: '24px', letterSpacing: '-0.008em' }],
+        lg:   ['18px', { lineHeight: '26px', letterSpacing: '-0.012em' }],
+        xl:   ['21px', { lineHeight: '28px', letterSpacing: '-0.016em' }],
+        '2xl':['25px', { lineHeight: '32px', letterSpacing: '-0.018em' }],
+        '3xl':['31px', { lineHeight: '37px', letterSpacing: '-0.020em' }],
+        '4xl':['40px', { lineHeight: '45px', letterSpacing: '-0.022em' }],
+        '5xl':['52px', { lineHeight: '1.06', letterSpacing: '-0.026em' }],
+        '6xl':['64px', { lineHeight: '1.04', letterSpacing: '-0.028em' }],
+        '7xl':['76px', { lineHeight: '1.02', letterSpacing: '-0.030em' }],
+        '8xl':['88px', { lineHeight: '1.0', letterSpacing: '-0.032em' }],
       },
       transitionDuration: {
         120: '120ms',
@@ -226,6 +246,13 @@ export default {
         'sheet-in': {
           '0%': { transform: 'translateY(110%)', opacity: 0 },
           '100%': { transform: 'translateY(0)', opacity: 1 },
+        },
+        /* El cajón del menú entra desde la IZQUIERDA, que es el lado donde
+           vive el menú en el escritorio. Si entrara desde abajo parecería
+           otra cosa distinta en vez de el mismo menú. */
+        'cajon-in': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0)' },
         },
         /* El paso entra desde la derecha y el anterior se ha ido: dice que
            se ha avanzado, no que la pantalla se ha recargado. */
@@ -285,6 +312,7 @@ export default {
         'fade-up': 'fade-up .2s ease-out both',
         'slide-up': 'slide-up .22s cubic-bezier(.22,1,.36,1) both',
         'sheet-in': 'sheet-in .42s cubic-bezier(.16,1,.3,1) both',
+        'cajon-in': 'cajon-in .3s cubic-bezier(.22,1,.36,1) both',
         'pop-in': 'pop-in .45s cubic-bezier(.34,1.56,.64,1) both',
         'paso': 'paso .25s cubic-bezier(.22,1,.36,1) both',
         'temblor': 'temblor .45s cubic-bezier(.36,.07,.19,.97) both',

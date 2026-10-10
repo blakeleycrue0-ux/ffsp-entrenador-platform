@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Bell, CheckCheck, PanelLeftOpen, Plus, Search } from 'lucide-react';
+import { Bell, CheckCheck, Menu, PanelLeftOpen, Plus, Search } from 'lucide-react';
 import { Avatar, Button, Dot, Dropdown } from '@/components/ui';
 import { Wordmark } from '@/components/ui/Brand';
 import { useClub } from '@/store/store';
@@ -16,13 +16,15 @@ const NOTIF_TONE: Record<Notification['icon'], 'bad' | 'info' | 'neutral' | 'war
 };
 
 export function Topbar({
-  onSearch, onCreate, menu, onMenu,
+  onSearch, onCreate, menu, onMenu, onCajon,
 }: {
   onSearch: () => void;
   onCreate: () => void;
   /** Si el menú de la izquierda está desplegado. */
   menu: boolean;
   onMenu: () => void;
+  /** Abre el cajón del móvil. */
+  onCajon: () => void;
 }) {
   const { data, actions } = useClub();
   const navigate = useNavigate();
@@ -45,6 +47,17 @@ export function Topbar({
       className="cristal-firme sticky top-0 z-nav flex items-center gap-3 rounded-none border-x-0 border-t-0 px-4 lg:px-6"
       style={{ height: 'calc(var(--header-h) + var(--safe-top))', paddingTop: 'var(--safe-top)' }}
     >
+      {/* LA HAMBURGUESA, Y LA PRIMERA. En el móvil es lo único que lleva a
+          todas las secciones, así que va donde se busca: arriba a la
+          izquierda, antes del nombre. */}
+      <button
+        onClick={onCajon}
+        aria-label="Abrir el menú"
+        className="-ml-1.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-700 transition-colors active:bg-raised lg:hidden"
+      >
+        <Menu size={20} />
+      </button>
+
       <Link to="/app" className="lg:hidden">
         <Wordmark size="sm" showSubtitle={false} />
       </Link>

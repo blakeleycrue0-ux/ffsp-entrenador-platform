@@ -323,6 +323,7 @@ export default function AttendancePage() {
           Una barra, una responsabilidad: cuántos cambios hay y guardarlos. */}
       {dirty && (
         <div
+          data-barra-fija
           className="sticky z-flotante mt-6 lg:static lg:mt-8"
           style={{ bottom: 'calc(var(--sobre-nav) + 12px)' }}
         >

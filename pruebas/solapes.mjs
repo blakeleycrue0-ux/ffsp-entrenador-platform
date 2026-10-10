@@ -5,7 +5,7 @@
  * cuatro cosas, y las cuatro son las que el ojo se salta:
  *
  *  1. La página no se desplaza en horizontal.
- *  2. Nada interactivo queda tapado por el dique, el botón de crear o la
+ *  2. Nada interactivo queda tapado por una barra fija, el botón de crear o la
  *     cabecera —comparando cajas de verdad, no a ojo—.
  *  3. Ningún elemento fijo se pisa con otro elemento fijo.
  *  4. Ningún texto se sale de su contenedor.
@@ -53,20 +53,17 @@ async function revisa(page, ruta, etiqueta) {
     const cruzan = (a, c) =>
       a && c && a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1;
 
-    const nav = caja('nav[aria-label="Secciones"]');
-    const fab = caja('button[aria-label="Crear"]');
     const cab = caja('header');
 
-    // 2. Las piezas fijas no se pisan entre ellas.
-    if (cruzan(nav, fab)) fallos.push('el botón de crear se monta sobre el dique');
-    if (cruzan(nav, cab)) fallos.push('el dique se monta sobre la cabecera');
+    /* 2. Contenido tapado por la CABECERA en reposo.
 
-    /* 3. Contenido tapado por la CABECERA en reposo.
-          Bajo el dique flotante no se comprueba aquí: al desplazar, el
-          contenido pasa por debajo, y eso es lo que hace una barra flotante.
-          Lo que no puede pasar es que algo se quede ahí debajo cuando ya no se
-          puede desplazar más, y eso se mide abajo del todo. La cabecera sí se
-          comprueba en reposo: nada debería empezar tapado. */
+          YA NO HAY DIQUE. Aquí se comprobaba que la barra fija de abajo no se
+          montara sobre la cabecera ni sobre el botón de crear. Esa barra se
+          ha ido: en el móvil la navegación es un cajón que se abre desde la
+          cabecera, y mientras está cerrado no ocupa nada. Lo que sí sigue
+          fijo es la cabecera, y nada debería empezar tapado por ella. Que el
+          cajón se abra, se cierre y lleve a todas las secciones se comprueba
+          en `menu.mjs`. */
     const tapados = [];
     if (cab) {
       document.querySelectorAll('main h1, main h2').forEach((el) => {
@@ -94,13 +91,15 @@ async function revisa(page, ruta, etiqueta) {
     return fallos;
   });
 
-  // Y otra vez con la página desplazada hasta el final: es donde el último
-  // renglón se queda debajo del dique si el hueco no basta.
+  /* Y otra vez con la página desplazada hasta el final: es donde el último
+     renglón se queda debajo de lo que haya fijo abajo si el hueco no basta.
+     Hoy lo único que puede haber ahí es una barra de guardar —asistencia—,
+     que se coloca con `--sobre-nav` como todo lo demás. */
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(350);
   const abajo = await page.evaluate(() => {
     const H = document.documentElement.clientHeight;
-    const nav = document.querySelector('nav[aria-label="Secciones"]')?.getBoundingClientRect();
+    const barra = document.querySelector('[data-barra-fija]')?.getBoundingClientRect();
     const fab = document.querySelector('button[aria-label="Crear"]')?.getBoundingClientRect();
     const cruzan = (a, c) =>
       a && c && a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1;
@@ -109,7 +108,7 @@ async function revisa(page, ruta, etiqueta) {
       const c = el.getBoundingClientRect();
       if (c.width === 0 || c.top > H || c.bottom < 0) return;
       const t = (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 24);
-      if (cruzan(c, nav)) malos.push(`«${t}» sigue bajo el dique al final del desplazamiento`);
+      if (cruzan(c, barra)) malos.push(`«${t}» sigue bajo la barra fija al final del desplazamiento`);
       else if (cruzan(c, fab)) malos.push(`«${t}» sigue bajo el botón de crear al final`);
     });
     return [...new Set(malos)].slice(0, 2);
@@ -139,7 +138,7 @@ for (const alto of ALTOS) {
   }
 }
 
-/* Y escritorio, donde no hay dique pero sí barra lateral. */
+/* Y escritorio, donde la navegación es la barra lateral. */
 for (const [ancho, alto] of (COMPLETO ? [[1024, 800], [1512, 950]] : [[1512, 950]])) {
   const ctx = await b.newContext({ viewport: { width: ancho, height: alto } });
   const page = await ctx.newPage();

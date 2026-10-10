@@ -57,7 +57,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-hoja flex flex-col items-center gap-2 p-4 pb-[calc(88px+var(--safe-bottom))] sm:items-end lg:pb-4">
+      {/* El hueco de abajo sale de `--sobre-nav`, como todo lo que se coloca
+          respecto a lo que haya pegado al borde inferior. Estaba escrito a
+          mano —88 px— para esquivar el dique del móvil; cuando el dique se
+          fue, los avisos se quedaron flotando a 88 px del suelo sin nada
+          debajo. Un número a mano es un número que se queda viejo. */}
+      <div
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-hoja flex flex-col items-center gap-2 p-4 sm:items-end"
+        style={{ paddingBottom: 'calc(var(--sobre-nav) + 16px)' }}
+      >
         {items.map((t) => (
           <div
             key={t.id}

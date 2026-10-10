@@ -214,56 +214,95 @@ function BarraVentana({ titulo, claro = false }: { titulo: string; claro?: boole
  * distintos. `prioridad` carga la imagen de inmediato en vez de esperar al
  * desplazamiento: sólo para la de la primera pantalla.
  */
+/**
+ * Una captura, enmarcada. SIEMPRE ENTERA.
+ *
+ * NO SE RECORTA NADA, Y ESO ES UN ARREGLO. Durante una versión, en el móvil
+ * se desplazaba la imagen a la izquierda para tirar el menú lateral de la
+ * aplicación y que la tabla creciera. Legible sí era, pero se veía lo que
+ * era: una imagen cortada por un lado. Una captura a medias no parece una
+ * decisión de diseño, parece que la página está rota —y quien la miró lo
+ * dijo con esas palabras—.
+ *
+ * La solución no era recortar: era tener la captura que toca. Ahora
+ * `pruebas/capturas.mjs` saca cada pantalla en los dos tamaños, y en el
+ * móvil se enseña la toma vertical, que es una pantalla de móvil de verdad y
+ * se lee entera. Lo hace `Pantalla`, aquí abajo.
+ */
 function Captura({
-  src, alt, titulo, className, prioridad = false, recorta = true,
+  src, alt, titulo, className, prioridad = false,
 }: {
-  src: string; alt: string; titulo: string; className?: string;
-  prioridad?: boolean;
-  /**
-   * EN EL MÓVIL SE RECORTA LA BARRA LATERAL.
-   *
-   * Las capturas son de 2048 px de ancho y el menú de la izquierda ocupa el
-   * 18 %. Metidas enteras en 350 px, ese 18 % son sesenta píxeles de lista
-   * de enlaces ilegible, y lo que de verdad hay que ver —la tabla, el campo,
-   * el gráfico— se queda en 290. Desplazando la imagen a la izquierda y
-   * ensanchándola, se tira el menú y lo que importa crece un 22 %.
-   *
-   * A partir de `sm` entra entera: ahí ya se lee, y el menú cuenta algo
-   * —que esto tiene secciones—.
-   */
-  recorta?: boolean;
+  src: string; alt: string; titulo: string; className?: string; prioridad?: boolean;
 }) {
   return (
     <div className={cn('marco', className)}>
       <BarraVentana titulo={titulo} />
-      <div className="overflow-hidden">
-        <img
-          src={src}
-          alt={alt}
-          width={2048}
-          height={1296}
-          loading={prioridad ? 'eager' : 'lazy'}
-          decoding={prioridad ? 'sync' : 'async'}
-          {...(prioridad ? { fetchPriority: 'high' as const } : {})}
-          className={cn(
-            'block w-full',
-            /* 23 y 128 son el 18 % de menú por la izquierda más el 4 % de
-               margen vacío de la aplicación por la derecha. */
-            recorta && '-ml-[23%] w-[128%] max-w-none sm:ml-0 sm:w-full',
-          )}
-        />
-      </div>
+      <img
+        src={src}
+        alt={alt}
+        width={2048}
+        height={1296}
+        loading={prioridad ? 'eager' : 'lazy'}
+        decoding={prioridad ? 'sync' : 'async'}
+        {...(prioridad ? { fetchPriority: 'high' as const } : {})}
+        className="block w-full"
+      />
     </div>
   );
 }
 
+/**
+ * La misma pantalla, en el formato que le toca a cada ancho.
+ *
+ * Debajo de `md`, el móvil enmarcado y centrado: la captura vertical de la
+ * aplicación, entera y a buen tamaño. De `md` para arriba, la de escritorio
+ * en su marco de ventana. No es la misma imagen escalada: son dos capturas
+ * distintas de la misma pantalla, hechas por el mismo guion.
+ *
+ * Se pintan las dos y se esconde una con `hidden`. Es a propósito: con
+ * `<picture>` y `media` el navegador elige una sola, pero entonces el marco
+ * —la barra de ventana, el borde del teléfono— tendría que cambiar también,
+ * y eso no lo hace `<picture>`. Las dos imágenes son `lazy` salvo la de la
+ * primera pantalla, así que la que no se ve no se descarga.
+ */
+function Pantalla({
+  escritorio, movil, alt, altMovil, titulo, prioridad = false, className,
+}: {
+  escritorio: string; movil: string; alt: string;
+  /** Sólo cuando la toma vertical enseña OTRA pantalla, no la misma. */
+  altMovil?: string;
+  titulo: string;
+  prioridad?: boolean; className?: string;
+}) {
+  return (
+    <>
+      <div className={cn('mx-auto w-[62%] min-w-[180px] max-w-[260px] md:hidden', className)}>
+        <Movil src={movil} alt={altMovil ?? alt} prioridad={prioridad} />
+      </div>
+      <Captura
+        src={escritorio}
+        alt={alt}
+        titulo={titulo}
+        prioridad={prioridad}
+        className={cn('hidden md:block', className)}
+      />
+    </>
+  );
+}
+
 /** Un móvil, con su captura vertical dentro. */
-function Movil({ src, alt, className }: { src: string; alt: string; className?: string }) {
+function Movil({
+  src, alt, className, prioridad = false,
+}: {
+  src: string; alt: string; className?: string; prioridad?: boolean;
+}) {
   return (
     <div className={cn('telefono', className)}>
       <img
         src={src} alt={alt} width={780} height={1560}
-        loading="lazy" decoding="async"
+        loading={prioridad ? 'eager' : 'lazy'}
+        decoding={prioridad ? 'sync' : 'async'}
+        {...(prioridad ? { fetchPriority: 'high' as const } : {})}
         className="block w-full"
       />
     </div>
@@ -515,10 +554,20 @@ function Portada() {
               {/* EL CENTRO. De frente, adelantado y el más grande: es lo
                   primero que tiene que mirarse. */}
               <div className="ala-centro relative z-10 w-full shrink-0 md:w-[44%]">
+                {/* EN EL MÓVIL, LA PLANTILLA Y NO LA PIZARRA. En el
+                    escritorio la pizarra es lo que distingue a esto y va de
+                    frente. Pero un campo de 105 × 68 metido en la pantalla
+                    de un teléfono deja medio móvil en negro alrededor, y la
+                    primera imagen de la portada no puede ser una pantalla
+                    medio vacía. La plantilla llena: dieciséis nombres, sus
+                    posiciones y su asistencia. La pizarra se ve más abajo,
+                    moviéndose de verdad, que es como mejor se vende. */}
                 <div className="flota-a">
-                  <Captura
-                    src="/producto/pizarra.png"
+                  <Pantalla
+                    escritorio="/producto/pizarra.png"
+                    movil="/producto/plantilla-movil.png"
                     alt="La pizarra táctica de Playoff360, con una salida desde atrás dibujada sobre el campo en perspectiva."
+                    altMovil="La plantilla del equipo en el móvil: dieciséis jugadoras con su posición y su asistencia."
                     titulo="Pizarra táctica · Salida desde atrás"
                     prioridad
                   />
@@ -625,9 +674,17 @@ function Declaracion() {
 
         <Revelar delay={160}>
           <div className="relative mt-12 lg:mt-16">
-            <Captura
-              src="/producto/plantilla.png"
+            {/* EN EL MÓVIL, EL CALENDARIO Y NO LA PLANTILLA: la plantilla ya
+                es la primera pantalla de la portada, y dos veces la misma
+                captura en la misma bajada se lee como que sólo hay una
+                pantalla. El calendario cuenta lo que dice el párrafo de al
+                lado —la semana, la convocatoria del sábado— y es una
+                pantalla distinta. */}
+            <Pantalla
+              escritorio="/producto/plantilla.png"
+              movil="/producto/calendario-movil.png"
               alt="La pantalla de plantilla, con las dieciséis jugadoras, su posición, su asistencia y su estado."
+              altMovil="El calendario del equipo en el móvil, con los entrenamientos y el partido de la semana."
               titulo="Plantilla · Cadete A"
             />
             {/* El móvil asomando por la esquina. Desborda el marco a
@@ -677,12 +734,16 @@ function Historias() {
             {/* El producto a la IZQUIERDA aquí: en la sección anterior iba a
                 la derecha, y alternar es lo que da ritmo. */}
             <Revelar className="relative lg:col-span-7">
-              <Captura
-                src="/producto/entrenamientos.png"
+              <Pantalla
+                escritorio="/producto/entrenamientos.png"
+                movil="/producto/entrenamientos-movil.png"
                 alt="La pantalla de entrenamientos, con la sesión dividida en bloques y sus minutos."
                 titulo="Entrenamientos · Semana 14"
               />
-              <div className="absolute -bottom-8 -left-4 hidden w-[20%] max-w-[150px] sm:block lg:-left-12">
+              {/* El móvil asomando por la esquina entra a partir de `md`:
+                  por debajo, la pantalla principal YA es el móvil y habría
+                  dos teléfonos iguales en la misma composición. */}
+              <div className="absolute -bottom-8 -left-4 hidden w-[20%] max-w-[150px] md:block lg:-left-12">
                 <Movil
                   src="/producto/entrenamientos-movil.png"
                   alt="La sesión del día en el móvil, bloque por bloque."
@@ -750,8 +811,9 @@ function Historias() {
                 />
               </div>
               <div className="relative z-10">
-                <Captura
-                  src="/producto/analiticas.png"
+                <Pantalla
+                  escritorio="/producto/analiticas.png"
+                  movil="/producto/analiticas-movil.png"
                   alt="El panel de analíticas, con la asistencia por jugadora y por sesión."
                   titulo="Analíticas · Cadete A"
                 />

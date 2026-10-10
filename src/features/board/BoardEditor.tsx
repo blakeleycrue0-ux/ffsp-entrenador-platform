@@ -1066,13 +1066,25 @@ export function BoardEditor({
           'relative overflow-hidden rounded-3xl border border-line bg-ink-50',
           'min-h-[420px]',
         )}
-        /* El alto sale de las mismas variables que usa el armazón, más lo que
-           ocupa la línea del título. Con un número escrito a mano, en cuanto
-           cambiaba el dique o el margen de página el campo se quedaba corto o
-           se metía debajo del menú. */
+        /* EL ALTO: LO QUE QUEPA, PERO NO MÁS DE LO QUE HACE FALTA.
+           Sale de las mismas variables que usa el armazón, más lo que ocupa
+           la línea del título. Con un número escrito a mano, en cuanto
+           cambiaba la navegación o el margen de página el campo se quedaba
+           corto o se metía debajo del menú.
+
+           Y SE LIMITA A LO QUE EL CAMPO NECESITA. Un campo completo es un
+           rectángulo de 105 × 68: metido en el ancho de un móvil son unos
+           230 px de alto, y la caja ocupaba los 620 que daba la ventana. El
+           resultado era casi cuatrocientos píxeles de negro alrededor de un
+           campo pequeño —se ve en cualquier captura de móvil—. El segundo
+           término calcula el alto que de verdad pide el campo con el ancho
+           que hay, más 170 px para las dos islas de mandos, y `min` se queda
+           con el menor de los dos. En un escritorio ancho sigue mandando la
+           ventana, que es lo que debe pasar. */
         style={{
           height:
-            'calc(100dvh - var(--header-h) - var(--pagina-top) - var(--hueco-inferior) - 52px)',
+            'min(calc(100dvh - var(--header-h) - var(--pagina-top) - var(--hueco-inferior) - 52px),' +
+            ' calc((100vw - 2 * var(--pagina-x) - var(--sidebar-w)) / 1.544 + 170px))',
         }}
       >
         {/* El campo y sus mandos viven en una caja que se encoge cuando se abre
