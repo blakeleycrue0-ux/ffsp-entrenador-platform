@@ -97,17 +97,28 @@
     --header-h: 56px;
     --sidebar-w: 236px;
 
-    /* El dique: su alto y su separación del borde de abajo. */
-    --nav-h: 64px;
-    --nav-gap: 12px;
+    /* YA NO HAY DIQUE. En el móvil había una barra fija abajo de 64 px más
+       12 de separación: cien píxeles de alto que no tenía la página, en
+       todas las pantallas y sin manera de quitarlos. Ahora la navegación del
+       móvil es un cajón que se abre desde la cabecera y se cierra, así que
+       por abajo no hay nada que esquivar.
 
-    /* Desde el borde inferior de la ventana hasta donde empieza el dique.
-       Cualquier cosa que quiera quedarse POR ENCIMA del dique parte de aquí. */
+       Las variables se quedan a cero y NO se borran: hay sitios que se
+       colocan «por encima de lo que haya abajo» —la barra de guardar de
+       asistencia, el alto útil de la pizarra— y leyendo de aquí siguen
+       funcionando sin saber si hay dique o no. El día que vuelva algo fijo
+       abajo, se cambia este número y se mueve todo a la vez. */
+    --nav-h: 0px;
+    --nav-gap: 0px;
+
+    /* Desde el borde inferior de la ventana hasta donde empieza la
+       navegación. Cualquier cosa que quiera quedarse POR ENCIMA parte de
+       aquí. */
     --sobre-nav: calc(var(--nav-h) + var(--nav-gap) + var(--safe-bottom));
 
-    /* Lo que la página tiene que dejar libre al final para que su último
-       renglón se pueda leer entero por encima del dique. */
-    --hueco-inferior: calc(var(--sobre-nav) + 24px);
+    /* Lo que la página deja libre al final para que su último renglón se lea
+       entero. */
+    --hueco-inferior: calc(var(--sobre-nav) + 32px);
 
     /* Márgenes laterales y ritmo vertical de una página. */
     --pagina-x: 16px;
@@ -118,12 +129,8 @@
     :root { --pagina-x: 24px; }
   }
 
-  /* En escritorio no hay dique: la navegación está a la izquierda. Sin esto,
-     cada página reservaría abajo un hueco para algo que no existe. */
   @media (min-width: 1024px) {
     :root {
-      --nav-h: 0px;
-      --nav-gap: 0px;
       --hueco-inferior: 48px;
       --pagina-x: 24px;
       --pagina-top: 24px;
@@ -167,17 +174,24 @@
 
   /* Jerarquía contenida: nada de titulares enormes dentro de la aplicación.
      El color NO se fija aquí: se hereda, para que un titular sobre fondo
-     oscuro no acabe siendo navy sobre navy. */
-  /* Peso 500–600, nunca más. Una grotesca en negrita a tamaño grande se lee
+     oscuro no acabe siendo navy sobre navy.
+
+     Peso 500–600, nunca más. Una grotesca en negrita a tamaño grande se lee
      como un grito; el tamaño ya hace la jerarquía. El interletraje lo pone la
-     escala, no esta regla, porque depende del tamaño. */
+     escala, no esta regla, porque depende del tamaño.
+
+     LA FAMILIA SÍ SE FIJA AQUÍ, y de una vez para toda la aplicación. Poner
+     `font-display` a mano en cada titular de cada pantalla significa que el
+     día que se olvide en una, esa pantalla va con otra letra y nadie se
+     entera. Un titular es un titular en los dos lados del registro. */
   h1, h2, h3, h4 {
+    @apply font-display;
     font-weight: 560;
     color: inherit;
   }
 
   ::selection {
-    @apply bg-ink-900 text-ink-0;
+    @apply bg-marca-600 text-white;
   }
 
   /* El navegador pinta en claro los controles nativos (fechas, horas,
@@ -187,23 +201,24 @@
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: #3C3C41 transparent;
+    scrollbar-color: #2B3A56 transparent;
   }
   *::-webkit-scrollbar { width: 10px; height: 10px; }
   *::-webkit-scrollbar-thumb {
-    background-color: #3C3C41;
+    background-color: #2B3A56;
     border-radius: 999px;
     border: 3px solid transparent;
     background-clip: content-box;
   }
-  *::-webkit-scrollbar-thumb:hover { background-color: #56565D; }
+  *::-webkit-scrollbar-thumb:hover { background-color: #3C5076; }
 
-  /* El foco es BLANCO. Era un aro azul, y el azul se ha ido del producto
-     entero; además, sobre negro, el blanco es lo que más se ve, que es
-     justo lo único que se le pide a un indicador de foco. */
+  /* El foco, en el azul de marca. Fue azul, luego blanco cuando el producto
+     se quedó sin color, y vuelve a azul ahora que el azul significa «esto
+     está activo». El aro oscuro de debajo lo separa del fondo para que se
+     vea igual sobre un panel que sobre una tarjeta. */
   :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 1px #050505, 0 0 0 3px rgba(255, 255, 255, 0.55);
+    box-shadow: 0 0 0 1px #060C1B, 0 0 0 3px rgba(54, 200, 255, 0.75);
     border-radius: 12px;
   }
 
@@ -288,12 +303,12 @@
      encima del campo. Ni brillo, ni color: el material tiene que desaparecer
      cuando no se está mirando. */
   .cristal {
-    background: rgba(10, 10, 10, 0.80);
+    background: rgba(10, 20, 39, 0.82);
     backdrop-filter: blur(20px) saturate(125%);
     -webkit-backdrop-filter: blur(20px) saturate(125%);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(148, 180, 255, 0.10);
     box-shadow:
-      0 10px 35px rgba(0, 0, 0, 0.28),
+      0 10px 35px rgba(2, 8, 23, 0.40),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
@@ -308,58 +323,68 @@
      que sirve el cristal, pero ya no deja leer nada a través. Un cristal que
      deja ver el texto de detrás no es elegante, es un error. */
   .cristal-firme {
-    background: rgba(8, 8, 8, 0.93);
+    background: rgba(6, 12, 27, 0.94);
     backdrop-filter: blur(24px) saturate(120%);
     -webkit-backdrop-filter: blur(24px) saturate(120%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(148, 180, 255, 0.12);
     box-shadow:
-      0 10px 35px rgba(0, 0, 0, 0.4),
+      0 10px 35px rgba(2, 8, 23, 0.5),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
   /* Cuando el navegador no sabe desenfocar, el cristal se vuelve opaco: más
      vale una superficie sólida legible que una transparente ilegible. */
   @supports not (backdrop-filter: blur(1px)) {
-    .cristal { background: #0F0F0F; }
-    .cristal-firme { background: #080808; }
+    .cristal { background: #0A1427; }
+    .cristal-firme { background: #060C1B; }
   }
 
   /* ── METAL ────────────────────────────────────────────────────────────────
      El único «efecto» del producto, y va contado: la navegación flotante de
      la portada, el plan recomendado, un segmento seleccionado. Nada más.
 
-     No es un degradado de colores: es grafito con una veta más clara cruzada
-     en diagonal, un filo de luz arriba y una sombra interior abajo, que es lo
-     que hace una superficie metálica de verdad. Al pasar por encima, el
-     reflejo se desplaza. Si esto se pusiera en todos los botones, el producto
-     dejaría de parecer caro y pasaría a parecer cromado. */
+     No es un degradado de colores: es azul noche con una veta más clara
+     cruzada en diagonal, un filo de luz arriba y una sombra interior abajo,
+     que es lo que hace una superficie metálica de verdad. Al pasar por
+     encima, el reflejo se desplaza. Si esto se pusiera en todos los botones,
+     el producto dejaría de parecer caro y pasaría a parecer cromado. */
+  /* El botón secundario: la superficie de la aplicación con un filo de luz
+     arriba. Antes era grafito sobre negro; ahora lleva el mismo azul noche
+     que el resto, para que no parezca un recorte de otra interfaz. */
   .metal {
     position: relative;
-    background-image: linear-gradient(110deg, #080808 0%, #202020 46%, #3C3C3C 100%);
+    background-image: linear-gradient(110deg, #0A1427 0%, #16233D 46%, #22324F 100%);
     background-size: 220% 100%;
     background-position: 100% 0;
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(148, 180, 255, 0.16);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.14),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+      inset 0 1px 0 rgba(255, 255, 255, 0.10),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.45);
     transition: background-position .7s cubic-bezier(0.16, 1, 0.3, 1),
                 border-color .25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .metal:hover {
     background-position: 0 0;
-    border-color: rgba(255, 255, 255, 0.22);
+    border-color: rgba(148, 180, 255, 0.28);
   }
 
-  /* La versión clara: para la acción principal. Blanco con texto negro, que
-     es lo que sustituye al azul en todo el producto. */
+  /* LA ACCIÓN PRINCIPAL, EN AZUL. Fue blanca sobre negro mientras el producto
+     no tenía color de marca. Ahora es el mismo azul del botón de la portada
+     —mismo degradado, mismo brillo interior, misma sombra proyectada—, para
+     que «el botón que hace la cosa» se vea igual antes y después de entrar. */
   .metal-claro {
-    background-image: linear-gradient(110deg, #E8E8E8 0%, #FFFFFF 42%, #CFCFCF 100%);
-    background-size: 220% 100%;
-    background-position: 100% 0;
-    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.14);
-    transition: background-position .7s cubic-bezier(0.16, 1, 0.3, 1);
+    background-image: linear-gradient(180deg, #2A86FF 0%, #0868F9 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      0 8px 22px -10px rgba(8, 104, 249, 0.75);
+    transition: filter .2s ease, box-shadow .25s ease;
   }
-  .metal-claro:hover { background-position: 0 0; }
+  .metal-claro:hover {
+    filter: brightness(1.07);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      0 12px 28px -10px rgba(8, 104, 249, 0.85);
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .metal, .metal-claro { transition: none; }
@@ -401,12 +426,19 @@
      Una hora, un porcentaje o un dorsal son el dato, no un adorno dentro de
      una tarjeta. Van grandes, muy apretados y sin nada alrededor: la
      tipografía sustituye al contenedor. */
+  /* EL INTERLETRAJE BAJA DE −0,04 A −0,015 em, Y NO ES UN CAPRICHO. Estaba
+     ajustado para Schibsted Grotesk, cuyo «1» es una barra estrecha. El «1»
+     de Space Grotesk lleva pie —una barra horizontal abajo— y es casi tan
+     ancho como un «0»: con −0,04 em, en «16» el pie del uno se metía dentro
+     del seis y en «100 %» los dos unos se tocaban. Medido a 40 px: −1,6 px
+     por hueco, y el pie sobresale ~1,2. Con −0,015 respiran y el bloque de
+     cifras sigue leyéndose apretado. */
   .cifra {
     @apply font-display text-ink-900;
     font-weight: 540;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.015em;
     font-variant-numeric: tabular-nums;
-    line-height: 0.92;
+    line-height: 0.98;
   }
 
   /* El rótulo que acompaña a una cifra. Pequeño, en mayúsculas y apagado:

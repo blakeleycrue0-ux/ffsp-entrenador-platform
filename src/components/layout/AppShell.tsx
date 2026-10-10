@@ -25,7 +25,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import { BottomNav } from './BottomNav';
+import { MenuMovil } from './MenuMovil';
 import { CreateMenu } from './CreateMenu';
 import { GlobalSearch } from './GlobalSearch';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -85,6 +85,7 @@ function menuGuardado(): boolean {
 export function AppShell() {
   const [search, setSearch] = useState(false);
   const [menu, setMenu] = useState(menuGuardado);
+  const [cajon, setCajon] = useState(false);
   const [create, setCreate] = useState(false);
   const [anchura, setAnchura] = useState<Anchura>('ancho');
   const { pathname } = useLocation();
@@ -121,6 +122,7 @@ export function AppShell() {
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
+    setCajon(false);
   }, [pathname]);
 
   const openCreate = useCallback(() => setCreate(true), []);
@@ -145,6 +147,7 @@ export function AppShell() {
             onCreate={openCreate}
             menu={menu}
             onMenu={alternaMenu}
+            onCajon={() => setCajon(true)}
           />
 
           <main
@@ -167,7 +170,7 @@ export function AppShell() {
           </main>
         </div>
 
-        <BottomNav />
+        <MenuMovil abierto={cajon} onCerrar={() => setCajon(false)} onCreate={openCreate} />
         <GlobalSearch open={search} onClose={() => setSearch(false)} />
         <CreateMenu open={create} onClose={() => setCreate(false)} />
       </div>

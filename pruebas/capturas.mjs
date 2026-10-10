@@ -69,6 +69,12 @@ const JUGADA_DEMO = {
 /* OJO CON EL ANCHO. A 1020 px la aplicación todavía da la maqueta de móvil
    —el corte está en 1024—, así que la primera tanda salió con el dique abajo y
    el panel de la pizarra tapando el campo. Las de escritorio van a 1280. */
+/* CADA PANTALLA, EN LOS DOS TAMAÑOS.
+   Antes sólo había versión de móvil de dos de ellas, y la portada acababa
+   metiendo la captura de escritorio en 350 px: o se leía un sello de letra de
+   seis píxeles, o había que recortarle el menú por la izquierda y entonces
+   parecía una imagen rota. Con la toma vertical hecha de verdad, en el móvil
+   se enseña una pantalla de móvil y no hay nada que recortar. */
 const TOMAS = [
   ['pizarra.png', `/app/pizarra/${JUGADA}`, 1280, 810, 1.6],
   ['plantilla.png', '/app/plantilla', 1280, 810, 1.6],
@@ -77,6 +83,9 @@ const TOMAS = [
   ['analiticas.png', '/app/analiticas', 1280, 810, 1.6],
   ['plantilla-movil.png', '/app/plantilla', 390, 780, 2],
   ['entrenamientos-movil.png', '/app/entrenamientos', 390, 780, 2],
+  ['analiticas-movil.png', '/app/analiticas', 390, 780, 2],
+  ['calendario-movil.png', '/app/calendario', 390, 780, 2],
+  ['pizarra-movil.png', `/app/pizarra/${JUGADA}`, 390, 780, 2],
 ];
 
 mkdirSync(DESTINO, { recursive: true });
@@ -105,6 +114,16 @@ for (const [archivo, ruta, ancho, alto, escala] of TOMAS) {
 
   await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1800);
+
+  /* EL PANEL DE LA PIZARRA, CERRADO. Se abre solo al seleccionar algo, y en
+     la captura se quedaba abierto ocupando un tercio del ancho: el campo
+     —que es lo que hay que enseñar— salía pequeño y a un lado. Esto es una
+     foto de producto, y lo que tiene que verse es el campo. */
+  const cerrar = page.getByRole('button', { name: 'Cerrar el panel' });
+  if (await cerrar.count() > 0) {
+    await cerrar.first().click();
+    await page.waitForTimeout(500);
+  }
   /* Sin animaciones: una captura a medio camino de una transición se ve
      borrosa y no hay forma de saber por qué. */
   await page.screenshot({ path: `${DESTINO}/${archivo}`, animations: 'disabled' });

@@ -114,21 +114,32 @@ export default function PlayersPage() {
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-3">
-          <Filter size={14} className="mr-1 text-ink-400" />
-          {POSITION_GROUPS.map((g) => (
-            <button
-              key={g.id}
-              onClick={() => setGroup(g.id)}
-              className={cn(
-                'rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
-                group === g.id ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200' : 'text-muted hover:bg-ink-100',
-              )}
-            >
-              {g.label}
-            </button>
-          ))}
-          <span className="ml-auto text-sm text-ink-500">
+        {/* LOS FILTROS NO SE PARTEN EN DOS LÍNEAS: SE DESLIZAN.
+            Con `flex-wrap`, en 390 px «Delanteras» caía a un segundo renglón
+            y la cuenta de jugadoras —que lleva `ml-auto`— se le pegaba al
+            lado: dos cosas distintas pegadas y ninguna de las dos en su
+            sitio. Cinco filtros en fila deslizable se recorren con el pulgar,
+            que es como se usa un filtro en un móvil, y la cuenta se va
+            debajo hasta que hay ancho de sobra. */}
+        <div className="mt-3 flex flex-col gap-1.5 border-t border-line pt-3 sm:flex-row sm:items-center">
+          <div className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <Filter size={14} className="mr-1 shrink-0 text-ink-400" />
+            {POSITION_GROUPS.map((g) => (
+              <button
+                key={g.id}
+                onClick={() => setGroup(g.id)}
+                className={cn(
+                  'shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
+                  group === g.id
+                    ? 'bg-marca-600/16 text-ink-900 ring-1 ring-inset ring-marca-500/40'
+                    : 'text-muted hover:bg-panel',
+                )}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+          <span className="shrink-0 text-sm text-ink-500 sm:ml-auto sm:pl-3">
             {players.length} de {data.players.filter((p) => p.teamId === teamId).length} jugadoras
           </span>
         </div>

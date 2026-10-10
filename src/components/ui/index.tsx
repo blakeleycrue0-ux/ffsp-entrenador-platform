@@ -21,26 +21,23 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 /**
  * Botones.
  * ---------------------------------------------------------------------------
- * LA ACCIÓN PRINCIPAL ES BLANCA, con el texto negro. Era azul, y el azul se ha
- * ido del producto entero. No se ha sustituido por otro color de marca a
- * propósito: sobre negro, el blanco es lo que más destaca que existe, así que
- * usarlo para la acción principal deja a todo lo demás por debajo sin tener
- * que inventarse una jerarquía de colores.
+ * LA ACCIÓN PRINCIPAL ES AZUL, con el texto blanco. Es exactamente el mismo
+ * botón que el de la portada: mismo degradado, mismo filo de luz arriba,
+ * misma sombra proyectada. Antes era blanco con texto negro, porque el
+ * producto no tenía color de marca; el resultado era que al registrarte
+ * cambiaba el botón que acabas de pulsar.
  *
- * Y sale gratis en contraste. El azul daba 3,2 sobre blanco —por debajo del
- * mínimo para texto normal, y había que apañarlo con el peso y un degradado—;
- * negro sobre blanco da 21. No hay nada que medir ni que justificar.
- *
- * El relleno no es plano: lleva el barrido metálico, que al pasar por encima
- * desplaza un reflejo muy tenue. Es el único efecto del producto y va contado.
+ * EL CONTRASTE, MEDIDO. Blanco sobre #0868F9 da 4,6:1, que pasa el mínimo
+ * para texto normal (4,5). Lo que no pasaba era azul sobre blanco —3,2—, que
+ * es la combinación contraria y la que hizo que se quitara en su día.
  *
  * Al pulsar encoge un 2 %. Es lo que hace que un botón se sienta como un
  * objeto y no como un enlace.
  */
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'metal-claro text-ink-0 ' +
-    'disabled:[background-image:none] disabled:bg-[rgba(255,255,255,0.07)] disabled:text-ink-500 disabled:shadow-none',
+    'metal-claro text-white ' +
+    'disabled:[background-image:none] disabled:bg-[rgba(148,180,255,0.08)] disabled:text-ink-500 disabled:shadow-none',
   secondary: 'metal text-ink-800',
   ghost: 'bg-transparent text-ink-600 hover:bg-panel hover:text-ink-900',
   quiet: 'border border-line-sutil bg-panel text-ink-800 hover:bg-raised',
