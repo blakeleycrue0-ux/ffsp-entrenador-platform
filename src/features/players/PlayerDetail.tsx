@@ -59,7 +59,7 @@ export default function PlayerDetail() {
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl font-semibold leading-tight">{player.name}</h1>
+              <h1 className="text-xl font-semibold leading-tight sm:text-2xl">{player.name}</h1>
               <Tag tone={disponibilidad(player.availability.status).tone} dot>
                 {disponibilidad(player.availability.status).label}
               </Tag>

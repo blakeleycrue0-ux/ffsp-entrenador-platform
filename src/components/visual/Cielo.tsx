@@ -41,6 +41,22 @@ const VELOS = {
     'radial-gradient(78% 64% at 50% 48%, rgba(6,12,27,0.93) 0%, rgba(6,12,27,0.80) 48%, rgba(6,12,27,0.52) 100%)',
   franja:
     'linear-gradient(to bottom, rgba(6,12,27,0.34) 0%, rgba(6,12,27,0.22) 46%, rgba(6,12,27,0.72) 82%, #060C1B 100%)',
+  /**
+   * `hondo` ES PARA PANTALLAS LARGAS, Y NACE DE UN FALLO DE LEGIBILIDAD.
+   *
+   * El montaje del club llevaba el velo `fuerte`, que es radial: apaga el
+   * centro y deja los bordes azules. Con un formulario corto va bien; con el
+   * teclado del código —que ocupa de arriba abajo— el texto de los extremos
+   * caía sobre cielo a media luz. Medido en la pantalla del código: el
+   * párrafo del pie quedaba en gris claro sobre azul medio, por debajo del
+   * mínimo legible. Y no era un matiz de gusto: no se leía.
+   *
+   * Aquí el cielo se queda sólo como un resplandor arriba, detrás de la
+   * marca, y a partir de un tercio de pantalla es azul noche opaco. Se
+   * reconoce el producto y todo lo que hay que leer está sobre fondo sólido.
+   */
+  hondo:
+    'linear-gradient(to bottom, rgba(6,12,27,0.72) 0%, rgba(6,12,27,0.88) 22%, rgba(6,12,27,0.97) 42%, #060C1B 62%)',
 } as const;
 
 /**

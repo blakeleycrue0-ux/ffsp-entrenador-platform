@@ -138,6 +138,13 @@ export function PanelHeader({
 
 /* ──────────────────────────────── Etiquetas ──────────────────────────────── */
 
+/* ── LO ACTIVO ES AZUL, EN TODAS PARTES ─────────────────────────────────────
+   La casilla marcada, el interruptor encendido, la pestaña abierta, el
+   segmento elegido y la barra de progreso iban en BLANCO —`bg-ink-900`—, de
+   cuando no había color de marca. El menú lateral sí usaba el azul para la
+   sección abierta, así que «esto está activo» se decía de dos maneras según
+   la pantalla: con un bloque blanco o con azul. Ahora es azul en los dos
+   sitios. El blanco se queda para el texto, que es lo que tiene que leerse. */
 type Tone = 'neutral' | 'ok' | 'warn' | 'bad' | 'info' | 'solid';
 
 /* Sobre negro, un relleno tenue del propio color se lee mejor que un borde
@@ -323,7 +330,7 @@ export function Checkbox({
         onClick={() => onChange(!checked)}
         className={cn(
           'grid h-4 w-4 shrink-0 place-items-center rounded-[3px] border transition-colors',
-          checked ? 'border-ink-900 bg-ink-900 text-ink-0' : 'border-ink-300 bg-panel hover:border-ink-500',
+          checked ? 'border-marca-600 bg-marca-600 text-white' : 'border-line-fuerte bg-sunken hover:border-ink-500',
         )}
       >
         {checked && <Check size={11} strokeWidth={3} aria-hidden />}
@@ -346,7 +353,7 @@ export function Toggle({
         onClick={() => onChange(!checked)}
         className={cn(
           'relative h-5 w-9 shrink-0 rounded-full transition-colors',
-          checked ? 'bg-ink-900' : 'bg-ink-300',
+          checked ? 'bg-marca-600' : 'bg-ink-300',
         )}
       >
         {/* `left-0` es imprescindible: sin él la bolita se coloca al final del
@@ -381,7 +388,7 @@ export function ScoreInput({
             className={cn(
               'h-7 w-7 rounded border text-sm font-medium tabular-nums transition-colors',
               active
-                ? 'border-ink-900 bg-ink-900 text-ink-0'
+                ? 'border-marca-600 bg-marca-600 text-white'
                 : 'border-line bg-panel text-ink-600 hover:border-ink-400',
             )}
           >
@@ -442,7 +449,7 @@ export function Tabs({
           >
             {t.label}
             {t.count !== undefined && <span className="ml-1.5 text-sm text-ink-400 tabular-nums">{t.count}</span>}
-            {active && <span className="absolute inset-x-1.5 -bottom-px h-0.5 bg-ink-900" />}
+            {active && <span className="absolute inset-x-1.5 -bottom-px h-0.5 bg-marca-500" />}
           </button>
         );
       })}
@@ -470,7 +477,7 @@ export function Segmented<T extends string>({
           className={cn(
             'rounded-[4px] font-medium transition-colors',
             size === 'sm' ? 'px-2 py-1 text-xs' : 'px-2.5 py-1 text-sm',
-            value === o.id ? 'bg-ink-900 text-ink-0' : 'text-ink-600 hover:text-ink-900',
+            value === o.id ? 'bg-marca-600 text-white' : 'text-ink-600 hover:text-ink-900',
           )}
         >
           {o.label}
@@ -692,7 +699,7 @@ export function Meter({
   value, max = 100, tone = 'solid', className, height = 4,
 }: { value: number; max?: number; tone?: Tone; className?: string; height?: number }) {
   const pct = max === 0 ? 0 : Math.min(100, Math.max(0, (value / max) * 100));
-  const bg = { neutral: 'bg-ink-400', ok: 'bg-ok', warn: 'bg-warn', bad: 'bg-bad', info: 'bg-info', solid: 'bg-ink-900' }[tone];
+  const bg = { neutral: 'bg-ink-400', ok: 'bg-ok', warn: 'bg-warn', bad: 'bg-bad', info: 'bg-info', solid: 'bg-marca-500' }[tone];
   return (
     <div className={cn('w-full overflow-hidden rounded-full bg-ink-100', className)} style={{ height }}>
       <div className={cn('h-full rounded-full transition-[width] duration-300', bg)} style={{ width: `${pct}%` }} />
