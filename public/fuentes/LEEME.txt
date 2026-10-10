@@ -1,0 +1,13 @@
+Tipografías servidas desde este mismo dominio, no desde Google.
+
+  space-grotesk-*.woff2   Space Grotesk   — Florian Karsten        — SIL Open Font License 1.1
+  jakarta-*.woff2         Plus Jakarta Sans — Tokotype              — SIL Open Font License 1.1
+  schibsted-*.woff2       Schibsted Grotesk — Schibsted / Bakken & Bæck — SIL Open Font License 1.1
+
+Las tres son de eje variable: un archivo por familia cubre todos los pesos.
+Cada familia trae el subconjunto `latin` y el `latin-ext`; el navegador pide
+el segundo sólo si la página usa alguna letra que no esté en el primero.
+
+La licencia OFL permite usarlas, redistribuirlas e incrustarlas, también en
+un proyecto comercial, siempre que no se vendan por separado y que los
+archivos conserven su nombre de familia.
