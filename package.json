@@ -18,6 +18,7 @@
     "maqueta:portada": "node pruebas/portada.mjs",
     "maqueta:maquetas": "node pruebas/maquetas.mjs",
     "maqueta:precios": "node pruebas/precios.mjs",
+    "maqueta:cookies": "node pruebas/cookies.mjs",
     "app:menu": "node pruebas/menu.mjs",
     "app:pasos": "node pruebas/primeros-pasos.mjs",
     "capturas": "node pruebas/capturas.mjs",

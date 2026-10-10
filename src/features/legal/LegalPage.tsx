@@ -5,9 +5,11 @@
  * marcado como pendiente, de forma visible, para que nadie los dé por buenos.
  */
 
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Wordmark } from '@/components/ui/Brand';
-import { Tag } from '@/components/ui';
+import { Button, Tag } from '@/components/ui';
+import { decidir, decision } from '@/services/analitica';
 
 /** Dato que el club tiene que facilitar antes de publicar. */
 const Pendiente = ({ children }: { children: React.ReactNode }) => (
@@ -15,6 +17,55 @@ const Pendiente = ({ children }: { children: React.ReactNode }) => (
     {children}
   </span>
 );
+
+/**
+ * Cambiar de opinión sobre la medición, aquí mismo.
+ *
+ * NO ES UN ADORNO: retirar el consentimiento tiene que ser tan fácil como
+ * darlo, y el aviso de abajo no vuelve a salir una vez respondido. Sin esto,
+ * quien aceptara no tendría más forma de revocarlo que borrar los datos del
+ * navegador, que no es «igual de fácil».
+ *
+ * Quitar el permiso NO descarga el script que ya esté cargado —eso no se puede
+ * hacer sin recargar—, así que lo dice en vez de prometerlo: deja de medir a
+ * partir de la próxima carga, y `visita()` ya no manda nada desde este mismo
+ * momento porque pregunta por la decisión antes de cada envío.
+ */
+function ElegirMedicion() {
+  const [ahora, setAhora] = useState<'si' | 'no' | null>(() => decision());
+
+  const cambiar = (d: 'si' | 'no') => () => {
+    decidir(d);
+    setAhora(d);
+  };
+
+  return (
+    <div className="mt-4 rounded-lg border border-line bg-raised/60 px-4 py-3.5">
+      <p className="text-base text-ink-800">
+        {ahora === 'si'
+          ? 'Ahora mismo: la medición de visitas está aceptada en este navegador.'
+          : ahora === 'no'
+            ? 'Ahora mismo: la medición de visitas está rechazada en este navegador.'
+            : 'Todavía no has respondido al aviso en este navegador, así que no se está midiendo nada.'}
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2.5">
+        <Button size="sm" variant={ahora === 'si' ? 'primary' : 'quiet'} onClick={cambiar('si')}>
+          Aceptar la medición
+        </Button>
+        <Button size="sm" variant={ahora === 'no' ? 'primary' : 'quiet'} onClick={cambiar('no')}>
+          Rechazarla
+        </Button>
+      </div>
+      {ahora === 'no' && (
+        <p className="mt-3 text-sm leading-relaxed text-ink-500">
+          Si acababas de aceptarla en esta misma visita, el script de Google ya está cargado en esta
+          pestaña y no se puede descargar sin recargar la página. No se le envía nada más desde
+          ahora, y al recargar no se vuelve a pedir.
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function LegalPage() {
   const { pathname } = useLocation();
@@ -138,6 +189,46 @@ export default function LegalPage() {
                   <Pendiente>plazos de conservación que fije el club</Pendiente> Una jugadora que deja
                   el equipo se archiva para conservar el historial deportivo de la temporada; su
                   supresión definitiva se realiza a petición.
+                </p>
+              </section>
+
+              {/* ── LO QUE SÍ SALE DE AQUÍ ────────────────────────────────
+                  Arriba dice que los datos no se ceden a terceros, y eso es
+                  cierto de los datos de las jugadoras. Pero hay dos terceros
+                  que intervienen en la web pública y en el cobro, y no
+                  nombrarlos dejaría esa frase incompleta. */}
+              <section>
+                <h2>Cookies y medición de visitas</h2>
+                <p className="mt-2">
+                  La web pública —la portada, la pantalla de entrada y estos textos— puede medir
+                  cuántas visitas recibe con Google Analytics, que para ello guarda una cookie en el
+                  navegador. Sólo se carga si se acepta en el aviso que aparece abajo la primera vez;
+                  mientras no se acepta, no se solicita nada a Google y no se guarda ninguna cookie.
+                </p>
+                <p className="mt-2">
+                  <strong>Dentro de la aplicación no se mide nada.</strong> Ni visitas, ni pantallas,
+                  ni acciones. Las direcciones de dentro contienen identificadores de fichas y
+                  sesiones, y no se envían a ningún tercero. De las páginas públicas se envía
+                  únicamente la ruta, sin parámetros ni fragmento, y la medición no se usa para
+                  publicidad ni para elaborar perfiles.
+                </p>
+                <p className="mt-2">
+                  No se usan cookies de publicidad ni de redes sociales. La sesión de quien entra en
+                  la aplicación se mantiene con almacenamiento del propio navegador, que es necesario
+                  para el funcionamiento y no se puede desactivar sin impedir el acceso.
+                </p>
+                <ElegirMedicion />
+              </section>
+
+              <section>
+                <h2>Pagos</h2>
+                <p className="mt-2">
+                  Si se contrata un plan de pago, el cobro lo procesa Stripe. Los datos de la tarjeta
+                  se introducen en una página de Stripe y{' '}
+                  <strong>no pasan en ningún momento por esta plataforma</strong>, que no los recibe
+                  ni los almacena. De la suscripción se guarda aquí el plan, su estado y las fechas
+                  de renovación. Las facturas las conserva Stripe.{' '}
+                  <Pendiente>contrato con Stripe y datos fiscales del titular</Pendiente>
                 </p>
               </section>
 

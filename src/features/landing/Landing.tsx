@@ -454,8 +454,14 @@ export default function Landing() {
         <div className="cauce flex flex-col gap-5 py-10 sm:flex-row sm:items-center sm:justify-between">
           <Wordmark tone="tinta" size="sm" />
           <nav className="flex flex-wrap items-center gap-x-7 gap-y-2 text-[14px] text-grisis">
-            <Link to="/legal" className="transition-colors hover:text-tinta">Aviso legal</Link>
-            <Link to="/legal#privacidad" className="transition-colors hover:text-tinta">Privacidad</Link>
+            {/* LAS DOS RUTAS SON ÉSTAS Y NO OTRAS. Antes decían `/legal` y
+                `/legal#privacidad`, que no existen: `App.tsx` las registra
+                como `/aviso-legal` y `/privacidad`, y lo que no coincide cae
+                en el comodín, que devuelve a la portada. Es decir, pulsar
+                «Aviso legal» te dejaba donde estabas. Comprobado contra las
+                rutas, no supuesto. */}
+            <Link to="/aviso-legal" className="transition-colors hover:text-tinta">Aviso legal</Link>
+            <Link to="/privacidad" className="transition-colors hover:text-tinta">Privacidad</Link>
             <Link to="/entrar" className="transition-colors hover:text-tinta">Iniciar sesión</Link>
           </nav>
         </div>

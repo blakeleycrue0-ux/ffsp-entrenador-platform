@@ -53,6 +53,30 @@ comodín del hosting, y se exige que:
 - si siguen sin estar, no entre en bucle de recargas y diga la verdad, con un
   botón que recargue de verdad.
 
+## Qué comprueba `cookies.mjs`
+
+Esta no es de maquetación: es de palabra dada. La política de privacidad
+promete cuatro cosas sobre la medición de visitas, y las cuatro se rompen con
+un descuido de dos líneas:
+
+- que **no se pida nada a Google antes de aceptar** —ni el script, ni la
+  cookie—;
+- que **rechazar sea igual de fácil que aceptar**: se miden los dos botones, y
+  si uno se queda más pequeño, falla;
+- que **dentro de `/app` no se mida nada**, porque las direcciones de dentro
+  llevan identificadores de fichas de menores;
+- que la dirección que se envía vaya **recortada**: sin consulta y sin
+  fragmento, que es donde Supabase deja el token de un correo de recuperación.
+
+```sh
+npm run maqueta:cookies
+```
+
+Falló cuando tenía que fallar: el aviso de cookies arrancaba la medición por su
+cuenta en cuanto veía un permiso guardado, también dentro de la aplicación. No
+mandaba ninguna visita, pero pedía el script —y la petición lleva la dirección
+entera en su cabecera `Referer`—. Lo cazó esta prueba, no una revisión.
+
 ## Qué comprueban `camara.mjs`, `pizarra.mjs` y `video.mjs`
 
 La pizarra se mira desde donde se quiera: la cámara gira y se inclina. Eso son

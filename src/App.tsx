@@ -6,6 +6,7 @@ import { useClub } from '@/store/store';
 import { isClubAdmin } from '@/store/selectors';
 import { Wordmark } from '@/components/ui/Brand';
 import { RequireCodigo } from '@/features/passcode/RequireCodigo';
+import { AvisoDeCookies, Medicion } from '@/features/legal/Medicion';
 
 // Rutas con carga diferida: la primera pantalla llega antes y cada módulo
 // (pizarra, analíticas, constructor de sesiones…) se descarga sólo si se usa.
@@ -94,6 +95,11 @@ function RequireClubAdmin({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <Suspense fallback={<Booting />}>
+      {/* Las dos piezas de la medición van FUERA de `Routes` y por encima de
+          todo: tienen que enterarse de cada cambio de ruta, y las dos deciden
+          por sí mismas que dentro de `/app` no hacen nada. */}
+      <Medicion />
+      <AvisoDeCookies />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/entrar" element={<Login />} />
