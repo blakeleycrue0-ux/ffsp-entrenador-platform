@@ -26,16 +26,16 @@ export function BarTrend({
     <div className={cn('flex items-end gap-2', className)} style={{ height }}>
       {data.map((d, i) => (
         <div key={i} className="group flex flex-1 flex-col items-center justify-end gap-1.5">
-          <span className="text-[11px] font-semibold text-muted tabular-nums">
+          <span className="text-2xs font-semibold text-muted tabular-nums">
             {d.value}
             {suffix}
           </span>
           <div
-            className="w-full rounded-t bg-ink-700 transition-colors duration-200 group-hover:bg-ink-900"
+            className="w-full rounded-t bg-marca-600 transition-colors duration-200 group-hover:bg-marca-500"
             style={{ height: `${Math.max(6, ((d.value - floor) / (max - floor || 1)) * track)}px` }}
             title={`${d.label}: ${d.value}${suffix}`}
           />
-          <span className="text-[10.5px] text-ink-400">{d.label}</span>
+          <span className="text-2xs text-ink-400">{d.label}</span>
         </div>
       ))}
     </div>
@@ -47,7 +47,7 @@ export function LineTrend({
 }: { points: { date: string; rate: number }[]; height?: number; className?: string }) {
   if (points.length < 2) {
     return (
-      <div className={cn('grid place-items-center text-[13px] text-ink-400', className)} style={{ height }}>
+      <div className={cn('grid place-items-center text-sm text-ink-400', className)} style={{ height }}>
         Aún no hay datos suficientes para dibujar la evolución.
       </div>
     );
@@ -68,17 +68,20 @@ export function LineTrend({
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }} preserveAspectRatio="none">
         <defs>
           <linearGradient id="lt-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+            {/* El relleno era blanco sobre negro, y sobre azul noche se veía
+                como una niebla gris. En azul de marca el área dice «esto es
+                el dato» y el fondo sigue siendo el fondo. */}
+            <stop offset="0%" stopColor="#168BFF" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#168BFF" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={area} fill="url(#lt-fill)" />
-        <path d={line} fill="none" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={line} fill="none" stroke="#36C8FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         {points.map((p, i) => (
-          <circle key={i} cx={x(i)} cy={y(p.rate)} r="2.6" fill="#000000" stroke="#FFFFFF" strokeWidth="1.8" />
+          <circle key={i} cx={x(i)} cy={y(p.rate)} r="2.6" fill="#0A1427" stroke="#36C8FF" strokeWidth="1.8" />
         ))}
       </svg>
-      <div className="mt-1 flex justify-between px-1 text-[10.5px] text-ink-400">
+      <div className="mt-1 flex justify-between px-1 text-2xs text-ink-400">
         <span>{shortDate(points[0].date)}</span>
         <span>{shortDate(points[points.length - 1].date)}</span>
       </div>
@@ -96,13 +99,13 @@ export function Ring({
   /* Los tonos de estado salen de los mismos valores apagados que el resto del
      producto. Estaban escritos a mano aquí con el verde chillón de antes, así
      que un mismo «va bien» se veía de dos colores distintos según la pantalla. */
-  const color = { solid: '#FFFFFF', ok: '#4F9E78', warn: '#B48A2E' }[tone];
+  const color = { solid: '#168BFF', ok: '#4F9E78', warn: '#B48A2E' }[tone];
   // Sin dato no se dibuja un anillo vacío que parezca un 0 %: se dice que falta.
   const filled = value === null ? 0 : Math.min(100, Math.max(0, value));
   return (
     <div className="relative inline-grid place-items-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#26262A" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(148,180,255,0.14)" strokeWidth={stroke} />
         {value !== null && (
           <circle
             cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
@@ -113,10 +116,10 @@ export function Ring({
         )}
       </svg>
       <div className="absolute text-center">
-        <span className="block text-[14px] font-semibold leading-none tabular-nums text-ink-900">
+        <span className="block text-sm font-semibold leading-none tabular-nums text-ink-900">
           {value === null ? '—' : `${value}%`}
         </span>
-        {label && value !== null && <span className="mt-0.5 block text-[10px] text-ink-400">{label}</span>}
+        {label && value !== null && <span className="mt-0.5 block text-2xs text-ink-400">{label}</span>}
       </div>
     </div>
   );

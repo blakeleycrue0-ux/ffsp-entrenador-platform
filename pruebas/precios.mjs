@@ -15,12 +15,16 @@
  *     el año. Es una resta, y por eso no se compara con un número escrito en
  *     la prueba: se calcula a partir de los mismos datos que recibe la página.
  *
- *  3. QUE SE OFREZCA PAGAR CUANDO NO SE PUEDE. El importe y la posibilidad de
- *     contratar son dos columnas distintas de `plans`: `price_monthly` y
- *     `stripe_price_monthly`. Hoy hay precio y no hay pasarela, así que la
- *     página tiene que decirlo arriba y no enseñar ningún botón de pago. Se
- *     comprueba en los dos estados, porque una prueba que sólo mira el estado
- *     de hoy no protege de nada el día que cambie.
+ *  3. QUE SE OFREZCA PAGAR CUANDO NO SE PUEDE. Poder contratar necesita DOS
+ *     cosas, y hacen falta las dos: que el plan tenga precio en Stripe
+ *     —columna `stripe_price_monthly`, distinta de `price_monthly`— y que el
+ *     servidor tenga con qué cobrar, que es lo que contesta
+ *     `/.netlify/functions/estado-pago`. Hoy hay precios creados y las
+ *     variables de entorno no están puestas, así que la página tiene que
+ *     decirlo arriba y no enseñar ningún botón de pago. Se comprueban las
+ *     TRES combinaciones —sin precio, con precio y sin servidor, y con las
+ *     dos— porque una prueba que sólo mira el estado de hoy no protege de
+ *     nada el día que cambie.
  *
  * Y UNA CUARTA, QUE NO ES DE PRECIOS SINO DE DECENCIA: que no se anuncie como
  * incluida ninguna función que todavía no existe.
@@ -69,11 +73,15 @@ const SIN_CONSTRUIR = [
 
 const navegador = await chromium.launch({ executablePath: process.env.CHROMIUM ?? undefined });
 
-/** Abre la portada con los planes que se le den y devuelve la sección leída. */
-async function conPlanes(planes) {
+/**
+ * Abre la portada con los planes que se le den y devuelve la sección leída.
+ * `caja` es lo que contesta el servidor de pago: sin ella no se puede
+ * contratar aunque los planes tengan precio de Stripe.
+ */
+async function conPlanes(planes, caja = false) {
   const ctx = await navegador.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await ctx.newPage();
-  await mock(page, { planes });
+  await mock(page, { planes, caja });
   /* La portada no tiene sesión: la tabla `plans` se lee como anónimo. */
   await page.route(`${SUPA}/rest/v1/plans**`, (r) => r.fulfill(j(planes)));
   await page.goto(BASE, { waitUntil: 'networkidle' });
@@ -155,18 +163,50 @@ async function conPlanes(planes) {
   }
 }
 
+/* Los planes como están en la base DESPUÉS de la 0014: con sus cuatro precios
+   de Stripe puestos. Lo único que cambia entre los dos bloques siguientes es
+   si el servidor tiene con qué cobrar. */
+const CON_PRECIOS_DE_STRIPE = [
+  { tier: 'free', name: 'Gratis', max_teams: 1, currency: 'eur', trial_days: 0, price_monthly: 0, price_yearly: 0, stripe_price_monthly: null, stripe_price_yearly: null },
+  { tier: 'pro', name: 'Pro', max_teams: 1, currency: 'eur', trial_days: 7, price_monthly: 599, price_yearly: 5999, stripe_price_monthly: 'price_pro_m', stripe_price_yearly: 'price_pro_y' },
+  { tier: 'max', name: 'Max', max_teams: 5, currency: 'eur', trial_days: 7, price_monthly: 1299, price_yearly: 12999, stripe_price_monthly: 'price_max_m', stripe_price_yearly: 'price_max_y' },
+];
+
 /* ══════════════════════════════════════════════════════════════════════════
-   3 · El día que se abra la caja
+   3 · Precios en Stripe, pero el servidor no puede cobrar
    ══════════════════════════════════════════════════════════════════════════
-   La misma página con los identificadores de Stripe puestos. Si el aviso se
-   quedara pegado, estaríamos diciendo que no se puede pagar cuando sí. */
+   ESTE ES EL ESTADO DE HOY, y es el que más fácil se cuenta mal. Los cuatro
+   precios existen y están guardados en `plans`, así que mirar sólo esa columna
+   daría «se puede pagar». Pero cobrar necesita cuatro variables de entorno en
+   Netlify que todavía no están puestas, y sin ellas cada intento de pagar
+   muere con «Falta la variable de entorno STRIPE_SECRET_KEY». Mientras el
+   servidor diga que no está listo, la portada tiene que seguir diciendo la
+   verdad. */
+{
+  console.log('\n  hay precios en Stripe pero el servidor no puede cobrar');
+  const { texto, tarjetas } = await conPlanes(CON_PRECIOS_DE_STRIPE, false);
+  const t = limpia(texto);
+
+  comprueba('se sigue avisando de que todavía no se puede pagar',
+    /todav[ií]a no se puede pagar/i.test(t));
+  comprueba('no se ofrece contratar',
+    !tarjetas.flatMap((c) => c.acciones).some((a) => /contratar|pagar|suscri|comprar/i.test(a)));
+  comprueba('no se anuncian días de prueba que nadie puede empezar',
+    !/d[ií]as de prueba/i.test(t));
+  /* Y los importes se siguen enseñando: son ciertos, sólo que todavía no se
+     cobran. Ocultarlos sería la otra forma de no contar lo que hay. */
+  comprueba('los importes se siguen enseñando',
+    t.includes(euros(599)) && t.includes(euros(1299)));
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   4 · El día que se abra la caja de verdad
+   ══════════════════════════════════════════════════════════════════════════
+   Los mismos planes y el servidor diciendo que sí. Si el aviso se quedara
+   pegado, estaríamos diciendo que no se puede pagar cuando sí. */
 {
   console.log('\n  con la pasarela abierta');
-  const { texto } = await conPlanes([
-    { tier: 'free', name: 'Gratis', max_teams: 1, currency: 'eur', trial_days: 0, price_monthly: 0, price_yearly: 0, stripe_price_monthly: null, stripe_price_yearly: null },
-    { tier: 'pro', name: 'Pro', max_teams: 1, currency: 'eur', trial_days: 7, price_monthly: 599, price_yearly: 5999, stripe_price_monthly: 'price_pro_m', stripe_price_yearly: 'price_pro_y' },
-    { tier: 'max', name: 'Max', max_teams: 5, currency: 'eur', trial_days: 7, price_monthly: 1299, price_yearly: 12999, stripe_price_monthly: 'price_max_m', stripe_price_yearly: 'price_max_y' },
-  ]);
+  const { texto } = await conPlanes(CON_PRECIOS_DE_STRIPE, true);
   const t = limpia(texto);
 
   comprueba('el aviso desaparece', !/todav[ií]a no se puede pagar/i.test(t));
@@ -176,7 +216,7 @@ async function conPlanes(planes) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   4 · Si la consulta falla, no se inventa un precio
+   5 · Si la consulta falla, no se inventa un precio
    ══════════════════════════════════════════════════════════════════════════ */
 {
   console.log('\n  sin datos');

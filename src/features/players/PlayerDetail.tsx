@@ -47,7 +47,7 @@ export default function PlayerDetail() {
     <>
       <Link
         to="/app/plantilla"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Jugadoras
       </Link>
@@ -59,13 +59,13 @@ export default function PlayerDetail() {
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-[24px] font-semibold leading-tight">{player.name}</h1>
+              <h1 className="text-xl font-semibold leading-tight sm:text-2xl">{player.name}</h1>
               <Tag tone={disponibilidad(player.availability.status).tone} dot>
                 {disponibilidad(player.availability.status).label}
               </Tag>
             </div>
 
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13.5px] text-muted">
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted">
               <span className="flex items-center gap-1.5">
                 <Shield size={14} className="text-ink-400" /> {team?.name}
               </span>
@@ -84,7 +84,7 @@ export default function PlayerDetail() {
             {player.availability.note && (
               <div
                 className={cn(
-                  'mt-4 rounded-xl border px-3.5 py-2.5 text-[13px]',
+                  'mt-4 rounded-xl border px-3.5 py-2.5 text-sm',
                   player.availability.status === 'disponible'
                     ? 'border-line bg-ink-50 text-ink-600'
                     : 'border-warn/30 bg-warn/5 text-warn',
@@ -124,8 +124,8 @@ export default function PlayerDetail() {
             ['Rojas', player.stats.red],
           ].map(([label, value]) => (
             <div key={label as string} className="px-4 py-3.5 text-center">
-              <p className="text-[18px] font-semibold text-ink-900 tabular-nums">{value as number}</p>
-              <p className="mt-0.5 text-[11.5px] text-ink-400">{label as string}</p>
+              <p className="text-lg font-semibold text-ink-900 tabular-nums">{value as number}</p>
+              <p className="mt-0.5 text-2xs text-ink-400">{label as string}</p>
             </div>
           ))}
         </div>
@@ -163,13 +163,13 @@ export default function PlayerDetail() {
                 ].map(([label, n, color]) => (
                   <div key={label as string} className="flex items-center gap-2.5">
                     <span className={cn('h-2 w-2 rounded-full', color as string)} />
-                    <span className="flex-1 text-[13.5px] text-ink-600">{label as string}</span>
-                    <span className="text-[13.5px] font-medium text-ink-800 tabular-nums">{n as number}</span>
+                    <span className="flex-1 text-sm text-ink-600">{label as string}</span>
+                    <span className="text-sm font-medium text-ink-800 tabular-nums">{n as number}</span>
                   </div>
                 ))}
               </div>
               {(row?.streak ?? 0) >= 2 && (
-                <p className="mt-4 rounded-xl border border-warn/30 bg-warn/5 px-3.5 py-2.5 text-[12.5px] leading-relaxed text-warn">
+                <p className="mt-4 rounded-xl border border-warn/30 bg-warn/5 px-3.5 py-2.5 text-xs leading-relaxed text-warn">
                   Acumula {row!.streak} ausencias consecutivas. Puede ser buen momento para hablar con ella o con su
                   familia.
                 </p>
@@ -177,8 +177,8 @@ export default function PlayerDetail() {
             </Panel>
 
             <Panel className="p-5 lg:col-span-2">
-              <h3 className="text-[15px] font-semibold">Últimos entrenamientos</h3>
-              <p className="mt-1 text-[13px] text-muted">Del más reciente al más antiguo.</p>
+              <h3 className="text-base font-semibold">Últimos entrenamientos</h3>
+              <p className="mt-1 text-sm text-muted">Del más reciente al más antiguo.</p>
               <div className="mt-4 space-y-1">
                 {records.map((r) => {
                   const mark = r.marks[player.id]?.mark ?? 'pendiente';
@@ -186,11 +186,11 @@ export default function PlayerDetail() {
                   return (
                     <div key={r.id} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-ink-50">
                       <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', m.bg)} />
-                      <span className="w-24 shrink-0 text-[13px] font-medium text-ink-700">{shortDate(r.date)}</span>
-                      <span className="w-10 shrink-0 text-[12.5px] text-ink-400">{dayShort(r.date)}</span>
-                      <span className="flex-1 text-[13px] text-ink-600">{m.label}</span>
+                      <span className="w-24 shrink-0 text-sm font-medium text-ink-700">{shortDate(r.date)}</span>
+                      <span className="w-10 shrink-0 text-xs text-ink-400">{dayShort(r.date)}</span>
+                      <span className="flex-1 text-sm text-ink-600">{m.label}</span>
                       {r.marks[player.id]?.reason && (
-                        <span className="truncate text-[12.5px] text-ink-400">{r.marks[player.id]!.reason}</span>
+                        <span className="truncate text-xs text-ink-400">{r.marks[player.id]!.reason}</span>
                       )}
                     </div>
                   );
@@ -203,10 +203,10 @@ export default function PlayerDetail() {
         {tab === 'evolucion' && (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Panel className="p-5">
-              <h3 className="flex items-center gap-2 text-[15px] font-semibold">
+              <h3 className="flex items-center gap-2 text-base font-semibold">
                 <TrendingUp size={16} className="text-ink-800" /> Asistencia por sesión
               </h3>
-              <p className="mt-1 text-[13px] text-muted">100 % = presente, 50 % = justificada, 0 % = ausente.</p>
+              <p className="mt-1 text-sm text-muted">100 % = presente, 50 % = justificada, 0 % = ausente.</p>
               <BarTrend
                 className="mt-5"
                 data={[...records].reverse().map((r) => {
@@ -220,8 +220,8 @@ export default function PlayerDetail() {
             </Panel>
 
             <Panel className="p-5">
-              <h3 className="text-[15px] font-semibold">Rendimiento en competición</h3>
-              <p className="mt-1 text-[13px] text-muted">Datos acumulados de la temporada {team?.season}.</p>
+              <h3 className="text-base font-semibold">Rendimiento en competición</h3>
+              <p className="mt-1 text-sm text-muted">Datos acumulados de la temporada {team?.season}.</p>
               <div className="mt-5 space-y-4">
                 {[
                   ['Minutos por partido', Math.round(player.stats.minutes / Math.max(1, player.stats.matches)), 90],
@@ -230,8 +230,8 @@ export default function PlayerDetail() {
                 ].map(([label, value, max]) => (
                   <div key={label as string}>
                     <div className="flex items-baseline justify-between">
-                      <span className="text-[13.5px] text-ink-600">{label as string}</span>
-                      <span className="text-[15px] font-semibold text-ink-900 tabular-nums">{value as number}</span>
+                      <span className="text-sm text-ink-600">{label as string}</span>
+                      <span className="text-base font-semibold text-ink-900 tabular-nums">{value as number}</span>
                     </div>
                     <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink-100">
                       <div
@@ -242,7 +242,7 @@ export default function PlayerDetail() {
                   </div>
                 ))}
               </div>
-              <p className="mt-5 text-[12.5px] leading-relaxed text-ink-400">
+              <p className="mt-5 text-xs leading-relaxed text-ink-400">
                 Las métricas se limitan a lo que el club registra de verdad. Evitamos gráficos que no ayuden a decidir.
               </p>
             </Panel>
@@ -255,7 +255,7 @@ export default function PlayerDetail() {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <p className="eyebrow">Datos de la jugadora</p>
-                  <dl className="mt-3 space-y-2.5 text-[13.5px]">
+                  <dl className="mt-3 space-y-2.5 text-sm">
                     <div className="flex justify-between gap-4">
                       <dt className="text-muted">Fecha de nacimiento</dt>
                       <dd className="font-medium text-ink-800">{player.birthDate ? longDate(player.birthDate) : '—'}</dd>
@@ -280,16 +280,16 @@ export default function PlayerDetail() {
                 <div>
                   <p className="eyebrow">Familia / tutores</p>
                   {player.guardians.length === 0 ? (
-                    <p className="mt-3 text-[13.5px] text-muted">
+                    <p className="mt-3 text-sm text-muted">
                       Jugadora mayor de edad: la comunicación se hace directamente con ella.
                     </p>
                   ) : (
                     <ul className="mt-3 space-y-3">
                       {player.guardians.map((g) => (
                         <li key={g.phone} className="rounded-xl border border-line p-3.5">
-                          <p className="text-[13.5px] font-medium text-ink-800">{g.name}</p>
-                          <p className="mt-0.5 text-[12.5px] text-muted">{g.relation}</p>
-                          <p className="mt-2 flex items-center gap-1.5 text-[13px] text-ink-700">
+                          <p className="text-sm font-medium text-ink-800">{g.name}</p>
+                          <p className="mt-0.5 text-xs text-muted">{g.relation}</p>
+                          <p className="mt-2 flex items-center gap-1.5 text-sm text-ink-700">
                             <Phone size={13} className="text-ink-400" /> {g.phone}
                           </p>
                         </li>
@@ -298,7 +298,7 @@ export default function PlayerDetail() {
                   )}
                 </div>
 
-                <p className="text-[12.5px] leading-relaxed text-ink-400 sm:col-span-2">
+                <p className="text-xs leading-relaxed text-ink-400 sm:col-span-2">
                   Estos datos son personales y están sujetos a la política de protección de datos del club. Sólo los ven los
                   perfiles con permiso explícito y nunca aparecen en listados ni exportaciones.
                 </p>
@@ -306,8 +306,8 @@ export default function PlayerDetail() {
             ) : (
               <div className="py-8 text-center">
                 <User size={26} className="mx-auto text-ink-300" />
-                <p className="mt-3 text-[14px] font-medium text-ink-700">Datos de contacto restringidos</p>
-                <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted">
+                <p className="mt-3 text-sm font-medium text-ink-700">Datos de contacto restringidos</p>
+                <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted">
                   Tu rol no tiene permiso para ver la información personal de las jugadoras ni la de sus familias.
                 </p>
               </div>

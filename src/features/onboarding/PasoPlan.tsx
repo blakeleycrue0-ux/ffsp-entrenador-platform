@@ -15,7 +15,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui';
 import {
-  BotonDePlan, LIMITE, SelectorDePlanes, useSeleccionDePlan,
+  BotonDePlan, limiteDeEquipos, SelectorDePlanes, useSeleccionDePlan,
 } from '@/features/billing/SelectorDePlanes';
 import { billing, importe, type Plan } from '@/services/billing';
 import { todoLoQueTrae } from '@/services/entitlements';
@@ -164,7 +164,7 @@ function Oferta({
         </p>
 
         <div className="mt-5 divide-y divide-line">
-          <p className="py-2.5 text-base font-semibold text-ink-900">{LIMITE[plan.tier]}</p>
+          <p className="py-2.5 text-base font-semibold text-ink-900">{limiteDeEquipos(plan)}</p>
           {todoLoQueTrae(plan.tier)
             .filter((t) => !todoLoQueTrae('free').includes(t))
             .map((t) => (

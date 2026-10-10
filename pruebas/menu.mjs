@@ -119,27 +119,71 @@ const cajon = (page) => page.locator('[role="dialog"][aria-label="Menú"]');
   comprueba('cierra al ir a una sección', await cajon(page).count() === 0);
   comprueba('y ha navegado', page.url().includes('/app/partidos'), page.url());
 
-  /* ── Nada pegado al borde de abajo ──────────────────────────────────── */
-  const abajo = await page.evaluate(() => {
+  /* ── La pastilla de abajo: FLOTA, no es un suelo ─────────────────────────
+     Aquí se comprobaba que no quedara NADA fijo abajo, porque lo que había
+     antes era un dique de borde a borde con cuatro atajos y una hoja «Más»
+     que escondía siete secciones. Ahora hay otra cosa: una pastilla con tres
+     destinos, aire a los lados y la lista completa de once todavía en el
+     cajón. Que no haya nada abajo dejó de ser la regla; la regla es que lo
+     que haya abajo FLOTE y no tape nada.
+
+     Lo de «no tapa nada» lo mide `solapes.mjs`, que desplaza cada pantalla
+     hasta el final y comprueba que ningún botón se queda debajo. Aquí se
+     comprueba lo otro: que es una pastilla y no un suelo. */
+  const pastilla = await page.evaluate(() => {
     const H = document.documentElement.clientHeight;
-    const pegados = [];
-    for (const el of document.querySelectorAll('body *')) {
-      const cs = getComputedStyle(el);
-      if (cs.position !== 'fixed') continue;
-      /* Un contenedor que no recibe el dedo no tapa nada: el de los avisos
-         está siempre ahí y vacío. Lo que se busca es algo que ocupe sitio
-         de verdad. */
-      if (cs.pointerEvents === 'none') continue;
-      const r = el.getBoundingClientRect();
-      if (r.height === 0 || r.width === 0) continue;
-      /* Lo que ocupa la franja inferior de la ventana. */
-      if (r.bottom > H - 4 && r.top > H * 0.6) {
-        pegados.push(`${el.tagName.toLowerCase()}.${el.className.toString().slice(0, 30)}`);
-      }
-    }
-    return pegados;
+    const W = document.documentElement.clientWidth;
+    const nav = document.querySelector('nav[aria-label="Navegación principal"]');
+    if (!nav) return null;
+    const r = nav.getBoundingClientRect();
+    /* El hueco reservado se lee de la variable, no se escribe aquí: si
+       mañana la pastilla cambia de alto, lo que tiene que cuadrar es que las
+       dos cosas sigan diciendo lo mismo. */
+    const reservado = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'));
+    return {
+      destinos: [...nav.querySelectorAll('a')].map((a) => (a.textContent || '').trim()),
+      /* Aire a los lados y por abajo: si midiera el ancho entero o llegara al
+         borde inferior, sería un dique con las esquinas redondeadas. */
+      margenIzq: Math.round(r.left),
+      margenDer: Math.round(W - r.right),
+      margenAbajo: Math.round(H - r.bottom),
+      alto: Math.round(r.height),
+      reservado,
+    };
   });
-  comprueba('no queda nada fijo abajo', abajo.length === 0, abajo.join(' · '));
+
+  comprueba('hay una pastilla de navegación', pastilla !== null);
+  if (pastilla) {
+    comprueba('con tres destinos', pastilla.destinos.length === 3, pastilla.destinos.join(' · '));
+    comprueba('flota: no toca los lados',
+      pastilla.margenIzq >= 8 && pastilla.margenDer >= 8,
+      `izq ${pastilla.margenIzq} · der ${pastilla.margenDer}`);
+    comprueba('flota: no toca el suelo', pastilla.margenAbajo >= 8, `${pastilla.margenAbajo}px`);
+    comprueba('y cabe en el hueco reservado que dice `--nav-h`',
+      pastilla.alto <= pastilla.reservado,
+      `${pastilla.alto}px de ${pastilla.reservado}`);
+
+    /* Y LLEVA A DONDE DICE. Una navegación que no marca dónde estás obliga a
+       leer el título de la página para saberlo. */
+    await page.getByRole('link', { name: 'Calendario' }).last().click();
+    await page.waitForTimeout(600);
+    comprueba('lleva al Calendario', page.url().endsWith('/app/calendario'), page.url());
+    const marcado = await page.evaluate(() => {
+      const a = document.querySelector('nav[aria-label="Navegación principal"] [aria-current="page"]');
+      return a ? (a.textContent || '').trim() : null;
+    });
+    comprueba('y marca dónde estás', marcado === 'Calendario', String(marcado));
+
+    /* Al desplazarse se queda: es el sentido de que flote. */
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(400);
+    const sigue = await page.evaluate(() => {
+      const n = document.querySelector('nav[aria-label="Navegación principal"]');
+      const r = n.getBoundingClientRect();
+      return r.bottom <= document.documentElement.clientHeight + 1 && r.top > 0;
+    });
+    comprueba('y sigue ahí al llegar al final', sigue);
+  }
 
   await ctx.close();
 }
@@ -153,6 +197,13 @@ const cajon = (page) => page.locator('[role="dialog"][aria-label="Menú"]');
 
   comprueba('no hay hamburguesa',
     await page.getByRole('button', { name: 'Abrir el menú' }).isVisible().catch(() => false) === false);
+
+  /* Ni pastilla flotante: aquí la navegación es la barra lateral, y las dos
+     a la vez serían dos sitios distintos para ir al mismo sitio. */
+  comprueba('ni pastilla flotante',
+    await page.locator('nav[aria-label="Navegación principal"]').count() > 0
+      ? !(await page.locator('nav[aria-label="Navegación principal"]').first().isVisible())
+      : true);
 
   const faltan = [];
   for (const s of SECCIONES) {

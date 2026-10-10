@@ -11,7 +11,7 @@
  */
 
 import { supabase } from './supabase';
-import { billing, parsePlan } from './billing';
+import { billing, conLaCajaAbierta, parsePlan } from './billing';
 import type {
   ActivityItem, AttendanceMark, AttendanceRecord, Callup, Club, ClubData, CoachTask, Drill, Match,
   MessageThread, Notification, Player, Staff, Team, TeamStaffLink, TrainingSession,
@@ -32,6 +32,7 @@ const toStaff = (r: Row, teamIds: string[] = []): Staff => ({
   avatar: (r.avatar_url as string) ?? undefined,
   teamIds,
   createdAt: r.created_at as string,
+  setupHiddenAt: (r.setup_hidden_at as string | null) ?? null,
 });
 
 const toTeam = (r: Row): Team => ({
@@ -467,7 +468,14 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
   /* La suscripción se pide ahora, ya sabiendo el club. Si falla no se tumba la
      carga entera: sin ella la aplicación se comporta como plan gratuito, que
      es lo que el servidor va a aplicar de todas formas. */
-  const plans = ((plansRes.data ?? []) as Row[]).map(parsePlan);
+  /* Los planes, con `contratable` pasado por la realidad del servidor: tener
+     precio en Stripe no es tener con qué cobrar, y de `contratable` cuelga que
+     `entitlements` cierre funciones o no. Si la comprobación no contesta se da
+     por cerrada la caja, que es el lado que no rompe nada. */
+  const plans = conLaCajaAbierta(
+    ((plansRes.data ?? []) as Row[]).map(parsePlan),
+    await billing.pasarelaAbierta().catch(() => false),
+  );
   const subscription = club ? await billing.suscripcion(club.id).catch(() => null) : null;
 
   const teamStaffRows = (teamStaffRes.data ?? []) as Row[];
@@ -601,6 +609,22 @@ export const db = {
 
   updateProfile: async (id: string, patch: { full_name?: string; phone?: string; licence?: string; role?: Staff['role'] }) => {
     const { error } = await supabase.from('profiles').update(patch).eq('id', id);
+    if (error) throw error;
+  },
+
+  /**
+   * Apagar o volver a encender la guía de primeros pasos.
+   *
+   * Va aparte de `updateProfile` a propósito: aquello acepta nombre, teléfono
+   * y CARGO, y el cargo lo puede cambiar la administración del club. Esto es
+   * una preferencia de quien lo pulsa y de nadie más, así que tiene su propia
+   * puerta y escribe una sola columna.
+   */
+  setupGuia: async (id: string, visible: boolean) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ setup_hidden_at: visible ? null : new Date().toISOString() })
+      .eq('id', id);
     if (error) throw error;
   },
 

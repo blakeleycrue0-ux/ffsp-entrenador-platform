@@ -112,7 +112,7 @@ export function PantallaBloqueo({ userId, onEntrar }: { userId: string; onEntrar
         <button
           type="button"
           onClick={() => setOlvidado(true)}
-          className="mt-6 shrink-0 text-[13px] font-medium text-ink-600 transition-colors hover:text-ink-900"
+          className="mt-6 shrink-0 text-sm font-medium text-ink-600 transition-colors hover:text-ink-900"
         >
           ¿Has olvidado el código?
         </button>
@@ -120,7 +120,7 @@ export function PantallaBloqueo({ userId, onEntrar }: { userId: string; onEntrar
     >
       {/* El renglón del aviso reserva su alto siempre: si apareciera y
           desapareciera, los puntos y el teclado darían un salto. */}
-      <p className="mt-3 min-h-[40px] max-w-[280px] text-[13.5px] leading-relaxed text-ink-500">
+      <p className="mt-3 min-h-[40px] max-w-[280px] text-sm leading-relaxed text-ink-500">
         {enEspera
           ? `Demasiados intentos. Vuelve a probar en ${queda}.`
           : (mensaje ?? 'Escribe tu código para entrar.')}
@@ -278,7 +278,7 @@ function Marco({
              Nunca un escudo prestado que no es de nadie. */
           <span
             aria-hidden
-            className="grid h-[72px] w-[72px] place-items-center rounded-full bg-white/[0.08] font-display text-[22px] font-medium tracking-[-0.02em] text-ink-800"
+            className="grid h-[72px] w-[72px] place-items-center rounded-full bg-white/[0.08] font-display text-xl font-medium tracking-[-0.02em] text-ink-800"
           >
             {iniciales(club?.name)}
           </span>

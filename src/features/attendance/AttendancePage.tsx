@@ -166,14 +166,14 @@ export default function AttendancePage() {
       <>
         <PageHeader title="Asistencia" description="Pasa lista en menos de treinta segundos." />
         <Panel>
-          <EmptyState
+          <EmptyState size="pleno"
            
             title="No hay entrenamientos de este equipo"
             description="Crea una sesión y podrás registrar la asistencia desde aquí."
             action={
               <Link
                 to="/app/entrenamientos/nuevo"
-                className="inline-flex h-9 items-center rounded-lg bg-ink-900 px-4 text-[13px] font-medium text-ink-0"
+                className="inline-flex h-9 items-center rounded-lg bg-ink-900 px-4 text-sm font-medium text-ink-0"
               >
                 Crear entrenamiento
               </Link>
@@ -357,7 +357,7 @@ function Cifra({
 }: { valor: number; etiqueta: string; tono?: 'ok' | 'warn' | 'bad' }) {
   return (
     <div className="min-w-0">
-      <p className="cifra text-[34px] text-ink-900">{valor}</p>
+      <p className="cifra text-3xl text-ink-900">{valor}</p>
       <p className="mt-1.5 flex items-center gap-1.5 text-sm text-ink-500">
         {tono && (
           <span

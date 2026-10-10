@@ -168,7 +168,7 @@ export default function SessionBuilder() {
     <>
       <Link
         to="/app/entrenamientos"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Planificaciones
       </Link>
@@ -192,7 +192,7 @@ export default function SessionBuilder() {
         <div className="space-y-4">
           {/* Datos de la sesión */}
           <Panel className="p-5">
-            <h2 className="text-[15px] font-semibold">Datos de la sesión</h2>
+            <h2 className="text-base font-semibold">Datos de la sesión</h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Título" className="sm:col-span-2">
                 <Input
@@ -236,10 +236,10 @@ export default function SessionBuilder() {
               <Field label="Duración total" hint="Se calcula sola a partir de los bloques.">
                 <div className="flex h-[42px] items-center gap-2 rounded-xl border border-line bg-ink-50 px-3.5">
                   <Clock size={16} className="text-ink-800" />
-                  <span className="text-[15px] font-semibold text-ink-900 tabular-nums">
+                  <span className="text-base font-semibold text-ink-900 tabular-nums">
                     {minutesToLabel(totalDuration)}
                   </span>
-                  <span className="text-[12.5px] text-ink-400">
+                  <span className="text-xs text-ink-400">
                     {draft.start} – {addMinutes(draft.start, totalDuration)}
                   </span>
                 </div>
@@ -259,8 +259,8 @@ export default function SessionBuilder() {
           <Panel className="overflow-hidden">
             <div className="flex items-center justify-between border-b border-ink-100 px-5 py-4">
               <div>
-                <h2 className="text-[15px] font-semibold">Línea de la sesión</h2>
-                <p className="mt-0.5 text-[12.5px] text-muted">
+                <h2 className="text-base font-semibold">Línea de la sesión</h2>
+                <p className="mt-0.5 text-xs text-muted">
                   {draft.blocks.length} bloques · {minutesToLabel(totalDuration)}
                 </p>
               </div>
@@ -280,8 +280,8 @@ export default function SessionBuilder() {
                 }}
                 className="m-5 rounded-2xl border-2 border-dashed border-line py-14 text-center"
               >
-                <p className="text-[14px] font-medium text-ink-700">Arrastra aquí tu primer ejercicio</p>
-                <p className="mx-auto mt-1.5 max-w-xs text-[13px] leading-relaxed text-muted">
+                <p className="text-sm font-medium text-ink-700">Arrastra aquí tu primer ejercicio</p>
+                <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-muted">
                   Cógelos de la biblioteca de la derecha o crea un bloque propio.
                 </p>
               </div>
@@ -320,7 +320,7 @@ export default function SessionBuilder() {
                       <span className="mt-1 cursor-grab text-ink-300 transition-colors group-hover:text-muted active:cursor-grabbing">
                         <GripVertical size={17} />
                       </span>
-                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-ink-50 text-[11px] font-bold text-ink-900 tabular-nums">
+                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-ink-50 text-2xs font-bold text-ink-900 tabular-nums">
                         {String(i + 1).padStart(2, '0')}
                       </span>
 
@@ -328,13 +328,13 @@ export default function SessionBuilder() {
                         <input
                           value={block.title}
                           onChange={(e) => patchBlock(block.id, { title: e.target.value })}
-                          className="w-full rounded-md bg-transparent px-1 py-0.5 text-[14.5px] font-medium text-ink-900 outline-none transition-colors hover:bg-ink-50 focus:bg-ink-50"
+                          className="w-full rounded-md bg-transparent px-1 py-0.5 text-base font-medium text-ink-900 outline-none transition-colors hover:bg-ink-50 focus:bg-ink-50"
                         />
                         <input
                           value={block.series ?? ''}
                           onChange={(e) => patchBlock(block.id, { series: e.target.value })}
                           placeholder="Series y descansos (ej.: 4 x 4′ / 90″)"
-                          className="mt-0.5 w-full rounded-md bg-transparent px-1 py-0.5 text-[12.5px] text-muted outline-none transition-colors placeholder:text-ink-300 hover:bg-ink-50 focus:bg-ink-50"
+                          className="mt-0.5 w-full rounded-md bg-transparent px-1 py-0.5 text-xs text-muted outline-none transition-colors placeholder:text-ink-300 hover:bg-ink-50 focus:bg-ink-50"
                         />
                         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 px-1">
                           {block.tags.slice(0, 3).map((t) => (
@@ -342,7 +342,7 @@ export default function SessionBuilder() {
                               {t}
                             </Tag>
                           ))}
-                          <span className="text-[11.5px] text-ink-400 tabular-nums">
+                          <span className="text-2xs text-ink-400 tabular-nums">
                             {cursor} – {addMinutes(cursor, block.duration)}
                           </span>
                         </div>
@@ -357,7 +357,7 @@ export default function SessionBuilder() {
                           >
                             −
                           </button>
-                          <span className="w-10 text-center text-[13px] font-semibold text-ink-800 tabular-nums">
+                          <span className="w-10 text-center text-sm font-semibold text-ink-800 tabular-nums">
                             {block.duration}′
                           </span>
                           <button
@@ -402,8 +402,8 @@ export default function SessionBuilder() {
                   ))}
                 </div>
                 <div className="mt-2.5 flex items-center justify-between">
-                  <span className="text-[12.5px] text-muted">Duración total</span>
-                  <span className="text-[15px] font-semibold text-ink-900 tabular-nums">
+                  <span className="text-xs text-muted">Duración total</span>
+                  <span className="text-base font-semibold text-ink-900 tabular-nums">
                     {minutesToLabel(totalDuration)}
                   </span>
                 </div>
@@ -413,14 +413,14 @@ export default function SessionBuilder() {
 
           {/* Material */}
           <Panel className="p-5">
-            <h2 className="flex items-center gap-2 text-[15px] font-semibold">
+            <h2 className="flex items-center gap-2 text-base font-semibold">
               <Package size={16} className="text-ink-800" /> Material
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {draft.material.map((m) => (
                 <span
                   key={m}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-panel px-2.5 py-1.5 text-[13px] text-ink-700"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-panel px-2.5 py-1.5 text-sm text-ink-700"
                 >
                   {m}
                   <button
@@ -441,7 +441,7 @@ export default function SessionBuilder() {
                     (e.target as HTMLInputElement).value = '';
                   }
                 }}
-                className="rounded-lg border border-dashed border-ink-300 px-2.5 py-1.5 text-[13px] outline-none placeholder:text-ink-400 focus:border-ink-400"
+                className="rounded-lg border border-dashed border-ink-300 px-2.5 py-1.5 text-sm outline-none placeholder:text-ink-400 focus:border-ink-400"
               />
             </div>
           </Panel>
@@ -450,22 +450,22 @@ export default function SessionBuilder() {
         {/* Biblioteca de ejercicios */}
         <Panel className="h-fit overflow-hidden xl:sticky xl:top-24">
           <div className="border-b border-ink-100 p-4">
-            <h2 className="text-[15px] font-semibold">Biblioteca de ejercicios</h2>
-            <p className="mt-0.5 text-[12.5px] text-muted">Arrástralos a la línea o pulsa para añadir al final.</p>
+            <h2 className="text-base font-semibold">Biblioteca de ejercicios</h2>
+            <p className="mt-0.5 text-xs text-muted">Arrástralos a la línea o pulsa para añadir al final.</p>
             <div className="relative mt-3">
               <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
               <Input
                 value={libraryQuery}
                 onChange={(e) => setLibraryQuery(e.target.value)}
                 placeholder="Buscar ejercicio…"
-                className="py-2 pl-9 text-[13.5px]"
+                className="py-2 pl-9 text-sm"
               />
             </div>
             <div className="mt-2.5 flex flex-wrap gap-1.5">
               <button
                 onClick={() => setLibraryTag('todas')}
                 className={cn(
-                  'rounded-lg px-2 py-1 text-[12px] font-medium transition-colors',
+                  'rounded-lg px-2 py-1 text-xs font-medium transition-colors',
                   libraryTag === 'todas' ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200' : 'text-muted hover:bg-ink-100',
                 )}
               >
@@ -476,7 +476,7 @@ export default function SessionBuilder() {
                   key={t}
                   onClick={() => setLibraryTag(t)}
                   className={cn(
-                    'rounded-lg px-2 py-1 text-[12px] font-medium transition-colors',
+                    'rounded-lg px-2 py-1 text-xs font-medium transition-colors',
                     libraryTag === t ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200' : 'text-muted hover:bg-ink-100',
                   )}
                 >
@@ -488,7 +488,7 @@ export default function SessionBuilder() {
 
           <div className="max-h-[540px] overflow-y-auto p-2 pb-16">
             {drills.length === 0 ? (
-              <p className="px-3 py-8 text-center text-[13px] text-muted">
+              <p className="px-3 py-8 text-center text-sm text-muted">
                 Ningún ejercicio coincide con el filtro.
               </p>
             ) : (
@@ -502,10 +502,10 @@ export default function SessionBuilder() {
                 >
                   <GripVertical size={15} className="mt-0.5 shrink-0 text-ink-300 group-hover:text-ink-400" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13.5px] font-medium text-ink-800">{d.name}</span>
-                    <span className="mt-0.5 block truncate text-[12px] text-muted">{d.tags.join(' · ')}</span>
+                    <span className="block truncate text-sm font-medium text-ink-800">{d.name}</span>
+                    <span className="mt-0.5 block truncate text-xs text-muted">{d.tags.join(' · ')}</span>
                   </span>
-                  <span className="shrink-0 rounded-md bg-ink-100 px-1.5 py-0.5 text-[11.5px] font-medium text-ink-600 tabular-nums">
+                  <span className="shrink-0 rounded-md bg-ink-100 px-1.5 py-0.5 text-2xs font-medium text-ink-600 tabular-nums">
                     {d.duration}′
                   </span>
                 </button>

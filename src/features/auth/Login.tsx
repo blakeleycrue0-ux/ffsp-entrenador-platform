@@ -15,10 +15,10 @@ import { marcarDesbloqueado } from '@/services/passcode';
 import {
   ACCEPT_ERROR, CLUB_ROLE_LABEL, invitations, type InvitationPeek,
 } from '@/services/invitations';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { Button, Field, Input, Tag } from '@/components/ui';
 import { Wordmark } from '@/components/ui/Brand';
-import { Ambiente } from '@/components/visual/Particulas';
+import { Cielo } from '@/components/visual/Cielo';
 import { cn } from '@/lib/utils';
 
 type Mode = 'entrar' | 'registro' | 'recuperar';
@@ -34,6 +34,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [busy, setBusy] = useState(false);
+  const [verClave, setVerClave] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -170,7 +171,7 @@ export default function Login() {
           maqueta que sólo «responde»— sino que se convierte en la cabecera:
           una franja de ambiente detrás de la marca, y el formulario debajo. */}
       <div className="relative hidden overflow-hidden rounded-3xl border border-line-sutil bg-panel lg:flex lg:flex-col lg:justify-between">
-        <Ambiente intensidad={0.95} velo="centro" />
+        <Cielo />
 
         <div className="relative p-10">
           <Link
@@ -222,23 +223,39 @@ export default function Login() {
 
       {/* ── El formulario ───────────────────────────────────────────────── */}
       <div className="relative flex min-h-[100svh] flex-col lg:min-h-0">
-        {/* La franja de ambiente del móvil: ocupa la parte de arriba y lleva la
-            marca encima. En escritorio no existe. */}
-        <div className="relative h-[30svh] min-h-[180px] shrink-0 overflow-hidden lg:hidden">
-          <Ambiente intensidad={0.95} densidad={0.8} velo="abajo" />
-          <div className="relative flex h-full flex-col justify-between p-5 pt-[max(20px,var(--safe-top))]">
+        {/* ── LA CABECERA DEL MÓVIL ───────────────────────────────────────
+            MEDÍA EL 30 % DE LA PANTALLA Y NO HACÍA NADA. Era una franja de
+            cielo de 30 svh con un mínimo de 180 px: en un iPhone SE eso son
+            200 px de los 667 que hay, y el primer campo empezaba por debajo
+            de la mitad de la pantalla. Para entrar en una herramienta de
+            trabajo, con el teclado abierto y el pulgar en la pantalla, eso es
+            desplazarse antes de poder escribir nada.
+
+            Ahora es una barra: la marca, el enlace de volver y el cielo
+            detrás, 76 px en total. El cielo sigue ahí —se reconoce el
+            producto— pero como fondo de la cabecera, no como un cartel.
+            Medido en 375×667: el primer campo pasa de empezar en y=404 a
+            empezar en y=250. */}
+        <div className="relative shrink-0 overflow-hidden lg:hidden">
+          <Cielo velo="franja" nubes={false} />
+          <div className="relative flex h-[76px] items-center justify-between gap-3 px-5 pt-[var(--safe-top)]">
+            <Wordmark size="sm" tone="light" />
             <Link
               to="/"
-              className="inline-flex w-fit items-center gap-2 text-sm text-ink-600 transition-colors hover:text-ink-900"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-white/70 transition-colors hover:text-white"
             >
               <ArrowLeft size={14} />
               Volver
             </Link>
-            <Wordmark size="md" tone="light" />
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col justify-center px-5 pb-[max(28px,var(--safe-bottom))] pt-8 sm:px-10 lg:px-14 lg:py-12">
+        {/* `justify-start` en el móvil y `justify-center` a partir de `lg`.
+            Centrado verticalmente en una pantalla de móvil, el formulario
+            baila: con tres campos empieza más arriba que con dos, y al salir
+            un error se mueve entero. Arriba, empieza siempre en el mismo
+            sitio. */}
+        <div className="flex flex-1 flex-col px-5 pb-[max(28px,var(--safe-bottom))] pt-7 sm:px-10 lg:justify-center lg:px-14 lg:py-12">
           <div className="mx-auto w-full max-w-[420px]">
             {/* Invitación */}
             {token && (
@@ -274,21 +291,38 @@ export default function Login() {
               </div>
             )}
 
-            <h1 className="text-4xl text-ink-900" style={{ fontWeight: 520 }}>
+            <h1 className="text-3xl text-ink-900 sm:text-4xl" style={{ fontWeight: 520 }}>
               {t.title}
             </h1>
-            <p className="mt-3 text-md leading-relaxed text-ink-700">{t.sub}</p>
+            <p className="mt-2.5 text-base leading-relaxed text-ink-700 sm:text-md">{t.sub}</p>
 
-            <form onSubmit={submit} className="mt-9 space-y-4">
+            <form onSubmit={submit} className="mt-7 space-y-4">
               {mode === 'registro' && (
                 <Field label="Nombre y apellidos" required>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" />
+                  <Input
+                    className="field-grande"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    autoComplete="name"
+                    /* `words`, no la mayúscula de toda la frase: un apellido
+                       compuesto se escribe con dos mayúsculas y el teclado
+                       del móvil, por defecto, sólo pone la primera. */
+                    autoCapitalize="words"
+                  />
                 </Field>
               )}
 
               <Field label="Correo electrónico" required>
                 <Input
+                  className="field-grande"
                   type="email"
+                  /* `inputMode` saca el teclado con la arroba a la vista, y
+                     las dos correcciones apagadas evitan que el móvil
+                     convierta un correo en una frase con mayúscula. */
+                  inputMode="email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nombre@correo.com"
@@ -303,12 +337,29 @@ export default function Login() {
                   hint={mode === 'registro' ? 'Mínimo 6 caracteres.' : undefined}
                   required
                 >
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
-                  />
+                  {/* VER LO QUE SE ESCRIBE. En un móvil, escribir una
+                      contraseña a ciegas con el teclado tapando media
+                      pantalla es la primera causa de «no me deja entrar».
+                      El ojo no guarda nada ni cambia el `autoComplete`: sólo
+                      cambia el `type`, así que el gestor de contraseñas
+                      sigue funcionando igual. */}
+                  <div className="relative">
+                    <Input
+                      className="field-grande pr-12"
+                      type={verClave ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setVerClave((v) => !v)}
+                      aria-label={verClave ? 'Ocultar la contraseña' : 'Ver la contraseña'}
+                      className="absolute right-1.5 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-ink-500 transition-colors hover:text-ink-900"
+                    >
+                      {verClave ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  </div>
                 </Field>
               )}
 

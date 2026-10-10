@@ -98,7 +98,7 @@ export default function StatsPage() {
           actions={selector}
         />
         <Panel>
-          <EmptyState
+          <EmptyState size="pleno"
             title="Todavía no hay asistencia registrada"
             description="Pasa lista en un par de entrenamientos y aquí aparecerá la evolución del equipo. No mostramos cifras hasta que existan."
           />
@@ -134,7 +134,13 @@ export default function StatsPage() {
           nada: lo que las separa ahora es un filete y el aire, y lo que manda
           es el tamaño del número. Es la misma información con mucho menos
           dibujo alrededor. */}
-      <dl className="grid grid-cols-1 gap-x-8 gap-y-7 border-y border-line-sutil py-7 sm:grid-cols-2 xl:grid-cols-4 xl:divide-x xl:divide-line-sutil">
+      {/* DOS COLUMNAS DESDE EL MÓVIL. En una sola, estas cuatro cifras con su
+          número a 40 px y su explicación debajo ocupaban cuatrocientos
+          píxeles de alto antes de que se viera un solo gráfico: había que
+          desplazarse para llegar a lo que la pantalla viene a contar. En dos
+          columnas caben en la mitad y se comparan entre ellas, que es para lo
+          que están juntas. */}
+      <dl className="grid grid-cols-2 gap-x-5 gap-y-6 border-y border-line-sutil py-6 sm:gap-x-8 xl:grid-cols-4 xl:divide-x xl:divide-line-sutil">
         {[
           {
             label: 'Asistencia media',
@@ -173,8 +179,8 @@ export default function StatsPage() {
         ].map((c, i) => (
           <div key={c.label} className={cn('min-w-0', i > 0 && 'xl:pl-8')}>
             <dt className="eyebrow">{c.label}</dt>
-            <dd className={cn('cifra mt-3 text-4xl', c.alerta && 'text-warn')}>{c.value}</dd>
-            <dd className="mt-3 text-sm leading-relaxed text-ink-600">{c.hint}</dd>
+            <dd className={cn('cifra mt-2 text-3xl sm:text-4xl', c.alerta && 'text-warn')}>{c.value}</dd>
+            <dd className="mt-2 text-sm leading-relaxed text-ink-600">{c.hint}</dd>
           </div>
         ))}
       </dl>

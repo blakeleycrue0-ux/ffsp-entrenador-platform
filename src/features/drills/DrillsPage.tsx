@@ -65,7 +65,7 @@ export default function DrillsPage() {
           <button
             onClick={() => setOnlyFav((f) => !f)}
             className={cn(
-              'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
+              'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors',
               onlyFav ? 'bg-warn/10 text-warn ring-1 ring-inset ring-warn/30' : 'text-muted hover:bg-ink-100',
             )}
           >
@@ -77,7 +77,7 @@ export default function DrillsPage() {
               key={t}
               onClick={() => toggleTag(t)}
               className={cn(
-                'rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
+                'rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors',
                 active.includes(t)
                   ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200'
                   : 'text-muted hover:bg-ink-100',
@@ -93,18 +93,18 @@ export default function DrillsPage() {
                 setOnlyFav(false);
                 setQuery('');
               }}
-              className="ml-1 text-[12.5px] font-medium text-ink-900 hover:text-ink-900"
+              className="ml-1 text-xs font-medium text-ink-900 hover:text-ink-900"
             >
               Limpiar filtros
             </button>
           )}
-          <span className="ml-auto text-[12.5px] text-ink-400">{drills.length} ejercicios</span>
+          <span className="ml-auto text-xs text-ink-400">{drills.length} ejercicios</span>
         </div>
       </Panel>
 
       {drills.length === 0 ? (
         <Panel>
-          <EmptyState
+          <EmptyState size="pleno"
            
             title="Ningún ejercicio coincide con el filtro"
             description="Prueba con otras etiquetas o crea un ejercicio nuevo para la biblioteca del club."
@@ -121,7 +121,7 @@ export default function DrillsPage() {
             <Panel key={d.id} className="flex flex-col p-5">
               <div className="flex items-start justify-between gap-3">
                 <Link to={`/app/ejercicios/${d.id}`} className="min-w-0 flex-1">
-                  <h3 className="text-[15.5px] font-semibold leading-tight text-ink-900 hover:text-ink-900">
+                  <h3 className="text-base font-semibold leading-tight text-ink-900 hover:text-ink-900">
                     {d.name}
                   </h3>
                 </Link>
@@ -137,7 +137,7 @@ export default function DrillsPage() {
                 </button>
               </div>
 
-              <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted">{d.objective}</p>
+              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{d.objective}</p>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {d.tags.slice(0, 3).map((t) => (
@@ -152,7 +152,7 @@ export default function DrillsPage() {
                 )}
               </div>
 
-              <div className="mt-4 flex items-center gap-4 border-t border-ink-100 pt-3 text-[12.5px] text-muted">
+              <div className="mt-4 flex items-center gap-4 border-t border-ink-100 pt-3 text-xs text-muted">
                 <span className="flex items-center gap-1.5">
                   <Users size={13} className="text-ink-400" /> {d.players}
                 </span>

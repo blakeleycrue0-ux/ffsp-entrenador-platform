@@ -26,9 +26,10 @@ import { useToast } from '@/components/ui/Toast';
 import { useClub } from '@/store/store';
 import { isClubAdmin, permisos } from '@/store/selectors';
 import { billing, diasDePrueba, importe, NIVELES, type Plan, type PlanTier } from '@/services/billing';
+import { todoLoQueTrae } from '@/services/entitlements';
 import { humanError } from '@/services/supabase';
 import { useConfirmacion } from '@/features/passcode/Confirmar';
-import { BotonDePlan, LIMITE, SelectorDePlanes, useSeleccionDePlan } from './SelectorDePlanes';
+import { BotonDePlan, limiteDeEquipos, SelectorDePlanes, useSeleccionDePlan } from './SelectorDePlanes';
 import { cn } from '@/lib/utils';
 import { useAnchura } from '@/components/layout/AppShell';
 
@@ -54,6 +55,10 @@ export default function BillingPage() {
   const tieneCuentaDePago = Boolean(sub && sub.status !== 'none');
 
   const seleccion = useSeleccionDePlan(per.nivel);
+  /* Lo que trae el plan de abajo, que es lo que tienen los tres. Mientras no
+     se pueda contratar nada son TODAS las capacidades construidas, y eso es
+     exactamente lo que `puede()` está aplicando. */
+  const enLosTres = todoLoQueTrae('free', per.hayQueVender);
 
   if (!club) return null;
 
@@ -255,13 +260,21 @@ export default function BillingPage() {
                 <span className={cn('text-base', p.tier === per.nivel ? 'font-semibold text-ink-900' : 'text-ink-700')}>
                   {p.name}
                 </span>
-                <span className="text-base text-ink-500">{LIMITE[p.tier]}</span>
+                <span className="text-base text-ink-500">{limiteDeEquipos(p)}</span>
               </div>
             ))}
           </div>
+          {/* QUÉ HAY EN LOS TRES, CONTADO POR EL CATÁLOGO. Esta línea era una
+              lista escrita a mano que terminaba en «y cuerpo técnico están en
+              los tres», y «cuerpo técnico» pasó a ser de Max: el día que se
+              abra el cobro, esa frase quedaría desmentida por la pantalla de
+              al lado. Preguntándoselo a `todoLoQueTrae('free')` dice siempre
+              lo que de verdad trae el plan de abajo. */}
           <p className="px-5 pb-5 pt-3 text-sm leading-relaxed text-ink-500">
-            Plantilla, asistencia, entrenamientos, partidos, pizarra táctica y cuerpo técnico están en
-            los tres. <Link to="/app/ajustes" className="underline underline-offset-2">Volver a Ajustes</Link>.
+            {enLosTres.length > 0 && (
+              <>{enumerar(enLosTres)} {enLosTres.length === 1 ? 'está' : 'están'} en los tres. </>
+            )}
+            <Link to="/app/ajustes" className="underline underline-offset-2">Volver a Ajustes</Link>.
           </p>
         </Panel>
       </div>
@@ -270,6 +283,10 @@ export default function BillingPage() {
     </>
   );
 }
+
+/** «A, B y C». En castellano la última va con «y», no con coma. */
+const enumerar = (xs: string[]): string =>
+  xs.length <= 1 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}`;
 
 function Dato({ cifra, pie }: { cifra: string; pie: string }) {
   return (

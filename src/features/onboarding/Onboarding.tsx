@@ -35,7 +35,7 @@ import { humanError } from '@/services/supabase';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { Button, Field, Input, Select } from '@/components/ui';
 import { Marca, Wordmark } from '@/components/ui/Brand';
-import { Ambiente } from '@/components/visual/Particulas';
+import { Cielo } from '@/components/visual/Cielo';
 import { ConfigurarCodigo } from '@/features/passcode/ConfigurarCodigo';
 import { PasoPlan } from './PasoPlan';
 import { cn } from '@/lib/utils';
@@ -186,7 +186,7 @@ export default function Onboarding() {
        producto. El velo central deja el centro oscuro para que el formulario
        se lea sin competir con el fondo. */
     <div className="relative flex min-h-[100svh] flex-col overflow-hidden bg-surface">
-      <Ambiente intensidad={0.8} densidad={0.75} velo="centro" />
+      <Cielo velo="hondo" />
       <header className="relative mx-auto flex w-full max-w-[460px] items-center justify-between px-5 pb-1 pt-[max(20px,var(--safe-top))]">
         <Wordmark tone="light" />
         <button
@@ -202,7 +202,21 @@ export default function Onboarding() {
       {/* `justify-center`: en una pantalla de escritorio el paso quedaba
           pegado arriba con medio lienzo negro debajo. Centrado, la pantalla
           entera es el paso. */}
-      <main className="relative mx-auto flex w-full max-w-[460px] flex-1 flex-col justify-center px-5 pb-[max(40px,var(--safe-bottom))] pt-6">
+      {/* ARRIBA EN EL MÓVIL, CENTRADO EN EL ESCRITORIO. Con todo centrado,
+          cada paso empezaba a una altura distinta —«¿Cómo te llamas?» a 500
+          px y la lista de cargos a 180— y el formulario parecía saltar de una
+          pantalla a otra. En el móvil, además, el teclado se come la mitad de
+          abajo: lo que está centrado en los 844 px acaba centrado en los 400
+          que quedan, o sea, tapado. */}
+      <main className="relative mx-auto flex w-full max-w-[460px] flex-1 flex-col px-5 pb-[max(40px,var(--safe-bottom))] pt-6 lg:max-w-[520px] lg:justify-center">
+        {/* EN EL ESCRITORIO, UNA FICHA; EN EL MÓVIL, LA PANTALLA.
+            Sin caja, en un monitor de 1.280 px esto era una columna de 460
+            flotando en medio de un fondo enorme: no parecía una pantalla de
+            montaje, parecía la versión de móvil estirada. Una superficie con
+            su borde la convierte en un objeto, que es lo que hace que un alta
+            se sienta acompañada. En el móvil la caja sobra —la pantalla YA es
+            la caja— y por eso sólo aparece a partir de `lg`. */}
+        <div className="lg:rounded-3xl lg:border lg:border-line lg:bg-panel lg:p-10 lg:shadow-pop">
         <Progreso actual={numero} total={NUMERADOS.length} />
 
         <div className="mt-7">
@@ -225,8 +239,11 @@ export default function Onboarding() {
             </Bloque>
           )}
 
+          {/* `centrado`: esta pantalla la compone `ConfigurarCodigo` con todo
+              al eje —título, puntos y teclado—, así que el «Paso 1 de 7»
+              pegado a la izquierda se quedaba descolgado de lo demás. */}
           {paso === 'codigo' && (
-            <Bloque clave="codigo" numero={numero} total={NUMERADOS.length}>
+            <Bloque clave="codigo" numero={numero} total={NUMERADOS.length} centrado>
               <ConfigurarCodigo
                 yaTiene={false}
                 tituloNuevo="Protege tu espacio"
@@ -242,6 +259,7 @@ export default function Onboarding() {
             <Bloque clave="nombre" numero={numero} total={NUMERADOS.length} titulo="¿Cómo te llamas?">
               <Field label="Nombre y apellidos" required>
                 <Input
+                  className="field-grande"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   placeholder="Ej.: Marta Vives"
@@ -286,6 +304,7 @@ export default function Onboarding() {
             <Bloque clave="club" numero={numero} total={NUMERADOS.length} titulo="Tu club">
               <Field label="Nombre del club" required hint="Como aparece oficialmente.">
                 <Input
+                  className="field-grande"
                   value={club}
                   onChange={(e) => setClub(e.target.value)}
                   placeholder="Ej.: Club Deportivo Ejemplo"
@@ -298,6 +317,7 @@ export default function Onboarding() {
                 hint="El que cabe en un marcador. Si lo dejas vacío usamos el nombre completo."
               >
                 <Input
+                  className="field-grande"
                   value={clubCorto}
                   onChange={(e) => setClubCorto(e.target.value)}
                   placeholder="Ej.: CD Ejemplo"
@@ -319,6 +339,7 @@ export default function Onboarding() {
             <Bloque clave="equipo" numero={numero} total={NUMERADOS.length} titulo="Tu primer equipo">
               <Field label="Nombre del equipo" required>
                 <Input
+                  className="field-grande"
                   value={equipo}
                   onChange={(e) => setEquipo(e.target.value)}
                   placeholder="Ej.: Cadete A"
@@ -328,6 +349,7 @@ export default function Onboarding() {
               </Field>
               <Field label="Categoría" hint="Opcional. Sirve para ordenar los equipos del club.">
                 <Input
+                  className="field-grande"
                   value={categoria}
                   onChange={(e) => setCategoria(e.target.value)}
                   placeholder="Ej.: Cadete"
@@ -489,8 +511,11 @@ export default function Onboarding() {
         {/* En la bienvenida esta frase ya está en el subtítulo: repetirla dos
             veces en la misma pantalla no tranquiliza más, sólo canta. */}
         {paso !== 'listo' && paso !== 'bienvenida' && (
-          <p className="mt-6 text-sm text-ink-500">Puedes cambiarlo todo después.</p>
+          <p className={cn('mt-6 text-sm text-ink-500', paso === 'codigo' && 'text-center')}>
+            Puedes cambiarlo todo después.
+          </p>
         )}
+        </div>
       </main>
     </div>
   );
@@ -512,19 +537,23 @@ function Hecho({ titulo, pie }: { titulo: string; pie: string }) {
  * lo que hace falta explicar se explica donde hace falta, no de entrada.
  */
 function Bloque({
-  clave, numero, total, titulo, children,
+  clave, numero, total, titulo, centrado, children,
 }: {
   clave: string;
   numero?: number;
   total?: number;
   titulo?: string;
+  /** Cuando el paso compone su contenido al eje. */
+  centrado?: boolean;
   children: React.ReactNode;
 }) {
   return (
     /* `key` por paso: al cambiar, React monta un nodo nuevo y la animación de
        entrada se dispara sola. Sin esto el contenido cambiaría de golpe. */
     <div key={clave} className="animate-paso">
-      {numero && total && <p className="rotulo">Paso {numero} de {total}</p>}
+      {numero && total && (
+        <p className={cn('rotulo', centrado && 'text-center')}>Paso {numero} de {total}</p>
+      )}
       {titulo && <h1 className="cifra mt-1.5 text-3xl">{titulo}</h1>}
       <div className={cn(titulo ? 'mt-6 space-y-4' : 'space-y-4')}>{children}</div>
     </div>

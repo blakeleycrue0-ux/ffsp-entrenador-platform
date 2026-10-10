@@ -59,7 +59,23 @@ export const PLANES = [
 ];
 
 export async function mock(page, o = {}) {
-  const { equipos = TEAMS, sub = null, planes = PLANES, club = CLUB_ROW, players = PLAYERS } = o;
+  const {
+    equipos = TEAMS, sub = null, planes = PLANES, club = CLUB_ROW, players = PLAYERS,
+    /* Sesiones, partidos y listas también se pueden sustituir: hacen falta
+       para comprobar que la guía de primeros pasos mira el DATO y no una
+       marca guardada, sirviendo el club entero menos una cosa cada vez. */
+    sessions = SESSIONS, matches = MATCHES, attendance = ATTENDANCE,
+    /* ¿Tiene el servidor con qué cobrar? Es lo que contesta
+       `/.netlify/functions/estado-pago`, y de ello depende `contratable`: con
+       precio de Stripe y sin esto, no se puede contratar. Por defecto NO,
+       que es la situación real mientras nadie ponga las variables de entorno
+       en Netlify. */
+    caja = false,
+    /* La decisión sobre la medición de visitas. Por defecto «no» para que el
+       aviso de cookies no salga en las demás pruebas y no tape nada; quien lo
+       quiera probar pasa `null` y lo encuentra sin responder. */
+    medicion = 'no',
+  } = o;
   await page.route(`${SUPA}/**`, async route => {
     const u = new URL(route.request().url()); const p = u.pathname;
     if (p.startsWith('/auth/v1/user')) return route.fulfill(j(USUARIO));
@@ -70,14 +86,22 @@ export async function mock(page, o = {}) {
     if (p === '/rest/v1/plans') return route.fulfill(j(planes));
     if (p === '/rest/v1/subscriptions') return route.fulfill(j(sub));
     if (p === '/rest/v1/players') return route.fulfill(j(players));
-    if (p === '/rest/v1/sessions') return route.fulfill(j(SESSIONS));
-    if (p === '/rest/v1/matches') return route.fulfill(j(MATCHES));
-    if (p === '/rest/v1/attendance') return route.fulfill(j(ATTENDANCE));
+    if (p === '/rest/v1/sessions') return route.fulfill(j(sessions));
+    if (p === '/rest/v1/matches') return route.fulfill(j(matches));
+    if (p === '/rest/v1/attendance') return route.fulfill(j(attendance));
     if (p === '/rest/v1/drills') return route.fulfill(j(DRILLS));
     if (p === '/rest/v1/team_staff') return route.fulfill(j([{ team_id:'t1', profile_id:USER, role:'coordinadora' }]));
     return route.fulfill(j([]));
   });
-  await page.addInitScript(([ref,u]) => localStorage.setItem(`sb-${ref}-auth-token`, JSON.stringify({
-    access_token:'x', token_type:'bearer', refresh_token:'x', expires_in:3600,
-    expires_at: Math.floor(Date.now()/1000)+3600, user:u })), [REF, USUARIO]);
+  /* La función de Netlify no existe en `vite preview`: sin esta ruta devolvería
+     el index.html, que no es JSON, y el cliente se quedaría —con razón— en
+     «no hay caja». Se sirve a mano para que cada prueba elija el caso. */
+  await page.route('**/.netlify/functions/estado-pago', r => r.fulfill(j({ listo: caja })));
+
+  await page.addInitScript(([ref,u,med]) => {
+    localStorage.setItem(`sb-${ref}-auth-token`, JSON.stringify({
+      access_token:'x', token_type:'bearer', refresh_token:'x', expires_in:3600,
+      expires_at: Math.floor(Date.now()/1000)+3600, user:u }));
+    if (med) localStorage.setItem('p360:medicion', med);
+  }, [REF, USUARIO, medicion]);
 }

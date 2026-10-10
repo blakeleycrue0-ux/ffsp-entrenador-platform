@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Bell, CheckCheck, Menu, PanelLeftOpen, Plus, Search } from 'lucide-react';
 import { Avatar, Button, Dot, Dropdown } from '@/components/ui';
-import { Wordmark } from '@/components/ui/Brand';
 import { useClub } from '@/store/store';
 import { currentStaff } from '@/store/selectors';
 import { cn, relativeTime } from '@/lib/utils';
@@ -38,29 +37,37 @@ export function Topbar({
   };
 
   return (
-    /* EL FONDO TIENE QUE TAPAR. Estaba con `bg-panel`, que es un 4,5 % de
-       blanco: la cabecera se quedaba pegada arriba y el contenido de la página
-       pasaba por DEBAJO y se leía a través de ella, cruzándose con el logo y
-       los iconos. Un fondo casi transparente en algo pegajoso no es un estilo,
-       es un fallo. Cristal ahumado: tapa, desenfoca y se sigue notando poco. */
+    /* EL FONDO TAPA, Y YA NO DESENFOCA.
+       Primero fue `bg-panel` —un 4,5 % de blanco— y el contenido se leía a
+       través de la cabecera al desplazarse: un fondo casi transparente en
+       algo pegajoso no es un estilo, es un fallo. Se arregló con cristal
+       ahumado, que tapa pero pide `backdrop-filter`, y eso obliga al
+       navegador a recomponer en cada fotograma todo lo que pasa por debajo.
+       Encima de una lista que se desplaza con el dedo es el sitio más caro
+       de la aplicación para pedirlo. Ahora es un color opaco: tapa igual,
+       cuesta cero. */
     <header
-      className="cristal-firme sticky top-0 z-nav flex items-center gap-3 rounded-none border-x-0 border-t-0 px-4 lg:px-6"
+      className="sticky top-0 z-nav flex items-center gap-2.5 border-b border-line-sutil bg-surface px-4 sm:gap-3 lg:px-6"
       style={{ height: 'calc(var(--header-h) + var(--safe-top))', paddingTop: 'var(--safe-top)' }}
     >
       {/* LA HAMBURGUESA, Y LA PRIMERA. En el móvil es lo único que lleva a
-          todas las secciones, así que va donde se busca: arriba a la
-          izquierda, antes del nombre. */}
+          las once secciones, así que va donde se busca: arriba a la
+          izquierda. Es un disco, como los otros tres objetos de la barra: lo
+          que se pulsa en esta cabecera es redondo, y eso se aprende en dos
+          pantallas. */}
       <button
         onClick={onCajon}
         aria-label="Abrir el menú"
-        className="-ml-1.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-700 transition-colors active:bg-raised lg:hidden"
+        className="-ml-1 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/[0.07] text-ink-800 transition-colors active:bg-white/[0.14] lg:hidden"
       >
-        <Menu size={20} />
+        <Menu size={19} />
       </button>
 
-      <Link to="/app" className="lg:hidden">
-        <Wordmark size="sm" showSubtitle={false} />
-      </Link>
+      {/* SIN LOGOTIPO EN EL MÓVIL, A PROPÓSITO. Ocupaba de 96 a 150 px de una
+          barra de 320 para decir dónde estás cuando ya estás dentro: con él,
+          la cabecera se salía 38 px —medido— y la búsqueda se quedaba en un
+          icono. La marca está en la portada, en la entrada y en el cajón; una
+          herramienta no necesita repetirla en cada pantalla. */}
 
       {/* Sólo cuando está plegado: con el menú a la vista, el botón de
           desplegarlo no dice nada y el de plegarlo ya está dentro de él. */}
@@ -75,16 +82,28 @@ export function Topbar({
         </button>
       )}
 
+      {/* LA BÚSQUEDA ES UNA CÁPSULA, NO UN ICONO. Con el logotipo fuera hay
+          sitio de sobra, y una cápsula ancha dice «escribe aquí» mientras que
+          una lupa suelta hay que reconocerla. Se estira con lo que sobre, así
+          que a 320 px encoge y a 430 crece sin tocar nada. */}
       <button
         onClick={onSearch}
-        className="ml-auto flex h-8 items-center gap-2 rounded-md border border-line bg-panel px-2.5 text-sm text-ink-400 transition-colors hover:border-ink-400 lg:ml-0 lg:mr-auto lg:w-[300px]"
+        className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full bg-white/[0.07] px-3.5 text-left text-base text-ink-500 sm:max-w-[420px] transition-colors active:bg-white/[0.12] lg:ml-0 lg:mr-auto lg:h-8 lg:max-w-[300px] lg:flex-none lg:gap-2 lg:rounded-md lg:border lg:border-line lg:bg-panel lg:px-2.5 lg:text-sm lg:text-ink-400 lg:hover:border-ink-400"
       >
-        <Search size={15} className="shrink-0" />
+        <Search size={17} className="shrink-0 lg:hidden" />
+        <Search size={15} className="hidden shrink-0 lg:block" />
+        <span className="truncate lg:hidden">Buscar</span>
         <span className="hidden lg:inline">Buscar jugadora, sesión, partido…</span>
         <kbd className="ml-auto hidden rounded border border-line px-1 py-px text-2xs font-medium lg:block">⌘K</kbd>
       </button>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-0.5 sm:gap-1.5">
+        {/* EL «+» NO ESTÁ EN EL MÓVIL, Y NO ES UN OLVIDO. En Inicio, crear son
+            los cuatro discos del héroe, que es donde se mira; en cada lista
+            —plantilla, entrenamientos, partidos, ejercicios— hay su propio
+            botón de crear en la cabecera de la página; y el cajón lleva el
+            suyo. Un quinto botón en una barra de 320 px le quitaba el ancho
+            a la búsqueda para repetir lo que ya hay dos dedos más abajo. */}
         <Button
           size="sm"
           icon={<Plus size={15} strokeWidth={2.2} />}
@@ -98,12 +117,12 @@ export function Topbar({
           className="w-[340px] max-w-[calc(100vw-2rem)] p-0"
           trigger={
             <button
-              className="relative grid h-8 w-8 place-items-center rounded-md text-ink-500 transition-colors hover:bg-surface hover:text-ink-900"
+              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/[0.07] text-ink-800 transition-colors active:bg-white/[0.14] lg:h-8 lg:w-8 lg:rounded-md lg:bg-transparent lg:text-ink-500 lg:hover:bg-surface lg:hover:text-ink-900"
               aria-label={unread > 0 ? `Notificaciones, ${unread} sin leer` : 'Notificaciones'}
             >
-              <Bell size={17} />
+              <Bell size={18} />
               {unread > 0 && (
-                <span className="absolute right-1 top-1 grid h-3.5 min-w-[14px] place-items-center rounded-full bg-ink-900 px-1 text-[9px] font-bold tabular-nums text-ink-0 ring-2 ring-white">
+                <span className="absolute right-1 top-1 grid h-4 min-w-[16px] place-items-center rounded-full bg-marca-600 px-1 text-[9px] font-bold tabular-nums text-white ring-2 ring-surface">
                   {unread}
                 </span>
               )}
@@ -152,8 +171,8 @@ export function Topbar({
           )}
         </Dropdown>
 
-        <Link to="/app/perfil" className="lg:hidden">
-          <Avatar name={staff?.name ?? '—'} size={30} />
+        <Link to="/app/perfil" aria-label="Mi perfil" className="shrink-0 lg:hidden">
+          <Avatar name={staff?.name ?? '—'} size={40} />
         </Link>
       </div>
     </header>

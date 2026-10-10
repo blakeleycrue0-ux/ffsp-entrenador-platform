@@ -89,9 +89,9 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Buscar jugadora, equipo, entrenamiento, ejercicio, partido…"
-            className="h-14 flex-1 bg-transparent text-[15px] text-ink-900 outline-none placeholder:text-ink-400"
+            className="h-14 flex-1 bg-transparent text-base text-ink-900 outline-none placeholder:text-ink-400"
           />
-          <kbd className="hidden rounded-md border border-line px-1.5 py-0.5 text-[11px] font-medium text-ink-400 sm:block">
+          <kbd className="hidden rounded-md border border-line px-1.5 py-0.5 text-2xs font-medium text-ink-400 sm:block">
             ESC
           </kbd>
         </div>
@@ -99,13 +99,13 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
         <div className="max-h-[52vh] overflow-y-auto p-2">
           {query.trim().length < 2 ? (
             <div className="px-3 py-6">
-              <p className="text-[12.5px] font-medium uppercase tracking-wide text-ink-400">Sugerencias</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Sugerencias</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {['Sub-17', 'Presión', 'Rondo', 'Posesión'].map((s) => (
                   <button
                     key={s}
                     onClick={() => setQuery(s)}
-                    className="rounded-lg border border-line px-2.5 py-1.5 text-[13px] text-ink-600 transition-colors hover:border-ink-300 hover:bg-ink-50 hover:text-ink-900"
+                    className="rounded-lg border border-line px-2.5 py-1.5 text-sm text-ink-600 transition-colors hover:border-ink-300 hover:bg-ink-50 hover:text-ink-900"
                   >
                     {s}
                   </button>
@@ -114,8 +114,8 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
             </div>
           ) : hits.length === 0 ? (
             <div className="px-4 py-10 text-center">
-              <p className="text-[14px] font-medium text-ink-700">Sin resultados para «{query}»</p>
-              <p className="mt-1 text-[13px] text-muted">Prueba con el nombre de una jugadora, un rival o una etiqueta.</p>
+              <p className="text-sm font-medium text-ink-700">Sin resultados para «{query}»</p>
+              <p className="mt-1 text-sm text-muted">Prueba con el nombre de una jugadora, un rival o una etiqueta.</p>
             </div>
           ) : (
             hits.map((hit, i) => {
@@ -140,11 +140,11 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
                     <Icon size={17} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-medium text-ink-900">{hit.title}</span>
-                    <span className="block truncate text-[12.5px] text-muted">{hit.subtitle}</span>
+                    <span className="block truncate text-sm font-medium text-ink-900">{hit.title}</span>
+                    <span className="block truncate text-xs text-muted">{hit.subtitle}</span>
                   </span>
-                  {meta && <span className="shrink-0 text-[12px] font-medium text-ink-400">{meta}</span>}
-                  <span className="shrink-0 rounded-md bg-panel px-1.5 py-0.5 text-[10.5px] font-medium uppercase tracking-wide text-ink-400 ring-1 ring-line">
+                  {meta && <span className="shrink-0 text-xs font-medium text-ink-400">{meta}</span>}
+                  <span className="shrink-0 rounded-md bg-panel px-1.5 py-0.5 text-2xs font-medium uppercase tracking-wide text-ink-400 ring-1 ring-line">
                     {KIND_LABEL[hit.kind]}
                   </span>
                 </button>
@@ -153,7 +153,7 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-line/80 bg-ink-50/60 px-4 py-2.5 text-[11.5px] text-ink-400">
+        <div className="flex items-center justify-between border-t border-line/80 bg-ink-50/60 px-4 py-2.5 text-2xs text-ink-400">
           <span className="flex items-center gap-3">
             <span className="flex items-center gap-1">↑↓ navegar</span>
             <span className="flex items-center gap-1">

@@ -114,7 +114,7 @@ export default function PlayerEditor() {
       <>
         <PageHeader title="Nueva jugadora" />
         <Panel className="p-8 text-center">
-          <p className="text-[14px] text-ink-600">
+          <p className="text-sm text-ink-600">
             Todavía no tienes ningún equipo asignado. Pídeselo a quien administra el club.
           </p>
         </Panel>
@@ -126,7 +126,7 @@ export default function PlayerEditor() {
     <>
       <Link
         to={existing ? `/app/plantilla/${existing.id}` : '/app/plantilla'}
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> {existing ? existing.shortName : 'Jugadoras'}
       </Link>
@@ -154,7 +154,7 @@ export default function PlayerEditor() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         <div className="space-y-4">
           <Panel className="p-5">
-            <h2 className="text-[15px] font-semibold">Datos básicos</h2>
+            <h2 className="text-base font-semibold">Datos básicos</h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Nombre y apellidos" className="sm:col-span-2">
                 <Input value={form.name} onChange={(e) => patch({ name: e.target.value })} placeholder="Nombre y apellidos" />
@@ -223,8 +223,8 @@ export default function PlayerEditor() {
 
           {canSeeContact && (
             <Panel className="p-5">
-              <h2 className="text-[15px] font-semibold">Contacto</h2>
-              <p className="mt-1 text-[12.5px] text-muted">
+              <h2 className="text-base font-semibold">Contacto</h2>
+              <p className="mt-1 text-xs text-muted">
                 Datos personales. Sólo los ven los perfiles con permiso y nunca aparecen en listados.
               </p>
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -238,7 +238,7 @@ export default function PlayerEditor() {
 
               <div className="mt-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[14px] font-medium text-ink-800">Familia o tutores</h3>
+                  <h3 className="text-sm font-medium text-ink-800">Familia o tutores</h3>
                   <Button
                     variant="secondary"
                     size="sm"
@@ -252,7 +252,7 @@ export default function PlayerEditor() {
                 </div>
 
                 {form.guardians.length === 0 ? (
-                  <p className="mt-3 text-[13px] text-muted">
+                  <p className="mt-3 text-sm text-muted">
                     Sin contactos registrados. Si la jugadora es menor, añade al menos uno para poder enviar
                     convocatorias.
                   </p>
@@ -280,7 +280,7 @@ export default function PlayerEditor() {
                         </div>
                         <button
                           onClick={() => patch({ guardians: form.guardians.filter((_, k) => k !== i) })}
-                          className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-ink-400 transition-colors hover:text-bad"
+                          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-ink-400 transition-colors hover:text-bad"
                         >
                           <X size={13} /> Quitar contacto
                         </button>
@@ -295,14 +295,14 @@ export default function PlayerEditor() {
 
         <div className="space-y-4">
           <Panel className="p-5">
-            <h2 className="text-[14.5px] font-semibold">Disponibilidad</h2>
+            <h2 className="text-base font-semibold">Disponibilidad</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {AVAILABILITY_ORDER.map((s) => (
                 <button
                   key={s}
                   onClick={() => patch({ availability: { ...form.availability, status: s } })}
                   className={cn(
-                    'flex items-center gap-2 rounded-xl border px-3 py-2 text-[13px] font-medium transition-all',
+                    'flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-all',
                     form.availability.status === s
                       ? 'border-ink-400 bg-ink-50 text-ink-900 ring-2 ring-ink-100'
                       : 'border-line text-ink-600 hover:border-ink-200',
@@ -333,7 +333,7 @@ export default function PlayerEditor() {
           </Panel>
 
           <Panel className="p-5">
-            <h2 className="text-[14.5px] font-semibold">Notas de la entrenadora</h2>
+            <h2 className="text-base font-semibold">Notas de la entrenadora</h2>
             <Textarea
               value={form.notes ?? ''}
               onChange={(e) => patch({ notes: e.target.value })}
@@ -360,7 +360,7 @@ export default function PlayerEditor() {
           </>
         }
       >
-        <p className="text-[14px] leading-relaxed text-ink-600">
+        <p className="text-sm leading-relaxed text-ink-600">
           Si sólo se ha marchado temporalmente, es mejor cambiar su disponibilidad a «Ausente» en lugar de eliminarla:
           así conservas su historial.
         </p>

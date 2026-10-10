@@ -73,7 +73,7 @@ export default function SessionDetail() {
     <>
       <Link
         to="/app/entrenamientos"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Planificaciones
       </Link>
@@ -124,9 +124,9 @@ export default function SessionDetail() {
               {icon as React.ReactNode}
             </span>
             <div className="min-w-0">
-              <p className="text-[11.5px] uppercase tracking-wide text-ink-400">{label as string}</p>
-              <p className="mt-0.5 truncate text-[15px] font-semibold text-ink-900">{value as string}</p>
-              <p className="truncate text-[12px] text-ink-400">{hint as string}</p>
+              <p className="text-2xs uppercase tracking-wide text-ink-400">{label as string}</p>
+              <p className="mt-0.5 truncate text-base font-semibold text-ink-900">{value as string}</p>
+              <p className="truncate text-xs text-ink-400">{hint as string}</p>
             </div>
           </Panel>
         ))}
@@ -137,12 +137,12 @@ export default function SessionDetail() {
         <Panel className="overflow-hidden lg:col-span-2">
           <div className="flex items-center justify-between border-b border-ink-100 px-5 py-4">
             <div>
-              <h2 className="text-[15px] font-semibold">Estructura de la sesión</h2>
-              <p className="mt-0.5 text-[12.5px] text-muted">
+              <h2 className="text-base font-semibold">Estructura de la sesión</h2>
+              <p className="mt-0.5 text-xs text-muted">
                 {minutesToLabel(s.duration)} en {s.blocks.length} bloques
               </p>
             </div>
-            <span className="text-[13px] font-medium text-ink-400 tabular-nums">
+            <span className="text-sm font-medium text-ink-400 tabular-nums">
               {s.start} – {addMinutes(s.start, s.duration)}
             </span>
           </div>
@@ -157,24 +157,24 @@ export default function SessionDetail() {
                     <span className="absolute left-[38px] top-14 h-[calc(100%-2.5rem)] w-px bg-line" />
                   )}
                   <div className="relative z-fijo flex w-7 shrink-0 flex-col items-center">
-                    <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink-50 text-[11px] font-bold text-ink-900 tabular-nums">
+                    <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink-50 text-2xs font-bold text-ink-900 tabular-nums">
                       {String(i + 1).padStart(2, '0')}
                     </span>
                   </div>
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <h3 className="text-[14.5px] font-medium text-ink-900">{block.title}</h3>
-                      <span className="text-[12.5px] text-ink-400 tabular-nums">
+                      <h3 className="text-base font-medium text-ink-900">{block.title}</h3>
+                      <span className="text-xs text-ink-400 tabular-nums">
                         {start} – {end}
                       </span>
                     </div>
 
-                    {block.series && <p className="mt-1 text-[12.5px] text-muted">{block.series}</p>}
-                    {block.notes && <p className="mt-1 text-[12.5px] italic text-muted">{block.notes}</p>}
+                    {block.series && <p className="mt-1 text-xs text-muted">{block.series}</p>}
+                    {block.notes && <p className="mt-1 text-xs italic text-muted">{block.notes}</p>}
 
                     {drill && (
-                      <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted">{drill.description}</p>
+                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{drill.description}</p>
                     )}
 
                     <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
@@ -186,7 +186,7 @@ export default function SessionDetail() {
                       {drill && (
                         <Link
                           to={`/app/ejercicios/${drill.id}`}
-                          className="ml-1 text-[12px] font-medium text-ink-900 hover:text-ink-900"
+                          className="ml-1 text-xs font-medium text-ink-900 hover:text-ink-900"
                         >
                           Ver ejercicio
                         </Link>
@@ -194,7 +194,7 @@ export default function SessionDetail() {
                     </div>
                   </div>
 
-                  <span className="shrink-0 self-start rounded-lg bg-ink-50 px-2 py-1 text-[12.5px] font-semibold text-ink-600 tabular-nums">
+                  <span className="shrink-0 self-start rounded-lg bg-ink-50 px-2 py-1 text-xs font-semibold text-ink-600 tabular-nums">
                     {block.duration}′
                   </span>
                 </li>
@@ -217,7 +217,7 @@ export default function SessionDetail() {
                 />
               ))}
             </div>
-            <p className="mt-2 text-[12px] text-ink-400">
+            <p className="mt-2 text-xs text-ink-400">
               Calentamiento y vuelta a la calma en tono claro; parte principal en tono intenso.
             </p>
           </div>
@@ -226,12 +226,12 @@ export default function SessionDetail() {
         {/* Lateral */}
         <div className="space-y-4">
           <Panel className="p-5">
-            <h3 className="flex items-center gap-2 text-[14.5px] font-semibold">
+            <h3 className="flex items-center gap-2 text-base font-semibold">
               <Package size={16} className="text-ink-800" /> Material necesario
             </h3>
             <ul className="mt-3 space-y-2">
               {s.material.map((m) => (
-                <li key={m} className="flex items-center gap-2.5 text-[13.5px] text-ink-700">
+                <li key={m} className="flex items-center gap-2.5 text-sm text-ink-700">
                   <span className="h-1.5 w-1.5 rounded-full bg-ink-300" />
                   {m}
                 </li>
@@ -241,13 +241,13 @@ export default function SessionDetail() {
 
           {s.notes && (
             <Panel className="p-5">
-              <h3 className="text-[14.5px] font-semibold">Observaciones</h3>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-ink-600">{s.notes}</p>
+              <h3 className="text-base font-semibold">Observaciones</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-600">{s.notes}</p>
             </Panel>
           )}
 
           <Panel className="p-5">
-            <h3 className="text-[14.5px] font-semibold">Acciones rápidas</h3>
+            <h3 className="text-base font-semibold">Acciones rápidas</h3>
             <div className="mt-3 space-y-2">
               <LinkButton to={`/app/entrenamientos/${s.id}/asistencia`} variant="secondary" size="sm" block icon={<ClipboardList size={15} />}>
                 Pasar asistencia de esta sesión

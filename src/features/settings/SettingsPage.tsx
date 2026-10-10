@@ -16,6 +16,7 @@ import { useToast } from '@/components/ui/Toast';
 import { PlanPanel } from '@/features/billing/PlanPanel';
 import { CodigoPanel } from '@/features/passcode/CodigoPanel';
 import { useAnchura } from '@/components/layout/AppShell';
+import { pasosPendientes } from '@/features/dashboard/PrimerosPasos';
 
 export default function SettingsPage() {
   /* El ancho lo decide la tarea, no la pantalla. */
@@ -87,6 +88,10 @@ export default function SettingsPage() {
 
           <div className="py-7">
             <CodigoPanel plano />
+          </div>
+
+          <div className="py-7">
+            <GuiaPanel />
           </div>
 
           <div className="py-7">
@@ -298,6 +303,60 @@ export default function SettingsPage() {
             se acaba de decir, recarga la página y comprueba que esta referencia cambia.
           </p>
         </div>
+      )}
+    </>
+  );
+}
+
+/**
+ * Volver a encender la guía de primeros pasos.
+ *
+ * Existe porque la guía se puede apagar con una X, y una cosa que se apaga
+ * sin manera de encenderla otra vez no está apagada: está rota. Sólo sale
+ * cuando hay algo que encender, es decir, cuando está apagada y además
+ * quedaba trabajo por hacer: ofrecer encender una guía que ya está completa
+ * sería ofrecer ver una lista de cosas hechas.
+ */
+function GuiaPanel() {
+  const { data, actions } = useClub();
+  const toast = useToast();
+  const [ocupado, setOcupado] = useState(false);
+  const yo = currentStaff(data);
+  const pendientes = pasosPendientes(data);
+
+  const apagada = Boolean(yo?.setupHiddenAt);
+
+  return (
+    <>
+      <h3 className="text-lg text-ink-900">Guía de primeros pasos</h3>
+      <p className="mt-1 max-w-[52ch] text-sm leading-relaxed text-ink-600">
+        {apagada
+          ? pendientes > 0
+            ? `La tienes apagada y te quedan ${pendientes} ${pendientes === 1 ? 'paso' : 'pasos'} por hacer.`
+            : 'La tienes apagada, pero ya has hecho todos los pasos: no saldría igualmente.'
+          : pendientes > 0
+            ? `Sale en Inicio hasta que termines los pasos. Te quedan ${pendientes}.`
+            : 'Ya has hecho todos los pasos, así que ha desaparecido sola.'}
+      </p>
+      {apagada && pendientes > 0 && (
+        <Button
+          variant="secondary"
+          className="mt-4"
+          loading={ocupado}
+          onClick={async () => {
+            setOcupado(true);
+            try {
+              await actions.setupGuia(true);
+              toast.success('Guía encendida', 'Vuelve a salir en Inicio.');
+            } catch (e) {
+              toast.error('No se ha podido encender', humanError(e));
+            } finally {
+              setOcupado(false);
+            }
+          }}
+        >
+          Volver a encenderla
+        </Button>
       )}
     </>
   );

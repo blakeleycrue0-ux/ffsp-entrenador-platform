@@ -1,583 +1,679 @@
 /**
- * Dashboard — el centro de operaciones.
- * Responde de un vistazo: qué tengo hoy, quién viene, qué me falta por hacer.
+ * Inicio.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * QUÉ TIENE QUE RESPONDER, EN ESTE ORDEN: qué me toca ahora, cómo está mi
+ * equipo, qué quiero hacer, qué ha pasado. Nada más. Si un bloque no responde
+ * a una de esas cuatro, sobra.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * LO QUE HABÍA, Y POR QUÉ NO SERVÍA
+ *
+ * Esta pantalla era «Hola, Leon» a 52 píxeles y debajo cuatro cajas del mismo
+ * tamaño, dos de ellas casi siempre vacías, cada una con su cartel centrado
+ * de doce píxeles de margen arriba y abajo. En un móvil de 390 px, un club
+ * recién montado ocupaba más de dos pantallas y media de alto SIN UN SOLO
+ * DATO dentro. El saludo, que es lo que menos importa, era lo más grande de
+ * la pantalla; y las dos cosas que de verdad hay que saber —cuándo es el
+ * próximo entrenamiento y quién viene— pesaban lo mismo que un hueco.
+ *
+ * Lo que cambia:
+ *
+ *  · EL SALUDO ES UNA LÍNEA. Fecha, nombre y equipo, con el selector de
+ *    equipo al lado para quien lleva varios. Treinta píxeles de alto.
+ *  · UN SOLO PANEL PARA «LO SIGUIENTE». Antes eran dos tarjetas gemelas
+ *    —entrenamiento y partido— compitiendo entre ellas. Ahora manda la que
+ *    ocurre ANTES, grande, y la otra queda debajo en una línea. Es el orden
+ *    del calendario, no el del código.
+ *  · LOS NÚMEROS SON BALDOSAS, no tarjetas. Cuatro en una fila, con la cifra
+ *    legible, en el alto que antes ocupaba una sola.
+ *  · LOS VACÍOS SON FILAS. Dos renglones y un botón que lleva a crear lo que
+ *    falta, no un cartel de trescientos píxeles diciendo que no hay nada.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * NINGUNA CIFRA INVENTADA, Y «SIN DATOS» NO ES CERO
+ *
+ * `teamAttendanceRate` devuelve `null` cuando todavía no se ha pasado
+ * ninguna lista. Aquí eso se enseña como «—», no como 0 %. Es importante:
+ * un club que acaba de empezar no tiene una asistencia del cero por ciento,
+ * tiene una asistencia que nadie ha medido, y pintarle un cero es decirle
+ * que sus jugadoras no van a entrenar.
  */
 
-import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  ArrowRight, CalendarClock, ChevronRight, ClipboardList, Clock, MapPin,
-  Send, Users,
+  CalendarPlus, ChevronRight, ChevronsUpDown, ClipboardList, Clock, LayoutGrid,
+  MapPin, Users,
 } from 'lucide-react';
-import { useClub } from '@/store/store';
-import { callupOfMatch, clubShortName, currentStaff, isClubAdmin, nextMatch, nextSession, nombreReal, squadOf, summarizeRecord, teamOverview, visibleTeams } from '@/store/selectors';
+import { teamOverview } from '@/store/selectors';
 
 import { humanError } from '@/services/supabase';
 import { useToast } from '@/components/ui/Toast';
 import {
-  Tag, Button, Panel, Checkbox, EmptyState, LinkButton, Meter, Skeleton,
+  ActionTile, Button, Checkbox, Dropdown, EmptyState, LinkButton, Panel,
+  SectionHeader, Skeleton, StatTile, Tag,
 } from '@/components/ui';
-import { Ring, SplitBar } from '@/components/domain/Charts';
-import { cn, daysFromToday, longDate, minutesToLabel, relativeDay, relativeTime, toISODate, today } from '@/lib/utils';
-import { CreateMenu } from '@/components/layout/CreateMenu';
-import type { CoachTask } from '@/types';
+import { SplitBar } from '@/components/domain/Charts';
+import {
+  cn, daysFromToday, longDate, minutesToLabel, relativeDay, relativeTime, toISODate, today,
+} from '@/lib/utils';
+import type { CoachTask, Match, TrainingSession } from '@/types';
 import { useAnchura } from '@/components/layout/AppShell';
+import { CreateMenu } from '@/components/layout/CreateMenu';
+import { hayGuia, PrimerosPasos } from './PrimerosPasos';
+import { useInicio } from './datos';
+import { InicioMovil } from './InicioMovil';
 
+/**
+ * DOS COMPOSICIONES, LOS MISMOS DATOS.
+ *
+ * El móvil tiene su propia pantalla —`InicioMovil`— y no es la de escritorio
+ * encogida: en un teléfono, de pie y con una mano, lo único que importa es
+ * cuándo es lo siguiente y poder pasar lista de un toque. En un portátil hay
+ * sitio para el día entero a la vez, y encogerlo sería desperdiciarlo.
+ *
+ * Lo que NO cambia es lo que cuentan: las dos leen de `useInicio`, así que no
+ * puede pasar que una diga 90 % y la otra 89.
+ */
 export default function Dashboard() {
-  /* El ancho lo decide la tarea, no la pantalla. */
   useAnchura('ancho');
-  const { data, loading, loadError, teamId, actions } = useClub();
-  const ownName = clubShortName(data);
-  const admin = isClubAdmin(data);
-  const navigate = useNavigate();
+  const d = useInicio();
   const toast = useToast();
-  const [createOpen, setCreateOpen] = useState(false);
+  const [creando, setCreando] = useState(false);
 
-  const staff = currentStaff(data);
-  const teams = useMemo(() => visibleTeams(data), [data]);
-  const teamIds = teams.map((t) => t.id);
+  /* Los nombres de siempre, para no reescribir la composición de escritorio
+     entera: son los mismos valores con el nombre que ya tenían. */
+  const {
+    data, loading, loadError, actions, setTeamId, teams, equipo: activeTeam, resumen,
+    sesion: session0, partido: match0, callup, convocadas, confirmadas,
+    plantilla: squad, ultimaLista, marcas, tareasAbiertas, admin,
+    nombreClub: ownName, nombre,
+  } = d;
 
-  const overviews = useMemo(() => teams.map((t) => teamOverview(data, t)), [data, teams]);
-
-  // Las cuatro tarjetas principales miran al equipo activo: así el día del
-  // entrenador se lee de un tirón. El resto de equipos se ve más abajo.
-  const activeTeam = teams.find((t) => t.id === teamId) ?? teams[0];
-  const scope = activeTeam ? [activeTeam.id] : teamIds;
-  const session0 = nextSession(data, scope);
-  const match0 = nextMatch(data, scope);
-  const callup = callupOfMatch(data, match0?.id);
-  const squad = activeTeam ? squadOf(data, activeTeam.id) : [];
-  const lastAttendance = useMemo(
-    () =>
-      data.attendance
-        .filter((a) => a.teamId === activeTeam?.id)
-        .sort((a, b) => b.date.localeCompare(a.date))[0],
-    [data.attendance, activeTeam],
+  /* A PARTIR DE AQUÍ, SÓLO ESCRITORIO. El móvil se va por su camino antes
+     de las ramas de carga y error porque las suyas son distintas: el
+     esqueleto tiene la forma del héroe, no la de una rejilla. */
+  const movil = (
+    <div className="lg:hidden">
+      <InicioMovil d={d} onCrear={() => setCreando(true)} />
+      <CreateMenu open={creando} onClose={() => setCreando(false)} />
+    </div>
   );
-
-  // El resumen sale del mismo selector que usa Analíticas, para que las cifras
-  // de las dos pantallas nunca se contradigan.
-  const attCounts = useMemo(
-    () => summarizeRecord(lastAttendance, squad.length),
-    [lastAttendance, squad.length],
-  );
-
-  const selected = callup?.entries.filter((e) => e.selected) ?? [];
-  const confirmed = selected.filter((e) => e.response === 'confirmada').length;
-  const pendingCallup = selected.filter((e) => e.response === 'pendiente').length;
-  const declined = selected.filter((e) => e.response === 'rechazada').length;
-
-  const openTasks = data.tasks.filter((t) => !t.done);
-  /* Saludar con «Hola, marta.vives@gmail.com» es peor que no saludar con
-     nombre. Qué cuenta como nombre de verdad lo decide `nombreReal`. */
-  const firstName = nombreReal(staff)?.split(' ')[0] ?? '';
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <div className="skeleton h-8 w-64" />
-          <div className="skeleton h-4 w-80" />
-        </div>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <Skeleton />
-          <Skeleton />
-          <Skeleton />
-          <Skeleton />
+      <>
+      {movil}
+      <div className="hidden space-y-5 lg:block">
+        <Skeleton className="h-7 w-56" />
+        <Skeleton className="h-[168px] w-full" />
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[76px]" />)}
         </div>
       </div>
+      </>
     );
   }
 
-  // Error de carga: la base de datos todavía no está preparada o no hay red.
   if (loadError) {
     return (
-      <Panel className="border-bad/25 bg-bad/5 p-6">
-        <h2 className="text-[16px] font-semibold text-bad">No hemos podido cargar tus datos</h2>
-        <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-bad/90">{loadError}</p>
+      <>
+      {movil}
+      <Panel className="hidden border-bad/25 bg-bad/5 p-5 lg:block">
+        <h2 className="text-md font-semibold text-bad">No hemos podido cargar tus datos</h2>
+        <p className="mt-2 max-w-2xl text-base leading-relaxed text-bad/90">{loadError}</p>
         <Button variant="secondary" size="sm" className="mt-4" onClick={() => void actions.refresh()}>
           Reintentar
         </Button>
       </Panel>
+      </>
     );
   }
 
-  // Estado inicial del club: todavía no hay equipos asignados.
+  /* ── Sin equipos todavía ─────────────────────────────────────────────── */
   if (teams.length === 0) {
     return (
-      <div className="space-y-7">
-        <div>
-          <h1 className="text-[26px] font-semibold leading-tight sm:text-[30px]">
-            Hola{firstName ? `, ${firstName}` : ''}
-          </h1>
-          <p className="mt-1.5 text-[14.5px] text-muted">{longDate(toISODate(today()))}</p>
-        </div>
-
-        <Panel>
-          <EmptyState
-           
-            title={admin ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
-            description={
-              admin
-                ? 'Crea los equipos de la temporada y asigna a cada entrenadora el suyo. A partir de ahí, cada una monta su plantilla, sus entrenamientos y sus convocatorias.'
-                : 'La coordinadora del club tiene que asignarte tu equipo. En cuanto lo haga, aquí verás tu día completo: entrenamiento, partido, asistencia y convocatoria.'
-            }
-            action={
-              admin ? (
-                <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm">
-                  Crear equipo
-                </LinkButton>
-              ) : undefined
-            }
-          />
-        </Panel>
+      <>
+      {movil}
+      <div className="hidden space-y-6 lg:block">
+        <PrimerosPasos />
+        <Saludo nombre={nombre} />
+        {/* CON LA GUÍA DELANTE, ESTO SOBRA: su primer paso dice lo mismo, con
+            el mismo botón, treinta píxeles más arriba. Sólo aparece cuando la
+            guía no está —porque se apagó o porque esta persona no puede crear
+            equipos—, que es cuando hace falta decirlo. */}
+        {!hayGuia(data) && (
+          <Panel className="px-4 py-1">
+            <EmptyState
+              title={admin ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
+              description={
+                admin
+                  ? 'Todo lo demás cuelga de un equipo: la plantilla, el calendario y las sesiones.'
+                  : 'La administración del club tiene que asignarte el tuyo. En cuanto lo haga, aquí verás tu día completo.'
+              }
+              action={
+                admin ? (
+                  <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm">Crear equipo</LinkButton>
+                ) : undefined
+              }
+            />
+          </Panel>
+        )}
       </div>
+      </>
     );
   }
 
   return (
-    <div className="space-y-7">
-      {/* Saludo */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          {/* La fecha va ARRIBA y pequeña, el saludo grande debajo. Antes el
-              saludo llevaba colgando «Esto es lo que tienes preparado para
-              hoy», que no dice nada que no diga ya la pantalla entera. */}
-          <p className="rotulo">{longDate(toISODate(today()))}</p>
-          <h1 className="cifra mt-2 text-4xl sm:text-5xl">
-            {firstName ? `Hola, ${firstName}` : 'Hola'}
-          </h1>
+    <>
+    {movil}
+    <div className="hidden space-y-6 lg:block">
+      <PrimerosPasos />
+
+      <Saludo
+        nombre={nombre}
+        equipo={activeTeam?.name}
+        equipos={teams.map((t) => ({ id: t.id, name: t.name }))}
+        onEquipo={setTeamId}
+      />
+
+      <LoSiguiente
+        sesion={session0}
+        partido={match0}
+        nombreEquipo={(id) => data.teams.find((t) => t.id === id)?.name}
+        casa={ownName}
+      />
+
+      {/* ── Cómo está el equipo ─────────────────────────────────────────── */}
+      <section>
+        <SectionHeader
+          title="Tu equipo"
+          hint={activeTeam?.name}
+          action={<Link to="/app/analiticas" className="hover:text-marca-400">Analíticas</Link>}
+        />
+        <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+          <StatTile
+            label="Plantilla"
+            value={squad.length}
+            hint={squad.length === 1 ? 'jugadora' : 'jugadoras'}
+            to="/app/plantilla"
+          />
+          {/* NULO NO ES CERO: sin ninguna lista pasada no hay media que
+              enseñar, y un 0 % diría algo que no es verdad. */}
+          <StatTile
+            label="Asistencia"
+            value={resumen?.attendanceRate === null || resumen === null ? '—' : `${resumen.attendanceRate} %`}
+            hint={resumen?.attendanceRate === null ? 'sin listas' : 'últimas 6'}
+            to="/app/analiticas"
+          />
+          <StatTile
+            label="No disponibles"
+            value={resumen?.unavailable ?? 0}
+            hint={resumen && resumen.unavailable > 0 ? 'revisar' : 'plantilla entera'}
+            tone={resumen && resumen.unavailable > 0 ? 'warn' : undefined}
+            to="/app/disponibilidad"
+          />
+          <StatTile
+            label="Convocatoria"
+            value={callup ? `${confirmadas}/${convocadas.length}` : '—'}
+            hint={callup ? 'confirmadas' : 'sin crear'}
+            to={match0 ? `/app/partidos/${match0.id}` : '/app/partidos'}
+          />
         </div>
-        {/* Aquí NO va un «Crear». La barra lateral ya tiene el suyo, y en el
-            móvil está en el menú: tres botones iguales en la misma pantalla no
-            dan tres caminos, dan una duda. Una acción principal por pantalla. */}
-      </div>
 
-      {/* Tarjetas principales */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Próximo entrenamiento */}
-        {session0 ? (
-          <Panel className="relative overflow-hidden">
-            <div className="relative p-5">
-              <div className="flex items-center justify-between gap-3">
-                <span className="eyebrow">Próximo entrenamiento</span>
-                <Tag tone={daysFromToday(session0.date) === 0 ? 'solid' : 'neutral'} size="sm">
-                  {relativeDay(session0.date)}
-                </Tag>
-              </div>
-
-              {/* La HORA es el dato. Va grande y sola; el resto la acompaña. */}
-              <p className="cifra mt-4 text-5xl">{session0.start}</p>
-              <p className="mt-2 text-md font-medium text-ink-900">{session0.title}</p>
-              <p className="mt-0.5 text-base text-ink-500">
-                {data.teams.find((t) => t.id === session0.teamId)?.name}
+        {/* La última lista, con su reparto. Sólo si existe: sin lista pasada
+            una barra en blanco no informa de nada. */}
+        {ultimaLista && (
+          <div className="mt-3 rounded-xl border border-line-sutil bg-panel px-3.5 py-3">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-sm font-medium text-ink-800">
+                Última lista · {relativeDay(ultimaLista.date).toLowerCase()}
               </p>
+              <Link to="/app/entrenamientos" className="shrink-0 text-xs font-medium text-ink-600 hover:text-ink-900">
+                Pasar lista
+              </Link>
+            </div>
+            <SplitBar
+              className="mt-2.5"
+              segments={[
+                { value: marcas.present + marcas.late, color: 'bg-ink-800', label: 'Vinieron' },
+                { value: marcas.justified + marcas.injured, color: 'bg-warn', label: 'Justificadas' },
+                { value: marcas.absent, color: 'bg-bad', label: 'Ausentes' },
+                { value: marcas.unregistered, color: 'bg-line', label: 'Sin registrar' },
+              ]}
+            />
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-600">
+              <Leyenda color="bg-ink-800" n={marcas.present + marcas.late} texto="vinieron" />
+              <Leyenda color="bg-warn" n={marcas.justified + marcas.injured} texto="justificadas" />
+              <Leyenda color="bg-bad" n={marcas.absent} texto={marcas.absent === 1 ? 'ausente' : 'ausentes'} />
+            </div>
+          </div>
+        )}
+      </section>
 
-              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-base text-ink-600">
-                <span className="flex items-center gap-1.5">
-                  <Clock size={15} className="text-ink-400" />
-                  {minutesToLabel(session0.duration)}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <MapPin size={15} className="text-ink-400" />
-                  {session0.venue}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Users size={15} className="text-ink-400" />
-                  {session0.expectedPlayers} jugadoras
-                </span>
-              </div>
+      {/* ── Atajos ──────────────────────────────────────────────────────── */}
+      <section>
+        <SectionHeader title="Hacer ahora" />
+        {/* UNA COLUMNA POR DEBAJO DE 380 px. A 320, dos columnas dejan 73 px
+            de texto por baldosa y «entrenamiento» mide 95: es una palabra
+            sola, no tiene por dónde partirse, y se salía de su caja. Medido.
+            A pantalla completa cabe entera y se lee mejor. */}
+        <div className="mt-3 grid grid-cols-1 gap-2.5 min-[380px]:grid-cols-2 lg:grid-cols-4">
+          <ActionTile to="/app/entrenamientos/nuevo" icon={<ClipboardList size={16} />}>
+            Nuevo entrenamiento
+          </ActionTile>
+          <ActionTile to="/app/partidos/nuevo" icon={<CalendarPlus size={16} />}>
+            Añadir partido
+          </ActionTile>
+          <ActionTile to="/app/plantilla" icon={<Users size={16} />}>
+            Ver plantilla
+          </ActionTile>
+          <ActionTile to="/app/pizarra" icon={<LayoutGrid size={16} />}>
+            Pizarra táctica
+          </ActionTile>
+        </div>
+      </section>
 
-              {/* Línea de tiempo compacta de los bloques */}
-              <div className="mt-4 flex gap-1">
-                {session0.blocks.map((b) => (
-                  <div
-                    key={b.id}
-                    title={`${b.title} · ${b.duration}′`}
-                    className="h-1.5 rounded-full bg-ink-200 transition-colors hover:bg-ink-700"
-                    style={{ flex: b.duration }}
+      {/* ── Tareas y actividad ──────────────────────────────────────────── */}
+      <div className="grid gap-6 lg:grid-cols-5">
+        <section className="lg:col-span-2">
+          <SectionHeader
+            title="Tareas"
+            hint={tareasAbiertas.length > 0 ? `${tareasAbiertas.length} abiertas` : undefined}
+          />
+          {data.tasks.length === 0 ? (
+            <EmptyState
+              className="mt-1"
+              title="Sin tareas pendientes"
+              description="Las tareas aparecen aquí cuando alguien del cuerpo técnico apunta algo que hacer."
+            />
+          ) : (
+            <ul className="mt-2 -mx-2">
+              {[...data.tasks]
+                .sort((a, b) => Number(a.done) - Number(b.done))
+                .slice(0, 6)
+                .map((t) => (
+                  <TaskRow
+                    key={t.id}
+                    task={t}
+                    onToggle={() =>
+                      actions
+                        .toggleTask(t)
+                        .catch((e) => toast.error('No hemos podido guardar la tarea', humanError(e)))
+                    }
                   />
                 ))}
-              </div>
-              <p className="mt-2 text-[12px] text-ink-400">{session0.blocks.length} bloques · {session0.objective}</p>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                <LinkButton to={`/app/entrenamientos/${session0.id}`} size="sm">
-                  Ver entrenamiento
-                </LinkButton>
-                <LinkButton to="/app/entrenamientos" size="sm" variant="secondary" icon={<ClipboardList size={15} />}>
-                  Pasar asistencia
-                </LinkButton>
-              </div>
-            </div>
-          </Panel>
-        ) : (
-          <Panel>
-            <EmptyState
-             
-             
-              title="No tienes entrenamientos planificados"
-              description="Monta la primera sesión con los ejercicios de tu biblioteca."
-              action={<LinkButton to="/app/entrenamientos/nuevo" size="sm">Crear entrenamiento</LinkButton>}
-            />
-          </Panel>
-        )}
-
-        {/* Próximo partido */}
-        {match0 ? (
-          <Panel className="relative overflow-hidden">
-            <div className="relative p-5">
-              <div className="flex items-center justify-between gap-3">
-                <span className="eyebrow">Próximo partido</span>
-                {/* En gris, no en blanco sólido: la fecha completa está tres
-                    líneas más abajo, así que esto es un recordatorio, no un
-                    dato nuevo, y no tiene por qué ser lo más brillante de la
-                    tarjeta. */}
-                <Tag size="sm">{relativeDay(match0.date)}</Tag>
-              </div>
-
-              <p className="mt-3 text-[13px] font-medium text-ink-900">
-                {data.teams.find((t) => t.id === match0.teamId)?.name} · {match0.competition}
-              </p>
-
-              <div className="mt-3 flex items-center gap-4">
-                <div className="flex-1 text-right">
-                  <p className="text-[16px] font-semibold leading-tight text-ink-900">
-                    {match0.home ? ownName : match0.opponent}
-                  </p>
-                  <p className="mt-0.5 text-[11.5px] text-ink-400">{match0.home ? 'Local' : 'Visitante'}</p>
-                </div>
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink-50 text-[12px] font-semibold text-ink-900">
-                  vs
-                </span>
-                <div className="flex-1">
-                  <p className="text-[16px] font-semibold leading-tight text-ink-900">
-                    {match0.home ? match0.opponent : ownName}
-                  </p>
-                  <p className="mt-0.5 text-[11.5px] text-ink-400">{match0.home ? 'Visitante' : 'Local'}</p>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13.5px] text-ink-600">
-                <span className="flex items-center gap-1.5">
-                  <CalendarClock size={15} className="text-ink-400" />
-                  {longDate(match0.date)}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Clock size={15} className="text-ink-400" />
-                  {match0.start}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <MapPin size={15} className="text-ink-400" />
-                  {match0.venue}
-                </span>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                <LinkButton to={`/app/partidos/${match0.id}`} size="sm">
-                  Ver partido
-                </LinkButton>
-                <LinkButton
-                  to={`/app/partidos/${match0.id}`}
-                  size="sm"
-                  variant="secondary"
-                  icon={<Users size={15} />}
-                >
-                  {callup ? 'Gestionar convocatoria' : 'Crear convocatoria'}
-                </LinkButton>
-              </div>
-            </div>
-          </Panel>
-        ) : (
-          <Panel>
-            <EmptyState
-             
-             
-              title="No hay partidos programados"
-              description="Añade el próximo partido para poder preparar la convocatoria."
-              action={<LinkButton to="/app/partidos/nuevo" size="sm">Crear partido</LinkButton>}
-            />
-          </Panel>
-        )}
-
-        {/* ── Asistencia y convocatoria ────────────────────────────────────
-            Sin caja. Arriba están las dos piezas que de verdad lo merecen —lo
-            siguiente que toca hacer—; esto es contexto, y ponerlo en una
-            tarjeta idéntica a las de arriba hace que las cuatro pesen lo mismo
-            y que no se vea cuál es cuál. Lo separa un filete y el aire. */}
-        <section className="border-t border-line-sutil pt-6">
-          <div className="flex items-center justify-between gap-3">
-            <span className="eyebrow">Asistencia</span>
-            <Link to="/app/entrenamientos" className="text-[12.5px] font-medium text-ink-900 hover:text-ink-900">
-              Ver asistencia
-            </Link>
-          </div>
-
-          <div className="mt-4 flex items-center gap-5">
-            <Ring value={overviews.find((o) => o.team.id === activeTeam?.id)?.attendanceRate ?? 0} size={80} label="media" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold text-ink-900">{squad.length} jugadoras</p>
-              <p className="mt-0.5 text-[12.5px] text-muted">
-                {activeTeam?.name} ·{' '}
-                {lastAttendance ? `último registro ${relativeDay(lastAttendance.date).toLowerCase()}` : 'sin registros'}
-              </p>
-
-              <div className="mt-3 space-y-2">
-                {/* El tramo de las que vinieron va en BLANCO, no en verde: es
-                    la parte normal de la barra y ocupa casi toda. En verde, lo
-                    primero que se ve de la pantalla es una barra de color que
-                    no avisa de nada; en blanco, lo que destaca es el trozo
-                    ámbar y el rojo, que es donde hay algo que mirar. */}
-                <SplitBar
-                  segments={[
-                    { value: attCounts.present + attCounts.late, color: 'bg-ink-800', label: 'Vinieron' },
-                    { value: attCounts.justified + attCounts.injured, color: 'bg-warn', label: 'Justificadas' },
-                    { value: attCounts.absent, color: 'bg-bad', label: 'Ausentes' },
-                    { value: attCounts.unregistered, color: 'bg-line', label: 'Sin registrar' },
-                  ]}
-                />
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]">
-                  <span className="flex items-center gap-1.5 text-ink-600">
-                    <span className="h-2 w-2 rounded-full bg-ink-800" /> {attCounts.present} presentes
-                  </span>
-                  <span className="flex items-center gap-1.5 text-ink-600">
-                    <span className="h-2 w-2 rounded-full bg-warn" /> {attCounts.justified + attCounts.injured}{' '}
-                    justificadas
-                  </span>
-                  <span className="flex items-center gap-1.5 text-ink-600">
-                    <span className="h-2 w-2 rounded-full bg-bad" /> {attCounts.absent}{' '}
-                    {attCounts.absent === 1 ? 'ausente' : 'ausentes'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Convocatoria */}
-        <section className="border-t border-line-sutil pt-6">
-          <div className="flex items-center justify-between gap-3">
-            <span className="eyebrow">Convocatoria</span>
-            {match0 && (
-              <Link to={`/app/partidos/${match0.id}`} className="text-[12.5px] font-medium text-ink-900 hover:text-ink-900">
-                Gestionar
-              </Link>
-            )}
-          </div>
-
-          {callup ? (
-            <>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-[30px] font-semibold leading-none text-ink-900 tabular-nums">{confirmed}</span>
-                <span className="text-[16px] text-ink-400">/ {selected.length} confirmadas</span>
-              </div>
-              <p className="mt-1 text-[12.5px] text-muted">
-                {match0?.opponent} · {relativeDay(match0!.date).toLowerCase()} {match0?.start}
-              </p>
-
-              <Meter value={(confirmed / (selected.length || 1)) * 100} className="mt-4" height={7} />
-
-              <div className="mt-3.5 grid grid-cols-3 gap-2 text-center">
-                {[
-                  { n: confirmed, l: 'Confirmadas', c: 'text-ok' },
-                  { n: pendingCallup, l: 'Pendientes', c: 'text-warn' },
-                  { n: declined, l: 'No pueden', c: 'text-bad' },
-                ].map((x) => (
-                  <div key={x.l} className="rounded-xl bg-ink-50 py-2.5">
-                    <p className={cn('text-[18px] font-semibold leading-none tabular-nums', x.c)}>{x.n}</p>
-                    <p className="mt-1 text-[11.5px] text-muted">{x.l}</p>
-                  </div>
-                ))}
-              </div>
-
-              {pendingCallup > 0 && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  block
-                  className="mt-4"
-                  icon={<Send size={15} />}
-                  onClick={() => navigate(`/app/partidos/${match0!.id}`)}
-                >
-                  Recordar a los {pendingCallup} pendientes
-                </Button>
-              )}
-            </>
-          ) : (
-            <EmptyState
-             
-             
-              title="Sin convocatoria todavía"
-              description="Elige a las jugadoras y copia la lista para compartirla."
-              action={
-                match0 && (
-                  <LinkButton to={`/app/partidos/${match0.id}`} size="sm">
-                    Crear convocatoria
-                  </LinkButton>
-                )
-              }
-            />
-          )}
-        </section>
-      </div>
-
-      {/* Tareas + actividad */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
-        <section className="border-t border-line-sutil pt-6 lg:col-span-2">
-          <div className="flex items-center justify-between gap-3">
-            <span className="eyebrow">Tareas pendientes</span>
-            <span className="text-[12.5px] text-ink-400">{openTasks.length} abiertas</span>
-          </div>
-
-          {data.tasks.length === 0 ? (
-            <EmptyState title="Sin tareas pendientes" description="Todo hecho por hoy." />
-          ) : (
-            <ul className="mt-3 -mx-1.5 space-y-0.5">
-              {[...data.tasks].sort((a, b) => Number(a.done) - Number(b.done)).slice(0, 7).map((t) => (
-                <TaskRow
-                  key={t.id}
-                  task={t}
-                  onToggle={() =>
-                    actions.toggleTask(t).catch((e) => toast.error('No hemos podido guardar la tarea', humanError(e)))
-                  }
-                />
-              ))}
             </ul>
           )}
         </section>
 
-        <section className="border-t border-line-sutil pt-6 lg:col-span-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="eyebrow">Actividad reciente</span>
-          </div>
-          {/* Una lista vacía dejaba media tarjeta en blanco, sin decir siquiera
-              qué va a aparecer ahí. Un hueco mudo no es sobriedad: es que
-              todavía no se ha escrito el texto. */}
+        <section className="lg:col-span-3">
+          <SectionHeader title="Actividad reciente" />
           {data.activity.length === 0 ? (
             <EmptyState
+              className="mt-1"
               title="Todavía no hay movimiento"
-              description="Aquí irá apareciendo lo que hagáis: altas de jugadoras, entrenamientos planificados, partidos y listas pasadas. Tuyo y del resto del cuerpo técnico."
+              description="Aquí irá apareciendo lo que hagáis: altas de jugadoras, entrenamientos, partidos y listas pasadas."
             />
           ) : (
-          <ul className="mt-4 space-y-3.5">
-            {data.activity.slice(0, 6).map((a) => (
-              <li key={a.id} className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-300" />
-                <div className="min-w-0 flex-1">
-                  {a.link ? (
-                    <Link to={a.link} className="text-[13.5px] leading-snug text-ink-700 hover:text-ink-900">
-                      {a.text}
-                    </Link>
-                  ) : (
-                    <p className="text-[13.5px] leading-snug text-ink-700">{a.text}</p>
-                  )}
-                  <p className="mt-0.5 text-[11.5px] text-ink-400">{relativeTime(a.at)}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+            <ul className="mt-3 space-y-3">
+              {data.activity.slice(0, 6).map((a) => (
+                <li key={a.id} className="flex gap-3">
+                  <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-ink-400" />
+                  <div className="min-w-0 flex-1">
+                    {a.link ? (
+                      <Link to={a.link} className="text-sm leading-snug text-ink-700 hover:text-ink-900">
+                        {a.text}
+                      </Link>
+                    ) : (
+                      <p className="text-sm leading-snug text-ink-700">{a.text}</p>
+                    )}
+                    <p className="mt-0.5 text-2xs text-ink-500">{relativeTime(a.at)}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       </div>
 
-      {/* Mis equipos */}
-      <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-[17px] font-semibold">Mis equipos</h2>
-          <Link to="/app/equipo-tecnico" className="flex items-center gap-1 text-[13px] font-medium text-ink-900 hover:text-ink-900">
-            Ver todos <ArrowRight size={14} />
-          </Link>
-        </div>
+      {/* ── Los otros equipos ───────────────────────────────────────────────
+          SÓLO CON MÁS DE UNO. Con un equipo, esta sección repetía en una
+          tarjeta lo que la pantalla entera acaba de decir. */}
+      {teams.length > 1 && (
+        <section>
+          <SectionHeader
+            title="Mis equipos"
+            action={<Link to="/app/equipo-tecnico" className="hover:text-marca-400">Ver todos</Link>}
+          />
+          <ul className="mt-3 divide-y divide-line-sutil overflow-hidden rounded-xl border border-line-sutil bg-panel">
+            {teams.map((t) => {
+              const o = teamOverview(data, t);
+              return (
+                <li key={t.id}>
+                  <Link
+                    to={`/app/equipo-tecnico/${t.id}`}
+                    className="flex items-center gap-3 px-3.5 py-3 transition-colors hover:bg-raised"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-base font-medium text-ink-900">{t.name}</p>
+                      <p className="mt-0.5 truncate text-xs text-ink-500">
+                        {o.squadSize} {o.squadSize === 1 ? 'jugadora' : 'jugadoras'}
+                        {o.nextSession ? ` · entrena ${relativeDay(o.nextSession.date).toLowerCase()}` : ''}
+                        {o.unavailable > 0 ? ` · ${o.unavailable} no disponibles` : ''}
+                      </p>
+                    </div>
+                    <span className="shrink-0 font-display text-base font-semibold tabular-nums text-ink-700">
+                      {o.attendanceRate === null ? '—' : `${o.attendanceRate} %`}
+                    </span>
+                    <ChevronRight size={15} className="shrink-0 text-ink-400" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+    </div>
+    </>
+  );
+}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {overviews.map((o) => (
-            <Link key={o.team.id} to={`/app/equipo-tecnico/${o.team.id}`} className="panel panel-hover block p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="truncate text-[15px] font-semibold text-ink-900">{o.team.name}</p>
-                  <p className="mt-0.5 text-[12px] text-ink-400">{o.squadSize} jugadoras</p>
-                </div>
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink-50 text-[11px] font-bold text-ink-900">
-                  {o.attendanceRate}%
-                </span>
-              </div>
+/* ───────────────────────────────── Piezas ─────────────────────────────────── */
 
-              <div className="mt-3.5 space-y-2 text-[12.5px]">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-ink-400">Entrenamiento</span>
-                  <span className="truncate font-medium text-ink-700">
-                    {o.nextSession ? `${relativeDay(o.nextSession.date)} ${o.nextSession.start}` : '—'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-ink-400">Partido</span>
-                  <span className="truncate font-medium text-ink-700">
-                    {o.nextMatch ? `${relativeDay(o.nextMatch.date)} ${o.nextMatch.start}` : '—'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-ink-400">Convocatoria</span>
-                  <span className="font-medium text-ink-700">
-                    {o.callup ? `${o.confirmed} confirmados` : 'Sin crear'}
-                  </span>
-                </div>
-              </div>
+function Leyenda({ color, n, texto }: { color: string; n: number; texto: string }) {
+  return (
+    <span className="flex items-center gap-1.5">
+      <span className={cn('h-1.5 w-1.5 rounded-full', color)} />
+      <span className="tabular-nums">{n}</span> {texto}
+    </span>
+  );
+}
 
-              <div className="mt-3.5 flex items-center justify-between border-t border-ink-100 pt-3">
-                <span className="flex items-center gap-1.5 text-[12px]">
-                  {o.unavailable > 0 ? (
-                    <>
-                      <span className="h-1.5 w-1.5 rounded-full bg-warn" />
-                      <span className="text-muted">{o.unavailable} no disponibles</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="h-1.5 w-1.5 rounded-full bg-ok" />
-                      <span className="text-muted">Plantilla completa</span>
-                    </>
-                  )}
-                </span>
-                <ChevronRight size={15} className="text-ink-300" />
-              </div>
-            </Link>
-          ))}
-        </div>
+/**
+ * El saludo, en una línea.
+ *
+ * Ocupaba 52 px de alto más la fecha encima: la pieza más grande de la
+ * pantalla para decir algo que no cambia nunca. Ahora la fecha y el nombre
+ * van en el mismo bloque de treinta y pico píxeles, y al lado —no debajo— el
+ * selector de equipo, que en el móvil era lo único que obligaba a abrir el
+ * menú entero para cambiar de equipo.
+ */
+function Saludo({
+  nombre, equipo, equipos, onEquipo,
+}: {
+  nombre: string;
+  equipo?: string;
+  equipos?: { id: string; name: string }[];
+  onEquipo?: (id: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <div className="min-w-0">
+        <h1 className="truncate font-display text-xl font-semibold tracking-[-0.016em] text-ink-900 sm:text-2xl">
+          {nombre ? `Hola, ${nombre}` : 'Hola'}
+        </h1>
+        <p className="mt-0.5 truncate text-sm text-ink-500">
+          {longDate(toISODate(today()))}
+          {equipo ? ` · ${equipo}` : ''}
+        </p>
       </div>
 
-      <CreateMenu open={createOpen} onClose={() => setCreateOpen(false)} />
+      {/* Con un solo equipo no hay nada que elegir, así que no hay selector. */}
+      {equipos && equipos.length > 1 && onEquipo && (
+        <Dropdown
+          className="w-[220px]"
+          trigger={
+            <button className="flex h-9 max-w-[62vw] items-center gap-2 rounded-xl border border-line bg-panel px-3 text-sm font-medium text-ink-800 transition-colors hover:bg-raised">
+              <span className="truncate">{equipo ?? 'Equipo'}</span>
+              <ChevronsUpDown size={14} className="shrink-0 text-ink-400" />
+            </button>
+          }
+        >
+          {(close) => (
+            <>
+              <p className="eyebrow px-2.5 py-1.5">Cambiar de equipo</p>
+              {equipos.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => { onEquipo(t.id); close(); }}
+                  className={cn(
+                    'block w-full truncate rounded px-2.5 py-2 text-left text-base transition-colors',
+                    t.name === equipo ? 'bg-marca-600/14 font-medium text-ink-900' : 'text-ink-700 hover:bg-surface',
+                  )}
+                >
+                  {t.name}
+                </button>
+              ))}
+            </>
+          )}
+        </Dropdown>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Lo siguiente que toca.
+ * ---------------------------------------------------------------------------
+ * UNA SOLA PIEZA, Y MANDA LA FECHA. Antes eran dos tarjetas gemelas, una para
+ * el entrenamiento y otra para el partido, siempre en el mismo orden aunque
+ * el partido fuera mañana y el entrenamiento la semana que viene. Aquí la
+ * primera es la que ocurre ANTES y la otra baja a una línea: es el orden en
+ * el que van a pasar las cosas, que es el único que le sirve a quien entrena.
+ */
+function LoSiguiente({
+  sesion, partido, nombreEquipo, casa,
+}: {
+  sesion?: TrainingSession;
+  partido?: Match;
+  nombreEquipo: (id: string) => string | undefined;
+  casa: string;
+}) {
+  if (!sesion && !partido) {
+    return (
+      <Panel className="px-4 py-1">
+        {/* UNA SOLA ACCIÓN. Llevaba dos —entrenamiento y partido— y en 320 px
+            se apilaban: con la descripción en tres renglones, el vacío subía
+            a 214 px, que es justo el cartel que esto venía a quitar. Y la
+            segunda sobraba: «Añadir partido» está dos bloques más abajo, en
+            los atajos. */}
+        <EmptyState
+          title="No tienes nada programado"
+          description="El próximo entrenamiento o partido aparecerá aquí."
+          action={<LinkButton to="/app/entrenamientos/nuevo" size="sm">Crear entrenamiento</LinkButton>}
+        />
+      </Panel>
+    );
+  }
+
+  /* Cuál va antes. Se compara fecha y hora como texto porque las dos están
+     en formato ISO y «2026-10-11 09:00» ordena igual leyéndose que
+     convirtiéndolo a fecha, sin pasar por la zona horaria del navegador. */
+  const cuando = (x: { date: string; start: string }) => `${x.date} ${x.start}`;
+  const primeroEsSesion =
+    !!sesion && (!partido || cuando(sesion) <= cuando(partido));
+
+  return (
+    <Panel className="overflow-hidden">
+      {primeroEsSesion && sesion ? (
+        <SesionGrande sesion={sesion} equipo={nombreEquipo(sesion.teamId)} />
+      ) : (
+        partido && <PartidoGrande partido={partido} equipo={nombreEquipo(partido.teamId)} casa={casa} />
+      )}
+
+      {/* Y lo otro, en una línea. */}
+      {primeroEsSesion && partido && (
+        <Secundario
+          to={`/app/partidos/${partido.id}`}
+          rotulo="Después"
+          texto={`${partido.home ? 'vs' : 'en'} ${partido.opponent}`}
+          cuando={`${relativeDay(partido.date)} · ${partido.start}`}
+        />
+      )}
+      {!primeroEsSesion && sesion && (
+        <Secundario
+          to={`/app/entrenamientos/${sesion.id}`}
+          rotulo="Después"
+          texto={sesion.title}
+          cuando={`${relativeDay(sesion.date)} · ${sesion.start}`}
+        />
+      )}
+    </Panel>
+  );
+}
+
+function Secundario({
+  to, rotulo, texto, cuando,
+}: { to: string; rotulo: string; texto: string; cuando: string }) {
+  return (
+    <Link
+      to={to}
+      className="flex items-center gap-3 border-t border-line-sutil px-4 py-3 transition-colors hover:bg-raised"
+    >
+      <span className="eyebrow shrink-0">{rotulo}</span>
+      <span className="min-w-0 flex-1 truncate text-base text-ink-800">{texto}</span>
+      <span className="shrink-0 text-sm tabular-nums text-ink-500">{cuando}</span>
+      <ChevronRight size={15} className="shrink-0 text-ink-400" />
+    </Link>
+  );
+}
+
+function SesionGrande({ sesion, equipo }: { sesion: TrainingSession; equipo?: string }) {
+  const hoy = daysFromToday(sesion.date) === 0;
+  return (
+    <div className="p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <span className="eyebrow">Próximo entrenamiento</span>
+        <Tag tone={hoy ? 'solid' : 'neutral'} size="sm">{relativeDay(sesion.date)}</Tag>
+      </div>
+
+      {/* La hora y el título en la misma línea: la hora es el dato, el título
+          es lo que la identifica, y partirlos en dos bloques de 52 px era
+          gastar media pantalla en dos renglones. */}
+      <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <p className="cifra text-3xl sm:text-4xl">{sesion.start}</p>
+        <p className="min-w-0 flex-1 truncate text-md font-medium text-ink-900">{sesion.title}</p>
+      </div>
+      {equipo && <p className="mt-1 truncate text-sm text-ink-500">{equipo}</p>}
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-600">
+        <span className="flex items-center gap-1.5">
+          <Clock size={14} className="text-ink-400" />
+          {minutesToLabel(sesion.duration)}
+        </span>
+        {sesion.venue && (
+          <span className="flex min-w-0 items-center gap-1.5">
+            <MapPin size={14} className="shrink-0 text-ink-400" />
+            <span className="truncate">{sesion.venue}</span>
+          </span>
+        )}
+        <span className="flex items-center gap-1.5">
+          <Users size={14} className="text-ink-400" />
+          {sesion.expectedPlayers} jugadoras
+        </span>
+      </div>
+
+      {/* Los bloques, a escala. Es la forma de la sesión de un vistazo: dónde
+          está el grueso y cuánto dura el calentamiento. */}
+      {sesion.blocks.length > 0 && (
+        <div className="mt-4">
+          <div className="flex gap-1">
+            {sesion.blocks.map((b) => (
+              <div
+                key={b.id}
+                title={`${b.title} · ${b.duration}′`}
+                className="h-1.5 rounded-full bg-ink-300"
+                style={{ flex: b.duration }}
+              />
+            ))}
+          </div>
+          <p className="mt-2 truncate text-xs text-ink-500">
+            {sesion.blocks.length} bloques{sesion.objective ? ` · ${sesion.objective}` : ''}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <LinkButton to={`/app/entrenamientos/${sesion.id}`} size="sm">Ver entrenamiento</LinkButton>
+        <LinkButton to="/app/entrenamientos" size="sm" variant="quiet">Pasar lista</LinkButton>
+      </div>
+    </div>
+  );
+}
+
+function PartidoGrande({
+  partido, equipo, casa,
+}: { partido: Match; equipo?: string; casa: string }) {
+  const hoy = daysFromToday(partido.date) === 0;
+  return (
+    <div className="p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <span className="eyebrow">Próximo partido</span>
+        <Tag tone={hoy ? 'solid' : 'neutral'} size="sm">{relativeDay(partido.date)}</Tag>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <p className="cifra text-3xl sm:text-4xl">{partido.start}</p>
+        <p className="min-w-0 flex-1 truncate text-md font-medium text-ink-900">
+          {partido.home ? `${casa} · ${partido.opponent}` : `${partido.opponent} · ${casa}`}
+        </p>
+      </div>
+      <p className="mt-1 truncate text-sm text-ink-500">
+        {partido.home ? 'En casa' : 'Fuera'}
+        {equipo ? ` · ${equipo}` : ''}
+        {partido.competition ? ` · ${partido.competition}` : ''}
+      </p>
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-600">
+        <span className="flex items-center gap-1.5">
+          <Clock size={14} className="text-ink-400" />
+          {longDate(partido.date)}
+        </span>
+        {partido.venue && (
+          <span className="flex min-w-0 items-center gap-1.5">
+            <MapPin size={14} className="shrink-0 text-ink-400" />
+            <span className="truncate">{partido.venue}</span>
+          </span>
+        )}
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <LinkButton to={`/app/partidos/${partido.id}`} size="sm">Ver partido</LinkButton>
+        <LinkButton to={`/app/partidos/${partido.id}`} size="sm" variant="quiet">Convocatoria</LinkButton>
+      </div>
     </div>
   );
 }
 
 function TaskRow({ task, onToggle }: { task: CoachTask; onToggle: () => void }) {
-  const overdue = task.dueDate && !task.done && daysFromToday(task.dueDate) < 0;
+  const vencida = task.dueDate && !task.done && daysFromToday(task.dueDate) < 0;
   return (
     <li>
-      <div className="group flex items-start gap-3 rounded-lg px-1.5 py-2 transition-colors hover:bg-ink-50">
+      <div className="flex items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-panel">
         <span className="mt-0.5">
           <Checkbox checked={task.done} onChange={onToggle} />
         </span>
         <div className="min-w-0 flex-1">
           {task.link && !task.done ? (
-            <Link to={task.link} className="block text-[13.5px] leading-snug text-ink-700 hover:text-ink-900">
+            <Link to={task.link} className="block text-sm leading-snug text-ink-700 hover:text-ink-900">
               {task.title}
             </Link>
           ) : (
-            <p className={cn('text-[13.5px] leading-snug', task.done ? 'text-ink-400 line-through' : 'text-ink-700')}>
+            <p className={cn('text-sm leading-snug', task.done ? 'text-ink-500 line-through' : 'text-ink-700')}>
               {task.title}
             </p>
           )}
           {task.dueDate && !task.done && (
-            <p className={cn('mt-0.5 text-[11.5px]', overdue ? 'text-bad' : 'text-ink-400')}>
-              {overdue ? 'Vencida · ' : ''}
+            <p className={cn('mt-0.5 text-2xs', vencida ? 'text-bad' : 'text-ink-500')}>
+              {vencida ? 'Vencida · ' : ''}
               {relativeDay(task.dueDate)}
             </p>
           )}
         </div>
         {task.priority === 'alta' && !task.done && (
-          <Tag tone="warn" size="sm" className="mt-0.5 shrink-0">
-            Alta
-          </Tag>
+          <Tag tone="warn" size="sm" className="mt-0.5 shrink-0">Alta</Tag>
         )}
       </div>
     </li>

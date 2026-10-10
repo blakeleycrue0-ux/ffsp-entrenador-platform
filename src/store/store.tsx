@@ -159,6 +159,8 @@ export interface ClubActions {
   assignStaff: (teamId: string, profileId: string, role: Staff['role']) => Promise<void>;
   unassignStaff: (teamId: string, profileId: string) => Promise<void>;
   updateProfile: (id: string, patch: { full_name?: string; phone?: string; licence?: string; role?: Staff['role'] }) => Promise<void>;
+  /** Apaga (o vuelve a encender) la guía de primeros pasos de Inicio. */
+  setupGuia: (visible: boolean) => Promise<void>;
 
   savePlayer: (player: Player) => Promise<Player>;
   deletePlayer: (id: string) => Promise<void>;
@@ -343,6 +345,11 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
       async updateProfile(id, patch) {
         await db.updateProfile(id, patch);
         await hydrate(requireUser());
+      },
+      async setupGuia(visible) {
+        const id = requireUser();
+        await db.setupGuia(id, visible);
+        await hydrate(id);
       },
 
       async savePlayer(player) {

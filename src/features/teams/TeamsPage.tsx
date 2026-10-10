@@ -48,7 +48,7 @@ export default function TeamsPage() {
 
       {teams.length === 0 ? (
         <div className="panel">
-          <EmptyState
+          <EmptyState size="pleno"
            
             title={admin ? 'Todavía no hay equipos en el club' : 'No tienes equipos asignados'}
             description={
@@ -71,12 +71,12 @@ export default function TeamsPage() {
             <Link key={o.team.id} to={`/app/equipo-tecnico/${o.team.id}`} className="panel panel-hover block overflow-hidden">
               <div className="flex items-start justify-between gap-4 border-b border-ink-100 p-5">
                 <div className="flex items-start gap-3.5">
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-ink-900 text-[14px] font-bold text-ink-0">
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-ink-900 text-sm font-bold text-ink-0">
                     {o.team.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase()}
                   </span>
                   <div className="min-w-0">
-                    <h3 className="text-[17px] font-semibold leading-tight">{o.team.name}</h3>
-                    <p className="mt-1 text-[13px] text-muted">{o.team.competition}</p>
+                    <h3 className="text-lg font-semibold leading-tight">{o.team.name}</h3>
+                    <p className="mt-1 text-sm text-muted">{o.team.competition}</p>
                     <div className="mt-2.5 flex flex-wrap gap-1.5">
                       <Tag tone="neutral" size="sm">
                         <Users size={11} /> {o.squadSize} jugadoras
@@ -94,38 +94,38 @@ export default function TeamsPage() {
 
               <div className="grid grid-cols-3 divide-x divide-ink-100">
                 <div className="p-4">
-                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-ink-400">
+                  <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-ink-400">
                     <CalendarClock size={12} /> Entrenamiento
                   </p>
-                  <p className="mt-1.5 text-[13.5px] font-medium text-ink-800">
+                  <p className="mt-1.5 text-sm font-medium text-ink-800">
                     {o.nextSession ? relativeDay(o.nextSession.date) : '—'}
                   </p>
-                  <p className="text-[12px] text-ink-400">{o.nextSession?.start ?? 'sin planificar'}</p>
+                  <p className="text-xs text-ink-400">{o.nextSession?.start ?? 'sin planificar'}</p>
                 </div>
                 <div className="p-4">
-                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-ink-400">
+                  <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-ink-400">
                     <Swords size={12} /> Partido
                   </p>
-                  <p className="mt-1.5 truncate text-[13.5px] font-medium text-ink-800">
+                  <p className="mt-1.5 truncate text-sm font-medium text-ink-800">
                     {o.nextMatch ? relativeDay(o.nextMatch.date) : '—'}
                   </p>
-                  <p className="truncate text-[12px] text-ink-400">{o.nextMatch?.opponent ?? 'sin programar'}</p>
+                  <p className="truncate text-xs text-ink-400">{o.nextMatch?.opponent ?? 'sin programar'}</p>
                 </div>
                 <div className="p-4">
-                  <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-ink-400">
+                  <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-ink-400">
                     <Users size={12} /> Convocatoria
                   </p>
-                  <p className="mt-1.5 text-[13.5px] font-medium text-ink-800">
+                  <p className="mt-1.5 text-sm font-medium text-ink-800">
                     {o.callup ? `${o.confirmed} / ${o.callup.slots}` : '—'}
                   </p>
-                  <p className="text-[12px] text-ink-400">
+                  <p className="text-xs text-ink-400">
                     {o.callup ? `${o.pending} pendientes` : 'sin crear'}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center justify-between border-t border-ink-100 bg-ink-50/40 px-5 py-2.5">
-                <span className="text-[12.5px] text-muted">{o.team.venue}</span>
+                <span className="text-xs text-muted">{o.team.venue}</span>
                 <ChevronRight size={16} className="text-ink-300" />
               </div>
             </Link>

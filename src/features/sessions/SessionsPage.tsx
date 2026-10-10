@@ -70,7 +70,7 @@ export default function SessionsPage() {
 
       {sessions.length === 0 ? (
         <Panel>
-          <EmptyState
+          <EmptyState size="pleno"
            
             title="No tienes entrenamientos creados todavía"
             description="Monta la primera sesión arrastrando ejercicios de tu biblioteca."
@@ -89,10 +89,10 @@ export default function SessionsPage() {
             <Link key={s.id} to={`/app/entrenamientos/${s.id}`} className="panel panel-hover block p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[12.5px] font-medium text-ink-900">
+                  <p className="text-xs font-medium text-ink-900">
                     {data.teams.find((t) => t.id === s.teamId)?.name}
                   </p>
-                  <h3 className="mt-0.5 text-[16px] font-semibold leading-tight">{s.title}</h3>
+                  <h3 className="mt-0.5 text-md font-semibold leading-tight">{s.title}</h3>
                 </div>
                 <div className="flex shrink-0 gap-1.5">
                   <Tag tone={s.status === 'borrador' ? 'warn' : s.status === 'completado' ? 'neutral' : 'ok'} size="sm">
@@ -101,9 +101,9 @@ export default function SessionsPage() {
                 </div>
               </div>
 
-              <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted">{s.objective}</p>
+              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{s.objective}</p>
 
-              <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12.5px] text-muted">
+              <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted">
                 <span className="flex items-center gap-1.5">
                   <CalendarClock size={13} className="text-ink-400" /> {relativeDay(s.date)}
                 </span>
@@ -128,7 +128,7 @@ export default function SessionsPage() {
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <span className="text-[12px] text-ink-400">{s.blocks.length} bloques · {s.expectedPlayers} jugadoras</span>
+                <span className="text-xs text-ink-400">{s.blocks.length} bloques · {s.expectedPlayers} jugadoras</span>
                 <ChevronRight size={15} className="text-ink-300" />
               </div>
             </Link>

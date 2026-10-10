@@ -56,10 +56,10 @@ export default function ClubAdminPage() {
 
       {unassigned.length > 0 && (
         <Panel className="mb-5 border-warn/30 bg-warn/5 p-4">
-          <p className="text-[14px] font-medium text-warn">
+          <p className="text-sm font-medium text-warn">
             {unassigned.length} {unassigned.length === 1 ? 'persona' : 'personas'} sin equipo asignado
           </p>
-          <p className="mt-1 text-[13px] leading-relaxed text-warn/85">
+          <p className="mt-1 text-sm leading-relaxed text-warn/85">
             Han creado su cuenta pero todavía no ven nada al entrar: {unassigned.map((s) => s.name).join(', ')}.
           </p>
         </Panel>
@@ -80,7 +80,7 @@ export default function ClubAdminPage() {
       {tab === 'equipos' &&
         (data.teams.length === 0 ? (
           <Panel>
-            <EmptyState
+            <EmptyState size="pleno"
              
               title="Todavía no hay equipos"
               description="Crea el primer equipo de la temporada. Después podrás asignarle entrenadoras y ellas empezarán a meter sus jugadoras."
@@ -103,17 +103,17 @@ export default function ClubAdminPage() {
                 <Panel key={team.id} className="p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="flex items-start gap-3.5">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-ink-900 text-[13px] font-bold text-ink-0">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-ink-900 text-sm font-bold text-ink-0">
                         {team.name.replace(/[^A-Z0-9]/gi, '').slice(0, 2).toUpperCase() || '—'}
                       </span>
                       <div className="min-w-0">
-                        <Link to={`/app/equipo-tecnico/${team.id}`} className="text-[16px] font-semibold hover:text-ink-900">
+                        <Link to={`/app/equipo-tecnico/${team.id}`} className="text-md font-semibold hover:text-ink-900">
                           {team.name}
                         </Link>
-                        <p className="mt-0.5 text-[12.5px] text-muted">
+                        <p className="mt-0.5 text-xs text-muted">
                           {[team.category, team.competition, team.season].filter(Boolean).join(' · ') || 'Sin detalles'}
                         </p>
-                        <p className="mt-1 text-[12.5px] text-ink-400">
+                        <p className="mt-1 text-xs text-ink-400">
                           {squadOf(data, team.id).length} jugadoras
                         </p>
                       </div>
@@ -131,7 +131,7 @@ export default function ClubAdminPage() {
 
                   <div className="mt-4 border-t border-ink-100 pt-3">
                     {people.length === 0 ? (
-                      <p className="text-[13px] text-muted">
+                      <p className="text-sm text-muted">
                         Sin cuerpo técnico asignado. Nadie ve este equipo todavía.
                       </p>
                     ) : (
@@ -142,8 +142,8 @@ export default function ClubAdminPage() {
                             className="inline-flex items-center gap-2 rounded-xl border border-line py-1.5 pl-1.5 pr-2.5"
                           >
                             <Avatar name={staff!.name} size={26} />
-                            <span className="text-[13px] text-ink-700">{staff!.name}</span>
-                            <span className="text-[11.5px] text-ink-400">{ROLE_LABEL[role]}</span>
+                            <span className="text-sm text-ink-700">{staff!.name}</span>
+                            <span className="text-2xs text-ink-400">{ROLE_LABEL[role]}</span>
                             <button
                               onClick={async () => {
                                 try {
@@ -227,8 +227,8 @@ function StaffRow({ person }: { person: Staff }) {
     <Panel className="flex flex-wrap items-center gap-4 p-4">
       <Avatar name={person.name} size={42} />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[14.5px] font-medium text-ink-900">{person.name}</p>
-        <p className="truncate text-[12.5px] text-muted">{person.email}</p>
+        <p className="truncate text-base font-medium text-ink-900">{person.name}</p>
+        <p className="truncate text-xs text-muted">{person.email}</p>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {teams.length === 0 ? (
             <Tag tone="warn" size="sm">
@@ -309,7 +309,7 @@ function AssignModal({ teamId, onClose }: { teamId: string | null; onClose: () =
       }
     >
       {candidates.length === 0 ? (
-        <p className="text-[14px] leading-relaxed text-ink-600">
+        <p className="text-sm leading-relaxed text-ink-600">
           Ya están asignadas todas las personas registradas. Cuando alguien nuevo cree su cuenta, aparecerá aquí.
         </p>
       ) : (
@@ -423,7 +423,7 @@ function InvitationsTab() {
   if (!club) {
     return (
       <Panel>
-        <EmptyState
+        <EmptyState size="pleno"
           title="Todavía no hay un club creado"
           description="Las invitaciones pertenecen a un club. Crea primero un equipo: se creará el club junto con él."
         />
@@ -482,7 +482,7 @@ function InvitationsTab() {
         {rows === null ? (
           <SkeletonRows className="p-4" />
         ) : rows.length === 0 ? (
-          <EmptyState
+          <EmptyState size="pleno"
             title="Todavía no has invitado a nadie"
             description="Crea una invitación arriba y pásale el enlace a quien se incorpora."
           />
@@ -571,7 +571,7 @@ function ClubDataTab() {
   if (!club) {
     return (
       <Panel>
-        <EmptyState
+        <EmptyState size="pleno"
           title="Todavía no hay un club"
           description="Crea un equipo y se creará el club junto con él."
         />
