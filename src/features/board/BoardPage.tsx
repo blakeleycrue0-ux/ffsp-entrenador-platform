@@ -270,7 +270,7 @@ export default function BoardPage() {
 
       {scene.objects.length === 0 && !loading && (
         <Panel className="mt-3">
-          <EmptyState
+          <EmptyState size="pleno"
             title="El campo está vacío"
             description="Coloca las jugadoras y el balón, muévelos en distintos instantes y la jugada se reproducirá sola. Puedes empezar con una alineación completa."
             action={
@@ -307,7 +307,7 @@ export default function BoardPage() {
             <Skeleton className="h-10 w-full" />
           </div>
         ) : list.length === 0 ? (
-          <EmptyState
+          <EmptyState size="pleno"
             title="Todavía no hay jugadas guardadas"
             description="Cuando guardes la primera, aparecerá aquí para todo el cuerpo técnico del club."
           />

@@ -69,7 +69,7 @@ export default function DrillEditor() {
     <>
       <Link
         to="/app/ejercicios"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Ejercicios
       </Link>
@@ -92,7 +92,7 @@ export default function DrillEditor() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px]">
         <div className="space-y-4">
           <Panel className="p-5">
-            <h2 className="text-[15px] font-semibold">Definición</h2>
+            <h2 className="text-base font-semibold">Definición</h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Nombre" className="sm:col-span-2">
                 <Input value={form.name} onChange={(e) => patch({ name: e.target.value })} placeholder="Ej.: Rondo 5v2 a un toque" />
@@ -124,7 +124,7 @@ export default function DrillEditor() {
                       patch({ tags: form.tags.includes(t) ? form.tags.filter((x) => x !== t) : [...form.tags, t] })
                     }
                     className={cn(
-                      'rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
+                      'rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors',
                       form.tags.includes(t)
                         ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200'
                         : 'text-muted ring-1 ring-inset ring-line hover:bg-ink-50',
@@ -165,12 +165,12 @@ export default function DrillEditor() {
 
         <div className="space-y-4">
           <Panel className="p-5">
-            <h2 className="text-[14.5px] font-semibold">Material</h2>
+            <h2 className="text-base font-semibold">Material</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {form.material.map((m) => (
                 <span
                   key={m}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[13px] text-ink-700"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-sm text-ink-700"
                 >
                   {m}
                   <button
@@ -191,18 +191,18 @@ export default function DrillEditor() {
                     (e.target as HTMLInputElement).value = '';
                   }
                 }}
-                className="rounded-lg border border-dashed border-ink-300 px-2.5 py-1.5 text-[13px] outline-none placeholder:text-ink-400 focus:border-ink-400"
+                className="rounded-lg border border-dashed border-ink-300 px-2.5 py-1.5 text-sm outline-none placeholder:text-ink-400 focus:border-ink-400"
               />
             </div>
           </Panel>
 
           <Panel className="p-5">
-            <h2 className="text-[14.5px] font-semibold">Progresiones</h2>
-            <p className="mt-1 text-[12.5px] text-muted">Variantes para subir o bajar la exigencia.</p>
+            <h2 className="text-base font-semibold">Progresiones</h2>
+            <p className="mt-1 text-xs text-muted">Variantes para subir o bajar la exigencia.</p>
             <ul className="mt-3 space-y-2">
               {(form.progressions ?? []).map((p, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="mt-2 grid h-5 w-5 shrink-0 place-items-center rounded bg-ink-50 text-[10.5px] font-bold text-ink-900">
+                  <span className="mt-2 grid h-5 w-5 shrink-0 place-items-center rounded bg-ink-50 text-2xs font-bold text-ink-900">
                     {i + 1}
                   </span>
                   <input
@@ -212,7 +212,7 @@ export default function DrillEditor() {
                       next[i] = e.target.value;
                       patch({ progressions: next });
                     }}
-                    className="flex-1 rounded-lg border border-line px-2.5 py-1.5 text-[13px] outline-none focus:border-ink-400"
+                    className="flex-1 rounded-lg border border-line px-2.5 py-1.5 text-sm outline-none focus:border-ink-400"
                   />
                   <button
                     onClick={() => patch({ progressions: (form.progressions ?? []).filter((_, k) => k !== i) })}

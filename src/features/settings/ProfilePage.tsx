@@ -28,7 +28,7 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
             <Avatar name={staff.name} size={80} className="shrink-0" />
             <div className="min-w-0 flex-1">
-              <h2 className="text-[22px] font-semibold leading-tight">{staff.name}</h2>
+              <h2 className="text-xl font-semibold leading-tight">{staff.name}</h2>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <Tag tone="solid">{ROLE_LABEL[staff.role]}</Tag>
                 {staff.licence && (
@@ -38,7 +38,7 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              <dl className="mt-5 space-y-2.5 text-[13.5px]">
+              <dl className="mt-5 space-y-2.5 text-sm">
                 <div className="flex items-center gap-2.5">
                   <Mail size={15} className="shrink-0 text-ink-400" />
                   <dd className="text-ink-700">{staff.email}</dd>
@@ -65,7 +65,7 @@ export default function ProfilePage() {
         </Panel>
 
         <Panel className="p-5">
-          <h3 className="text-[14.5px] font-semibold">Accesos</h3>
+          <h3 className="text-base font-semibold">Accesos</h3>
           <div className="mt-3.5 space-y-2">
             <LinkButton to="/app/ajustes" variant="secondary" size="sm" block icon={<Settings size={15} />}>
               Configuración
@@ -80,10 +80,10 @@ export default function ProfilePage() {
         </Panel>
       </div>
 
-      <h2 className="mb-3 mt-7 text-[17px] font-semibold">Equipos que dirijo</h2>
+      <h2 className="mb-3 mt-7 text-lg font-semibold">Equipos que dirijo</h2>
       {teams.length === 0 && (
         <Panel className="p-5">
-          <p className="text-[13.5px] leading-relaxed text-muted">
+          <p className="text-sm leading-relaxed text-muted">
             {isClubAdmin(data)
               ? 'Todavía no hay equipos creados en el club. Puedes crearlos desde Gestión del club.'
               : 'La coordinadora del club aún no te ha asignado ningún equipo.'}
@@ -97,9 +97,9 @@ export default function ProfilePage() {
             <Link key={t.id} to={`/app/equipo-tecnico/${t.id}`} className="panel panel-hover flex items-center gap-4 p-4">
               <Ring value={o.attendanceRate} size={54} stroke={5} />
               <div className="min-w-0">
-                <p className="truncate text-[14.5px] font-semibold text-ink-900">{t.name}</p>
-                <p className="mt-0.5 text-[12.5px] text-muted">{o.squadSize} jugadoras</p>
-                <p className="mt-1 truncate text-[12px] text-ink-400">
+                <p className="truncate text-base font-semibold text-ink-900">{t.name}</p>
+                <p className="mt-0.5 text-xs text-muted">{o.squadSize} jugadoras</p>
+                <p className="mt-1 truncate text-xs text-ink-400">
                   {o.nextSession ? `Entrena ${relativeDay(o.nextSession.date).toLowerCase()}` : 'Sin sesión planificada'}
                 </p>
               </div>
@@ -109,8 +109,8 @@ export default function ProfilePage() {
       </div>
 
       <Panel className="mt-6 p-5">
-        <h3 className="text-[14.5px] font-semibold">Formación y titulación</h3>
-        <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-muted">
+        <h3 className="text-base font-semibold">Formación y titulación</h3>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
           El club registra la titulación de cada técnica para las inscripciones federativas. Si tu licencia ha cambiado
           o has completado un nuevo curso, avísale a la coordinadora para que lo actualice en tu ficha.
         </p>

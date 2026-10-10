@@ -372,18 +372,26 @@
      no tenía color de marca. Ahora es el mismo azul del botón de la portada
      —mismo degradado, mismo brillo interior, misma sombra proyectada—, para
      que «el botón que hace la cosa» se vea igual antes y después de entrar. */
+  /* EL BOTÓN PRINCIPAL DE LA APLICACIÓN, SIN HALO.
+     Tenía la misma sombra azul proyectada que el de la portada: 22 px de
+     desenfoque al 75 % de opacidad. En una portada, donde hay un botón cada
+     dos pantallas, eso es presencia; en una herramienta, donde hay uno en
+     cada formulario, cada tarjeta y cada estado vacío, es una pantalla llena
+     de luces. Se queda el filo de luz de arriba —que es lo que le da cuerpo—
+     y una sombra corta que sólo lo separa del fondo.
+     La portada no se toca: usa `.btn-azul`, que conserva su halo. */
   .metal-claro {
     background-image: linear-gradient(180deg, #2A86FF 0%, #0868F9 100%);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.28),
-      0 8px 22px -10px rgba(8, 104, 249, 0.75);
+      inset 0 1px 0 rgba(255, 255, 255, 0.26),
+      0 1px 2px rgba(4, 7, 15, 0.45);
     transition: filter .2s ease, box-shadow .25s ease;
   }
   .metal-claro:hover {
-    filter: brightness(1.07);
+    filter: brightness(1.08);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.28),
-      0 12px 28px -10px rgba(8, 104, 249, 0.85);
+      inset 0 1px 0 rgba(255, 255, 255, 0.26),
+      0 4px 14px -6px rgba(8, 104, 249, 0.55);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -399,27 +407,44 @@
   }
 
   /* ── CAMPOS ───────────────────────────────────────────────────────────────
-     56 px de alto —el dedo no acierta en 40—, grafito opaco, radio contenido
-     y un borde fino. En reposo son callados. Al enfocarlos, el borde SUBE DE
-     BRILLO: no cambia de color, porque no hay color al que cambiar. Eso es
-     más difícil de hacer bien que un aro azul y se nota más cuando sale. */
+     48 px de alto. Eran 56, y 56 está bien para los dos campos de la entrada
+     —ahí no hay nada más en la pantalla— pero no para un formulario de ocho:
+     una ficha de jugadora con nombre, dorsal, posición, pie, fecha, teléfono
+     y correo medía casi dos pantallas de móvil sólo en cajas. 48 sigue por
+     encima del mínimo del dedo (44) y mete tres campos donde antes cabían
+     dos y medio. La entrada pide los suyos grandes con `.field-grande`.
+
+     EL FONDO ERA GRIS Y AHORA ES AZUL NOCHE, y esto no es un matiz: el resto
+     de la aplicación pasó al azul y los campos se quedaron en #171717, un
+     gris sin una gota de color. Sobre un panel azulado se veían sucios, como
+     pegados de otro sitio. Ahora son el nivel `sunken`, que es exactamente
+     para esto: un hueco dentro de un panel.
+
+     AL ENFOCAR, AZUL. Antes el borde sólo subía de brillo porque no había
+     color de marca al que ir. Ahora lo hay, y el foco es el sitio donde un
+     color de marca gana algo: se ve desde el otro lado de la pantalla y dice
+     dónde va a caer lo que escribas. */
   .field {
-    @apply h-14 w-full rounded-xl px-4 text-md text-ink-800 placeholder:text-ink-500
-           transition-[border-color,background-color] duration-250 ease-suave
-           focus:outline-none disabled:text-ink-400;
-    background: #171717;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    @apply h-12 w-full rounded-xl border border-line bg-sunken px-3.5 text-md text-ink-800
+           placeholder:text-ink-500 transition-[border-color,background-color,box-shadow]
+           duration-250 ease-suave focus:outline-none disabled:text-ink-400;
   }
-  textarea.field { @apply h-auto py-3.5; }
+  /* El tamaño de la letra NO baja de 16 px: Safari en el iPhone amplía la
+     página entera al enfocar un campo que tenga menos, y al salir se queda
+     torcida. Es la causa de la mitad de los formularios que «se mueven
+     solos» en el móvil. */
+  textarea.field { @apply h-auto min-h-[84px] py-3; }
   select.field { @apply pr-10; }
 
-  .field:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.17); }
+  /* Para la entrada y el alta, donde el campo ES la pantalla. */
+  .field-grande { @apply h-14 px-4; }
+
+  .field:hover:not(:disabled) { @apply border-line-fuerte; }
 
   .field:focus,
   .field:focus-visible {
-    border-color: rgba(255, 255, 255, 0.45);
-    background: #1C1C1C;
-    box-shadow: none;
+    @apply border-marca-500 bg-raised;
+    box-shadow: 0 0 0 3px rgba(22, 139, 255, 0.18);
   }
 
   /* ── CIFRAS ───────────────────────────────────────────────────────────────

@@ -131,7 +131,7 @@ export function TacticBoard({
                 onClick={() => setTool(t.id)}
                 title={t.label}
                 className={cn(
-                  'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium transition-colors',
+                  'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors',
                   active
                     ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200'
                     : 'text-muted hover:bg-ink-100 hover:text-ink-800',
@@ -151,7 +151,7 @@ export function TacticBoard({
           })}
           <button
             onClick={() => emit([])}
-            className="ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium text-muted transition-colors hover:bg-bad/8 hover:text-bad"
+            className="ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-bad/8 hover:text-bad"
           >
             <Trash2 size={14} /> Vaciar pizarra
           </button>
@@ -270,7 +270,7 @@ export function TacticBoard({
       </div>
 
       {!readOnly && (
-        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-muted">
+        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted">
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-ink-900" /> Jugadora propia
           </span>

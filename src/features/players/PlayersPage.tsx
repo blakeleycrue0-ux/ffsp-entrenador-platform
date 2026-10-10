@@ -129,7 +129,7 @@ export default function PlayersPage() {
                 key={g.id}
                 onClick={() => setGroup(g.id)}
                 className={cn(
-                  'shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors',
+                  'shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors',
                   group === g.id
                     ? 'bg-marca-600/16 text-ink-900 ring-1 ring-inset ring-marca-500/40'
                     : 'text-muted hover:bg-panel',
@@ -147,7 +147,7 @@ export default function PlayersPage() {
 
       {players.length === 0 ? (
         <Panel>
-          <EmptyState
+          <EmptyState size="pleno"
            
             title={
               data.players.filter((p) => p.teamId === teamId).length === 0
@@ -173,7 +173,7 @@ export default function PlayersPage() {
         </Panel>
       ) : view === 'lista' ? (
         <Panel className="overflow-hidden">
-          <div className="hidden border-b border-ink-100 bg-ink-50/50 px-5 py-2.5 text-[11.5px] font-medium uppercase tracking-wide text-ink-400 sm:flex">
+          <div className="hidden border-b border-ink-100 bg-ink-50/50 px-5 py-2.5 text-2xs font-medium uppercase tracking-wide text-ink-400 sm:flex">
             <span className="flex-1">Jugadora</span>
             <span className="w-40">Posición</span>
             <span className="w-24 text-right">Asistencia</span>
@@ -189,22 +189,22 @@ export default function PlayersPage() {
               >
                 <Avatar name={p.name} size={38} badge={p.number} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-medium text-ink-900">{p.name}</p>
-                  <p className="mt-0.5 text-[12.5px] text-muted sm:hidden">
+                  <p className="truncate text-sm font-medium text-ink-900">{p.name}</p>
+                  <p className="mt-0.5 text-xs text-muted sm:hidden">
                     {p.position} · {rate(p.id)}%
                   </p>
-                  <p className="mt-0.5 hidden text-[12.5px] text-ink-400 sm:block">
+                  <p className="mt-0.5 hidden text-xs text-ink-400 sm:block">
                     {p.birthDate ? `${age(p.birthDate)} años · ` : ''}{p.foot}
                   </p>
                 </div>
                 <div className="hidden w-40 sm:block">
                   <PosicionEtiqueta position={p.position} />
-                  {p.secondaryPosition && <p className="mt-0.5 truncate text-[12px] text-ink-400">{p.secondaryPosition}</p>}
+                  {p.secondaryPosition && <p className="mt-0.5 truncate text-xs text-ink-400">{p.secondaryPosition}</p>}
                 </div>
                 <div className="hidden w-24 text-right sm:block">
                   <span
                     className={cn(
-                      'text-[14px] font-semibold tabular-nums',
+                      'text-sm font-semibold tabular-nums',
                       /* Una columna donde casi todo sale verde no señala
                           nada. Blanco por defecto, y color sólo cuando el dato
                           pide mirarlo: por debajo del 70 % hay un problema. */
@@ -235,20 +235,20 @@ export default function PlayersPage() {
                   {disponibilidad(p.availability.status).label}
                 </Tag>
               </div>
-              <p className="mt-3 truncate text-[14.5px] font-semibold text-ink-900">{p.shortName}</p>
-              <p className="mt-0.5 truncate text-[12.5px] text-muted">{p.position || 'Sin posición'}</p>
+              <p className="mt-3 truncate text-base font-semibold text-ink-900">{p.shortName}</p>
+              <p className="mt-0.5 truncate text-xs text-muted">{p.position || 'Sin posición'}</p>
               <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-ink-100 pt-3 text-center">
                 <div>
-                  <p className="text-[14px] font-semibold text-ink-800 tabular-nums">{rate(p.id)}%</p>
-                  <p className="text-[10.5px] text-ink-400">asistencia</p>
+                  <p className="text-sm font-semibold text-ink-800 tabular-nums">{rate(p.id)}%</p>
+                  <p className="text-2xs text-ink-400">asistencia</p>
                 </div>
                 <div>
-                  <p className="text-[14px] font-semibold text-ink-800 tabular-nums">{p.stats.matches}</p>
-                  <p className="text-[10.5px] text-ink-400">partidos</p>
+                  <p className="text-sm font-semibold text-ink-800 tabular-nums">{p.stats.matches}</p>
+                  <p className="text-2xs text-ink-400">partidos</p>
                 </div>
                 <div>
-                  <p className="text-[14px] font-semibold text-ink-800 tabular-nums">{p.stats.goals}</p>
-                  <p className="text-[10.5px] text-ink-400">goles</p>
+                  <p className="text-sm font-semibold text-ink-800 tabular-nums">{p.stats.goals}</p>
+                  <p className="text-2xs text-ink-400">goles</p>
                 </div>
               </div>
             </Link>
@@ -256,7 +256,7 @@ export default function PlayersPage() {
         </div>
       )}
 
-      <p className="mt-5 text-[12.5px] text-ink-400">
+      <p className="mt-5 text-xs text-ink-400">
         {team?.name} · Los datos de contacto de las jugadoras y sus familias son privados y sólo se muestran en la
         ficha individual.
       </p>
@@ -274,12 +274,12 @@ export default function PlayersPage() {
  */
 function PosicionEtiqueta({ position }: { position: string }) {
   const linea = lineaDe(position);
-  if (!position) return <p className="truncate text-[13px] text-ink-400">Sin posición</p>;
-  if (!linea) return <p className="truncate text-[13.5px] text-ink-700">{position}</p>;
+  if (!position) return <p className="truncate text-sm text-ink-400">Sin posición</p>;
+  if (!linea) return <p className="truncate text-sm text-ink-700">{position}</p>;
   return (
     <span
       className={cn(
-        'inline-flex max-w-full items-center gap-1.5 truncate rounded-full border px-2 py-0.5 text-[12px] font-medium',
+        'inline-flex max-w-full items-center gap-1.5 truncate rounded-full border px-2 py-0.5 text-xs font-medium',
         LINEA[linea].chip,
       )}
     >

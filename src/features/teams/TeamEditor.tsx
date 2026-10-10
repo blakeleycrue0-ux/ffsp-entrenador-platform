@@ -103,7 +103,7 @@ export default function TeamEditor() {
     <>
       <Link
         to="/app/equipo-tecnico"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Equipos
       </Link>
@@ -130,7 +130,7 @@ export default function TeamEditor() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         <Panel className="p-5 sm:p-6">
-          <h2 className="text-[15px] font-semibold">Datos del equipo</h2>
+          <h2 className="text-base font-semibold">Datos del equipo</h2>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Nombre" className="sm:col-span-2" hint="Como lo llamáis en el club.">
               <Input value={form.name} onChange={(e) => patch({ name: e.target.value })} placeholder="Ej.: Sub-17" />
@@ -164,7 +164,7 @@ export default function TeamEditor() {
 
         <Panel className="p-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-[14.5px] font-semibold">Horarios de entrenamiento</h2>
+            <h2 className="text-base font-semibold">Horarios de entrenamiento</h2>
             <Button
               variant="secondary"
               size="sm"
@@ -183,7 +183,7 @@ export default function TeamEditor() {
           </div>
 
           {form.trainingSlots.length === 0 ? (
-            <p className="mt-3 text-[13px] leading-relaxed text-muted">
+            <p className="mt-3 text-sm leading-relaxed text-muted">
               Sin horarios fijos. Puedes añadirlos ahora o planificar cada sesión con su propia hora.
             </p>
           ) : (
@@ -209,7 +209,7 @@ export default function TeamEditor() {
                   />
                   <button
                     onClick={() => patch({ trainingSlots: form.trainingSlots.filter((_, k) => k !== i) })}
-                    className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-ink-400 transition-colors hover:text-bad"
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-ink-400 transition-colors hover:text-bad"
                   >
                     <X size={13} /> Quitar horario
                   </button>
@@ -236,7 +236,7 @@ export default function TeamEditor() {
           </>
         }
       >
-        <p className="text-[14px] leading-relaxed text-ink-600">
+        <p className="text-sm leading-relaxed text-ink-600">
           Esta acción no se puede deshacer. Si el equipo simplemente ha terminado la temporada, es preferible dejarlo
           como está y crear uno nuevo para la temporada siguiente.
         </p>

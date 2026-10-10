@@ -123,7 +123,7 @@ export default function AvailabilityPage() {
       <>
         <PageHeader title="Disponibilidad y lesiones" />
         <Panel>
-          <EmptyState
+          <EmptyState size="pleno"
             title="Todavía no tienes ningún equipo asignado"
             description="Quien administra el club puede asignártelo desde Equipo técnico."
           />
@@ -199,7 +199,7 @@ export default function AvailabilityPage() {
           {rows === null ? (
             <SkeletonRows className="p-3" />
           ) : visible.length === 0 ? (
-            <EmptyState
+            <EmptyState size="pleno"
               title={tab === 'abiertos' ? 'No hay ningún parte abierto' : 'No hay partes cerrados'}
               description={
                 tab === 'abiertos'

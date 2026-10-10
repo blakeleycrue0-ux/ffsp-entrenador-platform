@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Bell, CheckCheck, Menu, PanelLeftOpen, Plus, Search } from 'lucide-react';
 import { Avatar, Button, Dot, Dropdown } from '@/components/ui';
-import { Wordmark } from '@/components/ui/Brand';
+import { Marca, Wordmark } from '@/components/ui/Brand';
 import { useClub } from '@/store/store';
 import { currentStaff } from '@/store/selectors';
 import { cn, relativeTime } from '@/lib/utils';
@@ -58,7 +58,15 @@ export function Topbar({
         <Menu size={20} />
       </button>
 
-      <Link to="/app" className="lg:hidden">
+      {/* A 320 px NO CABE EL NOMBRE ENTERO. Medido: con la hamburguesa, la
+          lupa, el más, la campana y el avatar —cinco objetos de 40 px, que es
+          lo que mide un dedo— el logotipo completo sacaba la cabecera 38 px
+          por el lado en TODAS las pantallas. Hasta 380 px va sólo el símbolo,
+          que es el que se reconoce; a partir de ahí, el nombre completo. */}
+      <Link to="/app" aria-label="Inicio" className="shrink-0 min-[380px]:hidden">
+        <Marca size={22} />
+      </Link>
+      <Link to="/app" className="hidden shrink-0 min-[380px]:block lg:hidden">
         <Wordmark size="sm" showSubtitle={false} />
       </Link>
 
@@ -75,16 +83,34 @@ export function Topbar({
         </button>
       )}
 
+      {/* LA BÚSQUEDA. En el escritorio es un campo con su atajo a la vista; en
+          el móvil, donde no hay sitio, se queda en el icono —pero con 40 px de
+          lado, no 32: por debajo de 44 el dedo falla, y la diferencia entre
+          fallar y acertar en una barra con cuatro botones seguidos es que se
+          pulse la lupa o la campana. */}
       <button
         onClick={onSearch}
-        className="ml-auto flex h-8 items-center gap-2 rounded-md border border-line bg-panel px-2.5 text-sm text-ink-400 transition-colors hover:border-ink-400 lg:ml-0 lg:mr-auto lg:w-[300px]"
+        aria-label="Buscar"
+        className="ml-auto grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-600 transition-colors active:bg-raised lg:ml-0 lg:mr-auto lg:flex lg:h-8 lg:w-[300px] lg:items-center lg:justify-start lg:gap-2 lg:rounded-md lg:border lg:border-line lg:bg-panel lg:px-2.5 lg:text-sm lg:text-ink-400 lg:hover:border-ink-400"
       >
-        <Search size={15} className="shrink-0" />
+        <Search size={18} className="shrink-0 lg:hidden" />
+        <Search size={15} className="hidden shrink-0 lg:block" />
         <span className="hidden lg:inline">Buscar jugadora, sesión, partido…</span>
         <kbd className="ml-auto hidden rounded border border-line px-1 py-px text-2xs font-medium lg:block">⌘K</kbd>
       </button>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-0.5 sm:gap-1.5">
+        {/* CREAR, TAMBIÉN EN EL MÓVIL. Estaba en `hidden sm:inline-flex`, así
+            que en un teléfono de 390 px la acción principal de la aplicación
+            no existía en pantalla: había que abrir el menú para encontrarla.
+            Aquí es el signo más, en azul, del tamaño del dedo. */}
+        <button
+          onClick={onCreate}
+          aria-label="Crear"
+          className="metal-claro grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white sm:hidden"
+        >
+          <Plus size={19} strokeWidth={2.2} />
+        </button>
         <Button
           size="sm"
           icon={<Plus size={15} strokeWidth={2.2} />}
@@ -98,12 +124,12 @@ export function Topbar({
           className="w-[340px] max-w-[calc(100vw-2rem)] p-0"
           trigger={
             <button
-              className="relative grid h-8 w-8 place-items-center rounded-md text-ink-500 transition-colors hover:bg-surface hover:text-ink-900"
+              className="relative grid h-10 w-10 place-items-center rounded-xl text-ink-600 transition-colors active:bg-raised hover:bg-surface hover:text-ink-900 lg:h-8 lg:w-8 lg:rounded-md"
               aria-label={unread > 0 ? `Notificaciones, ${unread} sin leer` : 'Notificaciones'}
             >
-              <Bell size={17} />
+              <Bell size={18} />
               {unread > 0 && (
-                <span className="absolute right-1 top-1 grid h-3.5 min-w-[14px] place-items-center rounded-full bg-ink-900 px-1 text-[9px] font-bold tabular-nums text-ink-0 ring-2 ring-white">
+                <span className="absolute right-1 top-1 grid h-4 min-w-[16px] place-items-center rounded-full bg-marca-600 px-1 text-[9px] font-bold tabular-nums text-white ring-2 ring-surface">
                   {unread}
                 </span>
               )}
@@ -152,7 +178,11 @@ export function Topbar({
           )}
         </Dropdown>
 
-        <Link to="/app/perfil" className="lg:hidden">
+        <Link
+          to="/app/perfil"
+          aria-label="Mi perfil"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-colors active:bg-raised lg:hidden"
+        >
           <Avatar name={staff?.name ?? '—'} size={30} />
         </Link>
       </div>

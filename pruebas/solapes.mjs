@@ -94,13 +94,27 @@ async function revisa(page, ruta, etiqueta) {
   /* Y otra vez con la página desplazada hasta el final: es donde el último
      renglón se queda debajo de lo que haya fijo abajo si el hueco no basta.
      Hoy lo único que puede haber ahí es una barra de guardar —asistencia—,
-     que se coloca con `--sobre-nav` como todo lo demás. */
+     que se coloca con `--sobre-nav` como todo lo demás.
+
+     SÓLO CUENTA LO QUE ESTÁ FIJO ABAJO. Antes se buscaba cualquier botón
+     llamado «Crear», y eso era cierto mientras el de crear fuera un botón
+     flotante en la esquina inferior. Ahora el del móvil vive en la cabecera
+     pegajosa, y una cabecera pegajosa TAPA contenido por definición: lo que
+     pasa por debajo al desplazarse vuelve a verse al subir, y que nada quede
+     tapado al abrir la pantalla ya se comprueba más arriba. Dar eso por
+     fallo era confundir una cabecera con un dique. */
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(350);
   const abajo = await page.evaluate(() => {
     const H = document.documentElement.clientHeight;
-    const barra = document.querySelector('[data-barra-fija]')?.getBoundingClientRect();
-    const fab = document.querySelector('button[aria-label="Crear"]')?.getBoundingClientRect();
+    /* Fijo abajo = su centro cae en la mitad inferior de la ventana. */
+    const fijoAbajo = (el) => {
+      if (!el) return undefined;
+      const r = el.getBoundingClientRect();
+      return r.top + r.height / 2 > H / 2 ? r : undefined;
+    };
+    const barra = fijoAbajo(document.querySelector('[data-barra-fija]'));
+    const fab = fijoAbajo(document.querySelector('button[aria-label="Crear"]'));
     const cruzan = (a, c) =>
       a && c && a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1;
     const malos = [];
@@ -138,8 +152,11 @@ for (const alto of ALTOS) {
   }
 }
 
-/* Y escritorio, donde la navegación es la barra lateral. */
-for (const [ancho, alto] of (COMPLETO ? [[1024, 800], [1512, 950]] : [[1512, 950]])) {
+/* La tableta y el escritorio. 768 es el iPad en vertical y es el ancho peor:
+   demasiado estrecho para la barra lateral —que aparece a partir de 1024— y
+   demasiado ancho para que las rejillas de móvil se vean bien. Hasta ahora no
+   se comprobaba ninguno de los dos, y el encargo pedía los dos. */
+for (const [ancho, alto] of (COMPLETO ? [[768, 1024], [1024, 800], [1512, 950]] : [[768, 1024], [1512, 950]])) {
   const ctx = await b.newContext({ viewport: { width: ancho, height: alto } });
   const page = await ctx.newPage();
   await mock(page);

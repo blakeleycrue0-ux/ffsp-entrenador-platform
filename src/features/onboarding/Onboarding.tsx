@@ -242,6 +242,7 @@ export default function Onboarding() {
             <Bloque clave="nombre" numero={numero} total={NUMERADOS.length} titulo="¿Cómo te llamas?">
               <Field label="Nombre y apellidos" required>
                 <Input
+                  className="field-grande"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   placeholder="Ej.: Marta Vives"
@@ -286,6 +287,7 @@ export default function Onboarding() {
             <Bloque clave="club" numero={numero} total={NUMERADOS.length} titulo="Tu club">
               <Field label="Nombre del club" required hint="Como aparece oficialmente.">
                 <Input
+                  className="field-grande"
                   value={club}
                   onChange={(e) => setClub(e.target.value)}
                   placeholder="Ej.: Club Deportivo Ejemplo"
@@ -298,6 +300,7 @@ export default function Onboarding() {
                 hint="El que cabe en un marcador. Si lo dejas vacío usamos el nombre completo."
               >
                 <Input
+                  className="field-grande"
                   value={clubCorto}
                   onChange={(e) => setClubCorto(e.target.value)}
                   placeholder="Ej.: CD Ejemplo"
@@ -319,6 +322,7 @@ export default function Onboarding() {
             <Bloque clave="equipo" numero={numero} total={NUMERADOS.length} titulo="Tu primer equipo">
               <Field label="Nombre del equipo" required>
                 <Input
+                  className="field-grande"
                   value={equipo}
                   onChange={(e) => setEquipo(e.target.value)}
                   placeholder="Ej.: Cadete A"
@@ -328,6 +332,7 @@ export default function Onboarding() {
               </Field>
               <Field label="Categoría" hint="Opcional. Sirve para ordenar los equipos del club.">
                 <Input
+                  className="field-grande"
                   value={categoria}
                   onChange={(e) => setCategoria(e.target.value)}
                   placeholder="Ej.: Cadete"

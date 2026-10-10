@@ -77,7 +77,7 @@ export function AvisoDeCookies() {
       className="fixed inset-x-0 bottom-0 z-nav px-3 pb-[max(12px,var(--safe-bottom))] sm:px-6 sm:pb-5"
     >
       <div className="mx-auto flex max-w-[48rem] flex-col gap-4 rounded-3xl border border-white/10 bg-abismo/95 p-5 text-white shadow-[0_24px_60px_-24px_rgba(6,12,27,0.75)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-6 sm:p-5">
-        <p className="min-w-0 flex-1 text-[14.5px] leading-relaxed text-white/75">
+        <p className="min-w-0 flex-1 text-base leading-relaxed text-white/75">
           Usamos una cookie de Google Analytics para saber cuánta gente entra. Nada más: no
           medimos nada de lo que pasa dentro de la aplicación y no hacemos publicidad.{' '}
           <Link
@@ -92,10 +92,10 @@ export function AvisoDeCookies() {
             caben en una fila de dos: partirlos en dos líneas dejaría uno
             arriba y otro abajo, y eso ya es jerarquía. */}
         <div className="grid shrink-0 grid-cols-2 gap-2.5 sm:w-auto">
-          <button type="button" onClick={responder('no')} className="btn btn-vidrio h-11 px-5 text-[14.5px]">
+          <button type="button" onClick={responder('no')} className="btn btn-vidrio h-11 px-5 text-base">
             Solo lo necesario
           </button>
-          <button type="button" onClick={responder('si')} className="btn btn-claro h-11 px-5 text-[14.5px]">
+          <button type="button" onClick={responder('si')} className="btn btn-claro h-11 px-5 text-base">
             Aceptar
           </button>
         </div>

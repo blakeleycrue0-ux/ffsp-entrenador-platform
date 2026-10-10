@@ -33,7 +33,7 @@ export function DrillBoardEditor({
 
   if (scene.objects.length === 0) {
     return (
-      <EmptyState
+      <EmptyState size="pleno"
         title="Este ejercicio no tiene esquema"
         description="Dibuja la situación y, si quieres, anímala: se reproducirá dentro de la ficha del ejercicio."
         action={

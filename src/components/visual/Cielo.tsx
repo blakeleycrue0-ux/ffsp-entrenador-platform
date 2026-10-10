@@ -43,11 +43,20 @@ const VELOS = {
     'linear-gradient(to bottom, rgba(6,12,27,0.34) 0%, rgba(6,12,27,0.22) 46%, rgba(6,12,27,0.72) 82%, #060C1B 100%)',
 } as const;
 
-export function Cielo({ velo = 'medio' }: { velo?: keyof typeof VELOS }) {
+/**
+ * `nubes` se apaga cuando la franja es BAJA. Las nubes son elipses de cien y
+ * pico píxeles de alto: dentro de una banda de 76 px no se ven como nubes, se
+ * ven como brochazos claros cortados por arriba y por abajo. En la cabecera
+ * de la entrada del móvil se queda sólo el degradado, que a esa altura es lo
+ * único que se lee como cielo.
+ */
+export function Cielo({
+  velo = 'medio', nubes = true,
+}: { velo?: keyof typeof VELOS; nubes?: boolean }) {
   return (
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
       <div className="cielo absolute inset-0" />
-      <div className="nubes nubes-mueve" />
+      {nubes && <div className="nubes nubes-mueve" />}
       {/* El velo: azul noche, no negro. Un velo negro sobre azul apaga el
           color y deja un gris sucio; con el mismo tono del producto, lo que
           queda debajo sigue siendo azul, sólo que más hondo. */}

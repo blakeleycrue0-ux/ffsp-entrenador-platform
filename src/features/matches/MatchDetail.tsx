@@ -110,7 +110,7 @@ export default function MatchDetail() {
     <>
       <Link
         to="/app/partidos"
-        className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-ink-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-900"
       >
         <ArrowLeft size={15} /> Partidos
       </Link>
@@ -149,9 +149,9 @@ export default function MatchDetail() {
               {icon as React.ReactNode}
             </span>
             <div className="min-w-0">
-              <p className="text-[11.5px] uppercase tracking-wide text-ink-400">{label as string}</p>
-              <p className="mt-0.5 truncate text-[15px] font-semibold text-ink-900">{value as string}</p>
-              <p className="truncate text-[12px] text-ink-400">{hint as string}</p>
+              <p className="text-2xs uppercase tracking-wide text-ink-400">{label as string}</p>
+              <p className="mt-0.5 truncate text-base font-semibold text-ink-900">{value as string}</p>
+              <p className="truncate text-xs text-ink-400">{hint as string}</p>
             </div>
           </Panel>
         ))}
@@ -175,8 +175,8 @@ export default function MatchDetail() {
                 <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-ink-50 text-ink-400">
                   <Users size={26} />
                 </span>
-                <h3 className="text-[16px] font-semibold text-ink-800">Todavía no hay convocatoria</h3>
-                <p className="mt-2 max-w-md text-[13.5px] leading-relaxed text-muted">
+                <h3 className="text-md font-semibold text-ink-800">Todavía no hay convocatoria</h3>
+                <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">
                   Parte de las jugadoras disponibles, ajusta la selección y copia la lista para
                   compartirla. Las respuestas las registras tú según te vayan contestando.
                 </p>
@@ -193,8 +193,8 @@ export default function MatchDetail() {
               <Panel className="overflow-hidden">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
                   <div>
-                    <h2 className="text-[15px] font-semibold">Selección de jugadoras</h2>
-                    <p className="mt-0.5 text-[12.5px] text-muted">
+                    <h2 className="text-base font-semibold">Selección de jugadoras</h2>
+                    <p className="mt-0.5 text-xs text-muted">
                       {selected.length} de {callup.slots} plazas · {unavailable.length} no disponibles
                     </p>
                   </div>
@@ -255,15 +255,15 @@ export default function MatchDetail() {
                           <Avatar name={p.name} size={36} badge={p.number} />
 
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[14px] font-medium text-ink-900">{p.shortName}</span>
-                            <span className="mt-0.5 flex items-center gap-1.5 text-[12.5px] text-muted">
+                            <span className="block truncate text-sm font-medium text-ink-900">{p.shortName}</span>
+                            <span className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
                               <AvailabilityDot status={p.availability.status} />
                               {p.position}
                               {p.availability.note && <span className="truncate">· {p.availability.note}</span>}
                             </span>
                           </span>
 
-                          <span className="hidden w-16 text-right text-[12.5px] text-ink-400 tabular-nums sm:block">
+                          <span className="hidden w-16 text-right text-xs text-ink-400 tabular-nums sm:block">
                             {rate}%
                           </span>
 
@@ -277,7 +277,7 @@ export default function MatchDetail() {
                                 {respuesta(entry.response).label}
                               </Tag>
                             ) : (
-                              <span className="text-[12.5px] text-ink-400">No convocada</span>
+                              <span className="text-xs text-ink-400">No convocada</span>
                             )}
                           </span>
                         </button>
@@ -305,10 +305,10 @@ export default function MatchDetail() {
                       [declined, 'No pueden', 'text-bad'],
                     ].map(([n, l, c]) => (
                       <div key={l as string} className="rounded-xl bg-ink-50 py-2.5">
-                        <p className={cn('text-[18px] font-semibold leading-none tabular-nums', c as string)}>
+                        <p className={cn('text-lg font-semibold leading-none tabular-nums', c as string)}>
                           {n as number}
                         </p>
-                        <p className="mt-1 text-[11.5px] text-muted">{l as string}</p>
+                        <p className="mt-1 text-2xs text-muted">{l as string}</p>
                       </div>
                     ))}
                   </div>
@@ -336,14 +336,14 @@ export default function MatchDetail() {
                   </div>
 
                   {callup.sentAt && (
-                    <p className="mt-3 text-center text-[12px] text-ink-400">
+                    <p className="mt-3 text-center text-xs text-ink-400">
                       Última convocatoria enviada {relativeTime(callup.sentAt)}
                     </p>
                   )}
                 </Panel>
 
                 <Panel className="p-5">
-                  <h2 className="flex items-center gap-2 text-[14.5px] font-semibold">
+                  <h2 className="flex items-center gap-2 text-base font-semibold">
                     <Shirt size={16} className="text-ink-800" /> Detalles de la citación
                   </h2>
                   <div className="mt-3.5 space-y-3">
@@ -372,8 +372,8 @@ export default function MatchDetail() {
         {tab === 'detalles' && (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Panel className="p-5">
-              <h2 className="text-[15px] font-semibold">Información del partido</h2>
-              <dl className="mt-4 space-y-3 text-[13.5px]">
+              <h2 className="text-base font-semibold">Información del partido</h2>
+              <dl className="mt-4 space-y-3 text-sm">
                 {[
                   ['Rival', match.opponent],
                   ['Competición', match.competition],
@@ -393,11 +393,11 @@ export default function MatchDetail() {
             </Panel>
 
             <Panel className="p-5">
-              <h2 className="text-[15px] font-semibold">Notas de la entrenadora</h2>
+              <h2 className="text-base font-semibold">Notas de la entrenadora</h2>
               {match.notes ? (
-                <p className="mt-3 whitespace-pre-line text-[13.5px] leading-relaxed text-ink-600">{match.notes}</p>
+                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink-600">{match.notes}</p>
               ) : (
-                <p className="mt-3 text-[13.5px] text-muted">
+                <p className="mt-3 text-sm text-muted">
                   Sin notas todavía. Apunta aquí lo que hayas observado del rival o la estrategia prevista.
                 </p>
               )}

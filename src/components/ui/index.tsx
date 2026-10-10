@@ -197,13 +197,19 @@ export function Dot({ tone = 'neutral', className }: { tone?: Tone; className?: 
  * cambiaría al ordenar de otra forma y dejaría de servir para reconocer a
  * nadie. Todos se leen sobre su propio fondo.
  */
+/* SEIS ESCALONES DE AZUL NOCHE, NO DE GRAFITO. Eran grises puros —#1F1F1F y
+   compañía— de cuando la aplicación entera era negra. Sobre el azul de ahora
+   no se leen como «un tono más oscuro», se leen como manchas de otro
+   producto: una lista de dieciséis jugadoras quedaba con dieciséis círculos
+   grises sobre paneles azules. Son los mismos seis escalones, con el azul
+   dentro. */
 const COLORES_DE_AVATAR = [
-  'bg-[#1F1F1F] text-[#E4E4E4]',
-  'bg-[#141414] text-[#B4B4B4]',
-  'bg-[#2A2A2A] text-[#FFFFFF]',
-  'bg-[#181818] text-[#CFCFCF]',
-  'bg-[#232323] text-[#9E9E9E]',
-  'bg-[#101010] text-[#D8D8D8]',
+  'bg-[#17233C] text-[#DCE6F7]',
+  'bg-[#101A2E] text-[#A8B8D4]',
+  'bg-[#1E2C49] text-[#FFFFFF]',
+  'bg-[#131E35] text-[#C6D3E9]',
+  'bg-[#1A2740] text-[#93A3C0]',
+  'bg-[#0D1626] text-[#CFDAEE]',
 ];
 
 const colorDe = (name: string) => {
@@ -580,17 +586,71 @@ export function ConfirmDialog({
 
 /* ──────────────────────────── Estados de pantalla ────────────────────────── */
 
+/**
+ * Cuando no hay nada que enseñar.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * POR DEFECTO ES UNA FILA, NO UN CARTEL. Esto era siempre `py-12` centrado, y
+ * metido dentro de un panel daba una caja de casi trescientos píxeles de alto
+ * para decir «no hay partidos». Con tres o cuatro en la misma pantalla —y en
+ * el inicio las había— la aplicación se leía como una sucesión de huecos.
+ * Medido en el móvil: el inicio de un club recién creado ocupaba más de dos
+ * pantallas y media sin un solo dato dentro.
+ *
+ * Ahora hay dos tamaños y el pequeño es el que se usa casi siempre:
+ *
+ *   `fila`  (por defecto) Texto a la izquierda, acción a la derecha, y en el
+ *           móvil la acción debajo. Alto: el de dos renglones. Es lo que va
+ *           dentro de un módulo del inicio o de un panel.
+ *   `pleno` Centrado y con aire. SÓLO cuando el vacío ES la pantalla: una
+ *           plantilla sin jugadoras, una biblioteca sin ejercicios. Ahí el
+ *           hueco no sobra, porque no hay nada más.
+ *
+ * En los dos casos el texto dice qué va a aparecer ahí y la acción lleva a
+ * crearlo. Un vacío sin salida es una pantalla rota con buenos modales.
+ */
 export function EmptyState({
-  title, description, action, className,
-}: { title: string; description?: React.ReactNode; action?: React.ReactNode; className?: string }) {
+  title, description, action, size = 'fila', className,
+}: {
+  title: string;
+  description?: React.ReactNode;
+  action?: React.ReactNode;
+  size?: 'fila' | 'pleno';
+  className?: string;
+}) {
+  if (size === 'pleno') {
+    return (
+      <div data-vacio="pleno" className={cn('px-6 py-10 text-center', className)}>
+        <h3 className="text-md font-semibold text-ink-900">{title}</h3>
+        {description && <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-muted">{description}</p>}
+        {/* `flex-wrap`: dos acciones con etiqueta larga —«Añadir jugadora» e
+            «Importar desde un archivo»— no caben en 320 px, y como los botones
+            no parten su texto a propósito, lo que tiene que partir es la fila. */}
+        {action && <div className="mt-5 flex flex-wrap justify-center gap-2">{action}</div>}
+      </div>
+    );
+  }
+
   return (
-    <div className={cn('px-6 py-12 text-center', className)}>
-      <h3 className="text-md font-semibold text-ink-900">{title}</h3>
-      {description && <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-muted">{description}</p>}
-      {/* `flex-wrap`: dos acciones con etiqueta larga —«Añadir jugadora» e
-          «Importar desde un archivo»— no caben en 320 px, y como los botones
-          no parten su texto a propósito, lo que tiene que partir es la fila. */}
-      {action && <div className="mt-5 flex flex-wrap justify-center gap-2">{action}</div>}
+    /* `data-vacio` NO ES DECORACIÓN: es lo que mide `pruebas/densidad.mjs`.
+       Buscar los vacíos por su texto no sirve —el detector acababa midiendo
+       el titular en vez de la caja, y un cartel de 250 px pasaba la prueba—.
+       Con la marca puesta aquí, la medida es exacta y no se puede escapar un
+       vacío sin que la prueba lo vea. */
+    <div
+      data-vacio="fila"
+      className={cn(
+        'flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5',
+        className,
+      )}
+    >
+      <div className="min-w-0">
+        <p className="text-base font-medium text-ink-900">{title}</p>
+        {description && (
+          <p className="mt-1 max-w-[56ch] text-sm leading-relaxed text-muted">{description}</p>
+        )}
+      </div>
+      {action && <div className="flex shrink-0 flex-wrap gap-2">{action}</div>}
     </div>
   );
 }
@@ -651,6 +711,105 @@ export function Figure({
       <p className={cn('mt-1 text-2xl font-semibold leading-none tabular-nums', color)}>{value}</p>
       {hint && <p className="mt-1.5 text-sm text-muted">{hint}</p>}
     </div>
+  );
+}
+
+/* ───────────────────────── Módulos de una página ─────────────────────────── */
+
+/**
+ * La cabecera de un bloque dentro de una página: rótulo a la izquierda, un
+ * enlace o una acción a la derecha.
+ *
+ * Estaba escrita a mano en catorce sitios —`flex items-center justify-between`
+ * y un `eyebrow`— y en cada uno con un hueco distinto debajo: 12 px aquí, 16
+ * allí, 14 en el inicio. Son diferencias que nadie sabe nombrar y que hacen
+ * que una pantalla parezca mal compuesta sin que se vea por qué.
+ */
+export function SectionHeader({
+  title, hint, action, className,
+}: { title: React.ReactNode; hint?: React.ReactNode; action?: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn('flex items-baseline justify-between gap-3', className)}>
+      <div className="flex min-w-0 items-baseline gap-2">
+        <h2 className="eyebrow">{title}</h2>
+        {hint && <span className="truncate text-2xs text-ink-500">{hint}</span>}
+      </div>
+      {action && <div className="shrink-0 text-sm font-medium text-ink-900">{action}</div>}
+    </div>
+  );
+}
+
+/**
+ * Una cifra con su nombre, del tamaño de un botón.
+ *
+ * Es la pieza que sustituye a las tarjetas de ciento cincuenta píxeles de
+ * alto que decían un número. Cuatro de éstas caben en la misma fila que una
+ * de aquéllas, y el número se lee igual de bien porque lo que lo hacía
+ * legible era el contraste, no el hueco alrededor.
+ *
+ * `tono` sólo cuando el número significa algo malo o bueno. Un panel donde
+ * todo lleva color es un panel donde el color no avisa de nada.
+ */
+export function StatTile({
+  label, value, hint, tone, to, className,
+}: {
+  label: string;
+  value: React.ReactNode;
+  hint?: React.ReactNode;
+  tone?: 'ok' | 'warn' | 'bad';
+  /** Si lleva a algún sitio, la baldosa entera se pulsa. */
+  to?: string;
+  className?: string;
+}) {
+  const color = tone ? { ok: 'text-ok', warn: 'text-warn', bad: 'text-bad' }[tone] : 'text-ink-900';
+  const inner = (
+    <>
+      <p className="truncate text-2xs font-medium uppercase tracking-[0.07em] text-ink-500">{label}</p>
+      <p className={cn('mt-1.5 font-display text-xl font-semibold leading-none tabular-nums', color)}>{value}</p>
+      {hint && <p className="mt-1 truncate text-2xs text-ink-500">{hint}</p>}
+    </>
+  );
+  const cls = cn(
+    'min-w-0 rounded-xl border border-line-sutil bg-panel px-3 py-3',
+    to && 'transition-colors hover:bg-raised',
+    className,
+  );
+  return to ? <Link to={to} className={cn('block', cls)}>{inner}</Link> : <div className={cls}>{inner}</div>;
+}
+
+/**
+ * Un atajo: icono, nombre y nada más.
+ *
+ * 56 px de alto y toda la baldosa es el área sensible, no sólo el texto.
+ * Cuatro en dos columnas caben en una pantalla de 320 px sin que ninguna se
+ * parta, que era el motivo por el que antes los atajos vivían escondidos en
+ * un menú.
+ */
+export function ActionTile({
+  to, onClick, icon, children, className,
+}: {
+  to?: string;
+  onClick?: () => void;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const cls = cn(
+    'flex min-h-[52px] w-full min-w-0 items-center gap-2.5 rounded-xl border border-line-sutil bg-panel px-3 py-2.5',
+    'text-left text-base font-medium text-ink-800 transition-colors',
+    'hover:border-line hover:bg-raised hover:text-ink-900 active:scale-[0.99]',
+    className,
+  );
+  const inner = (
+    <>
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-raised text-marca-400">{icon}</span>
+      <span className="min-w-0 leading-snug">{children}</span>
+    </>
+  );
+  return to ? (
+    <Link to={to} className={cls}>{inner}</Link>
+  ) : (
+    <button type="button" onClick={onClick} className={cls}>{inner}</button>
   );
 }
 

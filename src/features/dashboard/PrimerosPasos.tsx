@@ -128,6 +128,20 @@ export function pasosPendientes(d: ClubData): number {
 }
 
 /**
+ * ¿Se está viendo la guía ahora mismo?
+ *
+ * Lo necesita Inicio: con la guía delante, su panel de «empieza creando el
+ * primer equipo» repetía palabra por palabra el primer paso, con el mismo
+ * botón, treinta píxeles más abajo. Dos veces la misma frase no insiste: hace
+ * dudar de si son dos cosas distintas.
+ */
+export function hayGuia(d: ClubData): boolean {
+  if (currentStaff(d)?.setupHiddenAt) return false;
+  const total = visibles(d).length;
+  return total > 0 && pasosPendientes(d) > 0;
+}
+
+/**
  * Los pasos que esta persona puede dar.
  *
  * Crear el equipo sólo lo puede hacer la administración del club: a una
@@ -249,22 +263,23 @@ export function PrimerosPasos() {
                   >
                     {p.titulo}
                   </span>
-                  {!p.ok && (
+                  {/* EL PORQUÉ, SÓLO EN EL SIGUIENTE. Con los seis explicados
+                      y con su botón, la guía de un club recién creado medía
+                      1.100 px en un móvil: seis párrafos y seis botones para
+                      una tarea que se hace de una en una. Ahora el paso que
+                      toca se explica y se pulsa, y los demás son una línea
+                      que dice lo que viene después. */}
+                  {!p.ok && esSiguiente && (
                     <span className="mt-0.5 block text-sm leading-relaxed text-ink-600">
                       {p.porque}
                     </span>
                   )}
                 </span>
 
-                {!p.ok && destino(p) && (
+                {!p.ok && esSiguiente && destino(p) && (
                   <Link
                     to={destino(p)!}
-                    className={cn(
-                      'col-start-2 inline-flex h-9 w-fit items-center gap-1.5 rounded-xl px-3.5 text-sm font-medium transition-colors sm:col-start-3 sm:justify-self-end',
-                      esSiguiente
-                        ? 'metal-claro text-white'
-                        : 'border border-line text-ink-800 hover:bg-raised',
-                    )}
+                    className="metal-claro col-start-2 inline-flex h-9 w-fit items-center gap-1.5 rounded-xl px-3.5 text-sm font-medium text-white transition-colors sm:col-start-3 sm:justify-self-end"
                   >
                     {p.accion}
                     <ArrowRight size={14} />
