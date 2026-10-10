@@ -33,7 +33,13 @@ export interface Plan {
   priceYearly: number | null;
   currency: string;
   trialDays: number;
-  /** Si no hay precio en Stripe, no se puede contratar todavía. */
+  /**
+   * Si se puede contratar HOY. Hacen falta dos cosas: que el plan tenga precio
+   * en Stripe —eso lo mira `parsePlan`— y que el servidor tenga con qué cobrar
+   * —eso lo pregunta `pasarelaAbierta()` y lo aplica `conLaCajaAbierta`—.
+   * Quien lea planes por su cuenta se quedará con lo primero; para eso están
+   * `billing.planes()` y la carga de `db.ts`, que ya traen las dos.
+   */
   contratable: boolean;
 }
 
@@ -86,11 +92,63 @@ export function importe(centimos: number | null, moneda: string): string | null 
   }).format(centimos / 100);
 }
 
+/**
+ * ¿Hay caja abierta de verdad?
+ * ---------------------------------------------------------------------------
+ * Tener precio en Stripe y poder cobrar son dos cosas distintas. Los cuatro
+ * precios existen y están guardados en `plans`, así que `parsePlan` ya dice
+ * `contratable: true`. Pero el cobro necesita además cuatro variables de
+ * entorno en el servidor —la clave de Stripe, la de servicio de Supabase, su
+ * URL y el secreto del webhook— y ésas las pone una persona en el panel de
+ * Netlify, no esta migración ni este código.
+ *
+ * Sin esta comprobación, la portada diría «se contrata desde la aplicación» y
+ * cada intento de pagar moriría con «Falta la variable de entorno
+ * STRIPE_SECRET_KEY». Prometer un cobro que falla es peor que decir que
+ * todavía no se puede.
+ *
+ * SE PREGUNTA UNA VEZ POR CARGA. La respuesta cambia como mucho una vez en la
+ * vida del proyecto; una ida y vuelta al servidor por cada pantalla de precios
+ * sería tirar el tiempo de todo el mundo.
+ *
+ * Y SI NO CONTESTA, ES «NO». En desarrollo no hay funciones de Netlify
+ * sirviendo, y sin red tampoco hay respuesta. En los dos casos el valor
+ * prudente es el mismo: no ofrecer un pago que no se ha podido confirmar. El
+ * error se equivoca hacia «todavía no», que no rompe nada; equivocarse hacia
+ * «sí» deja a alguien con la tarjeta en la mano delante de un fallo.
+ */
+let caja: Promise<boolean> | null = null;
+
+export function pasarelaAbierta(): Promise<boolean> {
+  caja ??= fetch('/.netlify/functions/estado-pago')
+    .then((r) => (r.ok ? (r.json() as Promise<{ listo?: boolean }>) : { listo: false }))
+    .then((j) => j.listo === true)
+    .catch(() => false);
+  return caja;
+}
+
+/**
+ * Los planes, con `contratable` ya pasado por la realidad del servidor.
+ *
+ * `contratable` significa «esto se puede contratar», y si no hay con qué
+ * cobrar no se puede. Apagarlo aquí, en un solo sitio, deja honestas de golpe
+ * las cuatro pantallas que lo miran —portada, alta, selector y facturación— y
+ * también `entitlements`, que mientras nada sea contratable no cierra ninguna
+ * función.
+ */
+export const conLaCajaAbierta = (planes: Plan[], abierta: boolean): Plan[] =>
+  abierta ? planes : planes.map((p) => ({ ...p, contratable: false }));
+
 export const billing = {
+  pasarelaAbierta,
+
   async planes(): Promise<Plan[]> {
-    const { data, error } = await supabase.from('plans').select('*').order('tier');
+    const [{ data, error }, abierta] = await Promise.all([
+      supabase.from('plans').select('*').order('tier'),
+      pasarelaAbierta(),
+    ]);
     if (error) throw error;
-    return (data as Row[]).map(parsePlan);
+    return conLaCajaAbierta((data as Row[]).map(parsePlan), abierta);
   },
 
   async suscripcion(clubId: string): Promise<Subscription | null> {

@@ -27,17 +27,32 @@ import { cn } from '@/lib/utils';
 
 export type Periodo = 'mensual' | 'anual';
 
-/** La diferencia de cada plan, en una línea corta. */
-export const LIMITE: Record<PlanTier, string> = {
-  free: '1 equipo',
-  pro: 'Hasta 5 equipos',
-  max: 'Equipos sin límite',
-};
+/**
+ * Cuántos equipos caben, en una línea corta.
+ *
+ * SALE DE LA TABLA, NO DE AQUÍ. Esto era un diccionario escrito a mano —«1
+ * equipo», «hasta 5», «sin límite»— y la migración 0012 decidió otra cosa:
+ * Gratis uno, Pro uno, Max cinco. El diccionario se quedó con los números
+ * viejos y durante un tiempo esta pantalla prometió a quien eligiera Pro cinco
+ * equipos que la base de datos le iba a negar, porque el límite lo impone la
+ * política de RLS al insertar. Leyendo `max_teams` eso no puede volver a
+ * pasar: cambiar el límite es cambiar una fila.
+ */
+export const limiteDeEquipos = (plan: Plan): string =>
+  plan.maxTeams === null
+    ? 'Equipos sin límite'
+    : plan.maxTeams === 1
+      ? 'Un equipo'
+      : `Hasta ${plan.maxTeams} equipos`;
 
+/* Para quién es cada uno. Mismo encuadre que la portada —Pro es un entrenador
+   con su equipo, Max es un club con varios— porque son la misma oferta vista
+   desde fuera y desde dentro, y contradecirse entre las dos pantallas es la
+   forma más rápida de que no se crea ninguna. */
 const PARA_QUIEN: Record<PlanTier, string> = {
-  free: 'Para llevar un equipo de principio a fin.',
-  pro: 'Para quien lleva varios equipos a la vez.',
-  max: 'Para clubes que quieren gestionarlo todo desde un mismo sitio.',
+  free: 'Para empezar con un equipo y ver si esto te sirve.',
+  pro: 'Para el entrenador que lleva su equipo y quiere la pizarra entera.',
+  max: 'Para el club con varios equipos y varias personas en el cuerpo técnico.',
 };
 
 /**
@@ -159,7 +174,7 @@ export function SelectorDePlanes({
         )}
 
         <div className="mt-6 divide-y divide-line">
-          <Linea texto={LIMITE[plan.tier]} fuerte />
+          <Linea texto={limiteDeEquipos(plan)} fuerte />
           {plan.tier !== 'free' && <Linea texto={`Todo lo de ${ordenados[0]?.name ?? 'Gratis'}`} />}
           {(plan.tier === 'free' ? todoLoQueTrae('free', seVende) : loQueFalta(plan.tier, seVende)).map((t) => (
             <Linea key={t} texto={t} />
@@ -202,6 +217,11 @@ export function BotonDePlan({
 }) {
   const esGratis = plan.tier === 'free';
   const sePuede = esGratis || plan.contratable;
+  /* Dos motivos distintos para no poder contratar, y no dan la misma
+     explicación: o no hay precio decidido, o lo hay y la caja no está abierta
+     todavía. Decir «no tiene precio» con el precio escrito tres centímetros
+     más arriba es quedar por mentiroso sin necesidad. */
+  const hayPrecio = plan.priceMonthly !== null || plan.priceYearly !== null;
 
   return (
     <div>
@@ -216,8 +236,9 @@ export function BotonDePlan({
       </Button>
       {!sePuede && !esElActual && (
         <p className="mt-2.5 text-center text-sm leading-relaxed text-ink-500">
-          Todavía no tiene precio, así que no se puede contratar. Preferimos dejarlo en blanco a
-          enseñarte una cifra que no es.
+          {hayPrecio
+            ? 'Todavía no hay forma de pagar, así que no se puede contratar. Mientras tanto lo tienes todo disponible sin pagar nada.'
+            : 'Todavía no tiene precio, así que no se puede contratar. Preferimos dejarlo en blanco a enseñarte una cifra que no es.'}
         </p>
       )}
     </div>
