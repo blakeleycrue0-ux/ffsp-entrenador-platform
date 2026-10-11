@@ -11,7 +11,7 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { EVENT_KIND } from '@/components/domain/StatusBits';
-import { ImportarEntrenos } from './ImportarEntrenos';
+import { VariosEntrenamientos } from './VariosEntrenamientos';
 import {
   addDays, cap, cn, isSameDay, longDate, monthName, startOfWeek, toISODate, today,
 } from '@/lib/utils';
@@ -44,18 +44,19 @@ export default function CalendarPage() {
   const [cursor, setCursor] = useState(() => today());
   const [teamFilter, setTeamFilter] = useState('todos');
   const [detail, setDetail] = useState<CalendarEvent | null>(null);
-  const [importar, setImportar] = useState(false);
+  const [varios, setVarios] = useState(false);
 
-  /* `?importar=1` abre la hoja directamente: así el menú de «Crear» puede
-     traer aquí a quien quiere meter la temporada entera, y llega con la hoja
-     abierta en vez de llegar al calendario a ver qué hace. El parámetro se
-     quita de la barra de direcciones para que recargar no la vuelva a abrir. */
+  /* `?varios=1` abre la hoja directamente: así el menú de «Crear» y la lista
+     de entrenamientos pueden traer aquí a quien quiere meter la temporada
+     entera, y llega con la hoja abierta en vez de llegar al calendario a ver
+     qué hace. El parámetro se quita de la barra de direcciones para que
+     recargar no la vuelva a abrir. */
   const [params, setParams] = useSearchParams();
   useEffect(() => {
-    if (params.get('importar') !== '1') return;
-    setImportar(true);
+    if (params.get('varios') !== '1') return;
+    setVarios(true);
     const limpio = new URLSearchParams(params);
-    limpio.delete('importar');
+    limpio.delete('varios');
     setParams(limpio, { replace: true });
   }, [params, setParams]);
 
@@ -100,7 +101,7 @@ export default function CalendarPage() {
             <LinkButton to="/app/entrenamientos/nuevo" size="sm" icon={<CalendarPlus size={15} />}>
               Nuevo entrenamiento
             </LinkButton>
-            <Button variant="secondary" size="sm" icon={<Layers size={15} />} onClick={() => setImportar(true)}>
+            <Button variant="secondary" size="sm" icon={<Layers size={15} />} onClick={() => setVarios(true)}>
               Añadir varios
             </Button>
             <LinkButton to="/app/partidos/nuevo" variant="secondary" size="sm" icon={<Swords size={15} />}>
@@ -185,12 +186,12 @@ export default function CalendarPage() {
         ))}
       </div>
 
-      {view === 'dia' && <DayView date={cursor} events={eventsOn(cursor)} onOpen={setDetail} onImportar={() => setImportar(true)} />}
+      {view === 'dia' && <DayView date={cursor} events={eventsOn(cursor)} onOpen={setDetail} onImportar={() => setVarios(true)} />}
       {view === 'semana' && <WeekView cursor={cursor} events={events} onOpen={setDetail} />}
       {view === 'mes' && <MonthView cursor={cursor} events={events} onOpen={setDetail} onPickDay={(d) => { setCursor(d); setView('dia'); }} />}
 
       <EventModal event={detail} onClose={() => setDetail(null)} />
-      <ImportarEntrenos abierto={importar} onCerrar={() => setImportar(false)} />
+      <VariosEntrenamientos abierto={varios} onCerrar={() => setVarios(false)} />
     </>
   );
 }

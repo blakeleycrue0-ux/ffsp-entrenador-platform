@@ -135,13 +135,11 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.waitForTimeout(500);
 
   const hoja = page.getByRole('dialog');
-  comprueba('se abre la hoja de importar', await hoja.isVisible());
+  comprueba('se abre la hoja', await hoja.isVisible());
 
-  await hoja.getByRole('button', { name: /los días que entrenáis/i }).click();
-  await page.waitForTimeout(250);
   comprueba(
-    'enseña los días que ya están guardados',
-    /martes a las 18:00/i.test(await hoja.textContent()),
+    'los días guardados del equipo vienen marcados',
+    (await hoja.locator('button[aria-pressed="true"]').count()) === 2,
   );
 
   await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
@@ -224,12 +222,7 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.waitForTimeout(400);
   const hoja = page.getByRole('dialog');
 
-  const opcion = hoja.getByRole('button', { name: /los días que entrenáis/i });
-  comprueba('la opción de los días NO está apagada', await opcion.isEnabled());
-  await opcion.click();
-  await page.waitForTimeout(250);
-
-  comprueba('pregunta qué días entrenáis', /qué días entrenáis/i.test(await hoja.textContent()));
+    comprueba('pregunta qué días entrenáis', /qué días entrenáis/i.test(await hoja.textContent()));
   const letras = hoja.locator('button[aria-pressed]');
   comprueba('hay siete días que tocar', (await letras.count()) === 7, `${await letras.count()}`);
 
@@ -285,7 +278,6 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.getByRole('button', { name: /añadir varios/i }).first().click();
   await page.waitForTimeout(400);
   const hoja = page.getByRole('dialog');
-  await hoja.getByRole('button', { name: /los días que entrenáis/i }).click();
   await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
   await page.waitForTimeout(400);
 
@@ -300,85 +292,71 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await ctx.close();
 }
 
-/* ══════════════ 4. Un archivo .ics de verdad ═══════════════════════════════ */
+/* ═══════ 4. UNA HORA POR DÍA: el lunes no es el viernes ══════════════════ */
 {
-  console.log('\n  Desde un archivo de calendario\n');
-  const { page, ctx, escrituras } = await abre('/app/calendario');
+  console.log('\n  cada día a su hora\n');
+  /* Es lo normal en un club: los campos se reparten y el viernes el equipo
+     anterior acaba más tarde. Antes esta hoja pedía UNA hora para todos los
+     días marcados, así que quien entrena a horas distintas tenía que pasar por
+     aquí dos veces o corregir treinta sesiones a mano. */
+  const { page, ctx, escrituras } = await abre('/app/calendario', 390);
 
   await page.getByRole('button', { name: /añadir varios/i }).first().click();
-  await page.waitForTimeout(400);
-  const hoja = page.getByRole('dialog');
-  await hoja.getByRole('button', { name: /un calendario que ya tienes/i }).click();
-  await page.waitForTimeout(250);
-
-  const ics = [
-    'BEGIN:VCALENDAR', 'VERSION:2.0',
-    'BEGIN:VEVENT',
-    'UID:a@club', 'DTSTART;TZID=Europe/Madrid:20261013T180000',
-    'DTEND;TZID=Europe/Madrid:20261013T193000',
-    'RRULE:FREQ=WEEKLY;BYDAY=TU;COUNT=3',
-    'SUMMARY:Entrenamiento del Cadete A', 'LOCATION:Campo Municipal',
-    'END:VEVENT', 'END:VCALENDAR',
-  ].join('\r\n');
-
-  await hoja.locator('input[type="file"]').setInputFiles({
-    name: 'temporada.ics', mimeType: 'text/calendar', buffer: Buffer.from(ics),
-  });
   await page.waitForTimeout(500);
+  const hoja = page.getByRole('dialog');
 
-  const filas = await hoja.locator('li').count();
-  comprueba('las tres repeticiones del archivo salen en la lista', filas === 3, `${filas} filas`);
-  comprueba('con su título', /Entrenamiento del Cadete A/.test(await hoja.textContent()));
-  comprueba('y su hora', /18:00 – 19:30/.test(await hoja.textContent()));
+  comprueba('ya no se puede subir ningún archivo', (await hoja.locator('input[type="file"]').count()) === 0);
+  comprueba('ni pegar el texto de un calendario', (await hoja.locator('textarea').count()) === 0);
+  comprueba('ni se nombra el .ics', !/\.ics/i.test(await hoja.textContent()));
 
-  /* EL TROPIEZO DE VERDAD: Google Calendar no exporta un .ics, exporta un
-     .zip con el .ics dentro. Si eso sólo dice «no parece un calendario», se
-     queda ahí tirado. Se vuelve al selector para probarlo. */
-  await hoja.getByRole('button', { name: /^atrás$/i }).click();
+  /* El equipo del mock entrena martes y jueves: vienen marcados con su hora. */
+  comprueba('los días guardados vienen marcados',
+    (await hoja.locator('button[aria-pressed="true"]').count()) === 2,
+    `${await hoja.locator('button[aria-pressed="true"]').count()}`);
+  comprueba('cada uno con su fila de hora',
+    (await hoja.locator('input[type="time"]').count()) === 2);
+
+  /* Lunes a las 18:45 de hora y cuarto; viernes a las 19:30 de hora y media.
+     Se quitan los dos que venían del horario para que la cuenta sea limpia. */
+  await hoja.getByRole('button', { name: 'martes' }).click();
+  await hoja.getByRole('button', { name: 'jueves' }).click();
+  await hoja.getByRole('button', { name: 'lunes' }).click();
+  await hoja.getByRole('button', { name: 'viernes' }).click();
   await page.waitForTimeout(250);
-  await hoja.locator('input[type="file"]').setInputFiles({
-    name: 'calendario.zip', mimeType: 'application/zip', buffer: Buffer.from('PK\u0003\u0004algo comprimido'),
-  });
-  await page.waitForTimeout(400);
-  const quejaZip = await hoja.textContent();
-  comprueba('un .zip se reconoce', /archivo comprimido/i.test(quejaZip));
-  comprueba('y se dice qué hacer con él', /Descomprímelo/i.test(quejaZip));
-  comprueba('sin ofrecer crear nada', await hoja.getByRole('button', { name: /^crear entrenamientos$/i }).isDisabled());
 
-  /* EL SELECTOR NO PUEDE LLEVAR FILTRO: con `accept=".ics"`, en el iPhone no
-     aparece ningún archivo —los deja todos en gris— y no hay manera de
-     elegirlo. Fue la queja. */
-  await hoja.getByRole('button', { name: /^atrás$/i }).click();
+  await hoja.getByLabel('Hora del lunes').fill('18:45');
+  await hoja.getByLabel('Duración del lunes').selectOption('75');
+  await hoja.getByLabel('Hora del viernes').fill('19:30');
+  await hoja.getByLabel('Duración del viernes').selectOption('90');
   await page.waitForTimeout(250);
-  comprueba(
-    'el selector de archivos no filtra por tipo',
-    (await hoja.locator('input[type="file"]').getAttribute('accept')) === null,
-  );
 
-  /* Y se puede pegar el texto, que en un móvil es más fácil que encontrar un
-     archivo. */
-  await hoja.locator('textarea').fill(ics);
-  await hoja.getByRole('button', { name: /leer lo pegado/i }).click();
-  await page.waitForTimeout(400);
-  comprueba('pegar el texto también vale', (await hoja.locator('li').count()) === 3,
-    `${await hoja.locator('li').count()} filas`);
-
-  /* Se vuelve atrás y se elige el bueno. */
-  await hoja.getByRole('button', { name: /^atrás$/i }).click();
-  await page.waitForTimeout(250);
-  await hoja.locator('input[type="file"]').setInputFiles({
-    name: 'temporada.ics', mimeType: 'text/calendar', buffer: Buffer.from(ics),
-  });
+  await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
   await page.waitForTimeout(400);
 
-  await hoja.getByRole('button', { name: /crear 3 entrenamiento/i }).click();
-  await page.waitForTimeout(900);
-  comprueba('se crean los tres', (escrituras[0] ?? []).length === 3, `${(escrituras[0] ?? []).length}`);
-  comprueba(
-    'con las fechas del archivo',
-    (escrituras[0] ?? []).map((f) => f.date).join(' ') === '2026-10-13 2026-10-20 2026-10-27',
-    (escrituras[0] ?? []).map((f) => f.date).join(' '),
-  );
+  const texto = await hoja.textContent();
+  comprueba('la lista enseña la hora del lunes', /18:45 – 20:00/.test(texto));
+  comprueba('y la del viernes, distinta', /19:30 – 21:00/.test(texto));
+
+  await hoja.getByRole('button', { name: /crear \d+ entrenamiento/i }).click();
+  await page.waitForTimeout(1000);
+
+  const filas = escrituras[0] ?? [];
+  comprueba('se crean en una sola petición', escrituras.length === 1 && filas.length > 20,
+    `${escrituras.length} escrituras, ${filas.length} filas`);
+
+  const lunes = filas.filter((f) => new Date(`${f.date}T12:00:00`).getDay() === 1);
+  const viernes = filas.filter((f) => new Date(`${f.date}T12:00:00`).getDay() === 5);
+  comprueba('hay lunes y viernes, y nada más',
+    lunes.length > 0 && viernes.length > 0 && lunes.length + viernes.length === filas.length,
+    `${lunes.length} lunes · ${viernes.length} viernes · ${filas.length} en total`);
+  comprueba('TODOS los lunes a las 18:45 y 75 minutos',
+    lunes.every((f) => f.start_time === '18:45' && f.duration === 75),
+    `${lunes[0]?.start_time} · ${lunes[0]?.duration} min`);
+  comprueba('TODOS los viernes a las 19:30 y 90 minutos',
+    viernes.every((f) => f.start_time === '19:30' && f.duration === 90),
+    `${viernes[0]?.start_time} · ${viernes[0]?.duration} min`);
+  comprueba('y ninguna manda el identificador vacío',
+    filas.every((f) => !('id' in f) || (typeof f.id === 'string' && f.id.length > 0)));
 
   await ctx.close();
 }
@@ -480,11 +458,11 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
 
   await hoja.getByRole('button', { name: /varios entrenamientos/i }).click();
   await page.waitForTimeout(900);
-  comprueba('que abre la hoja de importar', (await page.getByRole('dialog').count()) === 1
-    && /los días que entrenáis/i.test(await page.getByRole('dialog').textContent()));
+  comprueba('que abre la hoja de varios', (await page.getByRole('dialog').count()) === 1
+    && /qué días entrenáis/i.test(await page.getByRole('dialog').textContent()));
   comprueba(
     'y la dirección queda limpia para que recargar no la vuelva a abrir',
-    !page.url().includes('importar'),
+    !page.url().includes('varios'),
     page.url(),
   );
 
@@ -533,7 +511,6 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.getByRole('button', { name: /añadir varios/i }).first().click();
   await page.waitForTimeout(500);
   const hoja = page.getByRole('dialog');
-  await hoja.getByRole('button', { name: /los días que entrenáis/i }).click();
   await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
   await page.waitForTimeout(400);
 
@@ -550,6 +527,39 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   comprueba('el botón de crear se ve sin desplazar la hoja', boton.y + boton.height <= alto + 1,
     `acaba en ${Math.round(boton.y + boton.height)}`);
   comprueba('y se puede pulsar con el dedo', boton.height >= 40, `${Math.round(boton.height)}px`);
+
+  await ctx.close();
+}
+
+/* ══════════ 10. Y en la pantalla más estrecha que existe ══════════════════ */
+{
+  console.log('\n  a 320 px\n');
+  /* Las filas de hora son lo más apretado de la aplicación: el nombre del día,
+     un campo de hora y un desplegable de duración, los tres en una fila. */
+  const { page, ctx } = await abre('/app/calendario', 320);
+
+  await page.getByRole('button', { name: /añadir varios/i }).first().click();
+  await page.waitForTimeout(500);
+  const hoja = page.getByRole('dialog');
+  await hoja.getByRole('button', { name: 'miércoles' }).click();
+  await page.waitForTimeout(250);
+
+  const desborde = await page.evaluate(() =>
+    document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  comprueba('nada se sale a lo ancho', desborde <= 0, `${desborde}px de más`);
+
+  const dentro = await hoja.evaluate((el) => el.scrollWidth - el.clientWidth);
+  comprueba('ni dentro de la hoja', dentro <= 0, `${dentro}px de más`);
+
+  /* Los siete días y la fila de hora, todos tocables. */
+  const dias = await hoja.locator('button[aria-pressed]').all();
+  const cajas = await Promise.all(dias.map((d) => d.boundingBox()));
+  comprueba('los siete días se pueden tocar', cajas.every((c) => c.width >= 32 && c.height >= 40),
+    `${Math.round(cajas[0].width)}×${Math.round(cajas[0].height)}`);
+
+  const hora = await hoja.locator('input[type="time"]').first().boundingBox();
+  comprueba('y el campo de la hora también', hora.width >= 70 && hora.height >= 40,
+    `${Math.round(hora.width)}×${Math.round(hora.height)}`);
 
   await ctx.close();
 }

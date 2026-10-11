@@ -17,7 +17,7 @@ import { Modal } from '@/components/ui';
 
 const OPTIONS = [
   { icon: ClipboardList, label: 'Entrenamiento', hint: 'Monta la sesión con tus ejercicios', to: '/app/entrenamientos/nuevo' },
-  { icon: CalendarRange, label: 'Varios entrenamientos', hint: 'Del horario del equipo o de un archivo .ics', to: '/app/calendario?importar=1' },
+  { icon: CalendarRange, label: 'Varios entrenamientos', hint: 'Marca los días que entrenáis y entran todos', to: '/app/calendario?varios=1' },
   { icon: Swords, label: 'Partido', hint: 'Rival, competición, campo y horario', to: '/app/partidos/nuevo' },
   { icon: Users, label: 'Jugadora', hint: 'Añádela a la plantilla de tu equipo', to: '/app/plantilla/nueva' },
   { icon: LayoutGrid, label: 'Jugada', hint: 'Dibújala y anímala en la pizarra', to: '/app/pizarra' },

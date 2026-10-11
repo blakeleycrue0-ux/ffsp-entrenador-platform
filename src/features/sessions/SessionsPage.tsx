@@ -46,7 +46,7 @@ export default function SessionsPage() {
                 donde se ve el resultado; desde aquí se llega con la hoja ya
                 abierta en vez de tener que encontrarla. */}
             <LinkButton
-              to="/app/calendario?importar=1"
+              to="/app/calendario?varios=1"
               variant="secondary"
               size="sm"
               icon={<Layers size={15} />}
@@ -88,7 +88,7 @@ export default function SessionsPage() {
                 <LinkButton to="/app/entrenamientos/nuevo" size="sm">
                   Crear entrenamiento
                 </LinkButton>
-                <LinkButton to="/app/calendario?importar=1" variant="secondary" size="sm">
+                <LinkButton to="/app/calendario?varios=1" variant="secondary" size="sm">
                   Añadir varios
                 </LinkButton>
               </>
