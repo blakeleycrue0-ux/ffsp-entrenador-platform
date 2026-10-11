@@ -422,7 +422,7 @@ export default function AttendancePage() {
                 }}
                 className={cn(
                   'flex h-12 w-full items-center gap-3 rounded-xl px-3.5 text-left text-base transition-colors',
-                  elegido ? 'bg-marca-600 font-semibold text-white' : 'bg-panel text-ink-800 active:bg-raised',
+                  elegido ? 'bg-ink-900 font-semibold text-white' : 'bg-panel text-ink-800 active:bg-raised',
                 )}
               >
                 <span

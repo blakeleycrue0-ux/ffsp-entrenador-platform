@@ -75,11 +75,17 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
     <div className="-mt-[var(--pagina-top)]">
       <Heroe d={d} onCrear={onCrear} />
 
-      <div className="space-y-5 pt-4">
-        <PrimerosPasos />
+      {/* El pliego claro empieza aquí: el héroe se queda sobre el negro y
+          todo lo demás va sobre gris, se desplace hasta donde se desplace. */}
+      <div className="pliego min-h-[60vh] space-y-5 rounded-t-[28px] pt-5">
 
         {sinEquipos ? (
-          !hayGuia(d.data) && (
+          /* SIN EQUIPO, LA GUÍA ES LO ÚNICO QUE HAY. Al bajarla debajo de la
+             tarjeta del entrenamiento se quedó dentro de la rama que exige
+             equipo, y un club recién creado —justo quien la necesita— se
+             quedaba con una pantalla sin una sola cosa que hacer. Aquí va
+             arriba porque no hay tarjeta debajo de la que ponerse. */
+          hayGuia(d.data) ? <PrimerosPasos /> : (
             <Panel className="px-4 py-1">
               <EmptyState
                 title={d.admin ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
@@ -99,6 +105,10 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
         ) : (
           <>
             <Detalle d={d} />
+            {/* DEBAJO DE LA TARJETA DEL ENTRENAMIENTO, y como fila. Estaba
+                encima y en forma de tarjeta, compitiendo con lo único que de
+                verdad se viene a ver aquí. */}
+            <PrimerosPasos />
             <Pendientes d={d} />
           </>
         )}
@@ -118,14 +128,20 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
   const [horas, minutos] = (s?.dato.start ?? '').split(':');
 
   return (
+    /* SIN FONDO PROPIO. Aquí había un resplandor azul, el arco de un campo de
+       fútbol y un fundido hacia el color de la página: tres capas peleándose
+       con el fondo de la plataforma, que ya es negro. El héroe no pinta
+       nada; se apoya en el negro y pone encima texto blanco.
+
+       Y MUCHO MÁS AIRE. El dato principal de la pantalla estaba apretado
+       entre la cabecera y los accesos; ahora respira arriba y abajo, que es
+       lo que lo convierte en el centro de la pantalla. */
     <section
-      className="relative -mx-[var(--pagina-x)] overflow-hidden"
+      className="relative -mx-[var(--pagina-x)]"
       style={{ paddingTop: 'var(--pagina-top)' }}
     >
-      <FondoDeCampo />
-
-      <div className="relative px-[var(--pagina-x)] pb-1 pt-2 text-center">
-        <p className="text-sm font-medium text-ink-500">{rotulo}</p>
+      <div className="heroe relative px-[var(--pagina-x)] pb-2 text-center">
+        <p className="text-sm font-medium text-white/55">{rotulo}</p>
 
         {s ? (
           <>
@@ -134,23 +150,26 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
                 mismo. Es el mismo recurso que usan los bancos con los
                 céntimos, y aquí vale por lo mismo: un dato tiene una parte
                 gorda y una fina. */}
-            <p className="cifra mt-1.5 flex items-baseline justify-center text-[52px]">
+            {/* LOS DOS TROZOS, BLANCOS. Los minutos eran de un gris azulado
+                —`ink-700` sobre el azul noche— y eso partía la hora en dos
+                datos: uno importante y otro apagado. Son la misma hora. Los
+                minutos siguen siendo algo menores, que es lo que hace que
+                «18» se lea primero, pero del mismo color: una unidad. */}
+            <p className="cifra mt-3 flex items-baseline justify-center text-[64px] text-white">
               <span>{horas}</span>
-              <span className="text-[32px] text-ink-700">:{minutos}</span>
+              <span className="text-[40px]">:{minutos}</span>
             </p>
-            {/* El equipo va en la línea SÓLO si no hay cápsula debajo: con
-                las dos, «Cadete A» salía dos veces en tres centímetros. */}
-            <p className="mt-1.5 text-base text-ink-700">
+            <p className="mt-3 text-base text-white/60">
               {relativeDay(s.dato.date)}
               {d.teams.length === 1 && d.equipo ? ` · ${d.equipo.name}` : ''}
             </p>
           </>
         ) : (
           <>
-            <p className="cifra mx-auto mt-3 max-w-[22ch] text-2xl">
+            <p className="cifra mx-auto mt-4 max-w-[22ch] text-2xl text-white">
               {d.teams.length === 0 ? 'Monta tu equipo' : 'Tu semana está vacía'}
             </p>
-            <p className="mt-2 text-base text-ink-600">{longDate(toISODate(today()))}</p>
+            <p className="mt-3 text-base text-white/60">{longDate(toISODate(today()))}</p>
           </>
         )}
 
@@ -166,9 +185,9 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
               className="w-[220px] max-w-[calc(100vw-2rem)]"
               align="left"
               trigger={
-                <button className="flex h-8 max-w-[70vw] items-center gap-1.5 rounded-full bg-white/[0.09] px-3.5 text-sm font-medium text-ink-900 transition-colors active:bg-white/[0.16]">
+                <button className="flex h-9 max-w-[70vw] items-center gap-1.5 rounded-full bg-white/12 px-4 text-sm font-medium text-white transition-colors active:bg-white/20">
                   <span className="truncate">{d.equipo?.name ?? 'Equipos'}</span>
-                  <ChevronsUpDown size={13} className="shrink-0 text-ink-500" />
+                  <ChevronsUpDown size={13} className="shrink-0 text-white/60" />
                 </button>
               }
             >
@@ -182,7 +201,7 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
                       className={cn(
                         'block w-full truncate rounded px-2.5 py-2 text-left text-base transition-colors',
                         t.id === d.equipo?.id
-                          ? 'bg-marca-600/14 font-medium text-ink-900'
+                          ? 'bg-ink-900 font-medium text-white'
                           : 'text-ink-700 hover:bg-surface',
                       )}
                     >
@@ -210,68 +229,30 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
           los discos a veinte centímetros unos de otros: dejaban de leerse
           como un grupo. Con tope quedan juntos y centrados, como en el
           teléfono. */}
+      {/* LAS CUATRO ACCIONES. Las etiquetas dicen lo que hacen: «Asistencia»
+          en vez de «Lista» —que podía ser la lista de jugadoras— y «Entreno»
+          en vez de «Sesión», que es una palabra de software. Y los iconos
+          explican la acción: una pizarra con marca para pasar asistencia, un
+          calendario con un más para apuntar un entreno, un balón para el
+          partido. Nada decorativo. */}
       {d.teams.length > 0 && (
-      <div className="relative mx-auto mt-6 grid max-w-[400px] grid-cols-4 gap-1 px-2 pb-5">
-        <Disco a="/app/entrenamientos" icono={<ClipboardCheck size={19} />} nombre="Pasar lista">
-          Lista
+      <div className="heroe-acciones relative mx-auto grid max-w-[400px] grid-cols-4 gap-1 px-2">
+        <Disco a="/app/entrenamientos" icono={<ClipboardCheck size={21} />} nombre="Pasar asistencia">
+          Asistencia
         </Disco>
-        <Disco a="/app/entrenamientos/nuevo" icono={<CalendarPlus size={19} />} nombre="Crear entrenamiento">
-          Sesión
+        <Disco a="/app/entrenamientos/nuevo" icono={<CalendarPlus size={21} />} nombre="Apuntar un entrenamiento">
+          Entreno
         </Disco>
-        <Disco a="/app/partidos/nuevo" icono={<Swords size={19} />} nombre="Añadir partido">
+        <Disco a="/app/partidos/nuevo" icono={<Swords size={21} />} nombre="Apuntar un partido">
           Partido
         </Disco>
-        <Disco onClick={onCrear} icono={<MoreHorizontal size={19} />} nombre="Más cosas que crear">
+        <Disco onClick={onCrear} icono={<MoreHorizontal size={21} />} nombre="Más cosas que crear">
           Más
         </Disco>
       </div>
       )}
-      {d.teams.length === 0 && <div className="pb-7" />}
+      {d.teams.length === 0 && <div className="pb-10" />}
     </section>
-  );
-}
-
-/**
- * El campo, al fondo.
- *
- * Tres trazos de un campo de fútbol —la línea de medio campo, el círculo
- * central y la media luna del área— a un 5 % de luz, más un resplandor azul
- * arriba. No es una imagen: es un SVG de cinco figuras que pesa lo que pesa
- * este párrafo y escala a cualquier ancho sin pixelarse.
- */
-function FondoDeCampo() {
-  return (
-    <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden" aria-hidden>
-      {/* El resplandor. Un degradado radial, que el compositor resuelve solo:
-          sin filtros y sin capas que recomponer al desplazarse. */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(120% 78% at 50% -8%, rgba(22,139,255,0.26) 0%, rgba(22,139,255,0.10) 38%, rgba(6,12,27,0) 72%)',
-        }}
-      />
-      {/* DOS TRAZOS, NO UN CAMPO ENTERO. La primera versión dibujaba también
-          las dos áreas, y a este tamaño sus líneas rectas aparecían cortadas
-          por los bordes en sitios arbitrarios: no se leían como un campo, se
-          leían como rayas sueltas. Con el círculo central y la línea de
-          medio campo —centrados justo donde está la cifra— sí se reconoce, y
-          además hace de halo detrás de la hora. */}
-      <svg
-        className="absolute left-1/2 top-[64px] h-[380px] w-[380px] -translate-x-1/2 text-white"
-        viewBox="0 0 200 200"
-        fill="none"
-        opacity="0.055"
-        aria-hidden
-      >
-        <line x1="-200" y1="100" x2="400" y2="100" stroke="currentColor" strokeWidth="1" />
-        <circle cx="100" cy="100" r="68" stroke="currentColor" strokeWidth="1" />
-        <circle cx="100" cy="100" r="1.8" fill="currentColor" />
-      </svg>
-      {/* Y el fundido con la página: sin él, el héroe termina en una línea
-          recta y se ve el corte. */}
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-surface" />
-    </div>
   );
 }
 
@@ -287,13 +268,13 @@ function Disco({
 }) {
   const dentro = (
     <>
-      <span className="grid h-12 w-12 place-items-center rounded-full bg-white/[0.09] text-ink-900 transition-[transform,background-color] duration-120 group-active:scale-95 group-active:bg-white/[0.16]">
+      <span className="grid h-[58px] w-[58px] place-items-center rounded-full bg-white/[0.12] text-white transition-[transform,background-color] duration-120 group-active:scale-95 group-active:bg-white/20">
         {icono}
       </span>
-      <span className="text-2xs font-medium leading-none text-ink-700">{children}</span>
+      <span className="text-xs font-medium leading-none text-white">{children}</span>
     </>
   );
-  const clases = 'group flex flex-col items-center gap-1.5 py-1';
+  const clases = 'group flex flex-col items-center gap-2.5 py-1';
   return a ? (
     <Link to={a} aria-label={nombre} className={clases}>{dentro}</Link>
   ) : (
@@ -321,7 +302,7 @@ function Detalle({ d }: { d: DatosDeInicio }) {
   if (s.tipo === 'sesion') {
     const ses = s.dato;
     return (
-      <Panel className="p-4">
+      <Panel className="p-5">
         <div className="flex items-start justify-between gap-3">
           <p className="min-w-0 text-md font-semibold leading-snug text-ink-900">{ses.title}</p>
           <Tag size="sm">{minutesToLabel(ses.duration)}</Tag>
@@ -360,9 +341,15 @@ function Detalle({ d }: { d: DatosDeInicio }) {
           </div>
         )}
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <LinkButton to={`/app/entrenamientos/${ses.id}`} size="sm" block>Ver</LinkButton>
-          <LinkButton to="/app/entrenamientos" size="sm" variant="quiet" block>Pasar lista</LinkButton>
+        {/* UNA ACCIÓN PRINCIPAL, Y DICE A DÓNDE VA. Eran dos botones del
+            mismo tamaño repartidos a mitades —«Ver» y «Pasar lista»—, y a
+            mitades los dos pesan lo mismo. «Ver entrenamiento» es lo que se
+            viene a hacer desde aquí; pasar lista es lo de después. */}
+        <div className="mt-5 flex flex-col gap-2">
+          <LinkButton to={`/app/entrenamientos/${ses.id}`} block>Ver entrenamiento</LinkButton>
+          <LinkButton to={`/app/entrenamientos/${ses.id}/asistencia`} variant="quiet" block>
+            Pasar lista
+          </LinkButton>
         </div>
 
         {d.partido && (
@@ -378,7 +365,7 @@ function Detalle({ d }: { d: DatosDeInicio }) {
 
   const p = s.dato;
   return (
-    <Panel className="p-4">
+    <Panel className="p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="min-w-0 text-md font-semibold leading-snug text-ink-900">
           {p.home ? `${d.nombreClub} · ${p.opponent}` : `${p.opponent} · ${d.nombreClub}`}
@@ -399,9 +386,9 @@ function Detalle({ d }: { d: DatosDeInicio }) {
         )}
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        <LinkButton to={`/app/partidos/${p.id}`} size="sm" block>Ver</LinkButton>
-        <LinkButton to={`/app/partidos/${p.id}`} size="sm" variant="quiet" block>Convocatoria</LinkButton>
+      <div className="mt-5 flex flex-col gap-2">
+        <LinkButton to={`/app/partidos/${p.id}`} block>Ver partido</LinkButton>
+        <LinkButton to={`/app/partidos/${p.id}`} variant="quiet" block>Convocatoria</LinkButton>
       </div>
 
       {d.sesion && (

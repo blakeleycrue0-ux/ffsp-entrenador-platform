@@ -39,56 +39,66 @@ export default {
         prosa: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
-        /* ────────────────────────────────────────────────────────────────────
-           AZUL NOCHE · BLANCO · EL AZUL DE MARCA
-           ────────────────────────────────────────────────────────────────────
-           Esto era gris puro, sin una gota de color: la portada iba de azul y
-           la aplicación de grafito, y al registrarte cambiaba el producto.
-           Ahora las superficies son el MISMO azul noche de la portada
-           (`abismo`), y el azul de marca pasa a significar «esto está
-           activo, esto es lo que se pulsa».
+        /* ════════════════════════════════════════════════════════════════
+           LA PALETA DE LA PLATAFORMA: NEGRO, BLANCO Y GRISES NEUTROS
+           ════════════════════════════════════════════════════════════════
+           Y NO LA COMPARTE CON LA PORTADA. Hasta ahora las superficies de la
+           aplicación eran el mismo azul noche de la página pública y el azul
+           de marca marcaba lo activo. El resultado era un producto que, por
+           dentro, iba de azul marino: fondos navy, botones azules, bordes
+           azulados y un halo azul detrás de la hora.
 
-           Sigue sin ser una interfaz de colorines: el azul aparece en lo
-           seleccionado y en la acción principal, y nada más. Una herramienta
-           que se usa ocho horas a la semana necesita que la interfaz no
-           llame la atención; lo que necesita es RECONOCERSE.
+           Ahora la herramienta es negro, blanco y grises SIN una gota de
+           color. El fondo va de negro arriba a gris abajo, las superficies
+           son claras y lo seleccionado se distingue por CONTRASTE, no por
+           color. Una herramienta que se usa ocho horas a la semana tiene que
+           desaparecer mientras se usa.
 
-           La escala `ink` va AL REVÉS: el 900 es blanco y el 0 negro. Así las
-           clases de toda la aplicación (`text-ink-900` = «lo que más se lee»)
-           siguen significando lo mismo sobre oscuro. Los grises llevan ahora
-           un punto de azul —no son neutros— para que no se vean sucios sobre
-           un fondo que sí lo tiene. */
+           La portada no se toca y no puede verse afectada: usa su propia
+           familia de nombres —`abismo`, `tinta`, `marca`, `cielo`,
+           `lavanda`, `lima`, `grisis`—, que se quedan exactamente como
+           estaban. Los nombres de aquí abajo —`ink`, `surface`, `panel`,
+           `raised`, `sunken`, `line`, `muted`— NO aparecen en
+           `features/landing`: comprobado, y por eso se pueden cambiar sin
+           tocar una sola línea de la página pública.
+
+           LA ESCALA `ink` VUELVE A IR EN EL SENTIDO NORMAL: 0 es lo más
+           claro y 900 lo más oscuro. Estuvo invertida mientras todo se
+           apoyaba sobre negro; ahora las tarjetas son claras y el texto
+           oscuro, así que `text-ink-900` —«lo que más se lee»— vuelve a ser
+           lo que su nombre dice. Son grises NEUTROS: ni una gota de azul.
+           Un gris azulado sobre un fondo sin color se ve sucio. */
         ink: {
-          0:   '#04070F',  // texto sobre claro
-          50:  '#070C17',
-          100: '#0E1524',
-          200: '#172032',  // esqueletos, separadores fuertes
-          300: '#27334A',
-          400: '#44536E',  // iconos apagados
-          500: '#6B7A96',  // terciario: sellos, marcas de tiempo
-          600: '#8D9BB5',
-          700: '#A8B4CA',  // secundario: párrafos, descripciones
-          800: '#EDF1F8',  // primario
-          900: '#FFFFFF',  // énfasis y lo que se pulsa
+          0:   '#FFFFFF',  // texto sobre oscuro
+          50:  '#F7F7F8',
+          100: '#EFEFF1',
+          200: '#E2E2E5',  // esqueletos, separadores fuertes
+          300: '#C9C9CE',
+          400: '#9B9BA2',  // iconos apagados
+          500: '#75757C',  // terciario: sellos, marcas de tiempo
+          600: '#5C5C63',
+          700: '#3F3F45',  // secundario: párrafos, descripciones
+          800: '#232327',  // primario
+          900: '#0D0D0F',  // énfasis y lo que se pulsa
         },
 
-        /* LAS CUATRO SUPERFICIES. Opacas y numeradas, no transparencias
-           sueltas: así dos paneles anidados no se suman y acaban más claros
-           que el de al lado. Son las mismas que usa la franja oscura de la
-           portada, para que una captura puesta allí encaje sin retoques. */
-        surface: '#060C1B',   // nivel 0 · el fondo
-        panel: '#0A1427',     // nivel 1 · un bloque
-        raised: '#101C33',    // nivel 2 · algo por encima
-        sunken: '#16233D',    // nivel 3 · un hueco: campos, celdas
+        /* LAS CUATRO SUPERFICIES, ahora claras y opacas. Siguen numeradas y
+           no son transparencias sueltas: dos paneles anidados no se suman y
+           acaban más claros que el de al lado. */
+        surface: '#E8E8EB',   // nivel 0 · el gris de la mitad inferior
+        panel: '#F5F5F7',     // nivel 1 · una tarjeta, gris claro
+        raised: '#FFFFFF',    // nivel 2 · algo por encima: menús, hover
+        sunken: '#FFFFFF',    // nivel 3 · un hueco donde se escribe
 
-        /* Tres bordes y nada más. El sutil agrupa, el normal separa, el
-           fuerte marca lo que está seleccionado. */
-        line: 'rgba(148,180,255,0.14)',
-        'line-sutil': 'rgba(148,180,255,0.09)',
-        'line-fuerte': 'rgba(148,180,255,0.24)',
+        /* Tres bordes, en negro translúcido. El sutil agrupa, el normal
+           separa, el fuerte marca lo que está seleccionado. */
+        line: 'rgba(13,13,15,0.12)',
+        'line-sutil': 'rgba(13,13,15,0.07)',
+        'line-fuerte': 'rgba(13,13,15,0.26)',
 
-        muted: '#A8B4CA',
-        night: '#060C1B',
+        muted: '#5C5C63',
+        night: '#000000',
+
 
         /* ────────────────────────────────────────────────────────────────────
            EL AZUL, Y DÓNDE VIVE

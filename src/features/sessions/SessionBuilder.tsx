@@ -401,7 +401,7 @@ export default function SessionBuilder() {
                     </p>
                     <Link
                       to="/app/ejercicios/nuevo"
-                      className="mt-3 inline-block text-sm font-medium text-marca-400 underline underline-offset-2"
+                      className="mt-3 inline-block text-sm font-medium text-ink-900 underline underline-offset-2"
                     >
                       Crear el primero
                     </Link>
@@ -578,7 +578,7 @@ export default function SessionBuilder() {
                 }}
                 /* 40 px de alto y letra de 16: por debajo de 16, Safari en el
                    iPhone amplía la página entera al enfocar. */
-                className="h-10 rounded-xl border border-dashed border-line-fuerte bg-transparent px-3 text-md outline-none placeholder:text-ink-500 focus:border-marca-500"
+                className="h-10 rounded-xl border border-dashed border-line-fuerte bg-transparent px-3 text-md outline-none placeholder:text-ink-500 focus:border-ink-900"
               />
             </div>
           </Panel>

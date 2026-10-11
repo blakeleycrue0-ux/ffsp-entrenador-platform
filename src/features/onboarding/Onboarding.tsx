@@ -35,7 +35,6 @@ import { humanError } from '@/services/supabase';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { Button, Field, Input, Select } from '@/components/ui';
 import { Marca, Wordmark } from '@/components/ui/Brand';
-import { Cielo } from '@/components/visual/Cielo';
 import { ConfigurarCodigo } from '@/features/passcode/ConfigurarCodigo';
 import { PasoPlan } from './PasoPlan';
 import { cn } from '@/lib/utils';
@@ -181,14 +180,18 @@ export default function Onboarding() {
     : NUMERADOS.indexOf(paso as (typeof NUMERADOS)[number]) + 1;
 
   return (
-    /* El ambiente detrás, como en la portada y en la entrada: montar el club
-       es el primer rato dentro del producto, y tiene que parecer el mismo
-       producto. El velo central deja el centro oscuro para que el formulario
-       se lea sin competir con el fondo. */
-    <div className="relative flex min-h-[100svh] flex-col overflow-hidden bg-surface">
-      <Cielo velo="hondo" />
+    /* EN CLARO, Y SIN FONDO DE AMBIENTE. Aquí había un «cielo» azul con
+       partículas: es el ambiente de la página pública, y montar el club ya es
+       estar dentro del producto.
+       Y TAMPOCO LLEVA EL FONDO NEGRO DE LA PLATAFORMA, aunque sea la misma
+       paleta. En el móvil los pasos van sin caja —la pantalla ES la
+       interfaz—, así que su texto es oscuro y se escribe directamente sobre
+       la página: una banda negra arriba se tragaría el «Hola» y el título de
+       cada paso. Gris claro de arriba abajo, que es lo que esta pantalla
+       necesita. */
+    <div className="plataforma relative flex min-h-[100svh] flex-col bg-surface">
       <header className="relative mx-auto flex w-full max-w-[460px] items-center justify-between px-5 pb-1 pt-[max(20px,var(--safe-top))]">
-        <Wordmark tone="light" />
+        <Wordmark />
         <button
           onClick={() => void signOut()}
           className="text-sm text-ink-500 underline underline-offset-2 transition-colors hover:text-ink-900"

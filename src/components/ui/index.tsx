@@ -37,7 +37,7 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
     'metal-claro text-white ' +
-    'disabled:[background-image:none] disabled:bg-[rgba(148,180,255,0.08)] disabled:text-ink-500 disabled:shadow-none',
+    'disabled:[background-image:none] disabled:bg-[rgba(13,13,15,0.10)] disabled:text-ink-500 disabled:shadow-none',
   secondary: 'metal text-ink-800',
   ghost: 'bg-transparent text-ink-600 hover:bg-panel hover:text-ink-900',
   quiet: 'border border-line-sutil bg-panel text-ink-800 hover:bg-raised',
@@ -204,19 +204,19 @@ export function Dot({ tone = 'neutral', className }: { tone?: Tone; className?: 
  * cambiaría al ordenar de otra forma y dejaría de servir para reconocer a
  * nadie. Todos se leen sobre su propio fondo.
  */
-/* SEIS ESCALONES DE AZUL NOCHE, NO DE GRAFITO. Eran grises puros —#1F1F1F y
-   compañía— de cuando la aplicación entera era negra. Sobre el azul de ahora
-   no se leen como «un tono más oscuro», se leen como manchas de otro
-   producto: una lista de dieciséis jugadoras quedaba con dieciséis círculos
-   grises sobre paneles azules. Son los mismos seis escalones, con el azul
-   dentro. */
+/* SEIS GRISES NEUTROS. Fueron grafito, luego azul noche cuando la aplicación
+   entera se volvió azul, y ahora vuelven a ser grises —pero CLAROS, porque
+   las superficies de la plataforma también lo son: un círculo azul oscuro
+   sobre una tarjeta gris clara es la mancha de color que este rediseño viene
+   a quitar—. Seis escalones que se distinguen entre sí sin competir con el
+   estado de disponibilidad, que sí usa color porque significa algo. */
 const COLORES_DE_AVATAR = [
-  'bg-[#17233C] text-[#DCE6F7]',
-  'bg-[#101A2E] text-[#A8B8D4]',
-  'bg-[#1E2C49] text-[#FFFFFF]',
-  'bg-[#131E35] text-[#C6D3E9]',
-  'bg-[#1A2740] text-[#93A3C0]',
-  'bg-[#0D1626] text-[#CFDAEE]',
+  'bg-[#D7D7DC] text-[#2A2A30]',
+  'bg-[#C8C8CE] text-[#1F1F24]',
+  'bg-[#E0E0E4] text-[#35353B]',
+  'bg-[#BFBFC6] text-[#1A1A1F]',
+  'bg-[#D0D0D6] text-[#26262C]',
+  'bg-[#E6E6EA] text-[#3B3B41]',
 ];
 
 const colorDe = (name: string) => {
@@ -394,7 +394,7 @@ export function Checkbox({
         className={cn(
           'grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[5px] border transition-colors',
           checked
-            ? 'border-marca-600 bg-marca-600 text-white'
+            ? 'border-ink-900 bg-ink-900 text-white'
             : 'border-line-fuerte bg-sunken group-hover:border-ink-500',
         )}
       >
@@ -421,7 +421,7 @@ export function Toggle({
         onClick={() => onChange(!checked)}
         className={cn(
           'relative h-5 w-9 shrink-0 rounded-full transition-colors',
-          checked ? 'bg-marca-600' : 'bg-ink-300',
+          checked ? 'bg-ink-900' : 'bg-ink-300',
         )}
       >
         {/* `left-0` es imprescindible: sin él la bolita se coloca al final del
@@ -456,7 +456,7 @@ export function ScoreInput({
             className={cn(
               'h-7 w-7 rounded border text-sm font-medium tabular-nums transition-colors',
               active
-                ? 'border-marca-600 bg-marca-600 text-white'
+                ? 'border-ink-900 bg-ink-900 text-white'
                 : 'border-line bg-panel text-ink-600 hover:border-ink-400',
             )}
           >
@@ -517,7 +517,7 @@ export function Tabs({
           >
             {t.label}
             {t.count !== undefined && <span className="ml-1.5 text-sm text-ink-400 tabular-nums">{t.count}</span>}
-            {active && <span className="absolute inset-x-1.5 -bottom-px h-0.5 bg-marca-500" />}
+            {active && <span className="absolute inset-x-1.5 -bottom-px h-0.5 bg-ink-900" />}
           </button>
         );
       })}
@@ -545,7 +545,7 @@ export function Segmented<T extends string>({
           className={cn(
             'rounded-[4px] font-medium transition-colors',
             size === 'sm' ? 'px-2 py-1 text-xs' : 'px-2.5 py-1 text-sm',
-            value === o.id ? 'bg-marca-600 text-white' : 'text-ink-600 hover:text-ink-900',
+            value === o.id ? 'bg-ink-900 text-white' : 'text-ink-600 hover:text-ink-900',
           )}
         >
           {o.label}
@@ -622,7 +622,7 @@ export function Modal({
         )}
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>
         {footer && (
-          <div className="flex items-center justify-end gap-2 border-t border-line bg-white/[0.03] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-center justify-end gap-2 border-t border-line bg-ink-900/[0.03] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {footer}
           </div>
         )}
@@ -773,7 +773,7 @@ export function Meter({
   value, max = 100, tone = 'solid', className, height = 4,
 }: { value: number; max?: number; tone?: Tone; className?: string; height?: number }) {
   const pct = max === 0 ? 0 : Math.min(100, Math.max(0, (value / max) * 100));
-  const bg = { neutral: 'bg-ink-400', ok: 'bg-ok', warn: 'bg-warn', bad: 'bg-bad', info: 'bg-info', solid: 'bg-marca-500' }[tone];
+  const bg = { neutral: 'bg-ink-400', ok: 'bg-ok', warn: 'bg-warn', bad: 'bg-bad', info: 'bg-info', solid: 'bg-ink-900' }[tone];
   return (
     <div className={cn('w-full overflow-hidden rounded-full bg-ink-100', className)} style={{ height }}>
       <div className={cn('h-full rounded-full transition-[width] duration-300', bg)} style={{ width: `${pct}%` }} />
@@ -927,7 +927,7 @@ export function ActionTile({
   );
   const inner = (
     <>
-      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-raised text-marca-400">{icon}</span>
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-raised text-ink-700">{icon}</span>
       <span className="min-w-0 leading-snug">{children}</span>
     </>
   );

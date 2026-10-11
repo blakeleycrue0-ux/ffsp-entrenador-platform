@@ -306,7 +306,7 @@ export function VariosEntrenamientos({ abierto, onCerrar }: { abierto: boolean; 
                     className={cn(
                       'h-11 flex-1 rounded-xl border text-base font-semibold transition-colors',
                       puesto
-                        ? 'border-marca-600 bg-marca-600 text-white'
+                        ? 'border-ink-900 bg-ink-900 text-white'
                         : 'border-line text-ink-600 hover:border-line-fuerte',
                     )}
                   >
@@ -371,7 +371,7 @@ export function VariosEntrenamientos({ abierto, onCerrar }: { abierto: boolean; 
           {(elEquipo?.trainingSlots?.length ?? 0) === 0 && (
             <p className="text-sm leading-relaxed text-muted">
               Si quieres que esto quede guardado para la próxima,{' '}
-              <Link to={`/app/equipo-tecnico/${equipo}`} className="font-medium text-marca-400 underline underline-offset-2">
+              <Link to={`/app/equipo-tecnico/${equipo}`} className="font-medium text-ink-900 underline underline-offset-2">
                 ponlo en la ficha del equipo
               </Link>
               . No hace falta para lo de aquí.

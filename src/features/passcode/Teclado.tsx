@@ -141,7 +141,7 @@ export function Teclado({
           onClick={extra.onClick}
           /* Cabe en una línea a propósito: partida en dos parece un fallo de
              maquetación al lado de unas teclas tan ordenadas. */
-          className="mx-auto grid h-[68px] w-[68px] place-items-center whitespace-nowrap rounded-full px-1 text-2xs font-medium leading-tight text-ink-500 transition-colors hover:bg-white/[0.06] hover:text-ink-800 active:scale-[0.95]"
+          className="mx-auto grid h-[68px] w-[68px] place-items-center whitespace-nowrap rounded-full px-1 text-2xs font-medium leading-tight text-ink-500 transition-colors hover:bg-ink-900/[0.05] hover:text-ink-800 active:scale-[0.95]"
         >
           {extra.label}
         </button>
@@ -162,7 +162,7 @@ export function Teclado({
           'mx-auto grid h-[68px] w-[68px] place-items-center rounded-full transition-all active:scale-[0.95]',
           valor.length === 0
             ? 'text-ink-400/35'
-            : 'text-ink-600 hover:bg-white/[0.06] hover:text-ink-900',
+            : 'text-ink-600 hover:bg-ink-900/[0.05] hover:text-ink-900',
         )}
       >
         {/* Un icono funcional: la forma dice «borrar» más rápido que la palabra. */}
@@ -203,10 +203,10 @@ function Tecla({
       aria-label={etiqueta}
       className={cn(
         'mx-auto grid h-[68px] w-[68px] place-items-center rounded-full',
-        'bg-white/[0.07] font-display text-2xl font-medium text-ink-900',
+        'bg-ink-900/[0.06] font-display text-2xl font-medium text-ink-900',
         'tabular-nums transition-[transform,background-color] duration-120',
-        'hover:bg-white/[0.11] active:scale-[0.93] active:bg-white/[0.16]',
-        'disabled:text-ink-400 disabled:hover:bg-white/[0.07]',
+        'hover:bg-ink-900/[0.09] active:scale-[0.93] active:bg-ink-900/[0.12]',
+        'disabled:text-ink-400 disabled:hover:bg-ink-900/[0.06]',
       )}
     >
       {children}

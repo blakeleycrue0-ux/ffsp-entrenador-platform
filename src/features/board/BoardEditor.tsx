@@ -701,7 +701,7 @@ export function BoardEditor({
      pasa al arrastrar, que es el gesto que más se hace. Dice en una palabra en
      qué modo estás, y se cambia de un toque. */
   const interruptorModo = (
-    <div className="flex shrink-0 items-center rounded-xl bg-white/[0.05] p-0.5">
+    <div className="flex shrink-0 items-center rounded-xl bg-ink-900/[0.05] p-0.5">
       {([
         ['colocar', 'Colocar', Move, 'Arrastrar lleva la ficha a otro sitio, sin crear movimiento'],
         ['animar', 'Animar', Spline, 'Arrastrar crea un fotograma en este instante: la ficha se moverá hasta aquí'],
@@ -740,7 +740,7 @@ export function BoardEditor({
           title={h.id === 'movimiento' && !selected ? 'Elige antes una ficha' : h.label}
           className={cn(
             'grid h-9 w-9 place-items-center rounded-xl transition-colors disabled:opacity-35',
-            tool === h.id ? 'bg-ink-900 text-ink-0' : 'text-ink-700 hover:bg-white/[0.07] hover:text-ink-900',
+            tool === h.id ? 'bg-ink-900 text-ink-0' : 'text-ink-700 hover:bg-ink-900/[0.06] hover:text-ink-900',
           )}
         >
           {h.icon}
@@ -752,14 +752,14 @@ export function BoardEditor({
       <button
         onClick={vista.zoomOut}
         aria-label="Alejar"
-        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900"
       >
         <ZoomOut size={15} />
       </button>
       <button
         onClick={vista.zoomIn}
         aria-label="Acercar"
-        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900"
       >
         <ZoomIn size={15} />
       </button>
@@ -767,7 +767,7 @@ export function BoardEditor({
         onClick={vista.fit}
         disabled={vista.ajustado}
         aria-label="Encuadrar todo"
-        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900 disabled:opacity-35"
+        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900 disabled:opacity-35"
       >
         <Move size={15} />
       </button>
@@ -782,7 +782,7 @@ export function BoardEditor({
             onClick={() => commit({ ...scene, camara: { ...camara, giro: camara.giro + 90 }, vertical: undefined })}
             aria-label="Girar el campo un cuarto de vuelta"
             title="Girar el campo un cuarto de vuelta"
-            className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+            className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900"
           >
             <RotateCw size={15} />
           </button>
@@ -792,7 +792,7 @@ export function BoardEditor({
             aria-label={camara.inclinacion > 0 ? 'Poner el campo plano' : 'Inclinar el campo'}
             title={camara.inclinacion > 0 ? `Inclinado ${Math.round(camara.inclinacion)}°` : 'Inclinar el campo'}
             className={cn(
-              'grid h-9 w-9 place-items-center rounded-xl transition-colors hover:bg-white/[0.07]',
+              'grid h-9 w-9 place-items-center rounded-xl transition-colors hover:bg-ink-900/[0.06]',
               camara.inclinacion > 0 ? 'text-ink-900' : 'text-ink-700 hover:text-ink-900',
             )}
           >
@@ -829,7 +829,7 @@ export function BoardEditor({
       <button
         onClick={playback.reset}
         aria-label="Reiniciar"
-        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900"
       >
         <RotateCcw size={15} />
       </button>
@@ -839,7 +839,7 @@ export function BoardEditor({
         aria-label="Bucle"
         className={cn(
           'grid h-9 w-9 place-items-center rounded-xl transition-colors',
-          playback.loop ? 'bg-white/12 text-ink-900' : 'text-ink-700 hover:bg-white/[0.07] hover:text-ink-900',
+          playback.loop ? 'bg-white/12 text-ink-900' : 'text-ink-700 hover:bg-ink-900/[0.06] hover:text-ink-900',
         )}
       >
         <Repeat size={14} />
@@ -866,7 +866,7 @@ export function BoardEditor({
           onClick={undo}
           disabled={!canUndo}
           aria-label="Deshacer"
-          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900 disabled:opacity-35"
+          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900 disabled:opacity-35"
         >
           <Undo2 size={15} />
         </button>
@@ -874,21 +874,21 @@ export function BoardEditor({
           onClick={redo}
           disabled={!canRedo}
           aria-label="Rehacer"
-          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900 disabled:opacity-35"
+          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900 disabled:opacity-35"
         >
           <Redo2 size={15} />
         </button>
         <button
           onClick={() => setExportando(true)}
           aria-label="Exportar"
-          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900"
         >
           <Download size={15} />
         </button>
         <button
           onClick={presentar}
           aria-label="Presentar"
-          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-white/[0.07] hover:text-ink-900"
+          className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900"
         >
           <Maximize2 size={15} />
         </button>

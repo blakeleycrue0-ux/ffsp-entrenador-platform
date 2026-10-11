@@ -82,7 +82,7 @@ export function MenuCabecera({ accion }: { accion?: React.ReactNode }) {
                   }}
                   className={cn(
                     'flex w-full items-center justify-between gap-2 rounded px-2.5 py-1.5 text-left text-base transition-colors',
-                    t.id === activeTeam?.id ? 'bg-marca-600/14 font-medium text-ink-900' : 'text-ink-700 hover:bg-surface',
+                    t.id === activeTeam?.id ? 'bg-ink-900/[0.08] font-medium text-ink-900' : 'text-ink-700 hover:bg-surface',
                   )}
                 >
                   <span className="truncate">{t.name}</span>
@@ -140,14 +140,14 @@ export function MenuSecciones({ onIr }: { onIr?: () => void }) {
                 className={cn(
                   'relative flex items-center gap-3 rounded-2xl py-2.5 pl-4 pr-3 text-md transition-colors',
                   active
-                    ? 'bg-marca-600/14 font-semibold text-ink-900'
+                    ? 'bg-ink-900/[0.08] font-semibold text-ink-900'
                     : 'font-medium text-ink-500 hover:bg-panel hover:text-ink-900',
                 )}
               >
                 {active && (
                   <span
                     aria-hidden
-                    className="absolute inset-y-2.5 left-0 w-[3px] rounded-full bg-marca-500"
+                    className="absolute inset-y-2.5 left-0 w-[3px] rounded-full bg-ink-900"
                   />
                 )}
                 {/* AHORA SÍ LLEVAN ICONO, y antes no. El motivo de entonces

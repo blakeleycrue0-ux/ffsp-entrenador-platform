@@ -201,7 +201,7 @@ export default function DrillEditor() {
                 }}
                 /* 40 px y letra de 16: por debajo de 16, Safari en el iPhone
                    amplía la página entera al enfocar. */
-                className="h-10 rounded-xl border border-dashed border-line-fuerte bg-transparent px-3 text-md outline-none placeholder:text-ink-500 focus:border-marca-500"
+                className="h-10 rounded-xl border border-dashed border-line-fuerte bg-transparent px-3 text-md outline-none placeholder:text-ink-500 focus:border-ink-900"
               />
             </div>
           </Field>
@@ -220,7 +220,7 @@ export default function DrillEditor() {
                       next[i] = e.target.value;
                       patch({ progressions: next });
                     }}
-                    className="h-10 flex-1 rounded-xl border border-line bg-transparent px-3 text-md outline-none focus:border-marca-500"
+                    className="h-10 flex-1 rounded-xl border border-line bg-transparent px-3 text-md outline-none focus:border-ink-900"
                   />
                   <button
                     onClick={() => patch({ progressions: (form.progressions ?? []).filter((_, k) => k !== i) })}

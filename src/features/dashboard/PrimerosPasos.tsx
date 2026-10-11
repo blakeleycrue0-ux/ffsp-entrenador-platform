@@ -207,15 +207,20 @@ export function PrimerosPasos() {
         type="button"
         onClick={() => setAbierta(true)}
         aria-haspopup="dialog"
-        className="flex w-full items-center gap-3.5 rounded-2xl border border-marca-600/25 bg-marca-600/[0.07] px-3.5 py-3 text-left transition-colors hover:bg-marca-600/[0.11] active:bg-marca-600/[0.14]"
+        /* UNA FILA SECUNDARIA, NO UNA TARJETA. Era un bloque con borde y
+           fondo azul que pedía el mismo sitio que el entrenamiento del día,
+           y no lo vale: es un recordatorio de puesta en marcha, no lo que se
+           viene a hacer. Ahora es una fila clara, sin caja, que se despliega
+           al tocarla y conserva su progreso. */
+        className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-ink-900/[0.04] active:bg-ink-900/[0.07]"
       >
         <Aro hechos={hechos} total={total} />
         <span className="min-w-0 flex-1">
-          <span className="block text-base font-semibold text-ink-900">Pon tu equipo en marcha</span>
-          <span className="mt-0.5 block truncate text-sm text-ink-600">
-            {siguiente ? `Ahora: ${siguiente.titulo.toLowerCase()}` : 'Ya casi está'}
+          <span className="block truncate text-base text-ink-800">
+            {siguiente ? siguiente.titulo : 'Pon tu equipo en marcha'}
           </span>
         </span>
+        <span className="shrink-0 text-sm tabular-nums text-ink-500">{hechos}/{total}</span>
         <ChevronRight size={17} className="shrink-0 text-ink-500" aria-hidden />
       </button>
 
@@ -263,7 +268,7 @@ export function PrimerosPasos() {
                     className={cn(
                       'grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors',
                       p.ok
-                        ? 'border-transparent bg-marca-600 text-white'
+                        ? 'border-transparent bg-ink-900 text-white'
                         : 'border-line-fuerte text-transparent',
                     )}
                   >
@@ -317,7 +322,7 @@ export function PrimerosPasos() {
  * solo se estima mal y la cuenta no se estima.
  */
 function Aro({ hechos, total }: { hechos: number; total: number }) {
-  const tamano = 34;
+  const tamano = 28;
   const grosor = 3;
   const r = (tamano - grosor) / 2;
   const c = 2 * Math.PI * r;
@@ -332,13 +337,13 @@ function Aro({ hechos, total }: { hechos: number; total: number }) {
       aria-label={`${hechos} de ${total} pasos hechos`}
     >
       <svg width={tamano} height={tamano} className="-rotate-90" aria-hidden>
-        <circle cx={tamano / 2} cy={tamano / 2} r={r} fill="none" stroke="rgba(148,180,255,0.18)" strokeWidth={grosor} />
+        <circle cx={tamano / 2} cy={tamano / 2} r={r} fill="none" stroke="rgba(13,13,15,0.14)" strokeWidth={grosor} />
         <circle
           cx={tamano / 2}
           cy={tamano / 2}
           r={r}
           fill="none"
-          stroke="#168BFF"
+          stroke="#0D0D0F"
           strokeWidth={grosor}
           strokeLinecap="round"
           strokeDasharray={c}
@@ -346,9 +351,7 @@ function Aro({ hechos, total }: { hechos: number; total: number }) {
           style={{ transition: 'stroke-dashoffset .5s cubic-bezier(.22,1,.36,1)' }}
         />
       </svg>
-      <span className="absolute font-display text-2xs font-semibold tabular-nums text-ink-900">
-        {hechos}/{total}
-      </span>
+
     </span>
   );
 }

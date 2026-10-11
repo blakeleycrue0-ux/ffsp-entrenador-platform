@@ -43,8 +43,11 @@ import { cn } from '@/lib/utils';
 const DESTINO =
   'flex h-[52px] w-[68px] flex-col items-center justify-center gap-1 rounded-[17px]'
   + ' transition-colors duration-150';
-const ACTIVO = 'bg-white/[0.10] text-ink-900';
-const REPOSO = 'text-ink-600 active:bg-white/[0.05]';
+/* LO SELECCIONADO SE DISTINGUE POR CONTRASTE, NO POR COLOR: un fondo algo
+   más oscuro dentro de una cápsula clara. Antes era blanco al 10 % sobre
+   azul noche. */
+const ACTIVO = 'bg-ink-900/[0.09] text-ink-900';
+const REPOSO = 'text-ink-600 active:bg-ink-900/[0.05]';
 
 export function NavFlotante() {
   const { pathname } = useLocation();
@@ -70,12 +73,16 @@ export function NavFlotante() {
         style={{
           height: 'calc(var(--nav-h) + var(--nav-gap) + var(--safe-bottom) + 28px)',
           background:
-            'linear-gradient(to top, #060C1B 0%, rgba(6,12,27,0.92) 42%, rgba(6,12,27,0) 100%)',
+            'linear-gradient(to top, #E8E8EB 0%, rgba(232,232,235,0.92) 42%, rgba(232,232,235,0) 100%)',
         }}
       />
       <nav
         aria-label="Navegación principal"
-        className="pointer-events-auto flex items-center gap-0.5 rounded-full border border-line bg-[#0C1628] p-1.5 shadow-pop"
+        /* UNA CÁPSULA CLARA TRANSLÚCIDA. Era azul noche opaco. El
+           `backdrop-filter` que antes se evitaba aquí por caro vuelve, pero
+           sólo el desenfoque corto: la cápsula mide 68 px de alto y se
+           compone sobre un gris casi liso, no sobre la lista entera. */
+        className="pointer-events-auto flex items-center gap-0.5 rounded-full border border-line-sutil bg-white/80 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.14)] backdrop-blur-md"
       >
         {SECCIONES.map((s) => {
           const Icono = s.icono;
