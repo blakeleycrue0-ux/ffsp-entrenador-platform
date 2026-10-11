@@ -17,7 +17,7 @@ import {
   type PlayerAttendance,
 } from '@/store/selectors';
 import {
-  EmptyState, PageHeader, Panel, PanelHeader, Segmented, Select, Tooltip,
+  Desplegable, EmptyState, PageHeader, Panel, PanelHeader, Segmented, Select, Tooltip,
 } from '@/components/ui';
 import { Avatar, Meter } from '@/components/ui';
 import { BarTrend, LineTrend } from '@/components/domain/Charts';
@@ -92,11 +92,7 @@ export default function StatsPage() {
   if (records.length === 0) {
     return (
       <>
-        <PageHeader
-          title="Analíticas"
-          description="Lo que se puede calcular con lo que habéis registrado."
-          actions={selector}
-        />
+        <PageHeader actions={selector} />
         <Panel>
           <EmptyState size="pleno"
             title="Todavía no hay asistencia registrada"
@@ -110,8 +106,6 @@ export default function StatsPage() {
   return (
     <>
       <PageHeader
-        title="Analíticas"
-        description="Asistencia y participación, calculadas sobre lo que habéis registrado."
         actions={
           <>
             <Segmented<Periodo>
@@ -185,14 +179,29 @@ export default function StatsPage() {
         ))}
       </dl>
 
-      <Panel className="mt-3 px-4 py-3">
-        <p className="text-sm leading-relaxed text-ink-700">
-          <strong className="font-medium">Cómo se calcula.</strong> El porcentaje es «veces que vino»
-          entre «veces que se pasó lista y podía venir». Las faltas justificadas, las lesiones y las
-          sesiones sin lista no cuentan ni a favor ni en contra: quedan fuera del cálculo. Llegar
-          tarde cuenta como haber venido.
+      {/* LA EXPLICACIÓN SE QUEDA, PERO PLEGADA. Son dos párrafos de cincuenta
+          palabras que SÍ hacen falta —un porcentaje de asistencia sin decir
+          cómo se calcula es un número que cada uno interpreta a su manera, y
+          lo de «esto no es rendimiento» es una promesa que esta plataforma
+          hace y hay que poder leer—. Pero se leen una vez en la vida y
+          estaban ocupando sitio en todas las visitas. Detrás de «Más
+          opciones», que es donde está lo avanzado en el resto de la
+          aplicación. */}
+      <Desplegable
+        className="mt-3"
+        titulo="Cómo se calculan estas cifras"
+        pista="Y qué NO dicen"
+      >
+        <p className="text-base leading-relaxed text-ink-700">
+          El porcentaje es «veces que vino» entre «veces que se pasó lista y podía venir». Las
+          faltas justificadas, las lesiones y las sesiones sin lista no cuentan ni a favor ni en
+          contra: quedan fuera del cálculo. Llegar tarde cuenta como haber venido.
         </p>
-      </Panel>
+        <p className="text-base leading-relaxed text-ink-700">
+          Estas cifras describen la asistencia, no el rendimiento. La plataforma no calcula carga
+          física, riesgo de lesión ni proyecciones: sólo cuenta lo que habéis anotado.
+        </p>
+      </Desplegable>
 
       <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
         <Panel className="lg:col-span-2">
@@ -316,10 +325,6 @@ export default function StatsPage() {
         </div>
       </Panel>
 
-      <p className="mt-3 px-1 text-xs leading-relaxed text-muted">
-        Estas cifras describen la asistencia, no el rendimiento. La plataforma no calcula carga
-        física, riesgo de lesión ni proyecciones: sólo cuenta lo que habéis anotado.
-      </p>
     </>
   );
 }

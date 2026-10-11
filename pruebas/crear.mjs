@@ -134,11 +134,11 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   const hoja = page.getByRole('dialog');
   comprueba('se abre la hoja de importar', await hoja.isVisible());
 
-  await hoja.getByRole('button', { name: /del horario del equipo/i }).click();
+  await hoja.getByRole('button', { name: /los días que entrenáis/i }).click();
   await page.waitForTimeout(250);
   comprueba(
     'enseña los días que ya están guardados',
-    /mar 18:00/i.test(await hoja.textContent()),
+    /martes a las 18:00/i.test(await hoja.textContent()),
   );
 
   await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
@@ -185,6 +185,73 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await ctx.close();
 }
 
+/* ═══════ 2 bis. SIN NINGÚN HORARIO GUARDADO, QUE ES EL CASO NORMAL ════════ */
+{
+  console.log('\n  Un equipo sin horario guardado\n');
+  /* Esto es lo que se encuentra cualquiera el primer día, y es lo que estaba
+     roto: la opción del horario salía apagada y el único camino abierto era
+     buscar un archivo .ics, que en un móvil no hay forma de conseguir. Ahora
+     los días se marcan aquí mismo. */
+  const ctx = await navegador.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  const escrituras = [];
+  await mock(page, { equipos: [TEAMS[0], TEAMS[1]] }); // training_slots: [] en los dos
+  await page.route('**/rest/v1/sessions**', async (route) => {
+    const req = route.request();
+    if (req.method() !== 'POST') return route.fallback();
+    const cuerpo = JSON.parse(req.postData() ?? '[]');
+    const filas = (Array.isArray(cuerpo) ? cuerpo : [cuerpo]).map((f, i) => ({ ...f, id: `n${i}`, blocks: [], material: [] }));
+    escrituras.push(filas);
+    return route.fulfill(j(filas));
+  });
+  await page.addInitScript(([u]) => sessionStorage.setItem('p360.desbloqueado', u), [USER]);
+  await page.goto(`${BASE}/app/calendario`, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(1200);
+
+  await page.getByRole('button', { name: /añadir varios/i }).first().click();
+  await page.waitForTimeout(400);
+  const hoja = page.getByRole('dialog');
+
+  const opcion = hoja.getByRole('button', { name: /los días que entrenáis/i });
+  comprueba('la opción de los días NO está apagada', await opcion.isEnabled());
+  await opcion.click();
+  await page.waitForTimeout(250);
+
+  comprueba('pregunta qué días entrenáis', /qué días entrenáis/i.test(await hoja.textContent()));
+  const letras = hoja.locator('button[aria-pressed]');
+  comprueba('hay siete días que tocar', (await letras.count()) === 7, `${await letras.count()}`);
+
+  const caja = await letras.first().boundingBox();
+  comprueba('y se pueden tocar con el dedo', caja.height >= 40 && caja.width >= 32,
+    `${Math.round(caja.width)}×${Math.round(caja.height)}`);
+
+  /* Martes y jueves. */
+  await hoja.getByRole('button', { name: 'martes' }).click();
+  await hoja.getByRole('button', { name: 'jueves' }).click();
+  await page.waitForTimeout(150);
+  comprueba(
+    'quedan marcados los dos',
+    (await hoja.locator('button[aria-pressed="true"]').count()) === 2,
+  );
+
+  await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
+  await page.waitForTimeout(400);
+  const filas = await hoja.locator('li').count();
+  comprueba('sale la lista de los tres meses', filas > 20, `${filas} filas`);
+
+  await hoja.getByRole('button', { name: /crear \d+ entrenamiento/i }).click();
+  await page.waitForTimeout(900);
+  comprueba('y se crean sin haber tocado ningún archivo', (escrituras[0] ?? []).length === filas,
+    `${(escrituras[0] ?? []).length} de ${filas}`);
+  comprueba(
+    'todos el día y la hora que se marcaron',
+    (escrituras[0] ?? []).every((f) => f.start_time === '18:00'),
+    (escrituras[0] ?? [])[0]?.start_time,
+  );
+
+  await ctx.close();
+}
+
 /* ══════════════ 3. Lo que ya está no se duplica ════════════════════════════ */
 {
   console.log('\n  Sin duplicados\n');
@@ -206,7 +273,7 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.getByRole('button', { name: /añadir varios/i }).first().click();
   await page.waitForTimeout(400);
   const hoja = page.getByRole('dialog');
-  await hoja.getByRole('button', { name: /del horario del equipo/i }).click();
+  await hoja.getByRole('button', { name: /los días que entrenáis/i }).click();
   await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
   await page.waitForTimeout(400);
 
@@ -229,7 +296,7 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.getByRole('button', { name: /añadir varios/i }).first().click();
   await page.waitForTimeout(400);
   const hoja = page.getByRole('dialog');
-  await hoja.getByRole('button', { name: /de un archivo/i }).click();
+  await hoja.getByRole('button', { name: /un calendario que ya tienes/i }).click();
   await page.waitForTimeout(250);
 
   const ics = [
@@ -252,6 +319,46 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   comprueba('con su título', /Entrenamiento del Cadete A/.test(await hoja.textContent()));
   comprueba('y su hora', /18:00 – 19:30/.test(await hoja.textContent()));
 
+  /* EL TROPIEZO DE VERDAD: Google Calendar no exporta un .ics, exporta un
+     .zip con el .ics dentro. Si eso sólo dice «no parece un calendario», se
+     queda ahí tirado. Se vuelve al selector para probarlo. */
+  await hoja.getByRole('button', { name: /^atrás$/i }).click();
+  await page.waitForTimeout(250);
+  await hoja.locator('input[type="file"]').setInputFiles({
+    name: 'calendario.zip', mimeType: 'application/zip', buffer: Buffer.from('PK\u0003\u0004algo comprimido'),
+  });
+  await page.waitForTimeout(400);
+  const quejaZip = await hoja.textContent();
+  comprueba('un .zip se reconoce', /archivo comprimido/i.test(quejaZip));
+  comprueba('y se dice qué hacer con él', /Descomprímelo/i.test(quejaZip));
+  comprueba('sin ofrecer crear nada', await hoja.getByRole('button', { name: /^crear entrenamientos$/i }).isDisabled());
+
+  /* EL SELECTOR NO PUEDE LLEVAR FILTRO: con `accept=".ics"`, en el iPhone no
+     aparece ningún archivo —los deja todos en gris— y no hay manera de
+     elegirlo. Fue la queja. */
+  await hoja.getByRole('button', { name: /^atrás$/i }).click();
+  await page.waitForTimeout(250);
+  comprueba(
+    'el selector de archivos no filtra por tipo',
+    (await hoja.locator('input[type="file"]').getAttribute('accept')) === null,
+  );
+
+  /* Y se puede pegar el texto, que en un móvil es más fácil que encontrar un
+     archivo. */
+  await hoja.locator('textarea').fill(ics);
+  await hoja.getByRole('button', { name: /leer lo pegado/i }).click();
+  await page.waitForTimeout(400);
+  comprueba('pegar el texto también vale', (await hoja.locator('li').count()) === 3,
+    `${await hoja.locator('li').count()} filas`);
+
+  /* Se vuelve atrás y se elige el bueno. */
+  await hoja.getByRole('button', { name: /^atrás$/i }).click();
+  await page.waitForTimeout(250);
+  await hoja.locator('input[type="file"]').setInputFiles({
+    name: 'temporada.ics', mimeType: 'text/calendar', buffer: Buffer.from(ics),
+  });
+  await page.waitForTimeout(400);
+
   await hoja.getByRole('button', { name: /crear 3 entrenamiento/i }).click();
   await page.waitForTimeout(900);
   comprueba('se crean los tres', (escrituras[0] ?? []).length === 3, `${(escrituras[0] ?? []).length}`);
@@ -264,46 +371,85 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await ctx.close();
 }
 
-/* ══════════ 5. Un entrenamiento se guarda SIN ejercicios ═══════════════════ */
+/* ══════════ 5. El formulario: cuatro preguntas y guardar ══════════════════ */
 {
-  console.log('\n  El formulario, con la biblioteca vacía\n');
-  const { page, ctx, escrituras } = await abre('/app/entrenamientos/nuevo', 1280, { ejercicios: false });
+  console.log('\n  El formulario de un entrenamiento\n');
+  /* Sin ejercicios en la biblioteca: era el caso que hacía imposible guardar,
+     y ahora ni siquiera se pregunta por ellos aquí. */
+  const { page, ctx, escrituras } = await abre('/app/entrenamientos/nuevo', 390, { ejercicios: false });
+  const main = page.locator('main');
 
   comprueba(
-    'no manda a arrastrar ejercicios que no existen',
-    !/arrastra aquí tu primer ejercicio/i.test(await page.locator('main').textContent()),
+    'no hay biblioteca de ejercicios en el formulario',
+    !/biblioteca de ejercicios/i.test(await main.textContent()),
   );
   comprueba(
-    'dice que todavía no hay ninguno',
-    /todavía no tienes ejercicios/i.test(await page.locator('main').textContent()),
+    'ni se pide arrastrar nada',
+    !/arrastra/i.test(await main.textContent()),
   );
 
-  const titulo = await page.locator('input').first().inputValue();
-  comprueba('el título viene propuesto', /^Entrenamiento del /.test(titulo), titulo);
+  /* Lo que se ve son cinco campos: equipo (hay dos en el club), día, hora,
+     duración y repetición. Lo demás está detrás de «Más opciones». */
+  const aLaVista = await page.evaluate(() => {
+    const abierto = (el) => !el.closest('details:not([open]) > *:not(summary)');
+    return Array.from(document.querySelectorAll('main input, main select, main textarea'))
+      .filter(abierto).length;
+  });
+  comprueba('cinco campos a la vista, no once', aLaVista === 5, `${aLaVista}`);
+  comprueba('y el resto detrás de «Más opciones»', (await page.getByText('Más opciones').count()) === 1);
 
-  await page.getByRole('button', { name: /^guardar$/i }).click();
+  comprueba(
+    'dice lo que va a pasar antes de pulsar',
+    /Se apunta el .+ de \d{2}:\d{2} a \d{2}:\d{2}/.test(await main.textContent()),
+    (await main.textContent()).match(/Se apunta el [^.]*/)?.[0],
+  );
+
+  await page.getByRole('button', { name: /apuntar entrenamiento/i }).click();
   await page.waitForTimeout(900);
-
-  comprueba(
-    'no sale «la sesión está vacía»',
-    !/la sesión está vacía/i.test(await page.locator('body').textContent()),
-  );
-  comprueba('se guarda de verdad', escrituras.length === 1, `${escrituras.length} escrituras`);
+  comprueba('se guarda', escrituras.length === 1, `${escrituras.length} escrituras`);
   const fila = escrituras[0]?.[0] ?? {};
   comprueba('con duración, no con cero', fila.duration === 90, `duration=${fila.duration}`);
-  comprueba('y con el equipo puesto', fila.team_id === 't1', `team_id=${fila.team_id}`);
+  comprueba('con el equipo puesto', fila.team_id === 't1', `team_id=${fila.team_id}`);
+  comprueba('con un título que se reconoce', /^Entrenamiento del /.test(fila.title ?? ''), fila.title);
+  comprueba('y sin ejercicios inventados', Array.isArray(fila.blocks) && fila.blocks.length === 0);
 
   await ctx.close();
 }
 
-/* ══════════ 6. La fecha del día vacío llega al formulario ══════════════════ */
+/* ══════════ 6. «Se repite» apunta el trimestre entero ═════════════════════ */
 {
-  console.log('\n  Del día vacío al formulario\n');
-  const { page, ctx } = await abre('/app/entrenamientos/nuevo?fecha=2027-03-09');
+  console.log('\n  Se repite\n');
+  const { page, ctx, escrituras } = await abre('/app/entrenamientos/nuevo?fecha=2027-03-09', 390);
+  const main = page.locator('main');
+
   const fecha = await page.locator('input[type="date"]').first().inputValue();
-  comprueba('el formulario llega con el día puesto', fecha === '2027-03-09', fecha);
-  const titulo = await page.locator('input').first().inputValue();
-  comprueba('y el título es de ese día', /martes/i.test(titulo), titulo);
+  comprueba('llega con el día que se tocó en el calendario', fecha === '2027-03-09', fecha);
+
+  /* El desplegable de repetición es el último `select` a la vista. */
+  await page.getByLabel('Se repite').selectOption('semanal');
+  await page.waitForTimeout(300);
+  await page.getByLabel('Hasta').fill('2027-05-11');
+  await page.waitForTimeout(300);
+
+  const resumen = (await main.textContent()).match(/Son \d+ entrenamientos[^.]*/)?.[0] ?? '';
+  comprueba('dice cuántos y entre qué fechas', /Son 10 entrenamientos/.test(resumen), resumen);
+
+  const boton = page.getByRole('button', { name: /apuntar 10 entrenamientos/i });
+  comprueba('y el botón dice lo mismo', (await boton.count()) === 1);
+
+  await boton.click();
+  await page.waitForTimeout(1000);
+  comprueba('se escriben en UNA petición', escrituras.length === 1, `${escrituras.length}`);
+  const filas = escrituras[0] ?? [];
+  comprueba('los diez', filas.length === 10, `${filas.length}`);
+  comprueba('todos en martes', filas.every((f) => new Date(`${f.date}T12:00:00`).getDay() === 2));
+  comprueba('todos a la misma hora', new Set(filas.map((f) => f.start_time)).size === 1, filas[0]?.start_time);
+  comprueba(
+    'del 9 de marzo al 11 de mayo',
+    filas[0]?.date === '2027-03-09' && filas.at(-1)?.date === '2027-05-11',
+    `${filas[0]?.date} … ${filas.at(-1)?.date}`,
+  );
+
   await ctx.close();
 }
 
@@ -323,7 +469,7 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await hoja.getByRole('button', { name: /varios entrenamientos/i }).click();
   await page.waitForTimeout(900);
   comprueba('que abre la hoja de importar', (await page.getByRole('dialog').count()) === 1
-    && /del horario del equipo/i.test(await page.getByRole('dialog').textContent()));
+    && /los días que entrenáis/i.test(await page.getByRole('dialog').textContent()));
   comprueba(
     'y la dirección queda limpia para que recargar no la vuelva a abrir',
     !page.url().includes('importar'),
@@ -375,7 +521,7 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.getByRole('button', { name: /añadir varios/i }).first().click();
   await page.waitForTimeout(500);
   const hoja = page.getByRole('dialog');
-  await hoja.getByRole('button', { name: /del horario del equipo/i }).click();
+  await hoja.getByRole('button', { name: /los días que entrenáis/i }).click();
   await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
   await page.waitForTimeout(400);
 

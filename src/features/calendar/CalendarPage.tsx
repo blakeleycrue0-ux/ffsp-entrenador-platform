@@ -89,8 +89,6 @@ export default function CalendarPage() {
   return (
     <>
       <PageHeader
-        title="Calendario"
-        description="Entrenamientos, partidos y convocatorias de todos tus equipos en una sola agenda."
         /* LOS BOTONES CREAN COSAS. El que había aquí —«Nuevo evento»— no creaba
            nada: enseñaba un aviso mandando al menú de «Crear», y en ese menú la
            opción «Evento» traía otra vez al calendario. Quien quería meter un

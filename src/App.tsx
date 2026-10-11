@@ -25,6 +25,7 @@ const CalendarPage = lazy(cargaDiferida(() => import('@/features/calendar/Calend
 const SessionsPage = lazy(cargaDiferida(() => import('@/features/sessions/SessionsPage')));
 const SessionDetail = lazy(cargaDiferida(() => import('@/features/sessions/SessionDetail')));
 const SessionBuilder = lazy(cargaDiferida(() => import('@/features/sessions/SessionBuilder')));
+const NuevoEntrenamiento = lazy(cargaDiferida(() => import('@/features/sessions/NuevoEntrenamiento')));
 const DrillsPage = lazy(cargaDiferida(() => import('@/features/drills/DrillsPage')));
 const DrillDetail = lazy(cargaDiferida(() => import('@/features/drills/DrillDetail')));
 const DrillEditor = lazy(cargaDiferida(() => import('@/features/drills/DrillEditor')));
@@ -133,7 +134,7 @@ export default function App() {
           <Route path="disponibilidad" element={<AvailabilityPage />} />
 
           <Route path="entrenamientos" element={<SessionsPage />} />
-          <Route path="entrenamientos/nuevo" element={<SessionBuilder />} />
+          <Route path="entrenamientos/nuevo" element={<NuevoEntrenamiento />} />
           <Route path="entrenamientos/:sessionId" element={<SessionDetail />} />
           <Route path="entrenamientos/:sessionId/editar" element={<SessionBuilder />} />
           <Route path="entrenamientos/:sessionId/asistencia" element={<AttendancePage />} />

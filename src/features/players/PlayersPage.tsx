@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Filter, Plus, Search, Upload } from 'lucide-react';
+import { ChevronRight, Plus, Search, Upload } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { playerAttendance, visibleTeams } from '@/store/selectors';
 import {
@@ -50,8 +50,6 @@ export default function PlayersPage() {
   return (
     <>
       <PageHeader
-        title="Plantilla"
-        description="Fichas, posiciones, disponibilidad y asistencia de la plantilla."
         actions={
           <>
             <Segmented
@@ -80,10 +78,16 @@ export default function PlayersPage() {
 
       <ImportPlayers open={importing} onClose={() => setImporting(false)} teamId={teamId} />
 
-      {/* Filtros. SIN CAJA: un recuadro alrededor de un buscador y dos
-          desplegables no agrupa nada que no se viera ya —están juntos—, y en un
-          móvil se comía cien píxeles de alto en bordes y relleno para no decir
-          nada. Lo que separa esto de la lista es una línea. */}
+      {/* UNA FILA DE FILTROS, NO DOS.
+          Había un buscador, dos desplegables, y debajo —tras una línea
+          divisoria— cinco botones de demarcación con su icono de embudo: once
+          cosas que atender antes de ver a la primera jugadora. Y la
+          demarcación y el estado son la misma clase de pregunta —«enséñame
+          sólo las que…»—, así que no hay motivo para que una sea un
+          desplegable y la otra cinco botones.
+
+          Las cinco demarcaciones son ahora un desplegable más, igual que el
+          estado. Cuatro decisiones menos y el mismo filtro. */}
       <div className="mb-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
@@ -95,11 +99,23 @@ export default function PlayersPage() {
               className="pl-10"
             />
           </div>
-          <div className="flex gap-2.5">
-            <Select variante="filtro" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
-              {teams.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
+          {/* Los filtros se deslizan si no caben: partirlos en dos renglones
+              dejaba la cuenta de jugadoras pegada a un desplegable. */}
+          <div className="-mx-[var(--pagina-x)] flex gap-2.5 overflow-x-auto px-[var(--pagina-x)] no-scrollbar sm:mx-0 sm:px-0">
+            {/* El equipo sólo se pregunta cuando hay más de uno. */}
+            {teams.length > 1 && (
+              <Select variante="filtro" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
+                {teams.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </Select>
+            )}
+            <Select variante="filtro" value={group} onChange={(e) => setGroup(e.target.value)}>
+              {POSITION_GROUPS.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.id === 'todas' ? 'Cualquier puesto' : g.label}
                 </option>
               ))}
             </Select>
@@ -114,35 +130,14 @@ export default function PlayersPage() {
           </div>
         </div>
 
-        {/* LOS FILTROS NO SE PARTEN EN DOS LÍNEAS: SE DESLIZAN.
-            Con `flex-wrap`, en 390 px «Delanteras» caía a un segundo renglón
-            y la cuenta de jugadoras —que lleva `ml-auto`— se le pegaba al
-            lado: dos cosas distintas pegadas y ninguna de las dos en su
-            sitio. Cinco filtros en fila deslizable se recorren con el pulgar,
-            que es como se usa un filtro en un móvil, y la cuenta se va
-            debajo hasta que hay ancho de sobra. */}
-        <div className="mt-3 flex flex-col gap-1.5 border-t border-line pt-3 sm:flex-row sm:items-center">
-          <div className="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <Filter size={14} className="mr-1 shrink-0 text-ink-400" />
-            {POSITION_GROUPS.map((g) => (
-              <button
-                key={g.id}
-                onClick={() => setGroup(g.id)}
-                className={cn(
-                  'shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors',
-                  group === g.id
-                    ? 'bg-marca-600/16 text-ink-900 ring-1 ring-inset ring-marca-500/40'
-                    : 'text-muted hover:bg-panel',
-                )}
-              >
-                {g.label}
-              </button>
-            ))}
-          </div>
-          <span className="shrink-0 text-sm text-ink-500 sm:ml-auto sm:pl-3">
+        {/* La cuenta, sólo cuando un filtro está escondiendo a alguien: con la
+            plantilla entera a la vista, «16 de 16 jugadoras» es una línea para
+            decir que no falta nadie. */}
+        {players.length !== data.players.filter((p) => p.teamId === teamId).length && (
+          <p className="mt-2.5 text-sm text-ink-500">
             {players.length} de {data.players.filter((p) => p.teamId === teamId).length} jugadoras
-          </span>
-        </div>
+          </p>
+        )}
       </div>
 
       {players.length === 0 ? (

@@ -29,14 +29,6 @@ export default function TeamsPage() {
   return (
     <>
       <PageHeader
-        title="Mis equipos"
-        description={
-          teams.length === 0
-            ? 'Aquí aparecerán los equipos que tengas asignados.'
-            : `${teams.length} ${teams.length === 1 ? 'equipo' : 'equipos'}${
-                teams[0]?.season ? ` · temporada ${teams[0].season}` : ''
-              }`
-        }
         actions={
           admin ? (
             <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm" icon={<Plus size={16} />}>

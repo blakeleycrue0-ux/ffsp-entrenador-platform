@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Save, X } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { Button, Panel, Field, Input, PageHeader, Textarea } from '@/components/ui';
+import { Button, Desplegable, Panel, Field, Input, PageHeader, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { humanError } from '@/services/supabase';
 import { DrillBoardEditor } from '@/features/board/DrillBoard';
@@ -76,7 +76,6 @@ export default function DrillEditor() {
 
       <PageHeader
         title={existing ? 'Editar ejercicio' : 'Nuevo ejercicio'}
-        description="Define el ejercicio y dibuja el esquema para que se entienda sin explicación."
         actions={
           <>
             <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
@@ -89,84 +88,93 @@ export default function DrillEditor() {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-4">
-          <Panel className="p-5">
-            <h2 className="text-base font-semibold">Definición</h2>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Nombre" className="sm:col-span-2">
-                <Input value={form.name} onChange={(e) => patch({ name: e.target.value })} placeholder="Ej.: Rondo 5v2 a un toque" />
-              </Field>
-              <Field label="Objetivo" className="sm:col-span-2">
-                <Input
-                  value={form.objective}
-                  onChange={(e) => patch({ objective: e.target.value })}
-                  placeholder="¿Qué se busca desarrollar con este ejercicio?"
-                />
-              </Field>
-              <Field label="Duración (minutos)">
-                <Input type="number" value={form.duration} onChange={(e) => patch({ duration: Number(e.target.value) })} />
-              </Field>
-              <Field label="Jugadoras">
-                <Input value={form.players} onChange={(e) => patch({ players: e.target.value })} placeholder="12 – 18" />
-              </Field>
-              <Field label="Edad recomendada" className="sm:col-span-2">
-                <Input value={form.ageRange} onChange={(e) => patch({ ageRange: e.target.value })} placeholder="U15 – Senior" />
-              </Field>
-            </div>
-
-            <Field label="Etiquetas" className="mt-4" hint="Determinan en qué filtros aparece.">
-              <div className="flex flex-wrap gap-1.5">
-                {TAGS.map((t) => (
-                  <button
-                    key={t}
-                    onClick={() =>
-                      patch({ tags: form.tags.includes(t) ? form.tags.filter((x) => x !== t) : [...form.tags, t] })
-                    }
-                    className={cn(
-                      'inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors',
-                      form.tags.includes(t)
-                        ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200'
-                        : 'text-muted ring-1 ring-inset ring-line hover:bg-ink-50',
-                    )}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
+      {/* UN EJERCICIO SON TRES COSAS: cómo se llama, para qué sirve y cuánto
+          dura. Había siete campos, once etiquetas, el material, las
+          progresiones y el editor de esquemas, todo a la vez: veinticinco
+          cosas que pulsar y dos botones peleándose por ser el principal. Las
+          etiquetas y el material no se deciden mientras se escribe el
+          ejercicio; se deciden después, o nunca. */}
+      <div className="space-y-4">
+        <Panel className="p-4 sm:p-5">
+          <div className="space-y-4">
+            <Field label="Nombre">
+              <Input value={form.name} onChange={(e) => patch({ name: e.target.value })} placeholder="Ej.: Rondo 5v2 a un toque" />
             </Field>
-
-            <Field label="Descripción" className="mt-4">
+            <Field label="Para qué sirve">
+              <Input
+                value={form.objective}
+                onChange={(e) => patch({ objective: e.target.value })}
+                placeholder="¿Qué se busca desarrollar con este ejercicio?"
+              />
+            </Field>
+            <Field label="Dura" hint="Minutos.">
+              <Input
+                type="number"
+                inputMode="numeric"
+                value={form.duration}
+                onChange={(e) => patch({ duration: Number(e.target.value) })}
+              />
+            </Field>
+            <Field label="Cómo se hace">
               <Textarea
                 value={form.description}
                 onChange={(e) => patch({ description: e.target.value })}
                 placeholder="Espacio, número de jugadoras, reglas, puntuación, rotaciones…"
-                className="min-h-[130px]"
+                className="min-h-[120px]"
               />
             </Field>
-          </Panel>
+          </div>
+        </Panel>
 
-          <Panel>
-            <div className="border-b border-line px-4 py-3">
-              <h2 className="text-md font-semibold">Esquema</h2>
-              <p className="mt-0.5 text-sm text-muted">
-                Coloca a las jugadoras y, si el ejercicio lo pide, muévelas en distintos instantes:
-                el esquema se reproducirá dentro de la ficha.
-              </p>
-            </div>
-            <div className="p-3">
-              <DrillBoardEditor
-                value={form.animation}
-                onChange={(scene) => patch({ animation: scene ?? undefined })}
-              />
-            </div>
-          </Panel>
-        </div>
+        {/* EL ESQUEMA, PLEGADO. Es lo mejor que tiene esta pantalla y también
+            lo más caro: un campo entero con fichas que se arrastran, y el
+            segundo botón que se pintaba como acción principal. Plegado, el
+            ejercicio se puede escribir y guardar en treinta segundos; abierto,
+            está igual que antes. */}
+        <Desplegable
+          titulo="Dibujar el esquema"
+          pista="Coloca a las jugadoras y, si hace falta, muévelas"
+          abierto={!!form.animation}
+        >
+          <DrillBoardEditor
+            value={form.animation}
+            onChange={(scene) => patch({ animation: scene ?? undefined })}
+          />
+        </Desplegable>
 
-        <div className="space-y-4">
-          <Panel className="p-5">
-            <h2 className="text-base font-semibold">Material</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
+        <Desplegable titulo="Más opciones" pista="Etiquetas, material, jugadoras, edad y progresiones">
+          <Field label="Etiquetas" hint="Determinan en qué filtros aparece.">
+            <div className="flex flex-wrap gap-1.5">
+              {TAGS.map((t) => (
+                <button
+                  key={t}
+                  onClick={() =>
+                    patch({ tags: form.tags.includes(t) ? form.tags.filter((x) => x !== t) : [...form.tags, t] })
+                  }
+                  className={cn(
+                    'inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors',
+                    form.tags.includes(t)
+                      ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200'
+                      : 'text-muted ring-1 ring-inset ring-line hover:bg-ink-50',
+                  )}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Jugadoras">
+              <Input value={form.players} onChange={(e) => patch({ players: e.target.value })} placeholder="12 – 18" />
+            </Field>
+            <Field label="Edad recomendada">
+              <Input value={form.ageRange} onChange={(e) => patch({ ageRange: e.target.value })} placeholder="U15 – Senior" />
+            </Field>
+          </div>
+
+          <Field label="Material">
+            <div className="flex flex-wrap gap-2">
               {form.material.map((m) => (
                 <span
                   key={m}
@@ -196,15 +204,13 @@ export default function DrillEditor() {
                 className="h-10 rounded-xl border border-dashed border-line-fuerte bg-transparent px-3 text-md outline-none placeholder:text-ink-500 focus:border-marca-500"
               />
             </div>
-          </Panel>
+          </Field>
 
-          <Panel className="p-5">
-            <h2 className="text-base font-semibold">Progresiones</h2>
-            <p className="mt-1 text-xs text-muted">Variantes para subir o bajar la exigencia.</p>
-            <ul className="mt-3 space-y-2">
+          <Field label="Progresiones" hint="Variantes para subir o bajar la exigencia.">
+            <ul className="space-y-2">
               {(form.progressions ?? []).map((p, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="mt-2 grid h-5 w-5 shrink-0 place-items-center rounded bg-ink-50 text-2xs font-bold text-ink-900">
+                  <span className="mt-2.5 grid h-5 w-5 shrink-0 place-items-center rounded bg-ink-50 text-2xs font-bold text-ink-900">
                     {i + 1}
                   </span>
                   <input
@@ -214,11 +220,11 @@ export default function DrillEditor() {
                       next[i] = e.target.value;
                       patch({ progressions: next });
                     }}
-                    className="flex-1 rounded-lg border border-line px-2.5 py-1.5 text-sm outline-none focus:border-ink-400"
+                    className="h-10 flex-1 rounded-xl border border-line bg-transparent px-3 text-md outline-none focus:border-marca-500"
                   />
                   <button
                     onClick={() => patch({ progressions: (form.progressions ?? []).filter((_, k) => k !== i) })}
-                    className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg text-ink-400 transition-colors hover:bg-raised hover:text-bad"
+                    className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-400 transition-colors hover:bg-raised hover:text-bad"
                     aria-label="Quitar progresión"
                   >
                     <X size={14} />
@@ -236,8 +242,8 @@ export default function DrillEditor() {
             >
               Añadir progresión
             </Button>
-          </Panel>
-        </div>
+          </Field>
+        </Desplegable>
       </div>
     </>
   );

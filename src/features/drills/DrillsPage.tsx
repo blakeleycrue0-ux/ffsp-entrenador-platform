@@ -41,8 +41,6 @@ export default function DrillsPage() {
   return (
     <>
       <PageHeader
-        title="Biblioteca de ejercicios"
-        description="La biblioteca del club. Fíltralos, úsalos en un entrenamiento o crea los tuyos."
         actions={
           <LinkButton to="/app/ejercicios/nuevo" size="sm" icon={<Plus size={16} />}>
             Crear ejercicio

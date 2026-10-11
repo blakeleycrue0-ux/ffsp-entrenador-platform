@@ -11,7 +11,7 @@ import { useClub } from '@/store/store';
 import { squadOf, visibleTeams } from '@/store/selectors';
 import { canSeePersonalData } from '@/services/auth';
 import { humanError } from '@/services/supabase';
-import { Button, Panel, Field, Input, Modal, PageHeader, Select, Textarea } from '@/components/ui';
+import { Button, Desplegable, Panel, Field, Input, Modal, PageHeader, Select, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { AVAILABILITY, AVAILABILITY_ORDER } from '@/components/domain/StatusBits';
 import { cn } from '@/lib/utils';
@@ -162,7 +162,6 @@ export default function PlayerEditor() {
 
       <PageHeader
         title={existing ? 'Editar ficha' : 'Nueva jugadora'}
-        description="Con el nombre y el dorsal ya puedes empezar. El resto lo completas cuando quieras."
         actions={
           <>
             {existing && (
@@ -182,18 +181,17 @@ export default function PlayerEditor() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         <div className="space-y-4">
-          <Panel className="p-5">
-            <h2 className="text-base font-semibold">Datos básicos</h2>
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* TRES PREGUNTAS PARA DAR DE ALTA A UNA JUGADORA: cómo se llama,
+              qué dorsal lleva y de qué juega. Eran catorce campos y 2.216 px
+              de formulario; de los catorce, uno solo es obligatorio para
+              guardar y los otros trece estaban ahí por si acaso. El pie
+              dominante y la posición secundaria no se saben el día que llega
+              una jugadora nueva: se saben en noviembre, y para entonces esta
+              misma ficha se abre y se completa. */}
+          <Panel className="p-4 sm:p-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Nombre y apellidos" className="sm:col-span-2">
                 <Input value={form.name} onChange={(e) => patch({ name: e.target.value })} placeholder="Nombre y apellidos" />
-              </Field>
-              <Field label="Nombre corto" hint="El que aparece en listas y convocatorias.">
-                <Input
-                  value={form.shortName}
-                  onChange={(e) => patch({ shortName: e.target.value })}
-                  placeholder={form.name.split(' ').slice(0, 2).join(' ') || 'Nombre corto'}
-                />
               </Field>
               <Field
                 label="Dorsal"
@@ -202,23 +200,12 @@ export default function PlayerEditor() {
                 <Input
                   type="number"
                   min={1}
+                  inputMode="numeric"
                   value={form.number}
                   onChange={(e) => { setDorsalAMano(true); patch({ number: Number(e.target.value) }); }}
                 />
               </Field>
-              <Field label="Equipo">
-                <Select value={form.teamId} onChange={(e) => patch({ teamId: e.target.value })}>
-                  {teams.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label="Fecha de nacimiento">
-                <Input type="date" value={form.birthDate ?? ''} onChange={(e) => patch({ birthDate: e.target.value })} />
-              </Field>
-              <Field label="Posición principal">
+              <Field label="Posición">
                 <Select
                   value={form.position}
                   onChange={(e) => patch({ position: e.target.value as PlayerPosition })}
@@ -228,6 +215,33 @@ export default function PlayerEditor() {
                     <option key={p}>{p}</option>
                   ))}
                 </Select>
+              </Field>
+              {/* El equipo sólo se pregunta cuando hay algo que elegir. */}
+              {teams.length > 1 && (
+                <Field label="Equipo" className="sm:col-span-2">
+                  <Select value={form.teamId} onChange={(e) => patch({ teamId: e.target.value })}>
+                    {teams.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              )}
+            </div>
+          </Panel>
+
+          <Desplegable titulo="Más datos de la ficha" pista="Nombre corto, nacimiento, pie, posición secundaria">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Nombre corto" hint="El que aparece en listas y convocatorias.">
+                <Input
+                  value={form.shortName}
+                  onChange={(e) => patch({ shortName: e.target.value })}
+                  placeholder={form.name.split(' ').slice(0, 2).join(' ') || 'Nombre corto'}
+                />
+              </Field>
+              <Field label="Fecha de nacimiento">
+                <Input type="date" value={form.birthDate ?? ''} onChange={(e) => patch({ birthDate: e.target.value })} />
               </Field>
               <Field label="Posición secundaria">
                 <Select
@@ -253,15 +267,17 @@ export default function PlayerEditor() {
                 <Input type="date" value={form.joinedAt} onChange={(e) => patch({ joinedAt: e.target.value })} />
               </Field>
             </div>
-          </Panel>
+          </Desplegable>
 
+          {/* EL CONTACTO SIGUE DETRÁS DEL MISMO PERMISO: lo que cambia es que
+              está plegado, no quién puede verlo. `canSeeContact` decide igual
+              que antes, y el servidor sigue decidiendo por su cuenta. */}
           {canSeeContact && (
-            <Panel className="p-5">
-              <h2 className="text-base font-semibold">Contacto</h2>
-              <p className="mt-1 text-xs text-muted">
-                Datos personales. Sólo los ven los perfiles con permiso y nunca aparecen en listados.
-              </p>
-              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Desplegable
+              titulo="Contacto y familia"
+              pista="Datos personales. Sólo los ven los perfiles con permiso"
+            >
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label="Teléfono de la jugadora">
                   <Input value={form.phone ?? ''} onChange={(e) => patch({ phone: e.target.value })} placeholder="+34 …" />
                 </Field>
@@ -323,10 +339,16 @@ export default function PlayerEditor() {
                   </div>
                 )}
               </div>
-            </Panel>
+            </Desplegable>
           )}
         </div>
 
+        {/* DAR DE ALTA NO ES EDITAR. Una jugadora que acaba de llegar está
+            disponible y no tiene notas: preguntar por su lesión y por las
+            observaciones de la entrenadora el día que entra es pedir dos
+            cosas que todavía no existen. Al editar su ficha sí están, que es
+            cuando hacen falta. */}
+        {existing && (
         <div className="space-y-4">
           <Panel className="p-5">
             <h2 className="text-base font-semibold">Disponibilidad</h2>
@@ -376,6 +398,7 @@ export default function PlayerEditor() {
             />
           </Panel>
         </div>
+        )}
       </div>
 
       <Modal

@@ -25,8 +25,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import { MenuMovil } from './MenuMovil';
 import { NavFlotante } from './NavFlotante';
+import { PestañasDeSeccion } from './PestañasDeSeccion';
 import { CreateMenu } from './CreateMenu';
 import { GlobalSearch } from './GlobalSearch';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -86,7 +86,6 @@ function menuGuardado(): boolean {
 export function AppShell() {
   const [search, setSearch] = useState(false);
   const [menu, setMenu] = useState(menuGuardado);
-  const [cajon, setCajon] = useState(false);
   const [create, setCreate] = useState(false);
   const [anchura, setAnchura] = useState<Anchura>('ancho');
   const { pathname } = useLocation();
@@ -123,7 +122,6 @@ export function AppShell() {
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
-    setCajon(false);
   }, [pathname]);
 
   const openCreate = useCallback(() => setCreate(true), []);
@@ -164,14 +162,19 @@ export function AppShell() {
             {/* El límite va DENTRO del armazón, no fuera: si una pantalla falla,
                 el menú y la búsqueda siguen ahí y se puede ir a otro sitio. La
                 clave es la ruta, así que navegar reintenta solo. */}
+            {/* LAS PESTAÑAS DE LA SECCIÓN LAS PONE EL ARMAZÓN. Una pantalla
+                no tiene que acordarse de ellas, y así no puede haber una
+                sección que se quede sin ellas o que las pinte en otro sitio.
+                Fuera de las pestañas no se dibuja nada: en Inicio, en una
+                ficha o en un formulario, esto devuelve nulo. */}
+            <PestañasDeSeccion />
             <ErrorBoundary resetKey={pathname}>
               <Outlet />
             </ErrorBoundary>
           </main>
         </div>
 
-        <NavFlotante onMenu={() => setCajon(true)} />
-        <MenuMovil abierto={cajon} onCerrar={() => setCajon(false)} onCreate={openCreate} />
+        <NavFlotante />
         <GlobalSearch open={search} onClose={() => setSearch(false)} />
         <CreateMenu open={create} onClose={() => setCreate(false)} />
       </div>

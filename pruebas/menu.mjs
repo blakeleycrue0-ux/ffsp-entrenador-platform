@@ -1,43 +1,69 @@
 /**
- * El menú, en el móvil y en el escritorio.
+ * La navegación: cuatro secciones, y nada escondido.
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * QUÉ SUSTITUYE Y QUÉ HAY QUE VIGILAR AHORA. En el móvil había un dique fijo
- * abajo con cuatro atajos y una hoja «Más» con las otras siete secciones.
- * Ahora es un cajón que se abre desde la cabecera con la MISMA lista que el
- * escritorio. Eso cambia tres cosas que una prueba tiene que sostener:
+ * QUÉ SUSTITUYE Y POR QUÉ CAMBIA ESTA PRUEBA, OTRA VEZ. Primero hubo un dique
+ * fijo abajo con cuatro atajos y una hoja «Más» con otras siete secciones.
+ * Luego, un cajón con las once en el mismo orden que el escritorio. Ahora no
+ * hay once: hay CUATRO secciones, cada una con sus pantallas dentro en
+ * pestañas, y las cuatro están siempre a la vista. El cajón ya no existe.
  *
- *  1. QUE ESTÉN LAS ONCE. Con el dique, siete secciones vivían escondidas en
- *     otra lista; era fácil añadir una sección nueva y que no apareciera en
- *     el móvil. Aquí se comprueba contra la misma lista que usa el código.
- *  2. QUE SE PUEDA CERRAR. Era literalmente la queja: un menú que no se
- *     cierra ocupa sitio siempre. Se prueban las cuatro salidas: la X, tocar
- *     fuera, Escape y navegar a una sección.
- *  3. QUE NO QUEDE NADA FIJO ABAJO. El dique se comía cien píxeles de alto en
- *     todas las pantallas; si vuelve a aparecer algo pegado al borde
- *     inferior sin querer, esto lo dice.
+ * Reducir una navegación es fácil de hacer mal: basta con esconder cosas y
+ * decir que la aplicación es más simple. Por eso esta prueba no comprueba que
+ * haya cuatro botones —eso se ve—; comprueba LAS DOS COSAS QUE PUEDEN SALIR
+ * MAL al quitar un menú:
  *
- * Y en el escritorio, lo contrario: que NO haya hamburguesa y sí barra
- * lateral, porque son dos marcos del mismo menú y no deben salir los dos.
+ *   1. QUE NO SE HAYA PERDIDO NADA. Las trece pantallas con nombre tienen que
+ *      seguir alcanzándose a dedo desde la aplicación, sin escribir la
+ *      dirección a mano. Si una sección deja de tener camino, esto falla.
+ *   2. QUE SIEMPRE SE SEPA DÓNDE SE ESTÁ. También dentro de una ficha o de un
+ *      formulario: abrir una jugadora es seguir estando en Equipo. Con las
+ *      once, en ocho de ellas no se encendía nada abajo.
+ *
+ * Y lo de siempre: que la pastilla flote, quepa en el hueco que declara
+ * `--nav-h` y lleve a donde dice.
  *
  *   npm run build && npm run preview
  *   node pruebas/menu.mjs
  */
 import { chromium } from 'playwright';
-import { mkdirSync } from 'node:fs';
 import { mock, USER } from './mock.mjs';
 
 const BASE = process.env.URL ?? 'http://localhost:4173';
-mkdirSync('salida/menu', { recursive: true });
 
-/* Las once secciones, copiadas de `components/layout/navigation.ts`. Se
-   escriben aquí a mano A PROPÓSITO: si alguien quita una del menú, esta
-   prueba tiene que fallar en vez de seguir a su lado. */
+/* Las cuatro secciones y las pantallas de cada una, copiadas a mano de
+   `components/layout/navigation.ts`. Se escriben aquí A PROPÓSITO: si alguien
+   quita una pantalla de la navegación, esta prueba tiene que fallar en vez de
+   seguirle la corriente leyendo el mismo archivo. */
 const SECCIONES = [
-  'Inicio', 'Calendario',
-  'Plantilla', 'Disponibilidad y lesiones',
-  'Entrenamientos', 'Biblioteca de ejercicios', 'Pizarra táctica', 'Partidos',
-  'Analíticas', 'Equipo técnico', 'Ajustes y ayuda',
+  { label: 'Inicio', to: '/app', paginas: [] },
+  {
+    label: 'Calendario',
+    to: '/app/calendario',
+    paginas: [['Agenda', '/app/calendario'], ['Entrenos', '/app/entrenamientos'], ['Partidos', '/app/partidos']],
+  },
+  {
+    label: 'Equipo',
+    to: '/app/plantilla',
+    paginas: [['Plantilla', '/app/plantilla'], ['Disponibilidad', '/app/disponibilidad'], ['Datos', '/app/analiticas'], ['Equipos', '/app/equipo-tecnico']],
+  },
+  {
+    label: 'Ejercicios',
+    to: '/app/ejercicios',
+    paginas: [['Biblioteca', '/app/ejercicios'], ['Pizarra', '/app/pizarra']],
+  },
+];
+
+/* La cuenta no es una sección: vive detrás del avatar. */
+const CUENTA = [['Mi perfil', '/app/perfil'], ['Ajustes y ayuda', '/app/ajustes'], ['Plan del club', '/app/ajustes/plan']];
+
+/* Dónde tiene que encenderse la navegación estando DENTRO de algo. */
+const DENTRO = [
+  ['/app/plantilla/p0', 'Equipo'],
+  ['/app/entrenamientos/s1', 'Calendario'],
+  ['/app/partidos/m1', 'Calendario'],
+  ['/app/ejercicios/d1', 'Ejercicios'],
+  ['/app/entrenamientos/s1/asistencia', 'Calendario'],
 ];
 
 let fallos = 0;
@@ -48,182 +74,151 @@ const comprueba = (nombre, bien, detalle) => {
 
 const navegador = await chromium.launch({ executablePath: process.env.CHROMIUM ?? undefined });
 
-async function abre(ancho, alto, ruta = '/app/plantilla') {
+async function abre(ancho, ruta = '/app') {
   const ctx = await navegador.newContext({
-    viewport: { width: ancho, height: alto }, deviceScaleFactor: 2,
-    isMobile: ancho < 500, hasTouch: ancho < 900,
+    viewport: { width: ancho, height: ancho < 500 ? 844 : 900 },
+    deviceScaleFactor: 2, isMobile: ancho < 500, hasTouch: ancho < 900,
   });
   const page = await ctx.newPage();
   await mock(page);
   await page.addInitScript(([u]) => sessionStorage.setItem('p360.desbloqueado', u), [USER]);
   await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(1300);
-  return { ctx, page };
+  await page.waitForTimeout(1100);
+  return { page, ctx };
 }
 
-const cajon = (page) => page.locator('[role="dialog"][aria-label="Menú"]');
-
-/* ══════════════════════════════════════════════════════════════════════════
-   1 · El móvil
-   ══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════ 1. La pastilla del móvil ═════════════════════════════ */
 {
-  const { ctx, page } = await abre(390, 844);
-  console.log('\n  el cajón del móvil');
+  console.log('\n  la pastilla del móvil\n');
+  const { page, ctx } = await abre(320);
+  const pastilla = page.locator('nav[aria-label="Navegación principal"]');
 
-  comprueba('hay hamburguesa', await page.getByRole('button', { name: 'Abrir el menú' }).count() === 1);
-  comprueba('y empieza cerrado', await cajon(page).count() === 0);
+  comprueba('está', await pastilla.isVisible());
 
-  await page.getByRole('button', { name: 'Abrir el menú' }).click();
-  await page.waitForTimeout(500);
-  comprueba('se abre', await cajon(page).isVisible());
+  const enlaces = pastilla.locator('a');
+  const etiquetas = await enlaces.allInnerTexts();
+  comprueba(
+    'con las cuatro secciones, y sólo ésas',
+    etiquetas.map((t) => t.trim()).join(' · ') === SECCIONES.map((s) => s.label).join(' · '),
+    etiquetas.map((t) => t.trim()).join(' · '),
+  );
+  comprueba('y ya no hay ningún «Menú»', !/Menú/i.test(etiquetas.join(' ')));
 
-  /* Las once, visibles de verdad: no basta con que estén en el árbol. */
-  const faltan = [];
+  /* Que flote: separada del suelo y de los lados, en la pantalla más
+     estrecha, que es donde se salía. */
+  const caja = await pastilla.boundingBox();
+  const alto = page.viewportSize().height;
+  comprueba('flota sobre el suelo', alto - (caja.y + caja.height) >= 8,
+    `${Math.round(alto - (caja.y + caja.height))}px por debajo`);
+  comprueba('y no toca los lados a 320 px', caja.x >= 8 && caja.x + caja.width <= 320 - 8,
+    `${Math.round(caja.x)}…${Math.round(caja.x + caja.width)}`);
+
+  /* Y que quepa en el hueco que la aplicación reserva: el número lo lee de la
+     variable, no de un literal escrito aquí. */
+  const reservado = await page.evaluate(() =>
+    parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')));
+  comprueba('cabe en el hueco que reserva --nav-h', caja.height <= reservado + 1,
+    `mide ${Math.round(caja.height)} y reserva ${reservado}`);
+
+  await ctx.close();
+}
+
+/* ═══════════════ 2. Todas las pantallas siguen alcanzándose ═══════════════ */
+{
+  console.log('\n  nada se ha perdido por el camino\n');
+  const { page, ctx } = await abre(390);
+
   for (const s of SECCIONES) {
-    const enlace = cajon(page).getByRole('link', { name: s, exact: true });
-    if (await enlace.count() === 0 || !(await enlace.first().isVisible())) faltan.push(s);
-  }
-  comprueba('están las once secciones', faltan.length === 0, faltan.join(', '));
+    /* Se toca la sección en la pastilla. */
+    await page.locator('nav[aria-label="Navegación principal"]').getByRole('link', { name: s.label, exact: true }).click();
+    await page.waitForTimeout(700);
+    comprueba(`${s.label}: se llega tocando`, page.url().endsWith(s.to), page.url().replace(BASE, ''));
 
-  /* La sección abierta se distingue. */
-  const marcada = await page.evaluate(() => {
-    const a = document.querySelector('[role="dialog"] a[aria-current="page"]');
-    return a ? a.textContent.trim() : null;
-  });
-  comprueba('la sección abierta está marcada', marcada === 'Plantilla', String(marcada));
-
-  await page.screenshot({ path: 'salida/menu/cajon.png', animations: 'disabled' });
-
-  /* ── Las cuatro maneras de cerrarlo ─────────────────────────────────── */
-  await page.getByRole('button', { name: 'Cerrar el menú' }).click();
-  await page.waitForTimeout(400);
-  comprueba('cierra con la X', await cajon(page).count() === 0);
-
-  await page.getByRole('button', { name: 'Abrir el menú' }).click();
-  await page.waitForTimeout(450);
-  await page.keyboard.press('Escape');
-  await page.waitForTimeout(400);
-  comprueba('cierra con Escape', await cajon(page).count() === 0);
-
-  await page.getByRole('button', { name: 'Abrir el menú' }).click();
-  await page.waitForTimeout(450);
-  /* Tocar fuera: la esquina de abajo a la derecha, lejos del cajón. */
-  await page.mouse.click(370, 800);
-  await page.waitForTimeout(400);
-  comprueba('cierra al tocar fuera', await cajon(page).count() === 0);
-
-  await page.getByRole('button', { name: 'Abrir el menú' }).click();
-  await page.waitForTimeout(450);
-  await cajon(page).getByRole('link', { name: 'Partidos', exact: true }).click();
-  await page.waitForTimeout(900);
-  comprueba('cierra al ir a una sección', await cajon(page).count() === 0);
-  comprueba('y ha navegado', page.url().includes('/app/partidos'), page.url());
-
-  /* ── La pastilla de abajo: FLOTA, no es un suelo ─────────────────────────
-     Aquí se comprobaba que no quedara NADA fijo abajo, porque lo que había
-     antes era un dique de borde a borde con cuatro atajos y una hoja «Más»
-     que escondía siete secciones. Ahora hay otra cosa: una pastilla con tres
-     destinos, aire a los lados y la lista completa de once todavía en el
-     cajón. Que no haya nada abajo dejó de ser la regla; la regla es que lo
-     que haya abajo FLOTE y no tape nada.
-
-     Lo de «no tapa nada» lo mide `solapes.mjs`, que desplaza cada pantalla
-     hasta el final y comprueba que ningún botón se queda debajo. Aquí se
-     comprueba lo otro: que es una pastilla y no un suelo. */
-  const pastilla = await page.evaluate(() => {
-    const H = document.documentElement.clientHeight;
-    const W = document.documentElement.clientWidth;
-    const nav = document.querySelector('nav[aria-label="Navegación principal"]');
-    if (!nav) return null;
-    const r = nav.getBoundingClientRect();
-    /* El hueco reservado se lee de la variable, no se escribe aquí: si
-       mañana la pastilla cambia de alto, lo que tiene que cuadrar es que las
-       dos cosas sigan diciendo lo mismo. */
-    const reservado = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h'));
-    return {
-      destinos: [...nav.querySelectorAll('a')].map((a) => (a.textContent || '').trim()),
-      /* Aire a los lados y por abajo: si midiera el ancho entero o llegara al
-         borde inferior, sería un dique con las esquinas redondeadas. */
-      margenIzq: Math.round(r.left),
-      margenDer: Math.round(W - r.right),
-      margenAbajo: Math.round(H - r.bottom),
-      alto: Math.round(r.height),
-      reservado,
-    };
-  });
-
-  comprueba('hay una pastilla de navegación', pastilla !== null);
-  if (pastilla) {
-    comprueba('con tres destinos', pastilla.destinos.length === 3, pastilla.destinos.join(' · '));
-    comprueba('flota: no toca los lados',
-      pastilla.margenIzq >= 8 && pastilla.margenDer >= 8,
-      `izq ${pastilla.margenIzq} · der ${pastilla.margenDer}`);
-    comprueba('flota: no toca el suelo', pastilla.margenAbajo >= 8, `${pastilla.margenAbajo}px`);
-    comprueba('y cabe en el hueco reservado que dice `--nav-h`',
-      pastilla.alto <= pastilla.reservado,
-      `${pastilla.alto}px de ${pastilla.reservado}`);
-
-    /* Y LLEVA A DONDE DICE. Una navegación que no marca dónde estás obliga a
-       leer el título de la página para saberlo. */
-    await page.getByRole('link', { name: 'Calendario' }).last().click();
-    await page.waitForTimeout(600);
-    comprueba('lleva al Calendario', page.url().endsWith('/app/calendario'), page.url());
-    const marcado = await page.evaluate(() => {
-      const a = document.querySelector('nav[aria-label="Navegación principal"] [aria-current="page"]');
-      return a ? (a.textContent || '').trim() : null;
-    });
-    comprueba('y marca dónde estás', marcado === 'Calendario', String(marcado));
-
-    /* Al desplazarse se queda: es el sentido de que flote. */
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(400);
-    const sigue = await page.evaluate(() => {
-      const n = document.querySelector('nav[aria-label="Navegación principal"]');
-      const r = n.getBoundingClientRect();
-      return r.bottom <= document.documentElement.clientHeight + 1 && r.top > 0;
-    });
-    comprueba('y sigue ahí al llegar al final', sigue);
+    /* Y desde ahí, sus pestañas llevan a sus pantallas. */
+    for (const [etiqueta, destino] of s.paginas) {
+      const pestaña = page.locator(`nav[aria-label="${s.label}"]`).getByRole('link', { name: etiqueta, exact: true });
+      if ((await pestaña.count()) === 0) {
+        comprueba(`${s.label} › ${etiqueta}: hay pestaña`, false, 'no está');
+        continue;
+      }
+      await pestaña.click();
+      await page.waitForTimeout(650);
+      comprueba(`${s.label} › ${etiqueta}`, page.url().endsWith(destino), page.url().replace(BASE, ''));
+      /* Al cambiar de pestaña, la sección de abajo sigue siendo la misma. */
+      const marcada = await page.locator('nav[aria-label="Navegación principal"] [aria-current="page"]').innerText();
+      comprueba(`  …y sigue marcando ${s.label}`, marcada.trim() === s.label, marcada.trim());
+    }
   }
 
   await ctx.close();
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   2 · El escritorio
-   ══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════ 3. La cuenta, detrás del avatar ══════════════════════ */
 {
-  const { ctx, page } = await abre(1440, 900);
-  console.log('\n  la barra lateral del escritorio');
+  console.log('\n  la cuenta\n');
+  const { page, ctx } = await abre(390);
 
-  comprueba('no hay hamburguesa',
-    await page.getByRole('button', { name: 'Abrir el menú' }).isVisible().catch(() => false) === false);
-
-  /* Ni pastilla flotante: aquí la navegación es la barra lateral, y las dos
-     a la vez serían dos sitios distintos para ir al mismo sitio. */
-  comprueba('ni pastilla flotante',
-    await page.locator('nav[aria-label="Navegación principal"]').count() > 0
-      ? !(await page.locator('nav[aria-label="Navegación principal"]').first().isVisible())
-      : true);
-
-  const faltan = [];
-  for (const s of SECCIONES) {
-    const enlace = page.locator('aside').getByRole('link', { name: s, exact: true });
-    if (await enlace.count() === 0 || !(await enlace.first().isVisible())) faltan.push(s);
+  await page.getByRole('button', { name: 'Mi cuenta' }).click();
+  await page.waitForTimeout(400);
+  for (const [etiqueta, destino] of CUENTA) {
+    const enlace = page.getByRole('link', { name: etiqueta, exact: true });
+    comprueba(`${etiqueta} está`, (await enlace.count()) > 0);
+    if ((await enlace.count()) > 0) {
+      comprueba(`  …y lleva a ${destino}`, (await enlace.first().getAttribute('href')) === destino,
+        await enlace.first().getAttribute('href'));
+    }
   }
-  comprueba('están las once en la barra', faltan.length === 0, faltan.join(', '));
+  comprueba('y se puede cerrar sesión', (await page.getByRole('button', { name: /cerrar sesión/i }).count()) > 0);
 
-  /* Y se puede plegar, que es lo que da el ancho a la pizarra. */
+  await ctx.close();
+}
+
+/* ═════════ 4. Dentro de una ficha se sigue sabiendo dónde se está ═════════ */
+{
+  console.log('\n  dentro de una ficha\n');
+  for (const [ruta, seccion] of DENTRO) {
+    const { page, ctx } = await abre(390, ruta);
+    const marcada = page.locator('nav[aria-label="Navegación principal"] [aria-current="page"]');
+    const texto = (await marcada.count()) > 0 ? (await marcada.innerText()).trim() : '—';
+    comprueba(`${ruta} es ${seccion}`, texto === seccion, texto);
+    /* Y ahí NO se pintan pestañas: se está haciendo una cosa. */
+    const pestañas = await page.locator(`nav[aria-label="${seccion}"]`).count();
+    comprueba('  …sin pestañas de sección', pestañas === 0);
+    await ctx.close();
+  }
+}
+
+/* ═══════════════════ 5. El escritorio, el mismo menú ══════════════════════ */
+{
+  console.log('\n  la barra lateral del escritorio\n');
+  const { page, ctx } = await abre(1280);
+
+  const lateral = page.locator('nav[aria-label="Secciones"]');
+  comprueba('está la barra', await lateral.isVisible());
+  const etiquetas = (await lateral.locator('a').allInnerTexts()).map((t) => t.trim());
+  comprueba(
+    'con las mismas cuatro que el móvil',
+    etiquetas.join(' · ') === SECCIONES.map((s) => s.label).join(' · '),
+    etiquetas.join(' · '),
+  );
+  comprueba('y la pastilla no sale en el escritorio',
+    !(await page.locator('nav[aria-label="Navegación principal"]').isVisible()));
+
+  /* Plegarla sigue funcionando: es lo que le devuelve el ancho a la pizarra. */
   await page.getByRole('button', { name: 'Plegar el menú' }).click();
   await page.waitForTimeout(500);
-  comprueba('la barra se pliega', await page.locator('aside').count() === 0);
-  comprueba('y hay botón para traerla', await page.getByRole('button', { name: 'Mostrar el menú' }).count() === 1);
+  comprueba('se pliega', !(await lateral.isVisible()));
+  await page.getByRole('button', { name: 'Mostrar el menú' }).click();
+  await page.waitForTimeout(500);
+  comprueba('y vuelve', await lateral.isVisible());
 
-  await page.screenshot({ path: 'salida/menu/escritorio-plegado.png', animations: 'disabled' });
   await ctx.close();
 }
 
 await navegador.close();
-console.log(fallos === 0
-  ? '\n  Un solo menú, dos marcos, y en el móvil se cierra.'
-  : `\n  ${fallos} fallo(s).`);
+console.log(
+  fallos === 0
+    ? '\n  Cuatro sitios, todo alcanzable, y siempre se sabe en cuál estás.\n'
+    : `\n  ${fallos} ${fallos === 1 ? 'fallo' : 'fallos'}.\n`,
+);
 process.exit(fallos === 0 ? 0 : 1);

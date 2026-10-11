@@ -44,9 +44,6 @@ export default function ClubAdminPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Administración del club"
-        title="Equipo técnico"
-        description="Equipos de la temporada, quién trabaja en cada uno e invitaciones pendientes."
         actions={
           <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm" icon={<Plus size={16} />}>
             Crear equipo
@@ -119,11 +116,17 @@ export default function ClubAdminPage() {
                       </div>
                     </div>
 
+                    {/* NI «EDITAR» NI «ASIGNAR» SON LA ACCIÓN DE LA PANTALLA.
+                        Con tres equipos había cuatro botones azules —uno por
+                        equipo más el de crear—, y cuando todo se pinta como lo
+                        importante no hay nada importante. La acción principal
+                        de esta pantalla es crear un equipo, y está arriba una
+                        sola vez; éstas son de su fila. */}
                     <div className="flex gap-2">
-                      <LinkButton to={`/app/equipo-tecnico/${team.id}/editar`} variant="secondary" size="sm">
+                      <LinkButton to={`/app/equipo-tecnico/${team.id}/editar`} variant="quiet" size="sm">
                         Editar
                       </LinkButton>
-                      <Button size="sm" icon={<UserPlus size={15} />} onClick={() => setAssignTo(team.id)}>
+                      <Button variant="secondary" size="sm" icon={<UserPlus size={15} />} onClick={() => setAssignTo(team.id)}>
                         Asignar
                       </Button>
                     </div>

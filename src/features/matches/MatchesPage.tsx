@@ -37,8 +37,6 @@ export default function MatchesPage() {
   return (
     <>
       <PageHeader
-        title="Partidos"
-        description="Calendario de competición, convocatorias y resultados."
         actions={
           <LinkButton to="/app/partidos/nuevo" size="sm" icon={<Plus size={16} />}>
             Crear partido
