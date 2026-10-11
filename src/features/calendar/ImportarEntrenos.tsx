@@ -154,6 +154,21 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
       toast.error('No he podido abrir el archivo', 'Vuelve a elegirlo, o prueba a exportarlo otra vez.');
       return;
     }
+
+    /* GOOGLE CALENDAR NO DA UN .ICS: DA UN .ZIP CON EL .ICS DENTRO. Es el
+       tropiezo más probable de toda esta pantalla, y sin esto lo único que
+       salía era «esto no parece un archivo de calendario», que es verdad pero
+       no ayuda. Un zip empieza por `PK`, así que se reconoce al instante y se
+       dice exactamente qué hacer con él. */
+    if (/\.zip$/i.test(f.name) || contenido.startsWith('PK')) {
+      setAvisos([
+        'Esto es un archivo comprimido (.zip), que es lo que da Google Calendar al exportar.',
+        'Descomprímelo —en el móvil, tócalo en Archivos; en el ordenador, doble clic— y elige el archivo .ics que hay dentro.',
+      ]);
+      setCitas([]);
+      return;
+    }
+
     const { eventos, avisos: queja } = leerIcs(contenido);
     if (eventos.length === 0) {
       setAvisos(queja.length > 0 ? queja : ['El archivo no trae ninguna cita.']);
@@ -255,7 +270,9 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
                 Atrás
               </Button>
               <Button loading={guardando} disabled={elegidas.length === 0} onClick={() => void crear()}>
-                {elegidas.length === 1 ? 'Crear 1 entrenamiento' : `Crear ${elegidas.length} entrenamientos`}
+                {elegidas.length === 0
+                  ? 'Crear entrenamientos'
+                  : elegidas.length === 1 ? 'Crear 1 entrenamiento' : `Crear ${elegidas.length} entrenamientos`}
               </Button>
             </>
           )
@@ -360,7 +377,12 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
               <input
                 ref={archivo}
                 type="file"
-                accept=".ics,text/calendar"
+                /* `.ics` a secas no basta en el iPhone: el selector de
+                   Archivos no reconoce ese tipo y deja el archivo en gris,
+                   sin poder tocarlo. Con los tipos genéricos detrás se puede
+                   elegir, y de que sea un calendario ya se encarga la lectura
+                   —que además sabe reconocer el .zip de Google—. */
+                accept=".ics,text/calendar,text/plain,application/octet-stream"
                 className="sr-only"
                 onChange={(e) => {
                   const f = e.target.files?.[0];

@@ -252,6 +252,28 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   comprueba('con su título', /Entrenamiento del Cadete A/.test(await hoja.textContent()));
   comprueba('y su hora', /18:00 – 19:30/.test(await hoja.textContent()));
 
+  /* EL TROPIEZO DE VERDAD: Google Calendar no exporta un .ics, exporta un
+     .zip con el .ics dentro. Si eso sólo dice «no parece un calendario», se
+     queda ahí tirado. Se vuelve al selector para probarlo. */
+  await hoja.getByRole('button', { name: /^atrás$/i }).click();
+  await page.waitForTimeout(250);
+  await hoja.locator('input[type="file"]').setInputFiles({
+    name: 'calendario.zip', mimeType: 'application/zip', buffer: Buffer.from('PK\u0003\u0004algo comprimido'),
+  });
+  await page.waitForTimeout(400);
+  const quejaZip = await hoja.textContent();
+  comprueba('un .zip se reconoce', /archivo comprimido/i.test(quejaZip));
+  comprueba('y se dice qué hacer con él', /Descomprímelo/i.test(quejaZip));
+  comprueba('sin ofrecer crear nada', await hoja.getByRole('button', { name: /^crear entrenamientos$/i }).isDisabled());
+
+  /* Se vuelve atrás y se elige el bueno. */
+  await hoja.getByRole('button', { name: /^atrás$/i }).click();
+  await page.waitForTimeout(250);
+  await hoja.locator('input[type="file"]').setInputFiles({
+    name: 'temporada.ics', mimeType: 'text/calendar', buffer: Buffer.from(ics),
+  });
+  await page.waitForTimeout(400);
+
   await hoja.getByRole('button', { name: /crear 3 entrenamiento/i }).click();
   await page.waitForTimeout(900);
   comprueba('se crean los tres', (escrituras[0] ?? []).length === 3, `${(escrituras[0] ?? []).length}`);
