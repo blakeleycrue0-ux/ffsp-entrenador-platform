@@ -23,7 +23,6 @@
     "maqueta:cookies": "node pruebas/cookies.mjs",
     "app:menu": "node pruebas/menu.mjs",
     "app:pasos": "node pruebas/primeros-pasos.mjs",
-    "app:ics": "node pruebas/ics.mjs",
     "app:crear": "node pruebas/crear.mjs",
     "app:lista": "node pruebas/lista.mjs",
     "app:partido": "node pruebas/partido.mjs",

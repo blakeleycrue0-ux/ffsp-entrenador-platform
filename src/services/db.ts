@@ -35,6 +35,28 @@ const toStaff = (r: Row, teamIds: string[] = []): Staff => ({
   setupHiddenAt: (r.setup_hidden_at as string | null) ?? null,
 });
 
+/**
+ * EL IDENTIFICADOR SÓLO VIAJA SI EXISTE, y la clave no se queda puesta vacía.
+ * ---------------------------------------------------------------------------
+ * `{ id: undefined }` NO es lo mismo que no poner `id`, y la diferencia tumbó
+ * una escritura en producción.
+ *
+ * Al escribir VARIAS filas de golpe, postgrest-js recoge las claves de todas
+ * —`Object.keys`, que SÍ incluye las que valen `undefined`— y manda la lista
+ * en `?columns=…`. El cuerpo va sin `id`, porque `JSON.stringify` quita lo
+ * indefinido; pero su nombre viaja igual en `columns`, y entonces PostgREST
+ * entiende que esa columna venía vacía y escribe NULL. Resultado al crear
+ * veintisiete entrenamientos de una vez:
+ *
+ *   null value in column "id" of relation "sessions" violates not-null constraint
+ *
+ * Con una sola fila no se nota —ahí no hay `columns` y lo que no está en el
+ * cuerpo lo rellena la base con su valor por defecto—, así que el fallo sólo
+ * salía en bloque. Esto quita la clave entera, que es lo que había que hacer
+ * desde el principio en los dos casos.
+ */
+const conId = (id: string | undefined): { id?: string } => (id ? { id } : {});
+
 const toTeam = (r: Row): Team => ({
   id: r.id as string,
   clubId: (r.club_id as string) ?? undefined,
@@ -48,7 +70,7 @@ const toTeam = (r: Row): Team => ({
 });
 
 const fromTeam = (t: Team, userId?: string) => ({
-  id: t.id || undefined,
+  ...conId(t.id),
   // Sin club, el servidor rechaza la fila. Se envía siempre.
   club_id: t.clubId,
   name: t.name,
@@ -87,7 +109,7 @@ const toPlayer = (r: Row): Player => ({
 });
 
 const fromPlayer = (p: Player) => ({
-  id: p.id || undefined,
+  ...conId(p.id),
   team_id: p.teamId,
   name: p.name,
   short_name: p.shortName,
@@ -128,7 +150,7 @@ const toDrill = (r: Row, favorites: Set<string>): Drill => ({
 });
 
 const fromDrill = (d: Drill, userId?: string) => ({
-  id: d.id || undefined,
+  ...conId(d.id),
   name: d.name,
   objective: d.objective,
   tags: d.tags,
@@ -188,7 +210,7 @@ const toSession = (r: Row): TrainingSession => ({
 });
 
 const fromSession = (s: TrainingSession, userId?: string) => ({
-  id: s.id || undefined,
+  ...conId(s.id),
   team_id: s.teamId,
   title: s.title,
   date: s.date,
@@ -225,7 +247,7 @@ const toMatch = (r: Row): Match => ({
 });
 
 const fromMatch = (m: Match, userId?: string) => ({
-  id: m.id || undefined,
+  ...conId(m.id),
   team_id: m.teamId,
   opponent: m.opponent,
   competition: m.competition,
@@ -257,7 +279,7 @@ const toCallup = (r: Row): Callup => ({
 });
 
 const fromCallup = (c: Callup) => ({
-  id: c.id || undefined,
+  ...conId(c.id),
   match_id: c.matchId,
   team_id: c.teamId,
   slots: c.slots,
@@ -308,7 +330,7 @@ const toAttendance = (r: Row): AttendanceRecord => ({
 });
 
 const fromAttendance = (a: AttendanceRecord, userId?: string) => ({
-  id: a.id || undefined,
+  ...conId(a.id),
   session_id: a.sessionId,
   team_id: a.teamId,
   date: a.date,
@@ -336,7 +358,7 @@ const toMessage = (r: Row): MessageThread => ({
 });
 
 const fromMessage = (m: MessageThread, userId?: string) => ({
-  id: m.id || undefined,
+  ...conId(m.id),
   team_id: m.teamId,
   player_id: m.playerId ?? null,
   channel: m.channel,
@@ -365,7 +387,7 @@ const toTask = (r: Row): CoachTask => ({
 });
 
 const fromTask = (t: CoachTask, userId: string) => ({
-  id: t.id || undefined,
+  ...conId(t.id),
   profile_id: userId,
   team_id: t.teamId ?? null,
   title: t.title,
@@ -671,11 +693,31 @@ export const db = {
    * quince no— sin que nadie sepa dónde se quedó. En una sola, la política de
    * acceso decide una vez y el resultado es «todas» o «ninguna».
    */
-  saveSessions: (lista: TrainingSession[], userId: string) =>
-    varias(
-      supabase.from('sessions').upsert(lista.map((s) => fromSession(s, userId))).select(),
-      toSession,
-    ),
+  saveSessions: async (lista: TrainingSession[], userId: string) => {
+    /* NUEVAS Y EXISTENTES VAN POR SEPARADO, aunque hoy nadie mezcle las dos.
+       En una escritura en bloque, PostgREST recibe UNA lista de columnas para
+       todas las filas: si en la misma tanda va una sesión con identificador y
+       otra sin él, la columna `id` entra en esa lista y a la nueva se le
+       escribe NULL. Separarlas hace que cada tanda tenga sus propias columnas
+       y que eso no pueda pasar nunca; cada una sigue siendo una sola petición,
+       que es lo que evita que se queden quince creadas y quince no. */
+    const nuevas = lista.filter((s) => !s.id);
+    const existentes = lista.filter((s) => s.id);
+    const salida: TrainingSession[] = [];
+    if (nuevas.length > 0) {
+      salida.push(...await varias(
+        supabase.from('sessions').insert(nuevas.map((s) => fromSession(s, userId))).select(),
+        toSession,
+      ));
+    }
+    if (existentes.length > 0) {
+      salida.push(...await varias(
+        supabase.from('sessions').upsert(existentes.map((s) => fromSession(s, userId))).select(),
+        toSession,
+      ));
+    }
+    return salida;
+  },
 
   deleteSession: async (id: string) => {
     const { error } = await supabase.from('sessions').delete().eq('id', id);
