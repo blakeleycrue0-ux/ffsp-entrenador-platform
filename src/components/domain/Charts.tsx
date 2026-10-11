@@ -31,7 +31,7 @@ export function BarTrend({
             {suffix}
           </span>
           <div
-            className="w-full rounded-t bg-marca-600 transition-colors duration-200 group-hover:bg-marca-500"
+            className="w-full rounded-t bg-ink-800 transition-colors duration-200 group-hover:bg-ink-900"
             style={{ height: `${Math.max(6, ((d.value - floor) / (max - floor || 1)) * track)}px` }}
             title={`${d.label}: ${d.value}${suffix}`}
           />
@@ -68,17 +68,18 @@ export function LineTrend({
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }} preserveAspectRatio="none">
         <defs>
           <linearGradient id="lt-fill" x1="0" y1="0" x2="0" y2="1">
-            {/* El relleno era blanco sobre negro, y sobre azul noche se veía
-                como una niebla gris. En azul de marca el área dice «esto es
-                el dato» y el fondo sigue siendo el fondo. */}
-            <stop offset="0%" stopColor="#168BFF" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#168BFF" stopOpacity="0" />
+            {/* EL DATO, EN NEGRO SOBRE CLARO. Fue blanco sobre negro, y
+                después azul de marca sobre azul noche. Ahora la tarjeta es
+                gris clara, así que lo que dice «esto es el dato» es la línea
+                negra y su sombra por debajo; el fondo sigue siendo el fondo. */}
+            <stop offset="0%" stopColor="#0D0D0F" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="#0D0D0F" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={area} fill="url(#lt-fill)" />
-        <path d={line} fill="none" stroke="#36C8FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={line} fill="none" stroke="#0D0D0F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         {points.map((p, i) => (
-          <circle key={i} cx={x(i)} cy={y(p.rate)} r="2.6" fill="#0A1427" stroke="#36C8FF" strokeWidth="1.8" />
+          <circle key={i} cx={x(i)} cy={y(p.rate)} r="2.6" fill="#FFFFFF" stroke="#0D0D0F" strokeWidth="1.8" />
         ))}
       </svg>
       <div className="mt-1 flex justify-between px-1 text-2xs text-ink-400">
@@ -95,17 +96,19 @@ export function Ring({
 }: { value: number | null; size?: number; stroke?: number; label?: string; tone?: 'solid' | 'ok' | 'warn' }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
-  // Sobre negro, lo que destaca es el blanco; los estados van en su tono claro.
-  /* Los tonos de estado salen de los mismos valores apagados que el resto del
+  /* El aro normal va en negro: sobre una tarjeta gris clara es lo que más
+     contrasta, y aquí el contraste es toda la información.
+     Los tonos de estado salen de los mismos valores apagados que el resto del
      producto. Estaban escritos a mano aquí con el verde chillón de antes, así
-     que un mismo «va bien» se veía de dos colores distintos según la pantalla. */
-  const color = { solid: '#168BFF', ok: '#4F9E78', warn: '#B48A2E' }[tone];
+     que un mismo «va bien» se veía de dos colores distintos según la pantalla.
+     Verde y ámbar se quedan: no son decoración, dicen «bien» y «ojo». */
+  const color = { solid: '#0D0D0F', ok: '#4F9E78', warn: '#B48A2E' }[tone];
   // Sin dato no se dibuja un anillo vacío que parezca un 0 %: se dice que falta.
   const filled = value === null ? 0 : Math.min(100, Math.max(0, value));
   return (
     <div className="relative inline-grid place-items-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(148,180,255,0.14)" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(13,13,15,0.14)" strokeWidth={stroke} />
         {value !== null && (
           <circle
             cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}

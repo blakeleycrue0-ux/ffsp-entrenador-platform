@@ -100,7 +100,7 @@ export default function Dashboard() {
     return (
       <>
       {movil}
-      <div className="hidden space-y-5 lg:block">
+      <div className="pliego hidden min-h-[70vh] space-y-5 pt-4 lg:block">
         <Skeleton className="h-7 w-56" />
         <Skeleton className="h-[168px] w-full" />
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
@@ -131,7 +131,7 @@ export default function Dashboard() {
     return (
       <>
       {movil}
-      <div className="hidden space-y-6 lg:block">
+      <div className="pliego hidden min-h-[70vh] space-y-6 pt-4 lg:block">
         <PrimerosPasos />
         <Saludo nombre={nombre} />
         {/* CON LA GUÍA DELANTE, ESTO SOBRA: su primer paso dice lo mismo, con
@@ -163,7 +163,7 @@ export default function Dashboard() {
   return (
     <>
     {movil}
-    <div className="hidden space-y-6 lg:block">
+    <div className="pliego hidden min-h-[70vh] space-y-6 pt-4 lg:block">
       <PrimerosPasos />
 
       <Saludo
@@ -260,7 +260,7 @@ export default function Dashboard() {
         <section>
           <SectionHeader
             title="Mis equipos"
-            action={<Link to="/app/equipo-tecnico" className="hover:text-marca-400">Ver todos</Link>}
+            action={<Link to="/app/equipo-tecnico" className="hover:text-ink-900">Ver todos</Link>}
           />
           <ul className="mt-3 divide-y divide-line-sutil overflow-hidden rounded-xl border border-line-sutil bg-panel">
             {teams.map((t) => {
@@ -346,7 +346,7 @@ function Saludo({
                   onClick={() => { onEquipo(t.id); close(); }}
                   className={cn(
                     'block w-full truncate rounded px-2.5 py-2 text-left text-base transition-colors',
-                    t.name === equipo ? 'bg-marca-600/14 font-medium text-ink-900' : 'text-ink-700 hover:bg-surface',
+                    t.name === equipo ? 'bg-ink-900/[0.08] font-medium text-ink-900' : 'text-ink-700 hover:bg-surface',
                   )}
                 >
                   {t.name}

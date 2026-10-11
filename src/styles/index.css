@@ -156,35 +156,24 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* NEGRO PURO. Es el color del que arranca la plataforma por arriba, y
+     también lo que se ve al estirar la página más allá de su final. La
+     portada pinta sus propios fondos encima y no se entera. */
   body {
-    @apply bg-surface text-ink-900 font-sans antialiased;
+    @apply bg-black text-ink-800 font-sans antialiased;
     font-size: 15px;
     /* Las cifras de ancho constante son media interfaz aquí: una hora, un
        porcentaje, un dorsal. Sin esto, «18:30» baila al actualizarse. */
     font-variant-numeric: tabular-nums;
   }
 
-  /* ── ATMÓSFERA ────────────────────────────────────────────────────────────
-     El fondo es negro, y debajo de todo va una sola capa: grano. Es ruido
-     generado en el propio SVG, sin ninguna imagen que descargar, al 3 % de
-     opacidad. A ese nivel no se «ve»: se nota. Es lo que quita el aspecto de
-     plástico de un negro plano.
+  /* El grano que había aquí —ruido SVG al 3 % sobre todo el documento— se
+     ha ido con el azul noche. Sobre un fondo claro no «se nota»: se ve, y
+     ensucia las tarjetas. El ambiente de la plataforma lo pone ahora su
+     propio fondo —negro arriba, gris abajo, con las ondas—, que vive en
+     `.fondo-plataforma` y NO en el documento, para que la portada no pueda
+     heredarlo jamás. */
 
-     Lo que había antes era además un halo de luz gris cayendo desde arriba.
-     Se quita: el ambiente lo pone ahora el campo de partículas donde toca
-     —portada, entrada, bienvenida— y dos atmósferas superpuestas se pelean.
-     Dentro de la aplicación el fondo tiene que estar callado. */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23r)'/%3E%3C/svg%3E");
-  }
-
-  /* El contenido va por encima del grano. */
   #root { position: relative; z-index: 1; }
 
   /* Jerarquía contenida: nada de titulares enormes dentro de la aplicación.
@@ -205,14 +194,21 @@
     color: inherit;
   }
 
+  /* La selección, en negro sobre blanco dentro de la plataforma. La portada
+     conserva la suya, azul, porque allí el azul es la marca. */
   ::selection {
     @apply bg-marca-600 text-white;
   }
+  .plataforma ::selection {
+    @apply bg-ink-900 text-white;
+  }
 
-  /* El navegador pinta en claro los controles nativos (fechas, horas,
-     desplegables, la barra de desplazamiento) salvo que se le diga que la
-     página es oscura. Sin esto salen recuadros blancos sueltos. */
+  /* La portada sigue siendo oscura y pide controles nativos oscuros. La
+     plataforma ya no: sus campos son blancos, así que el selector de fecha y
+     el de hora tienen que salir en claro o aparecen dos recuadros negros en
+     medio de un formulario blanco. */
   :root { color-scheme: dark; }
+  .plataforma { color-scheme: light; }
 
   * {
     scrollbar-width: thin;
@@ -227,14 +223,21 @@
   }
   *::-webkit-scrollbar-thumb:hover { background-color: #3C5076; }
 
-  /* El foco, en el azul de marca. Fue azul, luego blanco cuando el producto
-     se quedó sin color, y vuelve a azul ahora que el azul significa «esto
-     está activo». El aro oscuro de debajo lo separa del fondo para que se
-     vea igual sobre un panel que sobre una tarjeta. */
+  .plataforma * { scrollbar-color: rgba(13,13,15,0.28) transparent; }
+  .plataforma *::-webkit-scrollbar-thumb { background-color: rgba(13,13,15,0.28); }
+  .plataforma *::-webkit-scrollbar-thumb:hover { background-color: rgba(13,13,15,0.45); }
+
+  /* El foco. En la portada sigue siendo azul; dentro de la plataforma es un
+     aro NEGRO con un halo blanco debajo, que se ve igual sobre una tarjeta
+     clara que sobre la banda negra de arriba. El foco tiene que distinguirse
+     por contraste, no por color. */
   :focus-visible {
     outline: none;
     box-shadow: 0 0 0 1px #060C1B, 0 0 0 3px rgba(54, 200, 255, 0.75);
     border-radius: 12px;
+  }
+  .plataforma :focus-visible {
+    box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px rgba(13, 13, 15, 0.85);
   }
 
   /* Los campos nativos heredan la tipografía de la interfaz */
@@ -263,14 +266,14 @@
 
   @media (min-width: 1024px) {
     .cristal {
-      background: rgba(10, 20, 39, 0.82);
-      backdrop-filter: blur(20px) saturate(125%);
-      -webkit-backdrop-filter: blur(20px) saturate(125%);
+      background: rgba(247, 247, 249, 0.86);
+      backdrop-filter: blur(20px) saturate(115%);
+      -webkit-backdrop-filter: blur(20px) saturate(115%);
     }
     .cristal-firme {
-      background: rgba(6, 12, 27, 0.94);
-      backdrop-filter: blur(24px) saturate(120%);
-      -webkit-backdrop-filter: blur(24px) saturate(120%);
+      background: rgba(250, 250, 251, 0.94);
+      backdrop-filter: blur(24px) saturate(110%);
+      -webkit-backdrop-filter: blur(24px) saturate(110%);
     }
   }
 
@@ -294,12 +297,12 @@
   .barra::-webkit-slider-runnable-track {
     height: 2px;
     border-radius: 2px;
-    background: rgba(255, 255, 255, 0.16);
+    background: rgba(13, 13, 15, 0.18);
   }
   .barra::-moz-range-track {
     height: 2px;
     border-radius: 2px;
-    background: rgba(255, 255, 255, 0.16);
+    background: rgba(13, 13, 15, 0.18);
   }
   .barra::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -342,11 +345,9 @@
      de 1024 px, donde hay GPU de sobra y las hojas son más pequeñas que la
      ventana, vuelve el cristal de verdad. */
   .cristal {
-    background: #0E1A30;
-    border: 1px solid rgba(148, 180, 255, 0.10);
-    box-shadow:
-      0 10px 35px rgba(2, 8, 23, 0.40),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: #F7F7F9;
+    border: 1px solid rgba(13, 13, 15, 0.08);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
   }
 
   /* ── CRISTAL FIRME ────────────────────────────────────────────────────────
@@ -360,77 +361,109 @@
      que sirve el cristal, pero ya no deja leer nada a través. Un cristal que
      deja ver el texto de detrás no es elegante, es un error. */
   .cristal-firme {
-    background: #080F20;
-    border: 1px solid rgba(148, 180, 255, 0.12);
-    box-shadow:
-      0 10px 35px rgba(2, 8, 23, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: #FAFAFB;
+    border: 1px solid rgba(13, 13, 15, 0.10);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.26);
   }
 
   /* Cuando el navegador no sabe desenfocar, el cristal se vuelve opaco: más
      vale una superficie sólida legible que una transparente ilegible. */
   @supports not (backdrop-filter: blur(1px)) {
-    .cristal { background: #0A1427; }
-    .cristal-firme { background: #060C1B; }
+    .cristal { background: #F7F7F9; }
+    .cristal-firme { background: #FAFAFB; }
   }
 
   /* ── METAL ────────────────────────────────────────────────────────────────
      El único «efecto» del producto, y va contado: la navegación flotante de
      la portada, el plan recomendado, un segmento seleccionado. Nada más.
 
-     No es un degradado de colores: es azul noche con una veta más clara
-     cruzada en diagonal, un filo de luz arriba y una sombra interior abajo,
-     que es lo que hace una superficie metálica de verdad. Al pasar por
-     encima, el reflejo se desplaza. Si esto se pusiera en todos los botones,
-     el producto dejaría de parecer caro y pasaría a parecer cromado. */
-  /* El botón secundario: la superficie de la aplicación con un filo de luz
-     arriba. Antes era grafito sobre negro; ahora lleva el mismo azul noche
-     que el resto, para que no parezca un recorte de otra interfaz. */
+     DENTRO DE LA PLATAFORMA YA NO HAY VETA NI BRILLO. El metal con reflejo
+     cruzado se queda en la portada, que es donde un efecto contado una vez
+     es presencia. Aquí son dos superficies planas: gris para el secundario y
+     negro para el principal. Un botón secundario tiene que leerse como «esto
+     también se puede pulsar, pero no es lo importante», y eso lo hace el
+     contraste, no un reflejo. */
   .metal {
     position: relative;
-    background-image: linear-gradient(110deg, #0A1427 0%, #16233D 46%, #22324F 100%);
-    background-size: 220% 100%;
-    background-position: 100% 0;
-    border: 1px solid rgba(148, 180, 255, 0.16);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.10),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.45);
-    transition: background-position .7s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color .25s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color: rgba(13, 13, 15, 0.06);
+    border: 1px solid rgba(13, 13, 15, 0.10);
+    transition: background-color .2s ease, border-color .2s ease;
   }
   .metal:hover {
-    background-position: 0 0;
-    border-color: rgba(148, 180, 255, 0.28);
+    background-color: rgba(13, 13, 15, 0.10);
+    border-color: rgba(13, 13, 15, 0.18);
   }
 
-  /* LA ACCIÓN PRINCIPAL, EN AZUL. Fue blanca sobre negro mientras el producto
-     no tenía color de marca. Ahora es el mismo azul del botón de la portada
-     —mismo degradado, mismo brillo interior, misma sombra proyectada—, para
-     que «el botón que hace la cosa» se vea igual antes y después de entrar. */
-  /* EL BOTÓN PRINCIPAL DE LA APLICACIÓN, SIN HALO.
-     Tenía la misma sombra azul proyectada que el de la portada: 22 px de
-     desenfoque al 75 % de opacidad. En una portada, donde hay un botón cada
-     dos pantallas, eso es presencia; en una herramienta, donde hay uno en
-     cada formulario, cada tarjeta y cada estado vacío, es una pantalla llena
-     de luces. Se queda el filo de luz de arriba —que es lo que le da cuerpo—
-     y una sombra corta que sólo lo separa del fondo.
-     La portada no se toca: usa `.btn-azul`, que conserva su halo. */
+  /* LA ACCIÓN PRINCIPAL: NEGRO SÓLIDO, TEXTO BLANCO.
+     Pasó por las tres: blanca sobre negro, después un degradado azul con filo
+     de luz y halo —el mismo botón de la portada—, y ahora negro plano. Sin
+     azul en la paleta, lo que más contrasta sobre una tarjeta gris clara es
+     el negro, y eso es exactamente lo que tiene que hacer la acción
+     principal: destacar sin pedir un color. Sin degradado, sin halo y sin
+     sombra de color: en una herramienta hay un botón principal en cada
+     formulario, cada tarjeta y cada estado vacío, y veinte halos son una
+     pantalla llena de luces.
+     La portada no se toca: usa `.btn-azul`, que conserva el suyo. */
   .metal-claro {
-    background-image: linear-gradient(180deg, #2A86FF 0%, #0868F9 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.26),
-      0 1px 2px rgba(4, 7, 15, 0.45);
-    transition: filter .2s ease, box-shadow .25s ease;
+    background-color: #0D0D0F;
+    border: 1px solid #0D0D0F;
+    transition: background-color .2s ease;
   }
-  .metal-claro:hover {
-    filter: brightness(1.08);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.26),
-      0 4px 14px -6px rgba(8, 104, 249, 0.55);
-  }
+  .metal-claro:hover { background-color: #26262B; }
+  .metal-claro:disabled { background-color: rgba(13,13,15,0.14); border-color: transparent; }
 
   @media (prefers-reduced-motion: reduce) {
     .metal, .metal-claro { transition: none; }
+  }
+
+  /* ── EL PLIEGO CLARO ──────────────────────────────────────────────────────
+     El fondo de la plataforma está FIJO a la ventana: negro arriba, gris
+     abajo. Eso es lo que hace que la hora se lea sobre negro y la navegación
+     sobre gris, se desplace la página donde se desplace.
+
+     Pero el contenido SÍ se desplaza, y si va suelto encima de ese fondo,
+     una línea de texto oscuro acaba tarde o temprano sobre la banda negra y
+     deja de leerse. Pasó: la fila de «Pon tu equipo en marcha» desaparecía a
+     mitad de recorrido.
+
+     El pliego es la superficie clara sobre la que vive el contenido. Se
+     desplaza con él, va de borde a borde —por eso los márgenes negativos— y
+     llega hasta abajo del todo. En Inicio empieza justo debajo del héroe,
+     que es lo único que se apoya en el negro. */
+  .pliego {
+    margin-inline: calc(var(--pagina-x) * -1);
+    padding-inline: var(--pagina-x);
+    /* El hueco de abajo vive AQUÍ y no en el armazón. Estaba en `main`, por
+       fuera del pliego, y eso dejaba una franja del fondo fijo entre el
+       final del contenido y la navegación: el pliego se cortaba y debajo
+       reaparecía el degradado. */
+    padding-bottom: var(--hueco-inferior);
+    background-color: #E8E8EB;
+  }
+
+  /* ── EL HÉROE DE INICIO, Y LO QUE PASA EN UNA PANTALLA CORTA ──────────────
+     El dato principal pide aire, y en un iPhone de 844 px de alto lo tiene de
+     sobra: la hora, los cuatro accesos y el principio de la tarjeta caben sin
+     desplazarse. En un iPhone SE hay 667 px, y con las mismas medidas el
+     héroe se comía la pantalla entera: la tarjeta del entrenamiento —y su
+     botón, que es lo que se viene a pulsar— empezaba por debajo del dique.
+
+     Por eso el aire es una medida y no un número fijo. Por debajo de 720 px
+     de alto se recorta: menos margen arriba, menos hueco antes y después de
+     los discos, y la cifra algo más pequeña. No se quita nada ni se mueve
+     nada de sitio; sólo se aprieta. La composición es la misma en los dos.
+
+     Va aquí y no en las clases de la pantalla porque Tailwind no tiene
+     variantes por ALTO de ventana: en el componente serían tres `@media`
+     escritos a mano en mitad del marcado. */
+  .heroe { padding-top: 2.5rem; }
+  .heroe-acciones { margin-top: 2.25rem; padding-bottom: 2.25rem; }
+
+  @media (max-height: 720px) {
+    .heroe { padding-top: 0.75rem; }
+    .heroe-acciones { margin-top: 1.5rem; padding-bottom: 1.5rem; }
+    .heroe .cifra { font-size: 52px; }
+    .heroe .cifra span + span { font-size: 34px; }
   }
 
   .panel-hover {
@@ -492,10 +525,13 @@
 
   .field:hover:not(:disabled) { @apply border-line-fuerte; }
 
+  /* AL ENFOCAR, NEGRO. Era un borde azul con su halo azul; ahora el campo
+     enfocado se distingue porque su borde se vuelve casi negro y gana un aro
+     tenue del mismo gris. Contraste, no color. */
   .field:focus,
   .field:focus-visible {
-    @apply border-marca-500 bg-raised;
-    box-shadow: 0 0 0 3px rgba(22, 139, 255, 0.18);
+    @apply border-ink-900;
+    box-shadow: 0 0 0 3px rgba(13, 13, 15, 0.10);
   }
 
   /* ── CIFRAS ───────────────────────────────────────────────────────────────

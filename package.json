@@ -27,6 +27,7 @@
     "app:lista": "node pruebas/lista.mjs",
     "app:partido": "node pruebas/partido.mjs",
     "app:complejidad": "node pruebas/complejidad.mjs",
+    "app:sin-azul": "node pruebas/sin-azul.mjs",
     "capturas": "node pruebas/capturas.mjs",
     "maqueta:enteras": "node pruebas/capturas-enteras.mjs",
     "pizarra:colocar": "node pruebas/colocar.mjs",

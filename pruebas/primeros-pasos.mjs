@@ -70,19 +70,31 @@ async function inicio(opciones = {}, ancho = 1280) {
  * siempre —qué pasos hay y cuáles están tachados—; lo que ha cambiado es
  * dónde hay que mirar.
  */
+
+/**
+ * La tira, por el aro y no por el texto.
+ *
+ * Decía `has-text("Pon tu equipo en marcha")`, y esa frase se fue de la tira
+ * cuando pasó a nombrar el paso que toca: se quedó dentro de la hoja, que es
+ * donde hace de título. Buscarla por el texto ataba la prueba a un rótulo que
+ * cambia con el progreso; el aro no cambia, porque es lo que la tira ES.
+ *
+ * `:visible` NO SOBRA. Inicio tiene dos composiciones en el marcado —la del
+ * móvil y la del escritorio—, y una de las dos está siempre oculta por CSS.
+ * Sin filtrar, el localizador cogía la tira del móvil estando en 1.280 px y
+ * se quedaba esperando a que apareciera algo que nunca iba a aparecer.
+ */
+const TIRA = (page) => page.locator('button:has([role="progressbar"]):visible').first();
 async function leeGuia(page) {
-  /* `:visible` NO SOBRA. Inicio tiene dos composiciones en el marcado —la
-     del móvil y la del escritorio—, y una de las dos está siempre oculta por
-     CSS. Sin filtrar, el localizador cogía la tira del móvil estando en
-     1.280 px y se quedaba esperando a que apareciera algo que nunca iba a
-     aparecer. */
-  const tira = page.locator('button:has-text("Pon tu equipo en marcha"):visible').first();
+  const tira = TIRA(page);
   if (await tira.count() === 0) return null;
 
   const progreso = await page.evaluate(() => {
     const b = [...document.querySelectorAll('[role="progressbar"]')].find((el) => el.offsetParent !== null);
     return b ? { lleva: Number(b.getAttribute('aria-valuenow')), total: Number(b.getAttribute('aria-valuemax')) } : null;
   });
+
+  const rotulo = (await tira.innerText()).trim();
 
   await tira.click();
   await page.waitForTimeout(450);
@@ -103,7 +115,7 @@ async function leeGuia(page) {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(350);
 
-  return { lleva: progreso?.lleva, total: progreso?.total, pasos };
+  return { lleva: progreso?.lleva, total: progreso?.total, pasos, rotulo };
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -125,6 +137,11 @@ async function leeGuia(page) {
     /* Sin equipo todavía no existe la ficha donde se pone el horario: ese
        paso se queda escrito pero sin botón, en vez de llevar a ningún sitio. */
     comprueba('el horario todavía no tiene a dónde llevar', g.pasos[2].a === null, String(g.pasos[2].a));
+    /* LA TIRA NOMBRA EL PASO QUE TOCA, y lleva la cuenta a la derecha. Cerrada
+       ocupa una fila, así que lo único que puede decir tiene que ser útil:
+       «Pon tu equipo en marcha» obligaba a abrirla para saber qué tocaba. */
+    comprueba('la tira nombra el paso que toca y lleva la cuenta',
+      g.rotulo.includes('Crea tu equipo') && g.rotulo.includes('0/6'), g.rotulo.replace(/\n/g, ' · '));
   }
   await page.screenshot({ path: 'salida/primeros-pasos/vacio.png', animations: 'disabled' });
   await ctx.close();
@@ -157,6 +174,8 @@ async function leeGuia(page) {
     const sinTachar = (g?.pasos ?? []).filter((p) => !p.tachado).map((p) => p.titulo);
     comprueba(`${nombre}: se destacha «${esperado}» y sólo ése`,
       sinTachar.length === 1 && sinTachar[0] === esperado, sinTachar.join(', ') || 'ninguno');
+    comprueba(`${nombre}: y la tira cerrada ya lo dice`,
+      (g?.rotulo ?? '').includes(esperado), (g?.rotulo ?? 'sin tira').replace(/\n/g, ' · '));
     await ctx.close();
   }
 }
@@ -187,7 +206,7 @@ async function leeGuia(page) {
   /* Apagarla está dentro de la hoja, al pie: es una decisión que se toma
      después de ver lo que hay, no un aspa en la esquina que se pulsa sin
      querer al bajar con el dedo. */
-  await page.locator('button:has-text("Pon tu equipo en marcha"):visible').first().click();
+  await TIRA(page).click();
   await page.waitForTimeout(450);
   comprueba('hay manera de apagarla',
     await page.getByRole('button', { name: 'No volver a enseñar esto' }).count() === 1);

@@ -50,7 +50,7 @@ export function PestañasDeSeccion() {
                   /* 40 px de alto: es una navegación y se toca con el pulgar. */
                   'flex h-10 items-center rounded-full px-4 text-base transition-colors',
                   aqui
-                    ? 'bg-marca-600 font-semibold text-white'
+                    ? 'bg-ink-900 font-semibold text-white'
                     : 'bg-panel font-medium text-ink-600 active:bg-raised sm:hover:bg-raised sm:hover:text-ink-900',
                 )}
               >

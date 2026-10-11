@@ -17,8 +17,8 @@ import {
 } from '@/services/invitations';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { Button, Field, Input, Tag } from '@/components/ui';
+import { OndasDeFondo } from '@/components/layout/FondoPlataforma';
 import { Wordmark } from '@/components/ui/Brand';
-import { Cielo } from '@/components/visual/Cielo';
 import { cn } from '@/lib/utils';
 
 type Mode = 'entrar' | 'registro' | 'recuperar';
@@ -164,19 +164,25 @@ export default function Login() {
   ] as const;
 
   return (
-    <div className="min-h-[100svh] bg-surface lg:grid lg:grid-cols-[minmax(0,1.04fr)_minmax(0,1fr)] lg:gap-0 lg:p-3">
+    /* `plataforma`: la entrada ya es el producto, no la página pública. De
+       aquí para dentro no hay azul. */
+    <div className="plataforma min-h-[100svh] bg-surface lg:grid lg:grid-cols-[minmax(0,1.04fr)_minmax(0,1fr)] lg:gap-0 lg:p-3">
       {/* ── El panel visual ──────────────────────────────────────────────────
           En escritorio es una superficie de grafito redondeada con el ambiente
           dentro. En el móvil no se apila debajo —eso es lo que hace una
           maqueta que sólo «responde»— sino que se convierte en la cabecera:
           una franja de ambiente detrás de la marca, y el formulario debajo. */}
-      <div className="relative hidden overflow-hidden rounded-3xl border border-line-sutil bg-panel lg:flex lg:flex-col lg:justify-between">
-        <Cielo />
+      {/* EL PANEL VISUAL, EN NEGRO. Tenía dentro el «cielo»: un degradado
+          azul con partículas. Es el ambiente de la página pública y ahí se
+          queda; la entrada pertenece al producto, y el producto es negro con
+          sus ondas. */}
+      <div className="relative hidden overflow-hidden rounded-3xl bg-black lg:flex lg:flex-col lg:justify-between">
+        <OndasDeFondo />
 
         <div className="relative p-10">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm text-ink-600 transition-colors duration-250 ease-suave hover:text-ink-900"
+            className="inline-flex items-center gap-2 text-sm text-white/60 transition-colors duration-250 ease-suave hover:text-white"
           >
             <ArrowLeft size={14} />
             Volver a la página principal
@@ -185,10 +191,10 @@ export default function Login() {
 
         <div className="relative px-10">
           <Wordmark size="lg" tone="light" />
-          <p className="mt-8 max-w-[22ch] text-4xl text-ink-900" style={{ fontWeight: 520 }}>
+          <p className="mt-8 max-w-[22ch] text-4xl text-white" style={{ fontWeight: 520 }}>
             La herramienta de tu club, en un mismo sitio.
           </p>
-          <p className="mt-5 max-w-[46ch] text-md text-ink-700">
+          <p className="mt-5 max-w-[46ch] text-md text-white/65">
             Plantilla, entrenamientos, partidos y pizarra táctica. Menos gestión y más tiempo para
             entrenar.
           </p>
@@ -203,8 +209,8 @@ export default function Login() {
                   className={cn(
                     'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-250 ease-suave',
                     i === 0
-                      ? 'bg-ink-900 text-ink-0'
-                      : 'border border-line-sutil bg-panel text-ink-600',
+                      ? 'bg-white text-ink-900'
+                      : 'border border-white/15 text-white/70',
                   )}
                 >
                   <span className="tabular-nums opacity-60">{n}</span>
@@ -213,7 +219,7 @@ export default function Login() {
               ))}
             </ol>
           ) : (
-            <p className="text-sm text-ink-600">
+            <p className="text-sm text-white/60">
               Cada club, con sus datos separados de los demás. El permiso lo aplica el servidor, no
               la pantalla.
             </p>
@@ -236,8 +242,8 @@ export default function Login() {
             producto— pero como fondo de la cabecera, no como un cartel.
             Medido en 375×667: el primer campo pasa de empezar en y=404 a
             empezar en y=250. */}
-        <div className="relative shrink-0 overflow-hidden lg:hidden">
-          <Cielo velo="franja" nubes={false} />
+        <div className="relative shrink-0 overflow-hidden bg-black lg:hidden">
+          <OndasDeFondo />
           <div className="relative flex h-[76px] items-center justify-between gap-3 px-5 pt-[var(--safe-top)]">
             <Wordmark size="sm" tone="light" />
             <Link

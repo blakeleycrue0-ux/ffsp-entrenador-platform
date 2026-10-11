@@ -27,9 +27,11 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { NavFlotante } from './NavFlotante';
 import { PestañasDeSeccion } from './PestañasDeSeccion';
+import { FondoPlataforma } from './FondoPlataforma';
 import { CreateMenu } from './CreateMenu';
 import { GlobalSearch } from './GlobalSearch';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { cn } from '@/lib/utils';
 
 /**
  * El ancho útil según la tarea, no según la pantalla.
@@ -89,6 +91,7 @@ export function AppShell() {
   const [create, setCreate] = useState(false);
   const [anchura, setAnchura] = useState<Anchura>('ancho');
   const { pathname } = useLocation();
+  const enInicio = pathname === '/app' || pathname === '/app/';
 
   const alternaMenu = useCallback(() => {
     setMenu((m) => {
@@ -134,10 +137,17 @@ export function AppShell() {
           —el contenido, la cabecera, el espacio de trabajo de la pizarra— lo
           hace leyendo esta misma variable, así que no hay dos sitios donde
           acordarse del número. */}
+      {/* `plataforma` ES LA FRONTERA con la portada. Todo lo que cambia de
+          color aquí dentro —la selección, el aro del foco, los controles
+          nativos de fecha y hora— está escrito contra esta clase, así que la
+          página pública no puede verse afectada por nada de esto.
+          Y el fondo no se pinta en el documento sino aquí: negro arriba,
+          gris abajo, con las ondas. */}
       <div
-        className="min-h-[100dvh] bg-surface"
+        className="plataforma relative min-h-[100dvh]"
         style={menu ? undefined : ({ '--sidebar-w': '0px' } as React.CSSProperties)}
       >
+        <FondoPlataforma />
         {menu && <Sidebar onCreate={openCreate} onPlegar={alternaMenu} />}
 
         <div className="lg:pl-[var(--sidebar-w)]">
@@ -154,9 +164,8 @@ export function AppShell() {
               maxWidth: MAXIMOS[anchura],
               paddingInline: 'var(--pagina-x)',
               paddingTop: 'var(--pagina-top)',
-              /* El hueco de abajo lo pone el armazón, no la página: así el
-                 último renglón siempre se puede leer por encima del dique. */
-              paddingBottom: 'var(--hueco-inferior)',
+              /* El hueco de abajo lo pone el PLIEGO, no esto: tiene que
+                 quedar dentro de la superficie clara, no por fuera. */
             }}
           >
             {/* El límite va DENTRO del armazón, no fuera: si una pantalla falla,
@@ -167,10 +176,29 @@ export function AppShell() {
                 sección que se quede sin ellas o que las pinte en otro sitio.
                 Fuera de las pestañas no se dibuja nada: en Inicio, en una
                 ficha o en un formulario, esto devuelve nulo. */}
-            <PestañasDeSeccion />
-            <ErrorBoundary resetKey={pathname}>
-              <Outlet />
-            </ErrorBoundary>
+            {/* EL PLIEGO CLARO, salvo en Inicio. En Inicio lo pone la propia
+                pantalla, justo debajo del héroe: ahí la banda negra del fondo
+                es el sitio donde vive la hora, y taparla con el pliego sería
+                quitar lo único que esta pantalla tiene que enseñar. En todas
+                las demás, el contenido empieza bajo la cabecera y va sobre
+                claro de arriba abajo. */}
+            {/* Y LLEGA HASTA ABAJO SIEMPRE. Tenía `70vh` de mínimo, y en una
+                pantalla larga con poco contenido —el calendario de una semana
+                libre en un iPhone de 932 px— el pliego se acababa a media
+                altura y debajo reaparecía el degradado del fondo: una franja
+                de gris más oscuro entre el final de la lista y la barra. Con
+                la altura de la ventana menos la cabecera, el pliego cubre
+                desde donde empieza hasta el borde inferior se ponga lo que se
+                ponga dentro. */}
+            <div
+              className={cn(!enInicio && 'pliego pt-4')}
+              style={enInicio ? undefined : { minHeight: 'calc(100dvh - var(--header-h))' }}
+            >
+              <PestañasDeSeccion />
+              <ErrorBoundary resetKey={pathname}>
+                <Outlet />
+              </ErrorBoundary>
+            </div>
           </main>
         </div>
 

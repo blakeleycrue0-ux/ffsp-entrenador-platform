@@ -141,6 +141,28 @@ no miraba la dirección; y `partido.mjs` se dio por buena a sí misma con el
 identificador `nuevo`, que choca con la ruta `/app/partidos/nuevo` —el mock
 mandaba a la ficha y se llegaba al formulario—.
 
+## Qué comprueba `sin-azul.mjs`
+
+El encargo decía dos cosas a la vez, y las dos son medibles: **dentro de la
+plataforma no queda azul**, y **la portada sigue siendo azul**.
+
+```sh
+npm run app:sin-azul
+```
+
+Recorre las dieciocho pantallas de la aplicación más la de entrar y mira el
+color **calculado** de cada elemento visible: fondo, texto, bordes, trazo,
+relleno y los colores de la sombra. Un color cuenta como azul cuando su
+componente azul se separa de las otras dos —`b − max(r, g) > 10`— y se ve de
+verdad, es decir, su alfa llega a 0,12. Eso caza lo que no se ve en una
+captura: el borde de un campo enfocado, el aro del foco del teclado, el punto
+de un gráfico, un desplegable que sólo sale al tocarlo.
+
+Y comprueba lo contrario en `/`: si alguien «limpia» el azul tocando un color
+compartido, la portada se queda en gris y aquí salta. Es la red que sujeta la
+única regla que no se negocia —**la portada no se toca**— mientras se repinta
+todo lo demás.
+
 ## Qué comprueban `camara.mjs`, `pizarra.mjs` y `video.mjs`
 
 La pizarra se mira desde donde se quiera: la cámara gira y se inclina. Eso son

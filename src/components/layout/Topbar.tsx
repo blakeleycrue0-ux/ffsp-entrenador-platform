@@ -45,8 +45,14 @@ export function Topbar({
        Encima de una lista que se desplaza con el dedo es el sitio más caro
        de la aplicación para pedirlo. Ahora es un color opaco: tapa igual,
        cuesta cero. */
+    /* LA CABECERA NO TIENE FONDO. Tenía uno opaco porque todo lo de debajo
+       era oscuro y había que tapar el contenido que se desplazaba por
+       detrás. Ahora la parte de arriba de la plataforma es negra y lo que
+       flota encima son piezas claras translúcidas: el buscador y los dos
+       botones redondos. La barra en sí desaparece —ni fondo ni línea— y lo
+       que se ve es el negro del fondo con tres objetos encima. */
     <header
-      className="sticky top-0 z-nav flex items-center gap-2.5 border-b border-line-sutil bg-surface px-4 sm:gap-3 lg:px-6"
+      className="sticky top-0 z-nav flex items-center gap-2.5 px-4 sm:gap-3 lg:border-b lg:border-line lg:bg-surface lg:px-6"
       style={{ height: 'calc(var(--header-h) + var(--safe-top))', paddingTop: 'var(--safe-top)' }}
     >
       {/* QUIÉN ERES, A LA IZQUIERDA. La hamburguesa estaba aquí y se ha ido
@@ -110,7 +116,11 @@ export function Topbar({
           que a 320 px encoge y a 430 crece sin tocar nada. */}
       <button
         onClick={onSearch}
-        className="flex h-[38px] min-w-0 flex-1 items-center gap-2 rounded-full bg-white/[0.07] px-3.5 text-left text-base text-ink-500 sm:max-w-[420px] transition-colors active:bg-white/[0.12] lg:ml-0 lg:mr-auto lg:h-8 lg:max-w-[300px] lg:flex-none lg:gap-2 lg:rounded-md lg:border lg:border-line lg:bg-panel lg:px-2.5 lg:text-sm lg:text-ink-400 lg:hover:border-ink-400"
+        /* GRIS CLARO TRANSLÚCIDO, ICONO Y TEXTO OSCUROS. Era blanco al 7 %
+           sobre azul noche —una mancha más clara sobre oscuro—; ahora es una
+           superficie clara de verdad sobre el negro, que es lo que la hace
+           legible y lo que la convierte en un objeto y no en un hueco. */
+        className="flex h-[38px] min-w-0 flex-1 items-center gap-2 rounded-full bg-white/80 px-3.5 text-left text-base text-ink-600 backdrop-blur-sm transition-colors active:bg-white sm:max-w-[420px] lg:ml-0 lg:mr-auto lg:h-8 lg:max-w-[300px] lg:flex-none lg:gap-2 lg:rounded-md lg:border lg:border-line lg:bg-panel lg:px-2.5 lg:text-sm lg:text-ink-500 lg:backdrop-blur-none lg:hover:border-line-fuerte"
       >
         <Search size={17} className="shrink-0 lg:hidden" />
         <Search size={15} className="hidden shrink-0 lg:block" />
@@ -139,12 +149,12 @@ export function Topbar({
           className="w-[340px] max-w-[calc(100vw-2rem)] p-0"
           trigger={
             <button
-              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/[0.07] text-ink-800 transition-colors active:bg-white/[0.14] lg:h-8 lg:w-8 lg:rounded-md lg:bg-transparent lg:text-ink-500 lg:hover:bg-surface lg:hover:text-ink-900"
+              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/80 text-ink-800 backdrop-blur-sm transition-colors active:bg-white lg:h-8 lg:w-8 lg:rounded-md lg:bg-transparent lg:text-ink-500 lg:backdrop-blur-none lg:hover:bg-raised lg:hover:text-ink-900"
               aria-label={unread > 0 ? `Notificaciones, ${unread} sin leer` : 'Notificaciones'}
             >
               <Bell size={18} />
               {unread > 0 && (
-                <span className="absolute right-1 top-1 grid h-4 min-w-[16px] place-items-center rounded-full bg-marca-600 px-1 text-[9px] font-bold tabular-nums text-white ring-2 ring-surface">
+                <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-[16px] place-items-center rounded-full bg-ink-900 px-1 text-[9px] font-bold tabular-nums text-white ring-2 ring-white lg:ring-surface">
                   {unread}
                 </span>
               )}

@@ -70,19 +70,44 @@ export function AvisoDeCookies() {
     if (d === 'si') visita(pathname);
   };
 
+  /* DOS PIELES, PORQUE SALE EN DOS SITIOS DISTINTOS.
+     ──────────────────────────────────────────────────────────────────────
+     El aviso aparece en las cuatro rutas públicas, y de esas sólo UNA es la
+     portada. Las otras tres —la entrada y los dos textos legales— ya son el
+     producto: claras, en negro y grises. Con una sola piel, la barra azul
+     marino de la portada se plantaba encima de la pantalla de entrada, que
+     es justo el azul que ya no está en ningún otro sitio de la aplicación.
+
+     Así que la piel la decide la ruta: en `/` la de siempre, letra por
+     letra, porque la portada no se toca; fuera de `/`, la de la plataforma.
+     El texto, los dos botones del mismo tamaño y lo que hace cada uno son
+     exactamente los mismos en las dos. */
+  const enPortada = pathname === '/';
+
   return (
     <div
       role="region"
       aria-label="Aviso de cookies"
       className="fixed inset-x-0 bottom-0 z-nav px-3 pb-[max(12px,var(--safe-bottom))] sm:px-6 sm:pb-5"
     >
-      <div className="mx-auto flex max-w-[48rem] flex-col gap-4 rounded-3xl border border-white/10 bg-[#070D1C] p-5 text-white shadow-[0_24px_60px_-24px_rgba(6,12,27,0.75)] sm:flex-row sm:items-center sm:gap-6 sm:p-5">
-        <p className="min-w-0 flex-1 text-base leading-relaxed text-white/75">
+      <div
+        className={
+          'mx-auto flex max-w-[48rem] flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-5 '
+          + (enPortada
+            ? 'border border-white/10 bg-[#070D1C] text-white shadow-[0_24px_60px_-24px_rgba(6,12,27,0.75)]'
+            : 'border border-line bg-white text-ink-800 shadow-[0_24px_60px_-24px_rgba(13,13,15,0.35)]')
+        }
+      >
+        <p className={'min-w-0 flex-1 text-base leading-relaxed ' + (enPortada ? 'text-white/75' : 'text-ink-700')}>
           Usamos una cookie de Google Analytics para saber cuánta gente entra. Nada más: no
           medimos nada de lo que pasa dentro de la aplicación y no hacemos publicidad.{' '}
           <Link
             to="/privacidad"
-            className="font-medium text-white underline decoration-white/35 underline-offset-2 hover:decoration-white"
+            className={
+              enPortada
+                ? 'font-medium text-white underline decoration-white/35 underline-offset-2 hover:decoration-white'
+                : 'font-medium text-ink-900 underline decoration-ink-400 underline-offset-2 hover:decoration-ink-900'
+            }
           >
             Cómo se usa
           </Link>
@@ -92,10 +117,26 @@ export function AvisoDeCookies() {
             caben en una fila de dos: partirlos en dos líneas dejaría uno
             arriba y otro abajo, y eso ya es jerarquía. */}
         <div className="grid shrink-0 grid-cols-2 gap-2.5 sm:w-auto">
-          <button type="button" onClick={responder('no')} className="btn btn-vidrio h-11 px-5 text-base">
+          <button
+            type="button"
+            onClick={responder('no')}
+            className={
+              enPortada
+                ? 'btn btn-vidrio h-11 px-5 text-base'
+                : 'btn metal h-11 px-5 text-base text-ink-800'
+            }
+          >
             Solo lo necesario
           </button>
-          <button type="button" onClick={responder('si')} className="btn btn-claro h-11 px-5 text-base">
+          <button
+            type="button"
+            onClick={responder('si')}
+            className={
+              enPortada
+                ? 'btn btn-claro h-11 px-5 text-base'
+                : 'btn metal-claro h-11 px-5 text-base text-white'
+            }
+          >
             Aceptar
           </button>
         </div>
