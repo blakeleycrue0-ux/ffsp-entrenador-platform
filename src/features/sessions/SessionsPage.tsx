@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarClock, ChevronRight, Clock, MapPin, Plus } from 'lucide-react';
+import { CalendarClock, ChevronRight, Clock, Layers, MapPin, Plus } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { visibleTeams } from '@/store/selectors';
 import { Tag, Panel, EmptyState, LinkButton, PageHeader, Select, Tabs } from '@/components/ui';
@@ -44,6 +44,17 @@ export default function SessionsPage() {
             <LinkButton to="/app/entrenamientos/nuevo" size="sm" icon={<Plus size={16} />}>
               Crear entrenamiento
             </LinkButton>
+            {/* Meter la temporada de una vez vive en el calendario, que es
+                donde se ve el resultado; desde aquí se llega con la hoja ya
+                abierta en vez de tener que encontrarla. */}
+            <LinkButton
+              to="/app/calendario?importar=1"
+              variant="secondary"
+              size="sm"
+              icon={<Layers size={15} />}
+            >
+              Añadir varios
+            </LinkButton>
           </>
         }
       />
@@ -70,16 +81,19 @@ export default function SessionsPage() {
 
       {sessions.length === 0 ? (
         <Panel>
-          <EmptyState size="pleno"
-           
+          <EmptyState
+            size="pleno"
             title="No tienes entrenamientos creados todavía"
-            description="Monta la primera sesión arrastrando ejercicios de tu biblioteca."
+            description="Con el día, la hora y el equipo ya queda en el calendario. Si entrenáis siempre los mismos días, se puede meter el trimestre entero de una vez."
             action={
-              <div className="flex gap-2">
+              <>
                 <LinkButton to="/app/entrenamientos/nuevo" size="sm">
                   Crear entrenamiento
                 </LinkButton>
-              </div>
+                <LinkButton to="/app/calendario?importar=1" variant="secondary" size="sm">
+                  Añadir varios
+                </LinkButton>
+              </>
             }
           />
         </Panel>
@@ -101,7 +115,12 @@ export default function SessionsPage() {
                 </div>
               </div>
 
-              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{s.objective}</p>
+              {/* Una sesión recién metida en el calendario no tiene objetivo
+                  escrito, y un párrafo vacío deja un hueco que parece un
+                  error. Si no hay, no se pinta. */}
+              {s.objective && (
+                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{s.objective}</p>
+              )}
 
               <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted">
                 <span className="flex items-center gap-1.5">
@@ -115,21 +134,29 @@ export default function SessionsPage() {
                 </span>
               </div>
 
-              {/* Línea de tiempo compacta */}
-              <div className="mt-4 flex gap-1">
-                {s.blocks.map((b) => (
-                  <div
-                    key={b.id}
-                    title={`${b.title} · ${b.duration}′`}
-                    className={cn('h-1.5 rounded-full', b.tags.includes('Calentamiento') ? 'bg-ink-200' : 'bg-ink-400')}
-                    style={{ flex: b.duration }}
-                  />
-                ))}
-              </div>
+              {/* Línea de tiempo compacta. Sin bloques no hay línea que
+                  pintar: lo que se dice entonces es lo que falta por hacer,
+                  no «0 bloques». */}
+              {s.blocks.length > 0 && (
+                <div className="mt-4 flex gap-1">
+                  {s.blocks.map((b) => (
+                    <div
+                      key={b.id}
+                      title={`${b.title} · ${b.duration}′`}
+                      className={cn('h-1.5 rounded-full', b.tags.includes('Calentamiento') ? 'bg-ink-200' : 'bg-ink-400')}
+                      style={{ flex: b.duration }}
+                    />
+                  ))}
+                </div>
+              )}
 
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-xs text-ink-400">{s.blocks.length} bloques · {s.expectedPlayers} jugadoras</span>
-                <ChevronRight size={15} className="text-ink-300" />
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <span className="min-w-0 truncate text-xs text-ink-400">
+                  {s.blocks.length === 0
+                    ? 'Sin ejercicios: ábrelo para montarlo'
+                    : `${s.blocks.length} ${s.blocks.length === 1 ? 'bloque' : 'bloques'}${s.expectedPlayers > 0 ? ` · ${s.expectedPlayers} jugadoras` : ''}`}
+                </span>
+                <ChevronRight size={15} className="shrink-0 text-ink-300" />
               </div>
             </Link>
           ))}

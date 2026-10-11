@@ -170,6 +170,8 @@ export interface ClubActions {
   toggleFavorite: (drill: Drill) => Promise<void>;
 
   saveSession: (session: TrainingSession) => Promise<TrainingSession>;
+  /** Varios de golpe: importar un calendario o repartir el horario del equipo. */
+  saveSessions: (sessions: TrainingSession[]) => Promise<TrainingSession[]>;
   deleteSession: (id: string) => Promise<void>;
 
   saveMatch: (match: Match) => Promise<Match>;
@@ -381,6 +383,12 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
         const saved = await db.saveSession(session, requireUser());
         dispatch({ type: 'session/put', session: saved });
         return saved;
+      },
+      async saveSessions(sessions) {
+        if (sessions.length === 0) return [];
+        const guardadas = await db.saveSessions(sessions, requireUser());
+        guardadas.forEach((session) => dispatch({ type: 'session/put', session }));
+        return guardadas;
       },
       async deleteSession(id) {
         await db.deleteSession(id);

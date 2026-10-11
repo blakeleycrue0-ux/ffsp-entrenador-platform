@@ -334,26 +334,59 @@ export function Select({
   );
 }
 
+/**
+ * Una casilla.
+ * ---------------------------------------------------------------------------
+ * UN SOLO ELEMENTO, Y ESTO NO ES UN DETALLE DE ESTILO. Antes era un `<label>`
+ * con un `<button role="checkbox">` dentro, y eso hacía que pulsar la casilla
+ * NO HICIERA NADA: el navegador manda el clic al botón y, además, la etiqueta
+ * reenvía su propio clic al control que contiene. Dos clics, dos cambios de
+ * estado, y la casilla se queda como estaba.
+ *
+ * No era teórico. Las tareas de Inicio no se podían marcar, y en la
+ * importación de jugadoras no se podía quitar ninguna fila: las dos casillas
+ * van sin texto al lado, así que el único sitio donde se podía pulsar era
+ * justo el que no funcionaba. Lo cazó `pruebas/crear.mjs` al intentar
+ * desmarcar un entrenamiento de la lista de importar.
+ *
+ * Y EL ÁREA SENSIBLE NO ES EL CUADRADO. El cuadrado mide 18 px porque más
+ * grande queda tosco en una lista; lo que se pulsa es el botón entero, que
+ * tiene 32 px de alto —el mínimo para un dedo— y, cuando lleva texto, se
+ * extiende hasta el final de la palabra.
+ */
 export function Checkbox({
   checked, onChange, label, disabled, className,
 }: { checked: boolean; onChange: (v: boolean) => void; label?: React.ReactNode; disabled?: boolean; className?: string }) {
   return (
-    <label className={cn('inline-flex select-none items-center gap-2', disabled ? 'opacity-50' : 'cursor-pointer', className)}>
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={checked}
-        disabled={disabled}
-        onClick={() => onChange(!checked)}
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        'group inline-flex select-none items-center gap-2.5 text-left',
+        label ? 'min-h-8' : 'h-8 w-8 justify-center',
+        disabled ? 'opacity-50' : 'cursor-pointer',
+        className,
+      )}
+    >
+      <span
+        aria-hidden
         className={cn(
-          'grid h-4 w-4 shrink-0 place-items-center rounded-[3px] border transition-colors',
-          checked ? 'border-marca-600 bg-marca-600 text-white' : 'border-line-fuerte bg-sunken hover:border-ink-500',
+          'grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[5px] border transition-colors',
+          checked
+            ? 'border-marca-600 bg-marca-600 text-white'
+            : 'border-line-fuerte bg-sunken group-hover:border-ink-500',
         )}
       >
-        {checked && <Check size={11} strokeWidth={3} aria-hidden />}
-      </button>
-      {label && <span className="text-base text-ink-800">{label}</span>}
-    </label>
+        {checked && <Check size={12} strokeWidth={3} />}
+      </span>
+      {/* `flex-1` para que una casilla a lo ancho —una fila de una lista—
+          reparta el sitio como cualquier fila; en una etiqueta corta, el
+          botón mide lo que mide su texto y no cambia nada. */}
+      {label && <span className="min-w-0 flex-1 text-base text-ink-800">{label}</span>}
+    </button>
   );
 }
 

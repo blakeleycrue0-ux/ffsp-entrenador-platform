@@ -84,7 +84,10 @@ const PASOS: Paso[] = [
   {
     id: 'horario',
     titulo: 'Pon el horario de entrenamiento',
-    porque: 'Con los días y las horas puestos, el calendario se llena solo.',
+    /* Decía «el calendario se llena solo», y no era verdad: el horario se
+       guardaba y ahí se quedaba. Ahora el calendario sabe repartirlo —en
+       «Añadir varios»—, así que la frase dice lo que de verdad pasa y dónde. */
+    porque: 'Guardado una vez, el calendario reparte el trimestre entero de golpe.',
     /* El horario vive en la ficha del equipo, no en Ajustes. Sin equipo
        todavía no hay ficha, y por eso esto puede devolver nulo. */
     a: (d) => {

@@ -1,19 +1,27 @@
 /**
  * Menú "+ Crear" — el atajo más importante del producto.
  * Cada opción lleva directamente al flujo, sin pantallas intermedias.
+ *
+ * Y ESO INCLUYE QUE NINGUNA LLEVE A DONDE NO SE PUEDE CREAR. Había una,
+ * «Evento», que traía al calendario; y el calendario tenía un botón «Nuevo
+ * evento» que sólo enseñaba un aviso diciendo que el evento se añade desde
+ * «Crear». Era un círculo cerrado: dos pantallas mandándose la una a la otra y
+ * ningún sitio donde escribir nada. En su lugar va lo que de verdad hacía
+ * falta —meter muchos entrenamientos de una vez—, que abre la hoja de importar
+ * del calendario con el parámetro de la dirección.
  */
 
 import { useNavigate } from 'react-router-dom';
-import { CalendarPlus, ClipboardList, Dumbbell, LayoutGrid, Swords, Users } from 'lucide-react';
+import { CalendarRange, ClipboardList, Dumbbell, LayoutGrid, Swords, Users } from 'lucide-react';
 import { Modal } from '@/components/ui';
 
 const OPTIONS = [
   { icon: ClipboardList, label: 'Entrenamiento', hint: 'Monta la sesión con tus ejercicios', to: '/app/entrenamientos/nuevo' },
+  { icon: CalendarRange, label: 'Varios entrenamientos', hint: 'Del horario del equipo o de un archivo .ics', to: '/app/calendario?importar=1' },
   { icon: Swords, label: 'Partido', hint: 'Rival, competición, campo y horario', to: '/app/partidos/nuevo' },
   { icon: Users, label: 'Jugadora', hint: 'Añádela a la plantilla de tu equipo', to: '/app/plantilla/nueva' },
   { icon: LayoutGrid, label: 'Jugada', hint: 'Dibújala y anímala en la pizarra', to: '/app/pizarra' },
   { icon: Dumbbell, label: 'Ejercicio', hint: 'Añádelo a la biblioteca del club', to: '/app/ejercicios/nuevo' },
-  { icon: CalendarPlus, label: 'Evento', hint: 'Reunión, charla o cualquier cita', to: '/app/calendario' },
 ];
 
 export function CreateMenu({ open, onClose }: { open: boolean; onClose: () => void }) {

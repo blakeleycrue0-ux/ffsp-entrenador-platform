@@ -561,6 +561,13 @@ const one = async <T,>(promise: PromiseLike<{ data: unknown; error: unknown }>, 
   return map(data as Row);
 };
 
+/** Como `one`, pero cuando la escritura devuelve varias filas de golpe. */
+const varias = async <T,>(promise: PromiseLike<{ data: unknown; error: unknown }>, map: (r: Row) => T): Promise<T[]> => {
+  const { data, error } = await promise;
+  if (error) throw error;
+  return ((data ?? []) as Row[]).map(map);
+};
+
 export const db = {
   /* Equipos y cuerpo técnico — sólo coordinación (lo impone RLS) */
 
@@ -655,6 +662,20 @@ export const db = {
   /* Entrenamientos */
   saveSession: (s: TrainingSession, userId: string) =>
     one(supabase.from('sessions').upsert(fromSession(s, userId)).select().single(), toSession),
+
+  /**
+   * Varios entrenamientos en una sola escritura.
+   *
+   * No es un lujo de rendimiento: importar la temporada son treinta sesiones,
+   * y treinta peticiones de una en una fallan a medias —quince creadas,
+   * quince no— sin que nadie sepa dónde se quedó. En una sola, la política de
+   * acceso decide una vez y el resultado es «todas» o «ninguna».
+   */
+  saveSessions: (lista: TrainingSession[], userId: string) =>
+    varias(
+      supabase.from('sessions').upsert(lista.map((s) => fromSession(s, userId))).select(),
+      toSession,
+    ),
 
   deleteSession: async (id: string) => {
     const { error } = await supabase.from('sessions').delete().eq('id', id);

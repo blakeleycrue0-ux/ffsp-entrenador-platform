@@ -1,13 +1,35 @@
 /**
  * Constructor de entrenamientos.
- * ---------------------------------------------------------------------------
- * Dos formas de trabajar, misma pantalla:
- *   1. Arrastrar ejercicios de la biblioteca a la línea de sesión (o pulsarlos).
- * La duración total se recalcula sola en cada cambio.
+ * ═══════════════════════════════════════════════════════════════════════════
+ * Arrastrar ejercicios de la biblioteca a la línea de sesión, o pulsarlos. La
+ * duración total se recalcula sola en cada cambio.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * UN ENTRENAMIENTO SE PUEDE GUARDAR VACÍO, Y ESO ES LO IMPORTANTE DE AQUÍ.
+ *
+ * Esta pantalla exigía tres cosas para guardar: equipo, título y AL MENOS UN
+ * BLOQUE. Lo tercero convertía la pantalla en un callejón sin salida:
+ *
+ *  · Un club recién creado no tiene ejercicios en la biblioteca. La línea de
+ *    sesión decía «arrastra aquí tu primer ejercicio» y al lado no había
+ *    ninguno que arrastrar. No se podía guardar NADA.
+ *  · Y aunque los hubiera: lo primero que hace cualquiera es poner en el
+ *    calendario los días que entrena, y preparar los ejercicios después, el
+ *    día antes. Pedir la sesión entera para poder apuntar la hora es pedir
+ *    el trabajo de la temporada por adelantado.
+ *
+ * Ahora un entrenamiento es un hueco en el calendario —equipo, día, hora,
+ * campo— y los bloques son el plan, que es opcional. Lo único que no se puede
+ * guardar es lo que no se podría leer después: sin equipo no hay a quién
+ * pertenece, y sin título no se distingue de los otros veintinueve.
+ *
+ * Y LA DURACIÓN NO SE INVENTA. Con bloques, sale de sumarlos, como siempre.
+ * Sin bloques, la elige quien crea la sesión —y se ve el campo, no un cero
+ * escondido—: el calendario tiene que pintar algo que dure lo que dura.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, Clock, Copy, GripVertical, Package, Plus, Save, Search,
   Trash2, X,
@@ -18,7 +40,7 @@ import {
   Button, Field, Input, PageHeader, Panel, Select, Tag, Textarea,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { addMinutes, cn, minutesToLabel, normalize, toISODate, today, uid } from '@/lib/utils';
+import { addMinutes, cn, dayName, minutesToLabel, normalize, toISODate, today, uid } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
 import type { Drill, DrillTag, SessionBlock, TrainingSession } from '@/types';
 import { useAnchura } from '@/components/layout/AppShell';
@@ -28,17 +50,31 @@ const TAGS: DrillTag[] = [
   'Transición', 'Técnica', 'Táctica', 'Preparación física',
 ];
 
-const emptySession = (teamId: string): TrainingSession => ({
+/** Las duraciones de un entrenamiento normal, para no escribir minutos a mano. */
+const DURACIONES = [60, 75, 90, 105, 120];
+
+const esFecha = (v: string | null): v is string => !!v && /^\d{4}-\d{2}-\d{2}$/.test(v);
+
+/**
+ * El título que se propone: «Entrenamiento del martes».
+ *
+ * No es relleno: es el nombre con el que se reconoce en una lista de treinta,
+ * y se puede cambiar. Se propone, no se impone —y si se toca, no se vuelve a
+ * tocar solo aunque cambie la fecha—.
+ */
+const tituloPropuesto = (fecha: string) => `Entrenamiento del ${dayName(fecha).toLowerCase()}`;
+
+const emptySession = (teamId: string, fecha: string): TrainingSession => ({
   id: '',
   teamId,
-  title: '',
-  date: toISODate(today()),
+  title: tituloPropuesto(fecha),
+  date: fecha,
   start: '19:00',
   duration: 0,
-  venue: 'Campo Municipal',
+  venue: '',
   objective: '',
-  expectedPlayers: 20,
-  material: ['Balones', 'Conos', 'Petos'],
+  expectedPlayers: 0,
+  material: [],
   blocks: [],
   status: 'borrador',
 });
@@ -53,18 +89,61 @@ export default function SessionBuilder() {
   const teams = visibleTeams(data);
   const [saving, setSaving] = useState(false);
 
+  /* La fecha puede venir en la dirección: el calendario enlaza aquí desde un
+     día vacío y el formulario tiene que llegar con ese día puesto, no con hoy.
+     Si no viene, o viene mal escrita, se usa hoy. */
+  const [params] = useSearchParams();
+  const fechaPedida = esFecha(params.get('fecha')) ? (params.get('fecha') as string) : toISODate(today());
+
   const existing = sessionId ? data.sessions.find((s) => s.id === sessionId) : undefined;
-  const [draft, setDraft] = useState<TrainingSession>(() => existing ?? emptySession(teamId));
+  const [draft, setDraft] = useState<TrainingSession>(() => existing ?? emptySession(teamId, fechaPedida));
   const [libraryQuery, setLibraryQuery] = useState('');
   const [libraryTag, setLibraryTag] = useState<DrillTag | 'todas'>('todas');
+  /* La duración de una sesión sin bloques: la pone quien crea, y por eso hay
+     que saber si la ha tocado o si sigue siendo la propuesta. */
+  const [duracionSuelta, setDuracionSuelta] = useState(90);
+  const [tituloAMano, setTituloAMano] = useState(false);
   const dragBlock = useRef<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
 
   useEffect(() => {
-    if (existing) setDraft(existing);
+    if (!existing) return;
+    setDraft(existing);
+    /* Una sesión guardada sin bloques ya tiene su duración: se trae tal cual,
+       que si no, al abrirla para editarla volvería a 90 sin avisar. */
+    if (existing.blocks.length === 0 && existing.duration > 0) setDuracionSuelta(existing.duration);
   }, [existing]);
 
+  /* Equipo y campo salen de los datos del club, no de un texto inventado: el
+     campo del equipo es el campo donde entrena, y las jugadoras esperadas son
+     las que hay en la plantilla. Si alguien los cambia, no se vuelven a tocar.
+     Sólo para una sesión nueva: editar una existente no pisa lo guardado. */
+  useEffect(() => {
+    if (existing || draft.teamId) return;
+    const primero = teamId || teams[0]?.id;
+    if (primero) setDraft((d) => ({ ...d, teamId: primero }));
+  }, [existing, draft.teamId, teamId, teams]);
+
+  useEffect(() => {
+    if (existing || !draft.teamId) return;
+    const equipo = teams.find((t) => t.id === draft.teamId);
+    const plantilla = data.players.filter((p) => p.teamId === draft.teamId).length;
+    setDraft((d) => ({
+      ...d,
+      venue: d.venue || equipo?.venue || '',
+      expectedPlayers: d.expectedPlayers || plantilla,
+    }));
+  }, [existing, draft.teamId, teams, data.players]);
+
+  /* El título sigue a la fecha mientras nadie lo haya escrito a mano. */
+  useEffect(() => {
+    if (existing || tituloAMano) return;
+    setDraft((d) => (d.title === tituloPropuesto(d.date) ? d : { ...d, title: tituloPropuesto(d.date) }));
+  }, [existing, tituloAMano, draft.date]);
+
   const totalDuration = useMemo(() => draft.blocks.reduce((a, b) => a + b.duration, 0), [draft.blocks]);
+  /** Lo que se va a guardar y lo que verá el calendario. */
+  const duracionFinal = draft.blocks.length > 0 ? totalDuration : duracionSuelta;
 
   const drills = useMemo(
     () =>
@@ -139,13 +218,11 @@ export default function SessionBuilder() {
       toast.error('Falta el título del entrenamiento', 'Ponle un nombre para poder reconocerlo en tu planificación.');
       return;
     }
-    if (draft.blocks.length === 0) {
-      toast.error('La sesión está vacía', 'Añade al menos un ejercicio desde la biblioteca o crea un bloque propio.');
-      return;
-    }
+    /* AQUÍ NO HAY TERCERA COMPROBACIÓN. Antes se exigía un bloque, y eso
+       impedía guardar a quien aún no tiene ejercicios en la biblioteca. */
     setSaving(true);
     try {
-      const saved = await actions.saveSession({ ...draft, duration: totalDuration, status });
+      const saved = await actions.saveSession({ ...draft, duration: duracionFinal, status });
       await actions.log({
         kind: 'sesion',
         teamId: saved.teamId,
@@ -154,7 +231,9 @@ export default function SessionBuilder() {
       });
       toast.success(
         status === 'borrador' ? 'Borrador guardado' : 'Entrenamiento guardado correctamente',
-        `${minutesToLabel(totalDuration)} · ${saved.blocks.length} bloques`,
+        saved.blocks.length === 0
+          ? `${minutesToLabel(duracionFinal)} · ya está en el calendario, los ejercicios cuando quieras`
+          : `${minutesToLabel(duracionFinal)} · ${saved.blocks.length} ${saved.blocks.length === 1 ? 'bloque' : 'bloques'}`,
       );
       navigate(`/app/entrenamientos/${saved.id}`);
     } catch (e) {
@@ -175,7 +254,7 @@ export default function SessionBuilder() {
 
       <PageHeader
         title={existing ? 'Editar entrenamiento' : 'Nuevo entrenamiento'}
-        description="Arrastra ejercicios a la línea de sesión, ajusta las duraciones y guarda."
+        description="Con el día, la hora y el equipo ya se puede guardar. Los ejercicios, cuando los tengas."
         actions={
           <>
             <Button variant="ghost" size="sm" disabled={saving} onClick={() => save('borrador')}>
@@ -197,7 +276,10 @@ export default function SessionBuilder() {
               <Field label="Título" className="sm:col-span-2">
                 <Input
                   value={draft.title}
-                  onChange={(e) => update({ title: e.target.value })}
+                  onChange={(e) => {
+                    setTituloAMano(true);
+                    update({ title: e.target.value });
+                  }}
                   placeholder="Ej.: Táctica colectiva — presión tras pérdida"
                 />
               </Field>
@@ -211,7 +293,11 @@ export default function SessionBuilder() {
                 </Select>
               </Field>
               <Field label="Campo">
-                <Input value={draft.venue} onChange={(e) => update({ venue: e.target.value })} />
+                <Input
+                  value={draft.venue}
+                  onChange={(e) => update({ venue: e.target.value })}
+                  placeholder="Dónde se entrena"
+                />
               </Field>
               <Field label="Fecha">
                 <Input type="date" value={draft.date} onChange={(e) => update({ date: e.target.value })} />
@@ -233,17 +319,37 @@ export default function SessionBuilder() {
                   onChange={(e) => update({ expectedPlayers: Number(e.target.value) })}
                 />
               </Field>
-              <Field label="Duración total" hint="Se calcula sola a partir de los bloques.">
-                <div className="flex h-[42px] items-center gap-2 rounded-xl border border-line bg-ink-50 px-3.5">
-                  <Clock size={16} className="text-ink-800" />
-                  <span className="text-base font-semibold text-ink-900 tabular-nums">
-                    {minutesToLabel(totalDuration)}
-                  </span>
-                  <span className="text-xs text-ink-400">
-                    {draft.start} – {addMinutes(draft.start, totalDuration)}
-                  </span>
-                </div>
-              </Field>
+              {/* CON BLOQUES SE CALCULA; SIN BLOQUES SE ELIGE. Enseñar «0 min»
+                  y decir que se calcula sola era lo que dejaba el calendario
+                  con entrenamientos que empiezan y acaban a la misma hora. */}
+              {draft.blocks.length > 0 ? (
+                <Field label="Duración total" hint="Se calcula sola a partir de los bloques.">
+                  <div className="flex h-12 items-center gap-2 rounded-xl border border-line bg-ink-50 px-3.5">
+                    <Clock size={16} className="text-ink-800" />
+                    <span className="text-base font-semibold text-ink-900 tabular-nums">
+                      {minutesToLabel(totalDuration)}
+                    </span>
+                    <span className="text-xs text-ink-400">
+                      {draft.start} – {addMinutes(draft.start, totalDuration)}
+                    </span>
+                  </div>
+                </Field>
+              ) : (
+                <Field
+                  label="Duración"
+                  hint={`De ${draft.start} a ${addMinutes(draft.start, duracionSuelta)}. Al añadir ejercicios se calcula sola.`}
+                >
+                  {/* La duración guardada entra en la lista aunque no sea una
+                      de las habituales: una sesión importada puede durar 80
+                      minutos, y un desplegable sin su propio valor se pinta
+                      vacío y lo cambia al guardar sin que nadie lo toque. */}
+                  <Select value={duracionSuelta} onChange={(e) => setDuracionSuelta(Number(e.target.value))}>
+                    {Array.from(new Set([...DURACIONES, duracionSuelta])).sort((a, b) => a - b).map((m) => (
+                      <option key={m} value={m}>{minutesToLabel(m)}</option>
+                    ))}
+                  </Select>
+                </Field>
+              )}
               <Field label="Observaciones" className="sm:col-span-2">
                 <Textarea
                   value={draft.notes ?? ''}
@@ -261,7 +367,9 @@ export default function SessionBuilder() {
               <div>
                 <h2 className="text-base font-semibold">Línea de la sesión</h2>
                 <p className="mt-0.5 text-xs text-muted">
-                  {draft.blocks.length} bloques · {minutesToLabel(totalDuration)}
+                  {draft.blocks.length === 0
+                    ? 'Opcional: se puede guardar sin ejercicios'
+                    : `${draft.blocks.length} ${draft.blocks.length === 1 ? 'bloque' : 'bloques'} · ${minutesToLabel(totalDuration)}`}
                 </p>
               </div>
               <Button variant="secondary" size="sm" icon={<Plus size={15} />} onClick={addCustomBlock}>
@@ -278,12 +386,35 @@ export default function SessionBuilder() {
                   const drill = data.drills.find((d) => d.id === id);
                   if (drill) addDrill(drill);
                 }}
-                className="m-5 rounded-2xl border-2 border-dashed border-line py-14 text-center"
+                className="m-4 rounded-2xl border-2 border-dashed border-line px-4 py-8 text-center"
               >
-                <p className="text-sm font-medium text-ink-700">Arrastra aquí tu primer ejercicio</p>
-                <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-muted">
-                  Cógelos de la biblioteca de la derecha o crea un bloque propio.
-                </p>
+                {/* CON LA BIBLIOTECA VACÍA NO SE DICE «ARRASTRA UN EJERCICIO».
+                    Un club nuevo no tiene ninguno, y ese cartel mandaba a
+                    coger algo de una lista vacía. Si no hay, se dice que no
+                    hay y se enseña dónde se hace el primero. */}
+                {data.drills.length === 0 ? (
+                  <>
+                    <p className="text-base font-medium text-ink-800">Todavía no tienes ejercicios</p>
+                    <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted">
+                      No hace falta ninguno para guardar el entrenamiento: con el día y la hora ya
+                      queda en el calendario. Los ejercicios se añaden cuando los tengas.
+                    </p>
+                    <Link
+                      to="/app/ejercicios/nuevo"
+                      className="mt-3 inline-block text-sm font-medium text-marca-400 underline underline-offset-2"
+                    >
+                      Crear el primero
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-base font-medium text-ink-800">Sin ejercicios, por ahora</p>
+                    <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted">
+                      Cógelos de la biblioteca —abajo en el móvil, al lado en el ordenador— o crea
+                      un bloque propio. También puedes guardar así y montarla más tarde.
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               <ol>
