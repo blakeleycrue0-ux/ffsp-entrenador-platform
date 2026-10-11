@@ -86,7 +86,14 @@ for (const p of PANTALLAS) {
   const m = await page.evaluate(() => {
     const main = document.querySelector('main');
     if (!main) return null;
+    /* OJO CON `<details>` CERRADO. En este Chromium, lo que hay dentro de un
+       desplegable cerrado SIGUE teniendo caja —mide 324×48 y dice
+       `visibility: visible`—, así que la comprobación de siempre lo contaba
+       como si estuviera a la vista. Y es justo lo contrario de lo que esto
+       mide: un campo detrás de «Más opciones» no es una pregunta que la
+       pantalla te esté haciendo. */
     const visible = (el) => {
+      if (el.closest('details:not([open]) > *:not(summary)')) return false;
       const r = el.getBoundingClientRect();
       const s = getComputedStyle(el);
       return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none';

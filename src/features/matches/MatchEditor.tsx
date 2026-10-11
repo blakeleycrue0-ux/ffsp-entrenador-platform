@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { clubShortName, visibleTeams } from '@/store/selectors';
-import { Button, Panel, Field, Input, PageHeader, Select, Textarea } from '@/components/ui';
+import { Button, Desplegable, Panel, Field, Input, PageHeader, Select, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { cn, toISODate, today } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
@@ -81,7 +81,6 @@ export default function MatchEditor() {
 
       <PageHeader
         title={existing ? 'Editar partido' : 'Nuevo partido'}
-        description="Con el partido creado podrás preparar la convocatoria y avisar a las familias en dos pasos."
         actions={
           <>
             <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
@@ -94,56 +93,44 @@ export default function MatchEditor() {
         }
       />
 
+      {/* UN PARTIDO SON TRES COSAS: contra quién, cuándo y dónde se juega.
+          Había nueve campos, y cuatro de ellos —competición, jornada, sistema
+          previsto, notas del rival— son cosas que se saben después: la
+          competición ya está guardada en el equipo, la jornada la pone el
+          calendario de la federación y el sistema se decide la semana del
+          partido. */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
-        <Panel className="p-5 sm:p-6">
+        <div className="space-y-4">
+        <Panel className="p-4 sm:p-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Equipo">
-              <Select
-                value={form.teamId}
-                onChange={(e) => {
-                  const t = teams.find((x) => x.id === e.target.value);
-                  patch({ teamId: e.target.value, competition: t?.competition ?? form.competition });
-                }}
-              >
-                {teams.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Rival">
+            {teams.length > 1 && (
+              <Field label="Equipo" className="sm:col-span-2">
+                <Select
+                  value={form.teamId}
+                  onChange={(e) => {
+                    const t = teams.find((x) => x.id === e.target.value);
+                    patch({ teamId: e.target.value, competition: t?.competition ?? form.competition });
+                  }}
+                >
+                  {teams.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            )}
+            <Field label="Rival" className="sm:col-span-2">
               <Input value={form.opponent} onChange={(e) => patch({ opponent: e.target.value })} placeholder="Ej.: Atlético Palma" />
             </Field>
-            <Field label="Competición" className="sm:col-span-2">
-              <Input value={form.competition} onChange={(e) => patch({ competition: e.target.value })} />
-            </Field>
-            <Field label="Jornada">
-              <Input
-                type="number"
-                value={form.matchday ?? ''}
-                onChange={(e) => patch({ matchday: e.target.value ? Number(e.target.value) : undefined })}
-                placeholder="9"
-              />
-            </Field>
-            <Field label="Sistema previsto">
-              <Input
-                value={form.formation ?? ''}
-                onChange={(e) => patch({ formation: e.target.value })}
-                placeholder="1-4-3-3"
-              />
-            </Field>
-            <Field label="Fecha">
+            <Field label="Día">
               <Input type="date" value={form.date} onChange={(e) => patch({ date: e.target.value })} />
             </Field>
             <Field label="Hora">
               <Input type="time" value={form.start} onChange={(e) => patch({ start: e.target.value })} />
             </Field>
-            <Field label="Campo" className="sm:col-span-2">
-              <Input value={form.venue} onChange={(e) => patch({ venue: e.target.value })} />
-            </Field>
 
-            <Field label="Condición" className="sm:col-span-2">
+            <Field label="Dónde" className="sm:col-span-2">
               <div className="flex gap-2">
                 {[
                   { v: true, label: 'Jugamos en casa' },
@@ -164,7 +151,33 @@ export default function MatchEditor() {
                 ))}
               </div>
             </Field>
+          </div>
+        </Panel>
 
+        <Desplegable titulo="Más opciones" pista="Competición, jornada, campo, sistema y notas del rival">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Competición" className="sm:col-span-2">
+              <Input value={form.competition} onChange={(e) => patch({ competition: e.target.value })} />
+            </Field>
+            <Field label="Campo" className="sm:col-span-2" hint="Si lo dejas vacío, el del equipo.">
+              <Input value={form.venue} onChange={(e) => patch({ venue: e.target.value })} />
+            </Field>
+            <Field label="Jornada">
+              <Input
+                type="number"
+                inputMode="numeric"
+                value={form.matchday ?? ''}
+                onChange={(e) => patch({ matchday: e.target.value ? Number(e.target.value) : undefined })}
+                placeholder="9"
+              />
+            </Field>
+            <Field label="Sistema previsto">
+              <Input
+                value={form.formation ?? ''}
+                onChange={(e) => patch({ formation: e.target.value })}
+                placeholder="1-4-3-3"
+              />
+            </Field>
             <Field label="Notas del partido" className="sm:col-span-2" hint="Lo que sepas del rival, la estrategia o la logística.">
               <Textarea
                 value={form.notes ?? ''}
@@ -174,11 +187,17 @@ export default function MatchEditor() {
               />
             </Field>
           </div>
-        </Panel>
+        </Desplegable>
+        </div>
 
+        {/* LA VISTA PREVIA SE QUEDA, el cartel explicativo no. La previa dice
+            algo que no está escrito en ningún campo —quién es local y quién
+            visitante, que es lo que decide el orden del marcador—; el cartel
+            explicaba en cuatro líneas lo que pasa al guardar, que es lo que
+            pasa siempre al guardar. */}
         <div className="space-y-4">
           <Panel className="p-5">
-            <h2 className="text-base font-semibold">Vista previa</h2>
+            <h2 className="text-base font-semibold">Cómo quedará</h2>
             <div className="mt-4 rounded-xl border border-line p-4">
               <p className="text-xs font-medium text-ink-900">
                 {teams.find((t) => t.id === form.teamId)?.name}
@@ -201,12 +220,6 @@ export default function MatchEditor() {
             </div>
           </Panel>
 
-          <Panel className="bg-ink-50/40 p-5">
-            <p className="text-xs leading-relaxed text-ink-600">
-              Al guardar, el partido aparecerá en el calendario y en el panel de todos tus equipos. Desde su ficha
-              podrás crear la convocatoria y compartirla con el equipo.
-            </p>
-          </Panel>
         </div>
       </div>
     </>

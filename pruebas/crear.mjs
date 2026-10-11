@@ -371,46 +371,85 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await ctx.close();
 }
 
-/* ══════════ 5. Un entrenamiento se guarda SIN ejercicios ═══════════════════ */
+/* ══════════ 5. El formulario: cuatro preguntas y guardar ══════════════════ */
 {
-  console.log('\n  El formulario, con la biblioteca vacía\n');
-  const { page, ctx, escrituras } = await abre('/app/entrenamientos/nuevo', 1280, { ejercicios: false });
+  console.log('\n  El formulario de un entrenamiento\n');
+  /* Sin ejercicios en la biblioteca: era el caso que hacía imposible guardar,
+     y ahora ni siquiera se pregunta por ellos aquí. */
+  const { page, ctx, escrituras } = await abre('/app/entrenamientos/nuevo', 390, { ejercicios: false });
+  const main = page.locator('main');
 
   comprueba(
-    'no manda a arrastrar ejercicios que no existen',
-    !/arrastra aquí tu primer ejercicio/i.test(await page.locator('main').textContent()),
+    'no hay biblioteca de ejercicios en el formulario',
+    !/biblioteca de ejercicios/i.test(await main.textContent()),
   );
   comprueba(
-    'dice que todavía no hay ninguno',
-    /todavía no tienes ejercicios/i.test(await page.locator('main').textContent()),
+    'ni se pide arrastrar nada',
+    !/arrastra/i.test(await main.textContent()),
   );
 
-  const titulo = await page.locator('input').first().inputValue();
-  comprueba('el título viene propuesto', /^Entrenamiento del /.test(titulo), titulo);
+  /* Lo que se ve son cinco campos: equipo (hay dos en el club), día, hora,
+     duración y repetición. Lo demás está detrás de «Más opciones». */
+  const aLaVista = await page.evaluate(() => {
+    const abierto = (el) => !el.closest('details:not([open]) > *:not(summary)');
+    return Array.from(document.querySelectorAll('main input, main select, main textarea'))
+      .filter(abierto).length;
+  });
+  comprueba('cinco campos a la vista, no once', aLaVista === 5, `${aLaVista}`);
+  comprueba('y el resto detrás de «Más opciones»', (await page.getByText('Más opciones').count()) === 1);
 
-  await page.getByRole('button', { name: /^guardar$/i }).click();
+  comprueba(
+    'dice lo que va a pasar antes de pulsar',
+    /Se apunta el .+ de \d{2}:\d{2} a \d{2}:\d{2}/.test(await main.textContent()),
+    (await main.textContent()).match(/Se apunta el [^.]*/)?.[0],
+  );
+
+  await page.getByRole('button', { name: /apuntar entrenamiento/i }).click();
   await page.waitForTimeout(900);
-
-  comprueba(
-    'no sale «la sesión está vacía»',
-    !/la sesión está vacía/i.test(await page.locator('body').textContent()),
-  );
-  comprueba('se guarda de verdad', escrituras.length === 1, `${escrituras.length} escrituras`);
+  comprueba('se guarda', escrituras.length === 1, `${escrituras.length} escrituras`);
   const fila = escrituras[0]?.[0] ?? {};
   comprueba('con duración, no con cero', fila.duration === 90, `duration=${fila.duration}`);
-  comprueba('y con el equipo puesto', fila.team_id === 't1', `team_id=${fila.team_id}`);
+  comprueba('con el equipo puesto', fila.team_id === 't1', `team_id=${fila.team_id}`);
+  comprueba('con un título que se reconoce', /^Entrenamiento del /.test(fila.title ?? ''), fila.title);
+  comprueba('y sin ejercicios inventados', Array.isArray(fila.blocks) && fila.blocks.length === 0);
 
   await ctx.close();
 }
 
-/* ══════════ 6. La fecha del día vacío llega al formulario ══════════════════ */
+/* ══════════ 6. «Se repite» apunta el trimestre entero ═════════════════════ */
 {
-  console.log('\n  Del día vacío al formulario\n');
-  const { page, ctx } = await abre('/app/entrenamientos/nuevo?fecha=2027-03-09');
+  console.log('\n  Se repite\n');
+  const { page, ctx, escrituras } = await abre('/app/entrenamientos/nuevo?fecha=2027-03-09', 390);
+  const main = page.locator('main');
+
   const fecha = await page.locator('input[type="date"]').first().inputValue();
-  comprueba('el formulario llega con el día puesto', fecha === '2027-03-09', fecha);
-  const titulo = await page.locator('input').first().inputValue();
-  comprueba('y el título es de ese día', /martes/i.test(titulo), titulo);
+  comprueba('llega con el día que se tocó en el calendario', fecha === '2027-03-09', fecha);
+
+  /* El desplegable de repetición es el último `select` a la vista. */
+  await page.getByLabel('Se repite').selectOption('semanal');
+  await page.waitForTimeout(300);
+  await page.getByLabel('Hasta').fill('2027-05-11');
+  await page.waitForTimeout(300);
+
+  const resumen = (await main.textContent()).match(/Son \d+ entrenamientos[^.]*/)?.[0] ?? '';
+  comprueba('dice cuántos y entre qué fechas', /Son 10 entrenamientos/.test(resumen), resumen);
+
+  const boton = page.getByRole('button', { name: /apuntar 10 entrenamientos/i });
+  comprueba('y el botón dice lo mismo', (await boton.count()) === 1);
+
+  await boton.click();
+  await page.waitForTimeout(1000);
+  comprueba('se escriben en UNA petición', escrituras.length === 1, `${escrituras.length}`);
+  const filas = escrituras[0] ?? [];
+  comprueba('los diez', filas.length === 10, `${filas.length}`);
+  comprueba('todos en martes', filas.every((f) => new Date(`${f.date}T12:00:00`).getDay() === 2));
+  comprueba('todos a la misma hora', new Set(filas.map((f) => f.start_time)).size === 1, filas[0]?.start_time);
+  comprueba(
+    'del 9 de marzo al 11 de mayo',
+    filas[0]?.date === '2027-03-09' && filas.at(-1)?.date === '2027-05-11',
+    `${filas[0]?.date} … ${filas.at(-1)?.date}`,
+  );
+
   await ctx.close();
 }
 
