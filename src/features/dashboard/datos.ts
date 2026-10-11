@@ -18,7 +18,34 @@ import {
   callupOfMatch, clubShortName, currentStaff, isClubAdmin, nextMatch, nextSession,
   nombreReal, squadOf, summarizeRecord, teamOverview, visibleTeams,
 } from '@/store/selectors';
-import type { Match, TrainingSession } from '@/types';
+import { relativeDay, toISODate, today } from '@/lib/utils';
+import type { CoachTask, Match, TrainingSession } from '@/types';
+
+/**
+ * Una cosa que está sin hacer.
+ *
+ * TODAS SALEN DE UN DATO, nunca de una suposición: una sesión pasada sin
+ * ninguna lista guardada, un partido sin convocatoria, una jugadora con el
+ * parte abierto. Si no hay dato, no hay pendiente —y entonces Inicio dice que
+ * no hay nada pendiente, que también es una respuesta—.
+ */
+export interface Pendiente {
+  clave: string;
+  /** Una línea, en palabras de entrenador. */
+  texto: string;
+  a: string;
+  /** Ya tenía que estar hecho. */
+  urgente?: boolean;
+  /**
+   * Si este pendiente es una tarea apuntada a mano, la tarea.
+   *
+   * Va aquí para que la lista pueda ofrecer tacharla en el sitio —una tarea se
+   * cierra con un toque, no abriendo otra pantalla— sin que haya DOS listas de
+   * pendientes, una de cosas derivadas y otra de tareas, cada una con su
+   * titular.
+   */
+  tarea?: CoachTask;
+}
 
 export function useInicio() {
   const { data, loading, loadError, teamId, setTeamId, actions } = useClub();
@@ -63,11 +90,102 @@ export function useInicio() {
         ? { tipo: 'partido', dato: partido }
         : null;
 
+  /**
+   * LO QUE ESTÁ SIN HACER, que es la segunda pregunta de Inicio.
+   *
+   * Antes esta pregunta no tenía respuesta en ningún sitio: lo pendiente estaba
+   * repartido en cuatro cifras —«No disponibles · revisar», «Convocatoria · sin
+   * crear»— que hay que saber interpretar, y las listas sin pasar no aparecían
+   * en ninguna parte. Aquí se juntan en una lista de frases, cada una con su
+   * sitio al que ir.
+   *
+   * El orden es el del apremio, no el de la base de datos: primero lo que ya
+   * tenía que estar hecho.
+   */
+  const pendientes = useMemo<Pendiente[]>(() => {
+    if (!equipo) return [];
+    const hoy = toISODate(today());
+    const lista: Pendiente[] = [];
+
+    /* 1. LISTAS SIN PASAR. Una sesión que ya ocurrió y de la que no hay ni una
+          marca guardada. Es el dato que alimenta todo lo demás, así que
+          perderlo es perder la temporada. Las tres más recientes: con más, la
+          lista se convierte en otra pantalla. */
+    data.sessions
+      .filter((s) => s.teamId === equipo.id && s.date < hoy)
+      .filter((s) => !data.attendance.some((a) => a.sessionId === s.id))
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 3)
+      .forEach((s) => lista.push({
+        clave: `lista-${s.id}`,
+        texto: `Falta pasar lista del ${relativeDay(s.date).toLowerCase()}`,
+        a: `/app/entrenamientos/${s.id}/asistencia`,
+        urgente: true,
+      }));
+
+    /* 2. LA CONVOCATORIA DEL PRÓXIMO PARTIDO. Sin crear, o creada y esperando
+          respuestas de las familias. */
+    if (partido) {
+      if (!callup) {
+        lista.push({
+          clave: 'convocatoria',
+          texto: `El partido ${relativeDay(partido.date).toLowerCase()} no tiene convocatoria`,
+          a: `/app/partidos/${partido.id}`,
+        });
+      } else {
+        const sinContestar = convocadas.filter((e) => e.response === 'pendiente').length;
+        if (sinContestar > 0) {
+          lista.push({
+            clave: 'respuestas',
+            texto: sinContestar === 1
+              ? 'Falta 1 respuesta de la convocatoria'
+              : `Faltan ${sinContestar} respuestas de la convocatoria`,
+            a: `/app/partidos/${partido.id}`,
+          });
+        }
+      }
+    }
+
+    /* 3. EL PRÓXIMO ENTRENAMIENTO, SIN MONTAR. Ahora se apuntan vacíos a
+          propósito —el hueco primero, los ejercicios el día antes—, así que
+          esto es el recordatorio de la segunda mitad del trabajo. Sólo si es
+          dentro de una semana: avisar en octubre del de marzo no es ayudar. */
+    if (sesion && sesion.blocks.length === 0 && sesion.date <= toISODate(new Date(Date.now() + 7 * 864e5))) {
+      lista.push({
+        clave: `montar-${sesion.id}`,
+        texto: `El entrenamiento ${relativeDay(sesion.date).toLowerCase()} está sin montar`,
+        a: `/app/entrenamientos/${sesion.id}`,
+      });
+    }
+
+    /* 4. QUIÉN NO ESTÁ. Un número suelto no dice qué hacer; la frase sí. */
+    const fuera = resumen?.unavailable ?? 0;
+    if (fuera > 0) {
+      lista.push({
+        clave: 'disponibilidad',
+        texto: fuera === 1 ? '1 jugadora no está disponible' : `${fuera} jugadoras no están disponibles`,
+        a: '/app/disponibilidad',
+      });
+    }
+
+    /* 5. Y las tareas que se haya apuntado ella misma. */
+    data.tasks.filter((t) => !t.done).slice(0, 4).forEach((t) => lista.push({
+      clave: `tarea-${t.id}`,
+      texto: t.title,
+      a: t.link ?? '/app',
+      urgente: !!t.dueDate && t.dueDate < hoy,
+      tarea: t,
+    }));
+
+    return lista;
+  }, [data.sessions, data.attendance, data.tasks, equipo, partido, callup, convocadas, sesion, resumen]);
+
   return {
     data,
     loading,
     loadError,
     actions,
+    pendientes,
     setTeamId,
     teams,
     equipo,

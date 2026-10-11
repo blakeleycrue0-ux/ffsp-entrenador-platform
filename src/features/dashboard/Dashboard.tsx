@@ -48,20 +48,18 @@ import {
 } from 'lucide-react';
 import { teamOverview } from '@/store/selectors';
 
-import { humanError } from '@/services/supabase';
-import { useToast } from '@/components/ui/Toast';
 import {
-  ActionTile, Button, Checkbox, Dropdown, EmptyState, LinkButton, Panel,
-  SectionHeader, Skeleton, StatTile, Tag,
+  ActionTile, Button, Dropdown, EmptyState, LinkButton, Panel,
+  SectionHeader, Skeleton, Tag,
 } from '@/components/ui';
-import { SplitBar } from '@/components/domain/Charts';
 import {
   cn, daysFromToday, longDate, minutesToLabel, relativeDay, relativeTime, toISODate, today,
 } from '@/lib/utils';
-import type { CoachTask, Match, TrainingSession } from '@/types';
+import type { Match, TrainingSession } from '@/types';
 import { useAnchura } from '@/components/layout/AppShell';
 import { CreateMenu } from '@/components/layout/CreateMenu';
 import { hayGuia, PrimerosPasos } from './PrimerosPasos';
+import { Pendientes } from './Pendientes';
 import { useInicio } from './datos';
 import { InicioMovil } from './InicioMovil';
 
@@ -79,16 +77,13 @@ import { InicioMovil } from './InicioMovil';
 export default function Dashboard() {
   useAnchura('ancho');
   const d = useInicio();
-  const toast = useToast();
   const [creando, setCreando] = useState(false);
 
   /* Los nombres de siempre, para no reescribir la composición de escritorio
      entera: son los mismos valores con el nombre que ya tenían. */
   const {
-    data, loading, loadError, actions, setTeamId, teams, equipo: activeTeam, resumen,
-    sesion: session0, partido: match0, callup, convocadas, confirmadas,
-    plantilla: squad, ultimaLista, marcas, tareasAbiertas, admin,
-    nombreClub: ownName, nombre,
+    data, loading, loadError, actions, setTeamId, teams, equipo: activeTeam,
+    sesion: session0, partido: match0, admin, nombreClub: ownName, nombre,
   } = d;
 
   /* A PARTIR DE AQUÍ, SÓLO ESCRITORIO. El móvil se va por su camino antes
@@ -178,165 +173,85 @@ export default function Dashboard() {
         onEquipo={setTeamId}
       />
 
-      <LoSiguiente
-        sesion={session0}
-        partido={match0}
-        nombreEquipo={(id) => data.teams.find((t) => t.id === id)?.name}
-        casa={ownName}
-      />
+      {/* ═══════════════ LAS TRES PREGUNTAS, Y NADA MÁS ═══════════════════
+          Eran siete secciones: saludo, lo siguiente, cuatro cifras del equipo
+          con la última lista, cuatro atajos, tareas, actividad y mis equipos.
+          Lo que se mira al abrir la aplicación son tres cosas:
 
-      {/* ── Cómo está el equipo ─────────────────────────────────────────── */}
-      <section>
-        <SectionHeader
-          title="Tu equipo"
-          hint={activeTeam?.name}
-          action={<Link to="/app/analiticas" className="hover:text-marca-400">Analíticas</Link>}
-        />
-        <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-          <StatTile
-            label="Plantilla"
-            value={squad.length}
-            hint={squad.length === 1 ? 'jugadora' : 'jugadoras'}
-            to="/app/plantilla"
+            ¿qué tengo próximamente? → LO SIGUIENTE
+            ¿qué tengo pendiente?    → PENDIENTE, a la derecha
+            ¿qué quiero hacer ahora? → HACER AHORA
+
+          LAS CUATRO CIFRAS SE HAN IDO A EQUIPO. Plantilla, asistencia media,
+          no disponibles y convocatoria no contestan ninguna de las tres: son
+          cómo va el equipo, y para eso está la sección Equipo, con su pestaña
+          de Datos. Lo que de ellas SÍ era un pendiente —quién no está, la
+          convocatoria sin crear— es ahora una frase en la columna de la
+          derecha, que dice qué hacer en vez de un número que hay que
+          interpretar. Lo mismo la última lista con su barra de colores: es un
+          dato de ayer.
+
+          Y LAS TAREAS tampoco son una sección aparte: son pendientes, y están
+          en la lista de pendientes, con su casilla para tacharlas. */}
+      <div className="grid gap-6 lg:grid-cols-5">
+        <div className="space-y-6 lg:col-span-3">
+          <LoSiguiente
+            sesion={session0}
+            partido={match0}
+            nombreEquipo={(id) => data.teams.find((t) => t.id === id)?.name}
+            casa={ownName}
           />
-          {/* NULO NO ES CERO: sin ninguna lista pasada no hay media que
-              enseñar, y un 0 % diría algo que no es verdad. */}
-          <StatTile
-            label="Asistencia"
-            value={resumen?.attendanceRate === null || resumen === null ? '—' : `${resumen.attendanceRate} %`}
-            hint={resumen?.attendanceRate === null ? 'sin listas' : 'últimas 6'}
-            to="/app/analiticas"
-          />
-          <StatTile
-            label="No disponibles"
-            value={resumen?.unavailable ?? 0}
-            hint={resumen && resumen.unavailable > 0 ? 'revisar' : 'plantilla entera'}
-            tone={resumen && resumen.unavailable > 0 ? 'warn' : undefined}
-            to="/app/disponibilidad"
-          />
-          <StatTile
-            label="Convocatoria"
-            value={callup ? `${confirmadas}/${convocadas.length}` : '—'}
-            hint={callup ? 'confirmadas' : 'sin crear'}
-            to={match0 ? `/app/partidos/${match0.id}` : '/app/partidos'}
-          />
+
+          <section>
+            <SectionHeader title="Hacer ahora" />
+            <div className="mt-3 grid grid-cols-1 gap-2.5 min-[380px]:grid-cols-2">
+              <ActionTile to="/app/entrenamientos/nuevo" icon={<ClipboardList size={16} />}>
+                Nuevo entrenamiento
+              </ActionTile>
+              <ActionTile to="/app/partidos/nuevo" icon={<CalendarPlus size={16} />}>
+                Añadir partido
+              </ActionTile>
+              <ActionTile to="/app/plantilla" icon={<Users size={16} />}>
+                Ver plantilla
+              </ActionTile>
+              <ActionTile to="/app/pizarra" icon={<LayoutGrid size={16} />}>
+                Pizarra táctica
+              </ActionTile>
+            </div>
+          </section>
         </div>
 
-        {/* La última lista, con su reparto. Sólo si existe: sin lista pasada
-            una barra en blanco no informa de nada. */}
-        {ultimaLista && (
-          <div className="mt-3 rounded-xl border border-line-sutil bg-panel px-3.5 py-3">
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="text-sm font-medium text-ink-800">
-                Última lista · {relativeDay(ultimaLista.date).toLowerCase()}
-              </p>
-              <Link to="/app/entrenamientos" className="shrink-0 text-xs font-medium text-ink-600 hover:text-ink-900">
-                Pasar lista
-              </Link>
-            </div>
-            <SplitBar
-              className="mt-2.5"
-              segments={[
-                { value: marcas.present + marcas.late, color: 'bg-ink-800', label: 'Vinieron' },
-                { value: marcas.justified + marcas.injured, color: 'bg-warn', label: 'Justificadas' },
-                { value: marcas.absent, color: 'bg-bad', label: 'Ausentes' },
-                { value: marcas.unregistered, color: 'bg-line', label: 'Sin registrar' },
-              ]}
-            />
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-600">
-              <Leyenda color="bg-ink-800" n={marcas.present + marcas.late} texto="vinieron" />
-              <Leyenda color="bg-warn" n={marcas.justified + marcas.injured} texto="justificadas" />
-              <Leyenda color="bg-bad" n={marcas.absent} texto={marcas.absent === 1 ? 'ausente' : 'ausentes'} />
-            </div>
-          </div>
+        <Pendientes d={d} className="lg:col-span-2" />
+      </div>
+
+      {/* LA ACTIVIDAD SE QUEDA, pero sólo aquí. Cuenta lo que ya pasó, que no
+          es ninguna de las tres preguntas; en una pantalla ancha sobra sitio y
+          sirve para saber qué ha tocado el resto del cuerpo técnico. En el
+          móvil se ha ido: ahí cada bloque se paga con un dedo de desplazamiento. */}
+      <section>
+        <SectionHeader title="Actividad reciente" />
+        {data.activity.length === 0 ? (
+          <p className="mt-2 text-base text-ink-500">Todavía no hay movimiento.</p>
+        ) : (
+          <ul className="mt-3 space-y-3">
+            {data.activity.slice(0, 6).map((a) => (
+              <li key={a.id} className="flex gap-3">
+                <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-ink-400" />
+                <div className="min-w-0 flex-1">
+                  {a.link ? (
+                    <Link to={a.link} className="text-sm leading-snug text-ink-700 hover:text-ink-900">
+                      {a.text}
+                    </Link>
+                  ) : (
+                    <p className="text-sm leading-snug text-ink-700">{a.text}</p>
+                  )}
+                  <p className="mt-0.5 text-2xs text-ink-500">{relativeTime(a.at)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
-
-      {/* ── Atajos ──────────────────────────────────────────────────────── */}
-      <section>
-        <SectionHeader title="Hacer ahora" />
-        {/* UNA COLUMNA POR DEBAJO DE 380 px. A 320, dos columnas dejan 73 px
-            de texto por baldosa y «entrenamiento» mide 95: es una palabra
-            sola, no tiene por dónde partirse, y se salía de su caja. Medido.
-            A pantalla completa cabe entera y se lee mejor. */}
-        <div className="mt-3 grid grid-cols-1 gap-2.5 min-[380px]:grid-cols-2 lg:grid-cols-4">
-          <ActionTile to="/app/entrenamientos/nuevo" icon={<ClipboardList size={16} />}>
-            Nuevo entrenamiento
-          </ActionTile>
-          <ActionTile to="/app/partidos/nuevo" icon={<CalendarPlus size={16} />}>
-            Añadir partido
-          </ActionTile>
-          <ActionTile to="/app/plantilla" icon={<Users size={16} />}>
-            Ver plantilla
-          </ActionTile>
-          <ActionTile to="/app/pizarra" icon={<LayoutGrid size={16} />}>
-            Pizarra táctica
-          </ActionTile>
-        </div>
-      </section>
-
-      {/* ── Tareas y actividad ──────────────────────────────────────────── */}
-      <div className="grid gap-6 lg:grid-cols-5">
-        <section className="lg:col-span-2">
-          <SectionHeader
-            title="Tareas"
-            hint={tareasAbiertas.length > 0 ? `${tareasAbiertas.length} abiertas` : undefined}
-          />
-          {data.tasks.length === 0 ? (
-            <EmptyState
-              className="mt-1"
-              title="Sin tareas pendientes"
-              description="Las tareas aparecen aquí cuando alguien del cuerpo técnico apunta algo que hacer."
-            />
-          ) : (
-            <ul className="mt-2 -mx-2">
-              {[...data.tasks]
-                .sort((a, b) => Number(a.done) - Number(b.done))
-                .slice(0, 6)
-                .map((t) => (
-                  <TaskRow
-                    key={t.id}
-                    task={t}
-                    onToggle={() =>
-                      actions
-                        .toggleTask(t)
-                        .catch((e) => toast.error('No hemos podido guardar la tarea', humanError(e)))
-                    }
-                  />
-                ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="lg:col-span-3">
-          <SectionHeader title="Actividad reciente" />
-          {data.activity.length === 0 ? (
-            <EmptyState
-              className="mt-1"
-              title="Todavía no hay movimiento"
-              description="Aquí irá apareciendo lo que hagáis: altas de jugadoras, entrenamientos, partidos y listas pasadas."
-            />
-          ) : (
-            <ul className="mt-3 space-y-3">
-              {data.activity.slice(0, 6).map((a) => (
-                <li key={a.id} className="flex gap-3">
-                  <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-ink-400" />
-                  <div className="min-w-0 flex-1">
-                    {a.link ? (
-                      <Link to={a.link} className="text-sm leading-snug text-ink-700 hover:text-ink-900">
-                        {a.text}
-                      </Link>
-                    ) : (
-                      <p className="text-sm leading-snug text-ink-700">{a.text}</p>
-                    )}
-                    <p className="mt-0.5 text-2xs text-ink-500">{relativeTime(a.at)}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
 
       {/* ── Los otros equipos ───────────────────────────────────────────────
           SÓLO CON MÁS DE UNO. Con un equipo, esta sección repetía en una
@@ -381,15 +296,6 @@ export default function Dashboard() {
 }
 
 /* ───────────────────────────────── Piezas ─────────────────────────────────── */
-
-function Leyenda({ color, n, texto }: { color: string; n: number; texto: string }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <span className={cn('h-1.5 w-1.5 rounded-full', color)} />
-      <span className="tabular-nums">{n}</span> {texto}
-    </span>
-  );
-}
 
 /**
  * El saludo, en una línea.
@@ -644,39 +550,5 @@ function PartidoGrande({
         <LinkButton to={`/app/partidos/${partido.id}`} size="sm" variant="quiet">Convocatoria</LinkButton>
       </div>
     </div>
-  );
-}
-
-function TaskRow({ task, onToggle }: { task: CoachTask; onToggle: () => void }) {
-  const vencida = task.dueDate && !task.done && daysFromToday(task.dueDate) < 0;
-  return (
-    <li>
-      <div className="flex items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-panel">
-        {/* Sin `mt-0.5`: la casilla ya trae sus 32 px de área sensible y el
-            cuadrado va centrado dentro, así que empujarla hacia abajo la
-            descuadra de la primera línea del texto. */}
-        <Checkbox checked={task.done} onChange={onToggle} className="-ml-1.5 shrink-0" />
-        <div className="min-w-0 flex-1">
-          {task.link && !task.done ? (
-            <Link to={task.link} className="block text-sm leading-snug text-ink-700 hover:text-ink-900">
-              {task.title}
-            </Link>
-          ) : (
-            <p className={cn('text-sm leading-snug', task.done ? 'text-ink-500 line-through' : 'text-ink-700')}>
-              {task.title}
-            </p>
-          )}
-          {task.dueDate && !task.done && (
-            <p className={cn('mt-0.5 text-2xs', vencida ? 'text-bad' : 'text-ink-500')}>
-              {vencida ? 'Vencida · ' : ''}
-              {relativeDay(task.dueDate)}
-            </p>
-          )}
-        </div>
-        {task.priority === 'alta' && !task.done && (
-          <Tag tone="warn" size="sm" className="mt-0.5 shrink-0">Alta</Tag>
-        )}
-      </div>
-    </li>
   );
 }

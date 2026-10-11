@@ -40,11 +40,11 @@ import {
   MoreHorizontal, Swords, Users,
 } from 'lucide-react';
 import {
-  Button, Dropdown, EmptyState, LinkButton, Panel, SectionHeader, Skeleton, Tag,
+  Button, Dropdown, EmptyState, LinkButton, Panel, Skeleton, Tag,
 } from '@/components/ui';
-import { SplitBar } from '@/components/domain/Charts';
-import { cn, longDate, minutesToLabel, relativeDay, relativeTime, toISODate, today } from '@/lib/utils';
+import { cn, longDate, minutesToLabel, relativeDay, toISODate, today } from '@/lib/utils';
 import { PrimerosPasos, hayGuia } from './PrimerosPasos';
+import { Pendientes } from './Pendientes';
 import type { DatosDeInicio } from './datos';
 
 export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
@@ -99,9 +99,7 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
         ) : (
           <>
             <Detalle d={d} />
-            <Cifras d={d} />
-            <UltimaLista d={d} />
-            <Actividad d={d} />
+            <Pendientes d={d} />
           </>
         )}
       </div>
@@ -429,128 +427,5 @@ function Siguiente({ a, texto, cuando }: { a: string; texto: string; cuando: str
       <span className="shrink-0 text-sm tabular-nums text-ink-500">{cuando}</span>
       <ChevronRight size={15} className="shrink-0 text-ink-400" />
     </Link>
-  );
-}
-
-/** Las cuatro cifras del equipo, en dos filas de dos. */
-function Cifras({ d }: { d: DatosDeInicio }) {
-  const media = d.resumen?.attendanceRate;
-  const fuera = d.resumen?.unavailable ?? 0;
-  return (
-    <section>
-      <SectionHeader
-        title="Tu equipo"
-        hint={d.equipo?.name}
-        action={<Link to="/app/analiticas" className="active:text-marca-400">Analíticas</Link>}
-      />
-      <div className="mt-2.5 grid grid-cols-2 gap-2.5">
-        <Cifra a="/app/plantilla" nombre="Plantilla" valor={d.plantilla.length}
-               pie={d.plantilla.length === 1 ? 'jugadora' : 'jugadoras'} />
-        {/* NULO NO ES CERO: sin ninguna lista pasada no hay media que enseñar,
-            y un 0 % diría que no va nadie a entrenar. */}
-        <Cifra a="/app/analiticas" nombre="Asistencia"
-               valor={media === null || media === undefined ? '—' : `${media} %`}
-               pie={media === null || media === undefined ? 'sin listas' : 'últimas 6'} />
-        <Cifra a="/app/disponibilidad" nombre="No disponibles" valor={fuera}
-               pie={fuera > 0 ? 'revisar' : 'plantilla entera'} alerta={fuera > 0} />
-        <Cifra
-          a={d.partido ? `/app/partidos/${d.partido.id}` : '/app/partidos'}
-          nombre="Convocatoria"
-          valor={d.callup ? `${d.confirmadas}/${d.convocadas.length}` : '—'}
-          pie={d.callup ? 'confirmadas' : 'sin crear'}
-        />
-      </div>
-    </section>
-  );
-}
-
-function Cifra({
-  a, nombre, valor, pie, alerta,
-}: { a: string; nombre: string; valor: React.ReactNode; pie: string; alerta?: boolean }) {
-  return (
-    <Link
-      to={a}
-      className="min-w-0 rounded-2xl border border-line-sutil bg-panel px-3.5 py-3 transition-colors active:bg-raised"
-    >
-      <p className="truncate text-2xs font-medium uppercase tracking-[0.07em] text-ink-500">{nombre}</p>
-      <p className={cn('mt-1.5 font-display text-xl font-semibold leading-none tabular-nums',
-        alerta ? 'text-warn' : 'text-ink-900')}>
-        {valor}
-      </p>
-      <p className="mt-1 truncate text-2xs text-ink-500">{pie}</p>
-    </Link>
-  );
-}
-
-function UltimaLista({ d }: { d: DatosDeInicio }) {
-  if (!d.ultimaLista) return null;
-  const m = d.marcas;
-  return (
-    <section className="rounded-2xl border border-line-sutil bg-panel px-3.5 py-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-sm font-medium text-ink-800">
-          Última lista · {relativeDay(d.ultimaLista.date).toLowerCase()}
-        </p>
-        <Link to="/app/entrenamientos" className="shrink-0 text-xs font-medium text-ink-600 active:text-ink-900">
-          Pasar lista
-        </Link>
-      </div>
-      <SplitBar
-        className="mt-2.5"
-        segments={[
-          { value: m.present + m.late, color: 'bg-ink-800', label: 'Vinieron' },
-          { value: m.justified + m.injured, color: 'bg-warn', label: 'Justificadas' },
-          { value: m.absent, color: 'bg-bad', label: 'Ausentes' },
-          { value: m.unregistered, color: 'bg-line', label: 'Sin registrar' },
-        ]}
-      />
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-600">
-        <Leyenda color="bg-ink-800" n={m.present + m.late} texto="vinieron" />
-        <Leyenda color="bg-warn" n={m.justified + m.injured} texto="justificadas" />
-        <Leyenda color="bg-bad" n={m.absent} texto={m.absent === 1 ? 'ausente' : 'ausentes'} />
-      </div>
-    </section>
-  );
-}
-
-function Leyenda({ color, n, texto }: { color: string; n: number; texto: string }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <span className={cn('h-1.5 w-1.5 rounded-full', color)} />
-      <span className="tabular-nums">{n}</span> {texto}
-    </span>
-  );
-}
-
-function Actividad({ d }: { d: DatosDeInicio }) {
-  return (
-    <section>
-      <SectionHeader title="Actividad reciente" />
-      {d.data.activity.length === 0 ? (
-        <EmptyState
-          className="mt-1"
-          title="Todavía no hay movimiento"
-          description="Aquí irá apareciendo lo que hagáis: altas, entrenamientos, partidos y listas pasadas."
-        />
-      ) : (
-        <ul className="mt-3 space-y-3">
-          {d.data.activity.slice(0, 5).map((a) => (
-            <li key={a.id} className="flex gap-3">
-              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-ink-400" />
-              <div className="min-w-0 flex-1">
-                {a.link ? (
-                  <Link to={a.link} className="text-sm leading-snug text-ink-700 active:text-ink-900">
-                    {a.text}
-                  </Link>
-                ) : (
-                  <p className="text-sm leading-snug text-ink-700">{a.text}</p>
-                )}
-                <p className="mt-0.5 text-2xs text-ink-500">{relativeTime(a.at)}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
   );
 }
