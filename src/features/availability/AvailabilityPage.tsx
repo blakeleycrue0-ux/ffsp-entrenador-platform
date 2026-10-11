@@ -150,38 +150,53 @@ export default function AvailabilityPage() {
         }
       />
 
-      <Panel className="mb-3 p-3">
-        <Field label="Equipo" className="max-w-xs">
-          <Select value={teamId} onChange={(e) => setTeamId(e.target.value)}>
-            {teams.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      </Panel>
+      {/* EL EQUIPO ES UN FILTRO, NO UN FORMULARIO. Estaba dentro de un panel,
+          con su etiqueta «Equipo» encima y un campo de 48 px: ciento diez
+          píxeles de pantalla para elegir entre dos equipos. En cápsula ocupa
+          treinta y seis y se lee como lo que es. */}
+      <div className="mb-3">
+        <Select
+          variante="filtro"
+          aria-label="Equipo"
+          value={teamId}
+          onChange={(e) => setTeamId(e.target.value)}
+        >
+          {teams.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+        </Select>
+      </div>
 
-      {/* Resumen: sólo cuenta lo que hay registrado */}
-      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Panel className="p-4">
+      {/* Resumen: sólo cuenta lo que hay registrado.
+
+          TRES EN FILA TAMBIÉN EN EL MÓVIL. Apiladas eran tres cajas de ciento
+          ochenta píxeles —quinientos cuarenta en total— para enseñar tres
+          números de dos cifras: la lista de partes, que es lo que se viene a
+          ver, empezaba por debajo de la pantalla. En fila caben las tres y la
+          advertencia pasa a una línea debajo, que es donde se lee igual. */}
+      <div className="grid grid-cols-3 gap-2.5">
+        <Panel className="p-3">
           <Figure label="En plantilla" value={squad.length} />
         </Panel>
-        <Panel className="p-4">
+        <Panel className="p-3">
           <Figure
             label="Partes abiertos"
             value={rows === null ? '—' : open.length}
             tone={open.length > 0 ? 'warn' : undefined}
           />
         </Panel>
-        <Panel className="p-4">
+        <Panel className="p-3">
           <Figure
             label="Sin parte"
             value={rows === null ? '—' : squad.length - new Set(open.map((r) => r.playerId)).size}
-            hint="No significa que estén bien: sólo que nadie ha anotado nada."
           />
         </Panel>
       </div>
+      <p className="mb-3 mt-2 text-xs leading-relaxed text-ink-500">
+        «Sin parte» no significa que estén bien: sólo que nadie ha anotado nada.
+      </p>
 
       {error ? (
         <ErrorState description={error} onRetry={load} />

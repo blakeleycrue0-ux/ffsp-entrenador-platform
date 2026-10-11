@@ -128,7 +128,7 @@ function HojaDeConfirmacion({
       <button
         aria-label="Cancelar"
         onClick={onCerrar}
-        className="absolute inset-0 animate-fade-in bg-black/55 backdrop-blur-md"
+        className="absolute inset-0 animate-fade-in bg-black/70 lg:backdrop-blur-md"
       />
       <div
         role="dialog"

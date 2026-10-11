@@ -94,7 +94,11 @@
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
 
-    --header-h: 56px;
+    /* 60 EN EL MÓVIL, 56 EN EL ESCRITORIO. Con 56 y discos de 40 quedaban
+       ocho píxeles por arriba y ocho por abajo: la barra se veía apretada y
+       los botones, metidos con calzador. Cuatro píxeles más y respiran. En
+       el escritorio no hay discos, hay iconos de 32, y 56 va sobrado. */
+    --header-h: 60px;
     --sidebar-w: 236px;
 
     /* LA BARRA FLOTANTE DEL MÓVIL.
@@ -139,6 +143,7 @@
      que esquivar, así que la pastilla no existe y su hueco tampoco. */
   @media (min-width: 1024px) {
     :root {
+      --header-h: 56px;
       --nav-h: 0px;
       --nav-gap: 0px;
       --hueco-inferior: 48px;
@@ -256,6 +261,19 @@
     @apply relative rounded-2xl border border-line-sutil bg-panel;
   }
 
+  @media (min-width: 1024px) {
+    .cristal {
+      background: rgba(10, 20, 39, 0.82);
+      backdrop-filter: blur(20px) saturate(125%);
+      -webkit-backdrop-filter: blur(20px) saturate(125%);
+    }
+    .cristal-firme {
+      background: rgba(6, 12, 27, 0.94);
+      backdrop-filter: blur(24px) saturate(120%);
+      -webkit-backdrop-filter: blur(24px) saturate(120%);
+    }
+  }
+
   /* ── Barra de ajuste ──────────────────────────────────────────────────────
      La del navegador no se parece a nada de aquí: en Chrome es azul brillante
      y en Firefox gris claro, y las dos cantan sobre negro. El carril es una
@@ -312,10 +330,19 @@
      pasar; y el 140 % de saturación teñía de verde el cristal que se ponía
      encima del campo. Ni brillo, ni color: el material tiene que desaparecer
      cuando no se está mirando. */
+  /* ── SIN DESENFOQUE POR DEBAJO DE 1024 px ─────────────────────────────────
+     El cristal desenfocaba lo que tiene detrás, y eso en un teléfono se paga
+     justo cuando más se nota: una hoja que sube desde abajo obliga al
+     navegador a recomponer, fotograma a fotograma del deslizamiento, toda la
+     pantalla que queda debajo. En los móviles de gama media la animación se
+     entrecorta y la hoja llega a tirones.
+
+     En el móvil es un color opaco —el mismo tono, sin transparencia— y la
+     profundidad la dan la sombra y el borde, que no cuestan nada. A partir
+     de 1024 px, donde hay GPU de sobra y las hojas son más pequeñas que la
+     ventana, vuelve el cristal de verdad. */
   .cristal {
-    background: rgba(10, 20, 39, 0.82);
-    backdrop-filter: blur(20px) saturate(125%);
-    -webkit-backdrop-filter: blur(20px) saturate(125%);
+    background: #0E1A30;
     border: 1px solid rgba(148, 180, 255, 0.10);
     box-shadow:
       0 10px 35px rgba(2, 8, 23, 0.40),
@@ -333,9 +360,7 @@
      que sirve el cristal, pero ya no deja leer nada a través. Un cristal que
      deja ver el texto de detrás no es elegante, es un error. */
   .cristal-firme {
-    background: rgba(6, 12, 27, 0.94);
-    backdrop-filter: blur(24px) saturate(120%);
-    -webkit-backdrop-filter: blur(24px) saturate(120%);
+    background: #080F20;
     border: 1px solid rgba(148, 180, 255, 0.12);
     box-shadow:
       0 10px 35px rgba(2, 8, 23, 0.5),
@@ -448,6 +473,22 @@
 
   /* Para la entrada y el alta, donde el campo ES la pantalla. */
   .field-grande { @apply h-14 px-4; }
+
+  /* ── UN FILTRO NO ES UN FORMULARIO ────────────────────────────────────────
+     El selector de equipo que hay arriba de media aplicación —calendario,
+     plantilla, partidos, sesiones, asistencia, analíticas— usaba `.field`:
+     48 px de alto, esquinas de 16 y, en varias pantallas, el ancho entero.
+     En un teléfono eso es una barra enorme que dice «Cadete A» y empuja la
+     lista media pantalla hacia abajo.
+
+     Un filtro se toca de vez en cuando y no se rellena: va en cápsula, a la
+     altura de un botón pequeño, y ocupa lo que mide su texto. Así se lee
+     como lo que es —un ajuste de la vista— y no compite con el contenido. */
+  .field-filtro {
+    @apply h-9 w-auto min-w-0 max-w-full rounded-full border border-line bg-panel
+           px-3.5 pr-9 text-sm font-medium text-ink-800;
+  }
+  .field-filtro:hover:not(:disabled) { @apply border-line-fuerte bg-raised; }
 
   .field:hover:not(:disabled) { @apply border-line-fuerte; }
 

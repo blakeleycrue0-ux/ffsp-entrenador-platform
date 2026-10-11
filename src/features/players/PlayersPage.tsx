@@ -96,14 +96,14 @@ export default function PlayersPage() {
             />
           </div>
           <div className="flex gap-2.5">
-            <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-full sm:w-[170px]">
+            <Select variante="filtro" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
               {teams.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>
               ))}
             </Select>
-            <Select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} className="w-full sm:w-[200px]">
+            <Select variante="filtro" value={status} onChange={(e) => setStatus(e.target.value as typeof status)}>
               <option value="todas">Cualquier estado</option>
               {(Object.keys(AVAILABILITY) as AvailabilityStatus[]).map((s) => (
                 <option key={s} value={s}>

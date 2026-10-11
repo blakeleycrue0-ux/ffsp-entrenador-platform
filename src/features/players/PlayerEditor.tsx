@@ -4,7 +4,7 @@
  * posición. Todo lo demás es opcional y se puede completar más adelante.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Save, Trash2, X } from 'lucide-react';
 import { useClub } from '@/store/store';
@@ -52,6 +52,35 @@ export default function PlayerEditor() {
   const [form, setForm] = useState<Player>(existing ?? blank(teamId || teams[0]?.id || '', nextNumber));
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  /* Si el dorsal lo ha escrito una persona, no se toca más. */
+  const [dorsalAMano, setDorsalAMano] = useState(false);
+
+  /**
+   * EL DORSAL SE AJUSTA CUANDO LLEGA LA PLANTILLA, Y ESTO ERA UN FALLO REAL.
+   *
+   * `nextNumber` busca el primer número libre, pero el formulario se monta
+   * con el valor que hubiera en ESE instante, y al abrir «Nueva jugadora»
+   * con la página recién cargada la plantilla todavía no ha llegado: la
+   * lista está vacía, el primer libre es el 1, y cuando los datos aparecen
+   * el formulario se queda con el 1 puesto. Resultado: un formulario en
+   * blanco que ya trae un error en rojo —«ese dorsal ya lo lleva otra
+   * jugadora»— sin que nadie haya escrito nada. Medido abriendo la ruta
+   * directamente, que es justo lo que hace un enlace compartido.
+   *
+   * Mientras el dorsal no lo haya tocado una persona, sigue al primer libre.
+   * En cuanto lo escribe, manda ella.
+   */
+  useEffect(() => {
+    if (existing || dorsalAMano) return;
+    setForm((f) => (f.number === nextNumber ? f : { ...f, number: nextNumber }));
+  }, [existing, dorsalAMano, nextNumber]);
+
+  /* Lo mismo con el equipo: al montar puede no haber ninguno todavía. */
+  useEffect(() => {
+    if (existing || form.teamId) return;
+    const primero = teamId || teams[0]?.id;
+    if (primero) setForm((f) => ({ ...f, teamId: primero }));
+  }, [existing, form.teamId, teamId, teams]);
 
   const patch = (p: Partial<Player>) => setForm((f) => ({ ...f, ...p }));
   const canSeeContact = canSeePersonalData(data.profile);
@@ -170,7 +199,12 @@ export default function PlayerEditor() {
                 label="Dorsal"
                 error={duplicateNumber ? 'Ese dorsal ya lo lleva otra jugadora del equipo.' : undefined}
               >
-                <Input type="number" min={1} value={form.number} onChange={(e) => patch({ number: Number(e.target.value) })} />
+                <Input
+                  type="number"
+                  min={1}
+                  value={form.number}
+                  onChange={(e) => { setDorsalAMano(true); patch({ number: Number(e.target.value) }); }}
+                />
               </Field>
               <Field label="Equipo">
                 <Select value={form.teamId} onChange={(e) => patch({ teamId: e.target.value })}>

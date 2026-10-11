@@ -137,7 +137,7 @@ export function AppShell() {
           hace leyendo esta misma variable, así que no hay dos sitios donde
           acordarse del número. */}
       <div
-        className="min-h-screen bg-surface"
+        className="min-h-[100dvh] bg-surface"
         style={menu ? undefined : ({ '--sidebar-w': '0px' } as React.CSSProperties)}
       >
         {menu && <Sidebar onCreate={openCreate} onPlegar={alternaMenu} />}
@@ -148,7 +148,6 @@ export function AppShell() {
             onCreate={openCreate}
             menu={menu}
             onMenu={alternaMenu}
-            onCajon={() => setCajon(true)}
           />
 
           <main
@@ -171,7 +170,7 @@ export function AppShell() {
           </main>
         </div>
 
-        <NavFlotante />
+        <NavFlotante onMenu={() => setCajon(true)} />
         <MenuMovil abierto={cajon} onCerrar={() => setCajon(false)} onCreate={openCreate} />
         <GlobalSearch open={search} onClose={() => setSearch(false)} />
         <CreateMenu open={create} onClose={() => setCreate(false)} />

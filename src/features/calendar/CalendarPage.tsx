@@ -118,8 +118,8 @@ export default function CalendarPage() {
           <p className="ml-2 text-base font-semibold text-ink-900">{cap(periodLabel())}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} className="w-full sm:w-[190px]">
+        <div className="flex flex-wrap items-center gap-2">
+          <Select variante="filtro" value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)}>
             <option value="todos">Todos los equipos</option>
             {teams.map((t) => (
               <option key={t.id} value={t.id}>
@@ -141,8 +141,14 @@ export default function CalendarPage() {
 
       {/* Leyenda. Es lo único de esta pantalla cuyo color SÍ lleva información
           —de qué tipo es cada evento—, así que se queda; pero más pequeña y
-          más apagada, porque se consulta una vez y ya no se vuelve a mirar. */}
-      <div className="mb-5 flex flex-wrap gap-x-3.5 gap-y-1.5">
+          más apagada, porque se consulta una vez y ya no se vuelve a mirar.
+
+          Y EN EL MÓVIL NO SALE. Cinco etiquetas con su punto no caben en una
+          línea de 358 px: se partían en dos y se comían medio día de la
+          semana para explicar unos colores que de todas formas van junto al
+          nombre del evento en cada fila. Se consulta una vez en la vida y
+          esa vez se puede hacer en el ordenador. */}
+      <div className="mb-5 hidden flex-wrap gap-x-3.5 gap-y-1.5 sm:flex">
         {(Object.keys(EVENT_KIND) as EventKind[]).map((k) => (
           <span key={k} className="flex items-center gap-1.5 text-xs text-ink-500">
             <span className={cn('h-1.5 w-1.5 rounded-full', EVENT_KIND[k].dot)} />

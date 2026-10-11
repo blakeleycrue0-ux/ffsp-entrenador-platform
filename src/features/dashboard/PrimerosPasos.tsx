@@ -31,11 +31,12 @@
  * marcar a mano deja de ser un estado y pasa a ser una lista de la compra.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, X } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { currentStaff, isClubAdmin, visibleTeams } from '@/store/selectors';
+import { Modal } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { humanError } from '@/services/supabase';
 import { cn } from '@/lib/utils';
@@ -152,10 +153,26 @@ export function hayGuia(d: ClubData): boolean {
 const visibles = (d: ClubData): Paso[] =>
   PASOS.filter((p) => !p.soloAdmin || isClubAdmin(d));
 
+/**
+ * LA GUÍA ES UNA TIRA, NO UNA PORTADA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Era una tarjeta con el título, la frase, la barra y las seis líneas: cuatro
+ * centímetros de pantalla en un teléfono, encima de todo lo demás y todos los
+ * días hasta terminarla. Una guía que tapa el producto que viene a explicar
+ * se convierte en lo primero que se quiere cerrar.
+ *
+ * Ahora son sesenta y pico píxeles: el aro con lo que llevas, el nombre, el
+ * paso que toca y una flecha. Lo demás —las seis líneas, el porqué, el botón
+ * de cada una y el de apagarla— vive en una hoja que se abre al tocarla. La
+ * información es la misma; lo que cambia es que ya no está toda a la vez
+ * delante de la cara.
+ */
 export function PrimerosPasos() {
   const { data, actions } = useClub();
   const toast = useToast();
   const yo = currentStaff(data);
+  const [abierta, setAbierta] = useState(false);
 
   const estado = useMemo(() => visibles(data).map((p) => ({ ...p, ok: p.hecho(data) })), [data]);
   const hechos = estado.filter((p) => p.ok).length;
@@ -169,6 +186,7 @@ export function PrimerosPasos() {
 
   const apagar = async () => {
     try {
+      setAbierta(false);
       await actions.setupGuia(false);
       toast.info('Guía apagada', 'Puedes volver a encenderla en Ajustes y ayuda.');
     } catch (e) {
@@ -176,120 +194,158 @@ export function PrimerosPasos() {
     }
   };
 
-  /* El siguiente sin hacer: es el que lleva la acción destacada. Enseñar seis
-     botones iguales no dice por dónde empezar. */
+  /* El siguiente sin hacer: es el que se nombra en la tira y el que lleva la
+     acción destacada dentro de la hoja. */
   const siguiente = estado.find((p) => !p.ok);
 
   return (
-    <section
-      aria-labelledby="primeros-pasos"
-      className="overflow-hidden rounded-3xl border border-marca-600/25 bg-marca-600/[0.07]"
-    >
-      <div className="flex items-start gap-4 px-4 pt-4 sm:px-6 sm:pt-6">
-        <div className="min-w-0 flex-1">
-          <h2 id="primeros-pasos" className="text-md font-semibold text-ink-900 sm:text-lg">
-            Pon tu equipo en marcha
-          </h2>
-          <p className="mt-0.5 text-sm leading-relaxed text-ink-600 sm:text-base">
-            {hechos === 0
-              ? `${total} cosas y lo tienes funcionando.`
-              : `Llevas ${hechos} de ${total}. Esto desaparece solo al terminar.`}
-          </p>
-        </div>
-        <button
-          onClick={() => void apagar()}
-          aria-label="Apagar la guía de primeros pasos"
-          title="Apagar la guía"
-          className="-mr-1.5 -mt-1.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl text-ink-500 transition-colors hover:bg-raised hover:text-ink-900"
-        >
-          <X size={17} />
-        </button>
-      </div>
+    <>
+      <button
+        type="button"
+        onClick={() => setAbierta(true)}
+        aria-haspopup="dialog"
+        className="flex w-full items-center gap-3.5 rounded-2xl border border-marca-600/25 bg-marca-600/[0.07] px-3.5 py-3 text-left transition-colors hover:bg-marca-600/[0.11] active:bg-marca-600/[0.14]"
+      >
+        <Aro hechos={hechos} total={total} />
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-semibold text-ink-900">Pon tu equipo en marcha</span>
+          <span className="mt-0.5 block truncate text-sm text-ink-600">
+            {siguiente ? `Ahora: ${siguiente.titulo.toLowerCase()}` : 'Ya casi está'}
+          </span>
+        </span>
+        <ChevronRight size={17} className="shrink-0 text-ink-500" aria-hidden />
+      </button>
 
-      {/* La barra: cuánto llevas, sin tener que contar las marcas. */}
-      <div className="px-4 pt-3.5 sm:px-6">
-        <div
-          className="h-1.5 w-full overflow-hidden rounded-full bg-ink-200"
-          role="progressbar"
-          aria-valuenow={hechos}
-          aria-valuemin={0}
-          aria-valuemax={total}
-          aria-label={`${hechos} de ${total} pasos hechos`}
-        >
-          <div
-            className="h-full rounded-full bg-marca-500 transition-[width] duration-500 ease-suave"
-            style={{ width: `${(hechos / total) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      <ul className="mt-3 px-1.5 pb-3 sm:px-3 sm:pb-4">
-        {estado.map((p) => {
-          const esSiguiente = p.id === siguiente?.id;
-          return (
-            <li key={p.id}>
-              {/* UNA REJILLA, NO UNA FILA QUE SE PARTE. Con `flex-wrap`, el
-                  texto podía encogerse en vez de saltar de línea y en 390 px
-                  quedaba una columna de ciento ochenta píxeles con el título
-                  en cuatro renglones y el botón al lado. Con dos columnas en
-                  el móvil y tres a partir de `sm`, el botón CAE debajo del
-                  texto cuando no hay sitio, que es lo que tiene que hacer. */}
-              <div
-                className={cn(
-                  'grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2.5 rounded-2xl px-2.5 py-2.5 sm:gap-x-4 sm:px-3 sm:py-3 sm:grid-cols-[auto_1fr_auto]',
-                  esSiguiente && 'bg-panel',
-                )}
-              >
-                {/* La marca. No es una casilla: no se puede pulsar, porque la
-                    única manera de tacharlo es hacerlo. */}
-                <span
-                  aria-hidden
+      {/* La lista entera, cuando se pide. Es la hoja de siempre del producto:
+          sube desde abajo en el móvil y aparece centrada en el escritorio. */}
+      <Modal
+        open={abierta}
+        onClose={() => setAbierta(false)}
+        title="Pon tu equipo en marcha"
+        description={
+          hechos === 0
+            ? `${total} cosas y lo tienes funcionando.`
+            : `Llevas ${hechos} de ${total}. Esto desaparece solo al terminar.`
+        }
+        footer={
+          <button
+            onClick={() => void apagar()}
+            className="text-sm font-medium text-ink-500 underline-offset-4 transition-colors hover:text-ink-900 hover:underline"
+          >
+            No volver a enseñar esto
+          </button>
+        }
+      >
+        <ul className="-mx-1.5">
+          {estado.map((p) => {
+            const esSiguiente = p.id === siguiente?.id;
+            return (
+              <li key={p.id}>
+                {/* UNA REJILLA, NO UNA FILA QUE SE PARTE. Con `flex-wrap`, el
+                    texto podía encogerse en vez de saltar de línea y en 390 px
+                    quedaba una columna de ciento ochenta píxeles con el título
+                    en cuatro renglones y el botón al lado. Con dos columnas en
+                    el móvil y tres a partir de `sm`, el botón CAE debajo del
+                    texto cuando no hay sitio, que es lo que tiene que hacer. */}
+                <div
                   className={cn(
-                    'grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors',
-                    p.ok
-                      ? 'border-transparent bg-marca-600 text-white'
-                      : 'border-line-fuerte text-transparent',
+                    'grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2.5 rounded-xl px-2.5 py-2.5 sm:grid-cols-[auto_1fr_auto] sm:gap-x-4',
+                    esSiguiente && 'bg-raised',
                   )}
                 >
-                  <Check size={14} strokeWidth={3} />
-                </span>
-
-                <span className="min-w-0">
+                  {/* La marca. No es una casilla: no se puede pulsar, porque la
+                      única manera de tacharlo es hacerlo. */}
                   <span
+                    aria-hidden
                     className={cn(
-                      'block text-base font-medium sm:text-md',
-                      p.ok ? 'text-ink-500 line-through decoration-ink-400' : 'text-ink-900',
+                      'grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors',
+                      p.ok
+                        ? 'border-transparent bg-marca-600 text-white'
+                        : 'border-line-fuerte text-transparent',
                     )}
                   >
-                    {p.titulo}
+                    <Check size={14} strokeWidth={3} />
                   </span>
-                  {/* EL PORQUÉ, SÓLO EN EL SIGUIENTE. Con los seis explicados
-                      y con su botón, la guía de un club recién creado medía
-                      1.100 px en un móvil: seis párrafos y seis botones para
-                      una tarea que se hace de una en una. Ahora el paso que
-                      toca se explica y se pulsa, y los demás son una línea
-                      que dice lo que viene después. */}
-                  {!p.ok && esSiguiente && (
-                    <span className="mt-0.5 block text-sm leading-relaxed text-ink-600">
-                      {p.porque}
-                    </span>
-                  )}
-                </span>
 
-                {!p.ok && esSiguiente && destino(p) && (
-                  <Link
-                    to={destino(p)!}
-                    className="metal-claro col-start-2 inline-flex h-9 w-fit items-center gap-1.5 rounded-xl px-3.5 text-sm font-medium text-white transition-colors sm:col-start-3 sm:justify-self-end"
-                  >
-                    {p.accion}
-                    <ArrowRight size={14} />
-                  </Link>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
+                  <span className="min-w-0">
+                    <span
+                      className={cn(
+                        'block text-base font-medium',
+                        p.ok ? 'text-ink-500 line-through decoration-ink-400' : 'text-ink-900',
+                      )}
+                    >
+                      {p.titulo}
+                    </span>
+                    {/* EL PORQUÉ, SÓLO EN EL SIGUIENTE: el que toca se explica
+                        y se pulsa, y los demás son una línea que dice lo que
+                        viene después. */}
+                    {!p.ok && esSiguiente && (
+                      <span className="mt-0.5 block text-sm leading-relaxed text-ink-600">
+                        {p.porque}
+                      </span>
+                    )}
+                  </span>
+
+                  {!p.ok && esSiguiente && destino(p) && (
+                    <Link
+                      to={destino(p)!}
+                      onClick={() => setAbierta(false)}
+                      className="metal-claro col-start-2 inline-flex h-9 w-fit items-center gap-1.5 rounded-xl px-3.5 text-sm font-medium text-white transition-colors sm:col-start-3 sm:justify-self-end"
+                    >
+                      {p.accion}
+                      <ArrowRight size={14} />
+                    </Link>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </Modal>
+    </>
+  );
+}
+
+/**
+ * El aro: cuánto llevas, en 34 píxeles.
+ *
+ * Una barra de progreso necesita el ancho de la tarjeta; un aro cabe al lado
+ * del texto y dice lo mismo. Dentro va la cuenta —«5/6»— porque el ángulo
+ * solo se estima mal y la cuenta no se estima.
+ */
+function Aro({ hechos, total }: { hechos: number; total: number }) {
+  const tamano = 34;
+  const grosor = 3;
+  const r = (tamano - grosor) / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <span
+      className="relative grid shrink-0 place-items-center"
+      style={{ width: tamano, height: tamano }}
+      role="progressbar"
+      aria-valuenow={hechos}
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-label={`${hechos} de ${total} pasos hechos`}
+    >
+      <svg width={tamano} height={tamano} className="-rotate-90" aria-hidden>
+        <circle cx={tamano / 2} cy={tamano / 2} r={r} fill="none" stroke="rgba(148,180,255,0.18)" strokeWidth={grosor} />
+        <circle
+          cx={tamano / 2}
+          cy={tamano / 2}
+          r={r}
+          fill="none"
+          stroke="#168BFF"
+          strokeWidth={grosor}
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={c - (hechos / total) * c}
+          style={{ transition: 'stroke-dashoffset .5s cubic-bezier(.22,1,.36,1)' }}
+        />
+      </svg>
+      <span className="absolute font-display text-2xs font-semibold tabular-nums text-ink-900">
+        {hechos}/{total}
+      </span>
+    </span>
   );
 }

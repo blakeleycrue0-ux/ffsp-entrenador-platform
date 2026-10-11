@@ -13,6 +13,7 @@
     "maqueta:completo": "node pruebas/solapes.mjs --completo",
     "maqueta:contenido": "node pruebas/contenido.mjs",
     "maqueta:densidad": "node pruebas/densidad.mjs",
+    "maqueta:formularios": "node pruebas/formularios.mjs",
     "maqueta:perfil": "node pruebas/perfil.mjs",
     "maqueta:fragmentos": "node pruebas/fragmentos.mjs",
     "maqueta:escudo": "node pruebas/escudo.mjs",

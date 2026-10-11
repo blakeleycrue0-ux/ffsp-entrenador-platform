@@ -43,7 +43,7 @@ const Onboarding = lazy(cargaDiferida(() => import('@/features/onboarding/Onboar
 /** Pantalla de arranque mientras se comprueba la sesión y se cargan los datos. */
 function Booting() {
   return (
-    <div className="grid min-h-screen place-items-center bg-panel">
+    <div className="grid min-h-[100dvh] place-items-center bg-panel">
       <div className="flex flex-col items-center gap-4">
         <Wordmark size="lg" showSubtitle={false} />
         <div className="h-0.5 w-24 overflow-hidden rounded-full bg-ink-100">

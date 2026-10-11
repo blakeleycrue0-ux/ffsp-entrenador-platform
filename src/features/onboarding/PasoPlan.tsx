@@ -144,7 +144,7 @@ function Oferta({
       <button
         aria-label="Cerrar"
         onClick={onSeguirEnGratis}
-        className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 animate-fade-in bg-black/68 lg:backdrop-blur-sm"
       />
       <div
         role="dialog"

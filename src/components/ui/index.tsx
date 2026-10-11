@@ -306,13 +306,30 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTML
  * el techo de su contenedor y el texto se recorta, que es lo que tiene que
  * pasar.
  */
-export function Select({ className, children, ...rest }: React.SelectHTMLAttributes<HTMLSelectElement>) {
+export function Select({
+  className, children, variante = 'campo', ...rest
+}: React.SelectHTMLAttributes<HTMLSelectElement> & { variante?: 'campo' | 'filtro' }) {
+  const filtro = variante === 'filtro';
   return (
-    <div className="relative min-w-0 max-w-full">
-      <select className={cn('field max-w-full cursor-pointer appearance-none pr-8', className)} {...rest}>
+    <div className={cn('relative min-w-0 max-w-full', filtro && 'inline-flex')}>
+      <select
+        className={cn(
+          'max-w-full cursor-pointer appearance-none',
+          filtro ? 'field-filtro' : 'field pr-8',
+          className,
+        )}
+        {...rest}
+      >
         {children}
       </select>
-      <ChevronDown size={15} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden />
+      <ChevronDown
+        size={filtro ? 14 : 15}
+        className={cn(
+          'pointer-events-none absolute top-1/2 -translate-y-1/2 text-ink-400',
+          filtro ? 'right-3' : 'right-2.5',
+        )}
+        aria-hidden
+      />
     </div>
   );
 }
@@ -521,7 +538,13 @@ export function Modal({
           ahí aclaraba la página en vez de apagarla, y el diálogo —que iba con
           `bg-panel`, un 4,5 % de blanco— se leía con la pantalla de detrás
           atravesándolo. Aquí el fondo lo pone `.cristal`, que sí tapa. */}
-      <div className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      {/* El velo también deja de desenfocar en el móvil: es la pantalla
+            entera y se compone mientras la hoja sube. Un negro al 68 % tapa
+            igual de bien y no cuesta nada. */}
+      <div
+        className="absolute inset-0 animate-fade-in bg-black/68 lg:bg-black/60 lg:backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div
         role="dialog"
         aria-modal="true"
@@ -891,6 +914,31 @@ export function MenuItem({
 
 /* ─────────────────────────── Cabecera de página ──────────────────────────── */
 
+/**
+ * La cabecera de una pantalla.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * EN EL MÓVIL ERA MEDIA PANTALLA. Medido en Calendario a 390 px: título,
+ * descripción en dos renglones, «Exportar a mi calendario (.ics)» y «Nuevo
+ * evento» uno debajo del otro, y recién entonces empezaban los controles.
+ * Quinientos cuarenta píxeles de los 844 que hay, para enseñar UN día de la
+ * semana. En Entrenamientos eran trescientos para enseñar una sesión.
+ *
+ * Tres cosas cambian, y las tres sólo por debajo de 640 px:
+ *
+ *  1. LA DESCRIPCIÓN NO SALE. «Todas tus sesiones de entrenamiento, con su
+ *     estructura y su material» explica una sección a quien ya está dentro de
+ *     ella. En un monitor no estorba; en un teléfono ocupa dos renglones
+ *     encima de lo que se ha venido a ver. Sigue ahí para el escritorio y
+ *     para quien lea la página con un lector de pantalla.
+ *  2. LAS ACCIONES VAN EN UNA FILA QUE SE DESLIZA, no apiladas. Dos botones
+ *     de etiqueta larga no caben en 358 px y se partían en dos renglones;
+ *     ahora se deslizan de lado, que es lo que hace una aplicación cuando no
+ *     cabe algo en una fila.
+ *  3. MENOS AIRE DEBAJO: 20 px en vez de 32.
+ *
+ * Lo que NO cambia: el escritorio, donde hay sitio y la descripción ayuda.
+ */
 export function PageHeader({
   eyebrow, title, description, actions, children, className,
 }: {
@@ -901,27 +949,38 @@ export function PageHeader({
   children?: React.ReactNode;
   className?: string;
 }) {
-  /* El ritmo del encabezado, igual en todas las pantallas: título, ocho
-     píxeles, descripción, treinta y dos hasta el contenido. Antes cada página
-     lo remataba con su propio margen y ninguna empezaba a la misma altura.
-     `min-w-0` en las dos columnas: sin él, un título largo o un nombre de
-     equipo largo empujan los botones fuera de la pantalla en vez de cortarse. */
   return (
-    <div className={cn('mb-8', className)}>
+    <div className={cn('mb-5 sm:mb-8', className)}>
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
         {/* `basis-[15rem]`: sin una anchura de partida, el navegador prefiere
             ESTRECHAR el título antes que bajar los botones a la línea de
             abajo, y «Entrenamientos» acababa en una caja de 139 px pidiendo
             187. Con una base, lo que se parte primero son los botones. */}
         <div className="min-w-0 flex-1 basis-[15rem]">
-          {eyebrow && <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2 text-sm text-ink-500">{eyebrow}</div>}
+          {eyebrow && (
+            <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2 text-sm text-ink-500">{eyebrow}</div>
+          )}
           <h1 className="break-words text-xl font-semibold leading-tight sm:text-2xl">{title}</h1>
-          {description && <p className="mt-2 max-w-[62ch] text-base leading-relaxed text-ink-500">{description}</p>}
+          {description && (
+            <p className="mt-2 hidden max-w-[62ch] text-base leading-relaxed text-ink-500 sm:block">
+              {description}
+            </p>
+          )}
         </div>
-        {/* Sin `shrink-0`: con él la caja de botones se negaba a estrecharse,
-            así que `flex-wrap` no llegaba a entrar nunca y a 320 px se salía
-            de la pantalla 127 px. Que se encoja y, si no cabe, que parta. */}
-        {actions && <div className="flex min-w-0 flex-wrap items-center gap-2">{actions}</div>}
+        {/* En el móvil, una sola fila que se desliza; a partir de `sm`, lo de
+            siempre. Los márgenes negativos hacen que el deslizamiento llegue
+            hasta el borde de la pantalla en vez de cortarse en el margen. */}
+        {actions && (
+          <div
+            className={cn(
+              'flex min-w-0 items-center gap-2 max-sm:-mx-[var(--pagina-x)] max-sm:w-[100vw]',
+              'max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-[var(--pagina-x)] max-sm:pb-0.5',
+              'max-sm:no-scrollbar sm:flex-wrap',
+            )}
+          >
+            {actions}
+          </div>
+        )}
       </div>
       {children}
     </div>

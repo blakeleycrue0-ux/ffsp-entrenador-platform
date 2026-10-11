@@ -59,7 +59,7 @@ export default function SessionsPage() {
             { id: 'historial', label: 'Historial', count: counts.historial },
           ]}
         />
-        <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-auto min-w-[160px]">
+        <Select variante="filtro" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
           {teams.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}

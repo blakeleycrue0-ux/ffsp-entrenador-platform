@@ -423,9 +423,13 @@ export default function SessionBuilder() {
                   className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-panel px-2.5 py-1.5 text-sm text-ink-700"
                 >
                   {m}
+                  {/* 32 px de lado, no 13. La ✕ medía lo que mide su icono y
+                      había que acertarle con la yema; ahora el área sensible
+                      es un cuadrado que se sale un poco de la etiqueta, que
+                      es lo que hace que se pueda quitar a la primera. */}
                   <button
                     onClick={() => update({ material: draft.material.filter((x) => x !== m) })}
-                    className="text-ink-300 transition-colors hover:text-bad"
+                    className="-mr-1.5 grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-400 transition-colors hover:bg-raised hover:text-bad"
                     aria-label={`Quitar ${m}`}
                   >
                     <X size={13} />
@@ -441,7 +445,9 @@ export default function SessionBuilder() {
                     (e.target as HTMLInputElement).value = '';
                   }
                 }}
-                className="rounded-lg border border-dashed border-ink-300 px-2.5 py-1.5 text-sm outline-none placeholder:text-ink-400 focus:border-ink-400"
+                /* 40 px de alto y letra de 16: por debajo de 16, Safari en el
+                   iPhone amplía la página entera al enfocar. */
+                className="h-10 rounded-xl border border-dashed border-line-fuerte bg-transparent px-3 text-md outline-none placeholder:text-ink-500 focus:border-marca-500"
               />
             </div>
           </Panel>
@@ -458,14 +464,14 @@ export default function SessionBuilder() {
                 value={libraryQuery}
                 onChange={(e) => setLibraryQuery(e.target.value)}
                 placeholder="Buscar ejercicio…"
-                className="py-2 pl-9 text-sm"
+                className="h-11 pl-9"
               />
             </div>
             <div className="mt-2.5 flex flex-wrap gap-1.5">
               <button
                 onClick={() => setLibraryTag('todas')}
                 className={cn(
-                  'rounded-lg px-2 py-1 text-xs font-medium transition-colors',
+                  'inline-flex h-8 items-center rounded-lg px-2.5 text-xs font-medium transition-colors',
                   libraryTag === 'todas' ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200' : 'text-muted hover:bg-ink-100',
                 )}
               >
@@ -476,7 +482,7 @@ export default function SessionBuilder() {
                   key={t}
                   onClick={() => setLibraryTag(t)}
                   className={cn(
-                    'rounded-lg px-2 py-1 text-xs font-medium transition-colors',
+                    'inline-flex h-8 items-center rounded-lg px-2.5 text-xs font-medium transition-colors',
                     libraryTag === t ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200' : 'text-muted hover:bg-ink-100',
                   )}
                 >

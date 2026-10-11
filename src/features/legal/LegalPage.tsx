@@ -72,7 +72,7 @@ export default function LegalPage() {
   const privacy = pathname.includes('privacidad');
 
   return (
-    <div className="min-h-screen bg-panel">
+    <div className="min-h-[100dvh] bg-panel">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
           <Link to="/">

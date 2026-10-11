@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Bell, CheckCheck, Menu, PanelLeftOpen, Plus, Search } from 'lucide-react';
+import { Bell, CheckCheck, PanelLeftOpen, Plus, Search } from 'lucide-react';
 import { Avatar, Button, Dot, Dropdown } from '@/components/ui';
 import { useClub } from '@/store/store';
 import { currentStaff } from '@/store/selectors';
@@ -15,15 +15,13 @@ const NOTIF_TONE: Record<Notification['icon'], 'bad' | 'info' | 'neutral' | 'war
 };
 
 export function Topbar({
-  onSearch, onCreate, menu, onMenu, onCajon,
+  onSearch, onCreate, menu, onMenu,
 }: {
   onSearch: () => void;
   onCreate: () => void;
   /** Si el menú de la izquierda está desplegado. */
   menu: boolean;
   onMenu: () => void;
-  /** Abre el cajón del móvil. */
-  onCajon: () => void;
 }) {
   const { data, actions } = useClub();
   const navigate = useNavigate();
@@ -50,24 +48,19 @@ export function Topbar({
       className="sticky top-0 z-nav flex items-center gap-2.5 border-b border-line-sutil bg-surface px-4 sm:gap-3 lg:px-6"
       style={{ height: 'calc(var(--header-h) + var(--safe-top))', paddingTop: 'var(--safe-top)' }}
     >
-      {/* LA HAMBURGUESA, Y LA PRIMERA. En el móvil es lo único que lleva a
-          las once secciones, así que va donde se busca: arriba a la
-          izquierda. Es un disco, como los otros tres objetos de la barra: lo
-          que se pulsa en esta cabecera es redondo, y eso se aprende en dos
-          pantallas. */}
-      <button
-        onClick={onCajon}
-        aria-label="Abrir el menú"
-        className="-ml-1 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/[0.07] text-ink-800 transition-colors active:bg-white/[0.14] lg:hidden"
-      >
-        <Menu size={19} />
-      </button>
+      {/* QUIÉN ERES, A LA IZQUIERDA. La hamburguesa estaba aquí y se ha ido
+          abajo, a la pastilla, por un motivo que se ve en cuanto abres
+          Entrenamientos: con el menú en la cabecera, la navegación de abajo
+          no marcaba nada en ocho de las once secciones. Ahora la cabecera se
+          queda con lo suyo —quién eres, buscar y los avisos— y la pastilla
+          siempre dice dónde estás.
 
-      {/* SIN LOGOTIPO EN EL MÓVIL, A PROPÓSITO. Ocupaba de 96 a 150 px de una
-          barra de 320 para decir dónde estás cuando ya estás dentro: con él,
-          la cabecera se salía 38 px —medido— y la búsqueda se quedaba en un
-          icono. La marca está en la portada, en la entrada y en el cajón; una
-          herramienta no necesita repetirla en cada pantalla. */}
+          Sin logotipo, también a propósito: ocupaba de 96 a 150 px de una
+          barra de 320 para decir dónde estás cuando ya estás dentro. La
+          marca está en la portada, en la entrada y en el cajón. */}
+      <Link to="/app/perfil" aria-label="Mi perfil" className="-ml-0.5 shrink-0 lg:hidden">
+        <Avatar name={staff?.name ?? '—'} size={38} />
+      </Link>
 
       {/* Sólo cuando está plegado: con el menú a la vista, el botón de
           desplegarlo no dice nada y el de plegarlo ya está dentro de él. */}
@@ -88,7 +81,7 @@ export function Topbar({
           que a 320 px encoge y a 430 crece sin tocar nada. */}
       <button
         onClick={onSearch}
-        className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full bg-white/[0.07] px-3.5 text-left text-base text-ink-500 sm:max-w-[420px] transition-colors active:bg-white/[0.12] lg:ml-0 lg:mr-auto lg:h-8 lg:max-w-[300px] lg:flex-none lg:gap-2 lg:rounded-md lg:border lg:border-line lg:bg-panel lg:px-2.5 lg:text-sm lg:text-ink-400 lg:hover:border-ink-400"
+        className="flex h-[38px] min-w-0 flex-1 items-center gap-2 rounded-full bg-white/[0.07] px-3.5 text-left text-base text-ink-500 sm:max-w-[420px] transition-colors active:bg-white/[0.12] lg:ml-0 lg:mr-auto lg:h-8 lg:max-w-[300px] lg:flex-none lg:gap-2 lg:rounded-md lg:border lg:border-line lg:bg-panel lg:px-2.5 lg:text-sm lg:text-ink-400 lg:hover:border-ink-400"
       >
         <Search size={17} className="shrink-0 lg:hidden" />
         <Search size={15} className="hidden shrink-0 lg:block" />
@@ -171,9 +164,6 @@ export function Topbar({
           )}
         </Dropdown>
 
-        <Link to="/app/perfil" aria-label="Mi perfil" className="shrink-0 lg:hidden">
-          <Avatar name={staff?.name ?? '—'} size={40} />
-        </Link>
       </div>
     </header>
   );
