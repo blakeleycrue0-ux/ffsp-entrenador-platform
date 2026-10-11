@@ -51,6 +51,12 @@ const REPOSO = 'text-ink-600 active:bg-ink-900/[0.05]';
 
 export function NavFlotante() {
   const { pathname } = useLocation();
+  /* EL DEGRADADO SE TIÑE DE LO QUE TIENE DEBAJO. En Inicio, debajo hay una
+     imagen oscura; en el resto de pantallas, la hoja gris clara. Un velo
+     claro sobre la imagen la dejaba lavada justo en la franja de abajo, y
+     uno oscuro sobre la hoja clara parecía una sombra sucia. Son los dos
+     extremos del mismo recurso. */
+  const enInicio = pathname === '/app' || pathname === '/app/';
 
   return (
     <div
@@ -72,8 +78,9 @@ export function NavFlotante() {
         className="absolute inset-x-0 bottom-0 -z-10"
         style={{
           height: 'calc(var(--nav-h) + var(--nav-gap) + var(--safe-bottom) + 28px)',
-          background:
-            'linear-gradient(to top, #E8E8EB 0%, rgba(232,232,235,0.92) 42%, rgba(232,232,235,0) 100%)',
+          background: enInicio
+            ? 'linear-gradient(to top, rgba(10,10,12,0.72) 0%, rgba(10,10,12,0.42) 45%, rgba(10,10,12,0) 100%)'
+            : 'linear-gradient(to top, #E8E8EB 0%, rgba(232,232,235,0.92) 42%, rgba(232,232,235,0) 100%)',
         }}
       />
       <nav

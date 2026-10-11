@@ -26,12 +26,19 @@
  * tendría que competir con las tarjetas de abajo, y acabarían pesando lo
  * mismo. Sin caja, el fondo es el héroe: no hay dos jerarquías, hay una.
  *
- * EL FONDO ES UN CAMPO, NO UN DEGRADADO BONITO. Son las líneas de un campo
- * de fútbol —el círculo central, la media luna del área— a muy poca luz.
- * Es SVG plano y un degradado radial: ni imagen, ni desenfoque, ni una sola
- * animación. El desenfoque de fondo obliga al navegador a recomponer lo que
- * hay debajo en cada fotograma del desplazamiento, y esto está justo encima
- * de una lista que se desplaza.
+ * TODO VA SOBRE LA IMAGEN, SIN PLIEGO.
+ * ───────────────────────────────────────────────────────────────────────────
+ * Aquí había una hoja gris clara —el pliego— que empezaba justo debajo de los
+ * accesos y partía la pantalla en dos mitades con un canto redondeado: negro
+ * arriba, gris abajo. Resolvía un problema real —el texto oscuro no puede
+ * caer sobre la banda negra al desplazarse— pero a costa de romper el fondo
+ * por la mitad.
+ *
+ * La solución es la contraria: que no haya texto oscuro. El fondo es una sola
+ * imagen continua de la cabecera a la navegación, y lo que va encima está en
+ * blanco sobre superficies de cristal oscuro —`.vidrio-foto`—, que dejan ver
+ * la imagen por debajo en vez de taparla. Una tarjeta, sus márgenes a los
+ * lados y nada más alrededor: ningún contenedor envolviéndolo todo.
  */
 
 import { Link } from 'react-router-dom';
@@ -39,9 +46,7 @@ import {
   CalendarPlus, ChevronRight, ChevronsUpDown, ClipboardCheck, Clock, MapPin,
   MoreHorizontal, Swords, Users,
 } from 'lucide-react';
-import {
-  Button, Dropdown, EmptyState, LinkButton, Panel, Skeleton, Tag,
-} from '@/components/ui';
+import { Dropdown, Skeleton } from '@/components/ui';
 import { cn, longDate, minutesToLabel, relativeDay, toISODate, today } from '@/lib/utils';
 import { PrimerosPasos, hayGuia } from './PrimerosPasos';
 import { Pendientes } from './Pendientes';
@@ -59,48 +64,55 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
 
   if (d.loadError) {
     return (
-      <Panel className="border-bad/25 bg-bad/5 p-5">
-        <h2 className="text-md font-semibold text-bad">No hemos podido cargar tus datos</h2>
-        <p className="mt-2 text-base leading-relaxed text-bad/90">{d.loadError}</p>
-        <Button variant="secondary" size="sm" className="mt-4" onClick={() => void d.actions.refresh()}>
+      <div className="vidrio-foto rounded-2xl p-5">
+        <h2 className="text-md font-semibold text-white">No hemos podido cargar tus datos</h2>
+        <p className="mt-2 text-base leading-relaxed text-white/75">{d.loadError}</p>
+        <button
+          onClick={() => void d.actions.refresh()}
+          className="mt-4 h-9 rounded-lg bg-white px-3.5 text-sm font-medium text-ink-900"
+        >
           Reintentar
-        </Button>
-      </Panel>
+        </button>
+      </div>
     );
   }
 
   const sinEquipos = d.teams.length === 0;
 
   return (
-    <div className="-mt-[var(--pagina-top)]">
+    /* EL HUECO DE ABAJO LO PONE ESTA PANTALLA. Lo traía el pliego, y al
+       quitarlo los pendientes se quedaban debajo de la pastilla flotante:
+       la última línea no se podía leer ni tocar. `--hueco-inferior` es el
+       alto de la navegación más su aire y el área segura del teléfono. */
+    <div className="-mt-[var(--pagina-top)]" style={{ paddingBottom: 'var(--hueco-inferior)' }}>
       <Heroe d={d} onCrear={onCrear} />
 
-      {/* El pliego claro empieza aquí: el héroe se queda sobre el negro y
-          todo lo demás va sobre gris, se desplace hasta donde se desplace. */}
-      <div className="pliego min-h-[60vh] space-y-5 rounded-t-[28px] pt-5">
-
+      <div className="space-y-4">
         {sinEquipos ? (
           /* SIN EQUIPO, LA GUÍA ES LO ÚNICO QUE HAY. Al bajarla debajo de la
              tarjeta del entrenamiento se quedó dentro de la rama que exige
              equipo, y un club recién creado —justo quien la necesita— se
              quedaba con una pantalla sin una sola cosa que hacer. Aquí va
              arriba porque no hay tarjeta debajo de la que ponerse. */
-          hayGuia(d.data) ? <PrimerosPasos /> : (
-            <Panel className="px-4 py-1">
-              <EmptyState
-                title={d.admin ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
-                description={
-                  d.admin
-                    ? 'Todo lo demás cuelga de un equipo: la plantilla, el calendario y las sesiones.'
-                    : 'La administración del club tiene que asignarte el tuyo.'
-                }
-                action={
-                  d.admin ? (
-                    <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm">Crear equipo</LinkButton>
-                  ) : undefined
-                }
-              />
-            </Panel>
+          hayGuia(d.data) ? <PrimerosPasos sobreFoto /> : (
+            <div data-vacio="fila" className="vidrio-foto rounded-2xl px-4 py-5 text-center">
+              <h2 className="text-md font-semibold text-white">
+                {d.admin ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
+              </h2>
+              <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-white/70">
+                {d.admin
+                  ? 'Todo lo demás cuelga de un equipo: la plantilla, el calendario y las sesiones.'
+                  : 'La administración del club tiene que asignarte el tuyo.'}
+              </p>
+              {d.admin && (
+                <Link
+                  to="/app/equipo-tecnico/nuevo-equipo"
+                  className="mt-5 inline-flex h-9 items-center rounded-lg bg-white px-3.5 text-sm font-medium text-ink-900"
+                >
+                  Crear equipo
+                </Link>
+              )}
+            </div>
           )
         ) : (
           <>
@@ -108,8 +120,8 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
             {/* DEBAJO DE LA TARJETA DEL ENTRENAMIENTO, y como fila. Estaba
                 encima y en forma de tarjeta, compitiendo con lo único que de
                 verdad se viene a ver aquí. */}
-            <PrimerosPasos />
-            <Pendientes d={d} />
+            <PrimerosPasos sobreFoto />
+            <Pendientes d={d} sobreFoto className="pt-1" />
           </>
         )}
       </div>
@@ -284,39 +296,67 @@ function Disco({
 
 /* ═════════════════════════════════ Fichas ═════════════════════════════════ */
 
+/**
+ * La tarjeta, sobre la imagen.
+ *
+ * ES CRISTAL, NO UNA HOJA OPACA. `.vidrio-foto` es blanco al 10 % con un
+ * desenfoque por detrás: la imagen se sigue viendo a través de ella, con sus
+ * claros y sus oscuros, y la tarjeta se lee como algo apoyado encima y no
+ * como un recorte pegado. Por eso todo lo de dentro va en blanco.
+ *
+ * LOS DOS BOTONES, AHORA SÍ, AL REVÉS. Aquí el principal es BLANCO con texto
+ * negro: sobre una superficie oscura es lo que más contrasta. En el resto de
+ * la aplicación —tarjetas grises claras— es al revés, negro sobre claro. La
+ * regla es la misma en los dos sitios: la acción principal es la que más
+ * contrasta con lo que tiene debajo.
+ */
+const PRINCIPAL =
+  'flex h-11 w-full items-center justify-center rounded-xl bg-white text-base font-semibold'
+  + ' text-ink-900 transition-colors active:bg-white/85';
+const SECUNDARIO =
+  'flex h-11 w-full items-center justify-center rounded-xl border border-white/25 bg-white/10'
+  + ' text-base font-medium text-white transition-colors active:bg-white/20';
+
 /** Lo siguiente, con su contenido. La hora ya está arriba y no se repite. */
 function Detalle({ d }: { d: DatosDeInicio }) {
   const s = d.siguiente;
   if (!s) {
     return (
-      <Panel className="px-4 py-1">
-        <EmptyState
-          title="No tienes nada programado"
-          description="El próximo entrenamiento o partido aparecerá aquí."
-          action={<LinkButton to="/app/entrenamientos/nuevo" size="sm">Crear entrenamiento</LinkButton>}
-        />
-      </Panel>
+      <div data-vacio="fila" className="vidrio-foto rounded-2xl px-4 py-5 text-center">
+        <h2 className="text-md font-semibold text-white">No tienes nada programado</h2>
+        <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-white/70">
+          El próximo entrenamiento o partido aparecerá aquí.
+        </p>
+        <Link
+          to="/app/entrenamientos/nuevo"
+          className="mt-5 inline-flex h-9 items-center rounded-lg bg-white px-3.5 text-sm font-medium text-ink-900"
+        >
+          Crear entrenamiento
+        </Link>
+      </div>
     );
   }
 
   if (s.tipo === 'sesion') {
     const ses = s.dato;
     return (
-      <Panel className="p-5">
+      <div className="vidrio-foto rounded-2xl p-5">
         <div className="flex items-start justify-between gap-3">
-          <p className="min-w-0 text-md font-semibold leading-snug text-ink-900">{ses.title}</p>
-          <Tag size="sm">{minutesToLabel(ses.duration)}</Tag>
+          <p className="min-w-0 text-md font-semibold leading-snug text-white">{ses.title}</p>
+          <span className="shrink-0 rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-2xs font-medium text-white/85">
+            {minutesToLabel(ses.duration)}
+          </span>
         </div>
 
-        <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-600">
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70">
           {ses.venue && (
             <span className="flex min-w-0 items-center gap-1.5">
-              <MapPin size={14} className="shrink-0 text-ink-400" />
+              <MapPin size={14} className="shrink-0 text-white/55" />
               <span className="truncate">{ses.venue}</span>
             </span>
           )}
           <span className="flex items-center gap-1.5">
-            <Users size={14} className="text-ink-400" />
+            <Users size={14} className="text-white/55" />
             {ses.expectedPlayers} jugadoras
           </span>
         </div>
@@ -330,12 +370,12 @@ function Detalle({ d }: { d: DatosDeInicio }) {
                 <div
                   key={b.id}
                   title={`${b.title} · ${b.duration}′`}
-                  className="h-1.5 rounded-full bg-ink-300"
+                  className="h-1.5 rounded-full bg-white/30"
                   style={{ flex: b.duration }}
                 />
               ))}
             </div>
-            <p className="mt-2 truncate text-xs text-ink-500">
+            <p className="mt-2 truncate text-xs text-white/55">
               {ses.blocks.length} bloques{ses.objective ? ` · ${ses.objective}` : ''}
             </p>
           </div>
@@ -346,10 +386,8 @@ function Detalle({ d }: { d: DatosDeInicio }) {
             mitades los dos pesan lo mismo. «Ver entrenamiento» es lo que se
             viene a hacer desde aquí; pasar lista es lo de después. */}
         <div className="mt-5 flex flex-col gap-2">
-          <LinkButton to={`/app/entrenamientos/${ses.id}`} block>Ver entrenamiento</LinkButton>
-          <LinkButton to={`/app/entrenamientos/${ses.id}/asistencia`} variant="quiet" block>
-            Pasar lista
-          </LinkButton>
+          <Link to={`/app/entrenamientos/${ses.id}`} className={PRINCIPAL}>Ver entrenamiento</Link>
+          <Link to={`/app/entrenamientos/${ses.id}/asistencia`} className={SECUNDARIO}>Pasar lista</Link>
         </div>
 
         {d.partido && (
@@ -359,36 +397,38 @@ function Detalle({ d }: { d: DatosDeInicio }) {
             cuando={`${relativeDay(d.partido.date)} · ${d.partido.start}`}
           />
         )}
-      </Panel>
+      </div>
     );
   }
 
   const p = s.dato;
   return (
-    <Panel className="p-5">
+    <div className="vidrio-foto rounded-2xl p-5">
       <div className="flex items-start justify-between gap-3">
-        <p className="min-w-0 text-md font-semibold leading-snug text-ink-900">
+        <p className="min-w-0 text-md font-semibold leading-snug text-white">
           {p.home ? `${d.nombreClub} · ${p.opponent}` : `${p.opponent} · ${d.nombreClub}`}
         </p>
-        <Tag size="sm">{p.home ? 'En casa' : 'Fuera'}</Tag>
+        <span className="shrink-0 rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-2xs font-medium text-white/85">
+          {p.home ? 'En casa' : 'Fuera'}
+        </span>
       </div>
 
-      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-600">
+      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70">
         <span className="flex items-center gap-1.5">
-          <Clock size={14} className="text-ink-400" />
+          <Clock size={14} className="text-white/55" />
           {longDate(p.date)}
         </span>
         {p.venue && (
           <span className="flex min-w-0 items-center gap-1.5">
-            <MapPin size={14} className="shrink-0 text-ink-400" />
+            <MapPin size={14} className="shrink-0 text-white/55" />
             <span className="truncate">{p.venue}</span>
           </span>
         )}
       </div>
 
       <div className="mt-5 flex flex-col gap-2">
-        <LinkButton to={`/app/partidos/${p.id}`} block>Ver partido</LinkButton>
-        <LinkButton to={`/app/partidos/${p.id}`} variant="quiet" block>Convocatoria</LinkButton>
+        <Link to={`/app/partidos/${p.id}`} className={PRINCIPAL}>Ver partido</Link>
+        <Link to={`/app/partidos/${p.id}`} className={SECUNDARIO}>Convocatoria</Link>
       </div>
 
       {d.sesion && (
@@ -398,7 +438,7 @@ function Detalle({ d }: { d: DatosDeInicio }) {
           cuando={`${relativeDay(d.sesion.date)} · ${d.sesion.start}`}
         />
       )}
-    </Panel>
+    </div>
   );
 }
 
@@ -407,12 +447,12 @@ function Siguiente({ a, texto, cuando }: { a: string; texto: string; cuando: str
   return (
     <Link
       to={a}
-      className="-mx-4 -mb-4 mt-4 flex items-center gap-2.5 border-t border-line-sutil px-4 py-3 transition-colors active:bg-raised"
+      className="-mx-5 -mb-5 mt-5 flex items-center gap-2.5 border-t border-white/12 px-5 py-3 transition-colors active:bg-white/10"
     >
-      <span className="eyebrow shrink-0">Después</span>
-      <span className="min-w-0 flex-1 truncate text-base text-ink-800">{texto}</span>
-      <span className="shrink-0 text-sm tabular-nums text-ink-500">{cuando}</span>
-      <ChevronRight size={15} className="shrink-0 text-ink-400" />
+      <span className="shrink-0 text-2xs font-semibold uppercase tracking-[0.09em] text-white/50">Después</span>
+      <span className="min-w-0 flex-1 truncate text-base text-white/85">{texto}</span>
+      <span className="shrink-0 text-sm tabular-nums text-white/60">{cuando}</span>
+      <ChevronRight size={15} className="shrink-0 text-white/50" />
     </Link>
   );
 }

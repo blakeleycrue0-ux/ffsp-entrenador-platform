@@ -47,14 +47,29 @@ export function Topbar({
        cuesta cero. */
     /* LA CABECERA NO TIENE FONDO. Tenía uno opaco porque todo lo de debajo
        era oscuro y había que tapar el contenido que se desplazaba por
-       detrás. Ahora la parte de arriba de la plataforma es negra y lo que
-       flota encima son piezas claras translúcidas: el buscador y los dos
-       botones redondos. La barra en sí desaparece —ni fondo ni línea— y lo
-       que se ve es el negro del fondo con tres objetos encima. */
+       detrás. Ahora el fondo de la plataforma es una imagen y lo que flota
+       encima son piezas claras translúcidas: el buscador y los dos botones
+       redondos. La barra en sí desaparece —ni fondo ni línea— y lo que se ve
+       es la imagen con tres objetos encima.
+       LO QUE SÍ LLEVA ES UN VELO QUE SE DESVANECE, el mismo recurso que la
+       pastilla de abajo y por el mismo motivo: sin él, el contenido que se
+       desplaza aparecía cortado a cuchillo justo detrás del buscador —media
+       etiqueta de un acceso asomando por el canto de arriba— y parecía un
+       fallo de maquetación. Con el velo, lo que pasa por detrás se apaga
+       antes de llegar. Es un degradado, no un desenfoque: cuesta cero. */
     <header
       className="sticky top-0 z-nav flex items-center gap-2.5 px-4 sm:gap-3 lg:border-b lg:border-line lg:bg-surface lg:px-6"
       style={{ height: 'calc(var(--header-h) + var(--safe-top))', paddingTop: 'var(--safe-top)' }}
     >
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 -z-10 lg:hidden"
+        style={{
+          height: 'calc(var(--header-h) + var(--safe-top) + 20px)',
+          background:
+            'linear-gradient(to bottom, rgba(10,10,12,0.78) 0%, rgba(10,10,12,0.46) 55%, rgba(10,10,12,0) 100%)',
+        }}
+      />
       {/* QUIÉN ERES, A LA IZQUIERDA. La hamburguesa estaba aquí y se ha ido
           abajo, a la pastilla, por un motivo que se ve en cuanto abres
           Entrenamientos: con el menú en la cabecera, la navegación de abajo

@@ -373,8 +373,16 @@ export function Select({
  * extiende hasta el final de la palabra.
  */
 export function Checkbox({
-  checked, onChange, label, disabled, className,
-}: { checked: boolean; onChange: (v: boolean) => void; label?: React.ReactNode; disabled?: boolean; className?: string }) {
+  checked, onChange, label, disabled, className, sobreFoto = false,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label?: React.ReactNode;
+  disabled?: boolean;
+  className?: string;
+  /** Sobre la imagen de fondo de Inicio: el cuadrado va en blanco. */
+  sobreFoto?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -394,8 +402,12 @@ export function Checkbox({
         className={cn(
           'grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[5px] border transition-colors',
           checked
-            ? 'border-ink-900 bg-ink-900 text-white'
-            : 'border-line-fuerte bg-sunken group-hover:border-ink-500',
+            ? sobreFoto
+              ? 'border-white bg-white text-ink-900'
+              : 'border-ink-900 bg-ink-900 text-white'
+            : sobreFoto
+              ? 'border-white/45 bg-white/10'
+              : 'border-line-fuerte bg-sunken group-hover:border-ink-500',
         )}
       >
         {checked && <Check size={12} strokeWidth={3} />}
@@ -403,7 +415,11 @@ export function Checkbox({
       {/* `flex-1` para que una casilla a lo ancho —una fila de una lista—
           reparta el sitio como cualquier fila; en una etiqueta corta, el
           botón mide lo que mide su texto y no cambia nada. */}
-      {label && <span className="min-w-0 flex-1 text-base text-ink-800">{label}</span>}
+      {label && (
+        <span className={cn('min-w-0 flex-1 text-base', sobreFoto ? 'text-white/90' : 'text-ink-800')}>
+          {label}
+        </span>
+      )}
     </button>
   );
 }

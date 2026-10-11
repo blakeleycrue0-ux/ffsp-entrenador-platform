@@ -441,6 +441,34 @@
     background-color: #E8E8EB;
   }
 
+  /* ── CRISTAL SOBRE LA IMAGEN ──────────────────────────────────────────────
+     La superficie de Inicio, y la única que hay allí: la tarjeta del
+     entrenamiento, la fila de la guía y los avisos.
+
+     NO ES UNA TARJETA OPACA. Es blanco al 10 % con el fondo desenfocado por
+     detrás, así que la imagen —sus claros, sus oscuros y su grano— se sigue
+     viendo a través. Una hoja opaca encima de una foto tapa justamente lo
+     que se ha puesto; un cristal la deja respirar y la tarjeta se lee como
+     algo apoyado, no como un recorte pegado.
+
+     EL BORDE ES LO QUE LA SUJETA. Sobre una imagen con zonas claras y zonas
+     oscuras, un relleno translúcido solo desaparece justo donde la imagen se
+     le parece. El filo blanco al 15 % dibuja el contorno pase lo que pase por
+     debajo.
+
+     Y SI NO HAY DESENFOQUE, SE PONE MÁS OPACA. `backdrop-filter` no está en
+     todos los navegadores; sin él, un 10 % de blanco sobre una foto es texto
+     blanco sobre lo que haya. El respaldo es un gris oscuro sólido. */
+  .vidrio-foto {
+    background-color: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(22px) saturate(115%);
+    -webkit-backdrop-filter: blur(22px) saturate(115%);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .vidrio-foto { background-color: rgba(20, 20, 23, 0.72); }
+  }
+
   /* ── EL HÉROE DE INICIO, Y LO QUE PASA EN UNA PANTALLA CORTA ──────────────
      El dato principal pide aire, y en un iPhone de 844 px de alto lo tiene de
      sobra: la hora, los cuatro accesos y el principio de la tarjeta caben sin
