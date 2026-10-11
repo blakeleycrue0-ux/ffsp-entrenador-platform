@@ -24,7 +24,7 @@
  *   node pruebas/crear.mjs
  */
 import { chromium } from 'playwright';
-import { mock, j, TEAMS, USER } from './mock.mjs';
+import { mock, j, filasEnviadas, TEAMS, USER } from './mock.mjs';
 
 const BASE = process.env.URL ?? 'http://localhost:4173';
 
@@ -69,11 +69,14 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.route('**/rest/v1/sessions**', async (route) => {
     const req = route.request();
     if (req.method() !== 'POST') return route.fallback();
-    const cuerpo = JSON.parse(req.postData() ?? '[]');
-    const filas = (Array.isArray(cuerpo) ? cuerpo : [cuerpo]).map((f, i) => ({
-      ...f, id: `nueva${escrituras.length}_${i}`, blocks: f.blocks ?? [], material: f.material ?? [],
+    /* Lo que vería la base de datos, con la regla de `columns` aplicada: si
+       el cliente manda la clave `id` vacía, aquí llega como null y la columna
+       es NOT NULL. */
+    const enviadas = filasEnviadas(req);
+    escrituras.push(enviadas);
+    const filas = enviadas.map((f, i) => ({
+      ...f, id: `nueva${escrituras.length - 1}_${i}`, blocks: f.blocks ?? [], material: f.material ?? [],
     }));
-    escrituras.push(filas);
     return route.fulfill(j(filas));
   });
   /* Sin ejercicios en la biblioteca: es el caso del club recién creado, el que
@@ -180,6 +183,16 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
     'y ningún entrenamiento se inventa ejercicios',
     filasEscritas.every((f) => Array.isArray(f.blocks) && f.blocks.length === 0),
   );
+  /* NINGUNA FILA PUEDE LLEVAR UN IDENTIFICADOR VACÍO. La columna es NOT NULL y
+     lo pone la base: si el cliente manda `id` —aunque sea sin valor—,
+     PostgREST lo traduce a NULL y la escritura entera se cae. Pasó en
+     producción con veintisiete entrenamientos: «null value in column "id" of
+     relation "sessions" violates not-null constraint». */
+  comprueba(
+    'y ninguna manda el identificador vacío',
+    filasEscritas.every((f) => !('id' in f) || (typeof f.id === 'string' && f.id.length > 0)),
+    'id' in (filasEscritas[0] ?? {}) ? `id=${JSON.stringify(filasEscritas[0].id)}` : 'sin la clave, como debe ser',
+  );
   comprueba('la hoja se cierra al acabar', (await page.getByRole('dialog').count()) === 0);
 
   await ctx.close();
@@ -199,10 +212,9 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.route('**/rest/v1/sessions**', async (route) => {
     const req = route.request();
     if (req.method() !== 'POST') return route.fallback();
-    const cuerpo = JSON.parse(req.postData() ?? '[]');
-    const filas = (Array.isArray(cuerpo) ? cuerpo : [cuerpo]).map((f, i) => ({ ...f, id: `n${i}`, blocks: [], material: [] }));
-    escrituras.push(filas);
-    return route.fulfill(j(filas));
+    const enviadas = filasEnviadas(req);
+    escrituras.push(enviadas);
+    return route.fulfill(j(enviadas.map((f, i) => ({ ...f, id: `n${i}`, blocks: [], material: [] }))));
   });
   await page.addInitScript(([u]) => sessionStorage.setItem('p360.desbloqueado', u), [USER]);
   await page.goto(`${BASE}/app/calendario`, { waitUntil: 'networkidle' });

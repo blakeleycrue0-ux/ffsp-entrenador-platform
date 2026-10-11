@@ -105,3 +105,27 @@ export async function mock(page, o = {}) {
     if (med) localStorage.setItem('p360:medicion', med);
   }, [REF, USUARIO, medicion]);
 }
+
+/**
+ * LAS FILAS TAL Y COMO LAS VA A RECIBIR POSTGREST, no tal y como las escribe
+ * el cliente. Es una diferencia que costó un fallo en producción.
+ *
+ * Al escribir VARIAS filas de golpe, postgrest-js mira las claves de todas
+ * —`Object.keys`— y manda la lista en `?columns=…`. Y una clave que existe con
+ * valor `undefined` CUENTA: `JSON.stringify` la quita del cuerpo, pero su
+ * nombre viaja igual en `columns`, y entonces PostgREST entiende que esa
+ * columna venía vacía y le pone NULL. Con `id` eso es
+ * «null value in column "id" violates not-null constraint», que es justo lo
+ * que pasó al crear veintisiete entrenamientos de una vez.
+ *
+ * Un mock que sólo lea el cuerpo nunca ve eso. Éste aplica la misma regla, así
+ * que una prueba que mire las filas ve lo que vería la base de datos.
+ */
+export function filasEnviadas(request) {
+  const cuerpo = JSON.parse(request.postData() ?? '[]');
+  const filas = Array.isArray(cuerpo) ? cuerpo : [cuerpo];
+  const columnas = new URL(request.url()).searchParams.get('columns');
+  if (!columnas) return filas;
+  const nombres = columnas.split(',').map((c) => c.replace(/^"|"$/g, ''));
+  return filas.map((f) => Object.fromEntries(nombres.map((n) => [n, n in f ? f[n] : null])));
+}
