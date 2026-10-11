@@ -61,23 +61,50 @@ async function inicio(opciones = {}, ancho = 1280) {
   return { ctx, page, escrituras };
 }
 
-/** Qué pasos salen y cuáles están tachados, leído de la pantalla. */
-const leeGuia = (page) => page.evaluate(() => {
-  const sec = document.querySelector('section[aria-labelledby="primeros-pasos"]');
-  if (!sec) return null;
-  const barra = sec.querySelector('[role="progressbar"]');
-  return {
-    resumen: sec.querySelector('p')?.textContent?.trim() ?? '',
-    lleva: Number(barra?.getAttribute('aria-valuenow')),
-    total: Number(barra?.getAttribute('aria-valuemax')),
-    pasos: [...sec.querySelectorAll('li')].map((li) => {
-      const titulo = li.querySelector('span > span')?.textContent?.trim() ?? '';
-      const tachado = getComputedStyle(li.querySelector('span > span')).textDecorationLine.includes('line-through');
+/**
+ * Qué pasos salen y cuáles están tachados.
+ *
+ * LA GUÍA YA NO ES UNA TARJETA CON LA LISTA DENTRO: es una tira con el aro
+ * de progreso, y la lista vive en una hoja que se abre al tocarla. Así que
+ * esto abre la hoja, lee, y la cierra. Lo que se comprueba es lo mismo de
+ * siempre —qué pasos hay y cuáles están tachados—; lo que ha cambiado es
+ * dónde hay que mirar.
+ */
+async function leeGuia(page) {
+  /* `:visible` NO SOBRA. Inicio tiene dos composiciones en el marcado —la
+     del móvil y la del escritorio—, y una de las dos está siempre oculta por
+     CSS. Sin filtrar, el localizador cogía la tira del móvil estando en
+     1.280 px y se quedaba esperando a que apareciera algo que nunca iba a
+     aparecer. */
+  const tira = page.locator('button:has-text("Pon tu equipo en marcha"):visible').first();
+  if (await tira.count() === 0) return null;
+
+  const progreso = await page.evaluate(() => {
+    const b = [...document.querySelectorAll('[role="progressbar"]')].find((el) => el.offsetParent !== null);
+    return b ? { lleva: Number(b.getAttribute('aria-valuenow')), total: Number(b.getAttribute('aria-valuemax')) } : null;
+  });
+
+  await tira.click();
+  await page.waitForTimeout(450);
+  const pasos = await page.evaluate(() => {
+    const hoja = document.querySelector('[role="dialog"]');
+    if (!hoja) return [];
+    return [...hoja.querySelectorAll('li')].map((li) => {
+      const t = li.querySelector('span > span');
       const enlace = li.querySelector('a');
-      return { titulo, tachado, accion: enlace?.textContent?.trim() ?? null, a: enlace?.getAttribute('href') ?? null };
-    }),
-  };
-});
+      return {
+        titulo: t?.textContent?.trim() ?? '',
+        tachado: t ? getComputedStyle(t).textDecorationLine.includes('line-through') : false,
+        accion: enlace?.textContent?.trim() ?? null,
+        a: enlace?.getAttribute('href') ?? null,
+      };
+    });
+  });
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(350);
+
+  return { lleva: progreso?.lleva, total: progreso?.total, pasos };
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
    1 · Un club recién creado: todo por hacer
@@ -92,7 +119,7 @@ const leeGuia = (page) => page.evaluate(() => {
     comprueba('están los seis pasos', g.pasos.map((p) => p.titulo).join(' | ') === PASOS.join(' | '),
       g.pasos.map((p) => p.titulo).join(' | '));
     comprueba('ninguno tachado', g.pasos.every((p) => !p.tachado));
-    comprueba('la barra está a cero', g.lleva === 0 && g.total === 6, `${g.lleva}/${g.total}`);
+    comprueba('el aro está a cero', g.lleva === 0 && g.total === 6, `${g.lleva}/${g.total}`);
     comprueba('el primero lleva a crear equipo',
       g.pasos[0].a === '/app/equipo-tecnico/nuevo-equipo', String(g.pasos[0].a));
     /* Sin equipo todavía no existe la ficha donde se pone el horario: ese
@@ -157,9 +184,14 @@ const leeGuia = (page) => page.evaluate(() => {
 {
   console.log('\n  apagarla');
   const { ctx, page, escrituras } = await inicio({ equipos: [], players: [] });
-  comprueba('hay botón de apagar',
-    await page.getByRole('button', { name: 'Apagar la guía de primeros pasos' }).count() === 1);
-  await page.getByRole('button', { name: 'Apagar la guía de primeros pasos' }).click();
+  /* Apagarla está dentro de la hoja, al pie: es una decisión que se toma
+     después de ver lo que hay, no un aspa en la esquina que se pulsa sin
+     querer al bajar con el dedo. */
+  await page.locator('button:has-text("Pon tu equipo en marcha"):visible').first().click();
+  await page.waitForTimeout(450);
+  comprueba('hay manera de apagarla',
+    await page.getByRole('button', { name: 'No volver a enseñar esto' }).count() === 1);
+  await page.getByRole('button', { name: 'No volver a enseñar esto' }).click();
   await page.waitForTimeout(900);
 
   comprueba('se escribe en el perfil', escrituras.length === 1, `${escrituras.length} escrituras`);

@@ -652,9 +652,10 @@ function TaskRow({ task, onToggle }: { task: CoachTask; onToggle: () => void }) 
   return (
     <li>
       <div className="flex items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-panel">
-        <span className="mt-0.5">
-          <Checkbox checked={task.done} onChange={onToggle} />
-        </span>
+        {/* Sin `mt-0.5`: la casilla ya trae sus 32 px de área sensible y el
+            cuadrado va centrado dentro, así que empujarla hacia abajo la
+            descuadra de la primera línea del texto. */}
+        <Checkbox checked={task.done} onChange={onToggle} className="-ml-1.5 shrink-0" />
         <div className="min-w-0 flex-1">
           {task.link && !task.done ? (
             <Link to={task.link} className="block text-sm leading-snug text-ink-700 hover:text-ink-900">

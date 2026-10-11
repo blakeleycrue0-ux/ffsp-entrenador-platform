@@ -76,7 +76,7 @@ export function AvisoDeCookies() {
       aria-label="Aviso de cookies"
       className="fixed inset-x-0 bottom-0 z-nav px-3 pb-[max(12px,var(--safe-bottom))] sm:px-6 sm:pb-5"
     >
-      <div className="mx-auto flex max-w-[48rem] flex-col gap-4 rounded-3xl border border-white/10 bg-abismo/95 p-5 text-white shadow-[0_24px_60px_-24px_rgba(6,12,27,0.75)] backdrop-blur-xl sm:flex-row sm:items-center sm:gap-6 sm:p-5">
+      <div className="mx-auto flex max-w-[48rem] flex-col gap-4 rounded-3xl border border-white/10 bg-[#070D1C] p-5 text-white shadow-[0_24px_60px_-24px_rgba(6,12,27,0.75)] sm:flex-row sm:items-center sm:gap-6 sm:p-5">
         <p className="min-w-0 flex-1 text-base leading-relaxed text-white/75">
           Usamos una cookie de Google Analytics para saber cuánta gente entra. Nada más: no
           medimos nada de lo que pasa dentro de la aplicación y no hacemos publicidad.{' '}

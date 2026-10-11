@@ -124,7 +124,7 @@ export default function DrillEditor() {
                       patch({ tags: form.tags.includes(t) ? form.tags.filter((x) => x !== t) : [...form.tags, t] })
                     }
                     className={cn(
-                      'rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors',
+                      'inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors',
                       form.tags.includes(t)
                         ? 'bg-ink-50 text-ink-900 ring-1 ring-inset ring-ink-200'
                         : 'text-muted ring-1 ring-inset ring-line hover:bg-ink-50',
@@ -175,7 +175,7 @@ export default function DrillEditor() {
                   {m}
                   <button
                     onClick={() => patch({ material: form.material.filter((x) => x !== m) })}
-                    className="text-ink-300 transition-colors hover:text-bad"
+                    className="-mr-1.5 grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-400 transition-colors hover:bg-raised hover:text-bad"
                     aria-label={`Quitar ${m}`}
                   >
                     <X size={13} />
@@ -191,7 +191,9 @@ export default function DrillEditor() {
                     (e.target as HTMLInputElement).value = '';
                   }
                 }}
-                className="rounded-lg border border-dashed border-ink-300 px-2.5 py-1.5 text-sm outline-none placeholder:text-ink-400 focus:border-ink-400"
+                /* 40 px y letra de 16: por debajo de 16, Safari en el iPhone
+                   amplía la página entera al enfocar. */
+                className="h-10 rounded-xl border border-dashed border-line-fuerte bg-transparent px-3 text-md outline-none placeholder:text-ink-500 focus:border-marca-500"
               />
             </div>
           </Panel>
@@ -216,7 +218,7 @@ export default function DrillEditor() {
                   />
                   <button
                     onClick={() => patch({ progressions: (form.progressions ?? []).filter((_, k) => k !== i) })}
-                    className="mt-1.5 text-ink-300 transition-colors hover:text-bad"
+                    className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg text-ink-400 transition-colors hover:bg-raised hover:text-bad"
                     aria-label="Quitar progresión"
                   >
                     <X size={14} />

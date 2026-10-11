@@ -58,7 +58,7 @@ export function MenuMovil({
   return (
     <div className="fixed inset-0 z-hoja lg:hidden">
       <div
-        className="absolute inset-0 animate-fade-in bg-[#020617]/70 backdrop-blur-sm"
+        className="absolute inset-0 animate-fade-in bg-[#020617]/78"
         onClick={onCerrar}
         aria-hidden
       />

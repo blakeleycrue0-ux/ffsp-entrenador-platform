@@ -56,7 +56,7 @@ export default function MatchesPage() {
             { id: 'jugados', label: 'Jugados', count: counts.jugados },
           ]}
         />
-        <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-auto min-w-[160px]">
+        <Select variante="filtro" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
           {teams.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}

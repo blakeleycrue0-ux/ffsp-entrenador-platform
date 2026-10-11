@@ -75,7 +75,7 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
     <div className="-mt-[var(--pagina-top)]">
       <Heroe d={d} onCrear={onCrear} />
 
-      <div className="space-y-5 pt-5">
+      <div className="space-y-5 pt-4">
         <PrimerosPasos />
 
         {sinEquipos ? (
@@ -126,7 +126,7 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
     >
       <FondoDeCampo />
 
-      <div className="relative px-[var(--pagina-x)] pb-1 pt-3 text-center">
+      <div className="relative px-[var(--pagina-x)] pb-1 pt-2 text-center">
         <p className="text-sm font-medium text-ink-500">{rotulo}</p>
 
         {s ? (
@@ -136,13 +136,13 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
                 mismo. Es el mismo recurso que usan los bancos con los
                 céntimos, y aquí vale por lo mismo: un dato tiene una parte
                 gorda y una fina. */}
-            <p className="cifra mt-2 flex items-baseline justify-center text-[56px]">
+            <p className="cifra mt-1.5 flex items-baseline justify-center text-[52px]">
               <span>{horas}</span>
-              <span className="text-[34px] text-ink-700">:{minutos}</span>
+              <span className="text-[32px] text-ink-700">:{minutos}</span>
             </p>
             {/* El equipo va en la línea SÓLO si no hay cápsula debajo: con
                 las dos, «Cadete A» salía dos veces en tres centímetros. */}
-            <p className="mt-2 text-base text-ink-700">
+            <p className="mt-1.5 text-base text-ink-700">
               {relativeDay(s.dato.date)}
               {d.teams.length === 1 && d.equipo ? ` · ${d.equipo.name}` : ''}
             </p>
@@ -159,7 +159,7 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
         {/* La cápsula del equipo, debajo de la cifra: sólo cuando hay más de
             uno que elegir. Con un equipo no es un selector, es un adorno. */}
         {d.teams.length > 1 && (
-          <div className="mt-4 flex justify-center">
+          <div className="mt-3.5 flex justify-center">
             {/* `w` y nada de `left`: `Dropdown` ya pone el suyo según `align`, y
                 mandarle otro deja las dos clases puestas a la vez y decidiendo
                 por orden de hoja de estilos, que es una forma elegante de que
@@ -168,7 +168,7 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
               className="w-[220px] max-w-[calc(100vw-2rem)]"
               align="left"
               trigger={
-                <button className="flex h-9 max-w-[70vw] items-center gap-1.5 rounded-full bg-white/[0.09] px-4 text-sm font-medium text-ink-900 transition-colors active:bg-white/[0.16]">
+                <button className="flex h-8 max-w-[70vw] items-center gap-1.5 rounded-full bg-white/[0.09] px-3.5 text-sm font-medium text-ink-900 transition-colors active:bg-white/[0.16]">
                   <span className="truncate">{d.equipo?.name ?? 'Equipos'}</span>
                   <ChevronsUpDown size={13} className="shrink-0 text-ink-500" />
                 </button>
@@ -213,17 +213,17 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
           como un grupo. Con tope quedan juntos y centrados, como en el
           teléfono. */}
       {d.teams.length > 0 && (
-      <div className="relative mx-auto mt-7 grid max-w-[420px] grid-cols-4 gap-1 px-2 pb-6">
-        <Disco a="/app/entrenamientos" icono={<ClipboardCheck size={21} />} nombre="Pasar lista">
+      <div className="relative mx-auto mt-6 grid max-w-[400px] grid-cols-4 gap-1 px-2 pb-5">
+        <Disco a="/app/entrenamientos" icono={<ClipboardCheck size={19} />} nombre="Pasar lista">
           Lista
         </Disco>
-        <Disco a="/app/entrenamientos/nuevo" icono={<CalendarPlus size={21} />} nombre="Crear entrenamiento">
+        <Disco a="/app/entrenamientos/nuevo" icono={<CalendarPlus size={19} />} nombre="Crear entrenamiento">
           Sesión
         </Disco>
-        <Disco a="/app/partidos/nuevo" icono={<Swords size={21} />} nombre="Añadir partido">
+        <Disco a="/app/partidos/nuevo" icono={<Swords size={19} />} nombre="Añadir partido">
           Partido
         </Disco>
-        <Disco onClick={onCrear} icono={<MoreHorizontal size={21} />} nombre="Más cosas que crear">
+        <Disco onClick={onCrear} icono={<MoreHorizontal size={19} />} nombre="Más cosas que crear">
           Más
         </Disco>
       </div>
@@ -260,7 +260,7 @@ function FondoDeCampo() {
           medio campo —centrados justo donde está la cifra— sí se reconoce, y
           además hace de halo detrás de la hora. */}
       <svg
-        className="absolute left-1/2 top-[76px] h-[420px] w-[420px] -translate-x-1/2 text-white"
+        className="absolute left-1/2 top-[64px] h-[380px] w-[380px] -translate-x-1/2 text-white"
         viewBox="0 0 200 200"
         fill="none"
         opacity="0.055"
@@ -289,13 +289,13 @@ function Disco({
 }) {
   const dentro = (
     <>
-      <span className="grid h-14 w-14 place-items-center rounded-full bg-white/[0.09] text-ink-900 transition-[transform,background-color] duration-120 group-active:scale-95 group-active:bg-white/[0.16]">
+      <span className="grid h-12 w-12 place-items-center rounded-full bg-white/[0.09] text-ink-900 transition-[transform,background-color] duration-120 group-active:scale-95 group-active:bg-white/[0.16]">
         {icono}
       </span>
       <span className="text-2xs font-medium leading-none text-ink-700">{children}</span>
     </>
   );
-  const clases = 'group flex flex-col items-center gap-2 py-1';
+  const clases = 'group flex flex-col items-center gap-1.5 py-1';
   return a ? (
     <Link to={a} aria-label={nombre} className={clases}>{dentro}</Link>
   ) : (

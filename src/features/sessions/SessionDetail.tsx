@@ -115,9 +115,11 @@ export default function SessionDetail() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           [<Clock key="1" size={16} />, 'Horario', `${s.start} – ${addMinutes(s.start, s.duration)}`, minutesToLabel(s.duration)],
-          [<MapPin key="2" size={16} />, 'Campo', s.venue, team?.name ?? ''],
-          [<Users key="3" size={16} />, 'Jugadoras', `${s.expectedPlayers}`, 'convocadas a la sesión'],
-          [<Target key="4" size={16} />, 'Bloques', `${s.blocks.length}`, `${s.material.length} materiales`],
+          /* Un dato que no está se dice que no está: no se rellena con una
+             raya que parezca un valor ni se convierte en cero. */
+          [<MapPin key="2" size={16} />, 'Campo', s.venue || 'Sin definir', team?.name ?? ''],
+          [<Users key="3" size={16} />, 'Jugadoras', s.expectedPlayers > 0 ? `${s.expectedPlayers}` : 'Sin definir', 'convocadas a la sesión'],
+          [<Target key="4" size={16} />, 'Bloques', `${s.blocks.length}`, s.material.length === 1 ? '1 material' : `${s.material.length} materiales`],
         ].map(([icon, label, value, hint], i) => (
           <Panel key={i} className="flex items-start gap-3.5 p-4">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-ink-50 text-ink-900">
@@ -139,7 +141,9 @@ export default function SessionDetail() {
             <div>
               <h2 className="text-base font-semibold">Estructura de la sesión</h2>
               <p className="mt-0.5 text-xs text-muted">
-                {minutesToLabel(s.duration)} en {s.blocks.length} bloques
+                {s.blocks.length === 0
+                  ? `${minutesToLabel(s.duration)} reservados, sin ejercicios todavía`
+                  : `${minutesToLabel(s.duration)} en ${s.blocks.length} ${s.blocks.length === 1 ? 'bloque' : 'bloques'}`}
               </p>
             </div>
             <span className="text-sm font-medium text-ink-400 tabular-nums">
@@ -147,6 +151,22 @@ export default function SessionDetail() {
             </span>
           </div>
 
+          {/* UNA SESIÓN SIN EJERCICIOS NO ES UN ERROR: es lo normal cuando se
+              acaba de apuntar en el calendario, y lo que creaba el importar.
+              Antes esto pintaba una lista vacía, una barra de colores sin
+              colores y el pie explicando qué significan esos colores. */}
+          {s.blocks.length === 0 ? (
+            <div className="px-5 py-8 text-center">
+              <p className="text-base font-medium text-ink-800">Todavía no tiene ejercicios</p>
+              <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted">
+                El hueco está reservado: {s.start} – {addMinutes(s.start, s.duration)}. Cuando sepas
+                qué vais a hacer, se monta aquí.
+              </p>
+              <LinkButton to={`/app/entrenamientos/${s.id}/editar`} size="sm" className="mt-4">
+                Montar la sesión
+              </LinkButton>
+            </div>
+          ) : (
           <ol className="relative">
             {timeline.map(({ block, start, end }, i) => {
               const drill = data.drills.find((d) => d.id === block.drillId);
@@ -201,26 +221,29 @@ export default function SessionDetail() {
               );
             })}
           </ol>
+          )}
 
           {/* Barra proporcional */}
-          <div className="border-t border-ink-100 p-5">
-            <div className="flex gap-1">
-              {s.blocks.map((b, i) => (
-                <div
-                  key={b.id}
-                  title={`${b.title} · ${b.duration}′`}
-                  className={cn(
-                    'h-2 rounded-full transition-colors',
-                    i === 0 ? 'bg-ink-200' : i === s.blocks.length - 1 ? 'bg-ink-200' : 'bg-ink-700',
-                  )}
-                  style={{ flex: b.duration }}
-                />
-              ))}
+          {s.blocks.length > 0 && (
+            <div className="border-t border-ink-100 p-5">
+              <div className="flex gap-1">
+                {s.blocks.map((b, i) => (
+                  <div
+                    key={b.id}
+                    title={`${b.title} · ${b.duration}′`}
+                    className={cn(
+                      'h-2 rounded-full transition-colors',
+                      i === 0 ? 'bg-ink-200' : i === s.blocks.length - 1 ? 'bg-ink-200' : 'bg-ink-700',
+                    )}
+                    style={{ flex: b.duration }}
+                  />
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-ink-400">
+                Calentamiento y vuelta a la calma en tono claro; parte principal en tono intenso.
+              </p>
             </div>
-            <p className="mt-2 text-xs text-ink-400">
-              Calentamiento y vuelta a la calma en tono claro; parte principal en tono intenso.
-            </p>
-          </div>
+          )}
         </Panel>
 
         {/* Lateral */}
@@ -229,14 +252,20 @@ export default function SessionDetail() {
             <h3 className="flex items-center gap-2 text-base font-semibold">
               <Package size={16} className="text-ink-800" /> Material necesario
             </h3>
-            <ul className="mt-3 space-y-2">
-              {s.material.map((m) => (
-                <li key={m} className="flex items-center gap-2.5 text-sm text-ink-700">
-                  <span className="h-1.5 w-1.5 rounded-full bg-ink-300" />
-                  {m}
-                </li>
-              ))}
-            </ul>
+            {s.material.length === 0 ? (
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Sin material apuntado. Se añade al editar la sesión.
+              </p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {s.material.map((m) => (
+                  <li key={m} className="flex items-center gap-2.5 text-sm text-ink-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-ink-300" />
+                    {m}
+                  </li>
+                ))}
+              </ul>
+            )}
           </Panel>
 
           {s.notes && (

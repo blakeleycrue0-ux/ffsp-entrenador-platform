@@ -196,6 +196,4 @@ export const EVENT_KIND: Record<EventKind, { label: string; bar: string; chip: s
     chip: 'bg-warn/15 text-warn border-transparent',
     dot: 'bg-warn',
   },
-  reunion: { label: 'Reunión', bar: 'bg-info', chip: 'bg-info/15 text-info border-transparent', dot: 'bg-info' },
-  evento: { label: 'Evento', bar: 'bg-ink-300', chip: 'bg-ink-100 text-ink-600 border-transparent', dot: 'bg-ink-300' },
 };

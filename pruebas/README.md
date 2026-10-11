@@ -77,6 +77,41 @@ cuenta en cuanto veía un permiso guardado, también dentro de la aplicación. N
 mandaba ninguna visita, pero pedía el script —y la petición lleva la dirección
 entera en su cabecera `Referer`—. Lo cazó esta prueba, no una revisión.
 
+## Qué comprueban `ics.mjs` y `crear.mjs`
+
+Éstas tampoco son de maquetación: son de que la aplicación **sirva para lo que
+dice servir**. Salieron de una queja: «no me deja crear un entrenamiento, y me
+dice ve a crear, le doy a crear, crear evento, no me deja».
+
+`ics.mjs` no abre el navegador —compila el TypeScript con esbuild y le habla a
+las funciones directamente—. Prueba las dos piezas que convierten lo que la
+entrenadora ya tiene en entrenamientos de la plataforma: leer un archivo de
+calendario (`src/lib/ics.ts`) y repartir el horario fijo del equipo entre dos
+fechas (`src/lib/horario.ts`). Y lo prueba con lo que escriben los calendarios
+de verdad, no con un ejemplo cómodo: líneas partidas a 75 caracteres, las tres
+formas de escribir una fecha, repeticiones con días de la semana y con tope, y
+fechas quitadas de la serie.
+
+`crear.mjs` sí abre el navegador, y **no mira botones: mira lo que se escribe
+en el servidor**. Si no sale un `POST` a `sessions`, no se ha creado nada, diga
+lo que diga la pantalla. Cubre los tres callejones sin salida que había —un
+botón que sólo avisaba, una opción de menú que volvía a la misma pantalla, y un
+formulario que exigía un ejercicio cuando la biblioteca está vacía—, el
+importar completo (horario y archivo, con duplicados detectados) y las
+pantallas que esas sesiones dejan detrás: una sesión sin ejercicios no puede
+verse como un error, porque es lo normal cuando se acaba de apuntar.
+
+```sh
+npm run app:ics     # sin navegador
+npm run app:crear
+```
+
+Aquí también se comprobó que fallan cuando tienen que fallar: `ics.mjs` cazó al
+instante que se dejara de volver a juntar las líneas partidas, y `crear.mjs`
+encontró, sin que nadie lo buscara, que **pulsar una casilla no hacía nada** en
+toda la aplicación: era un `<label>` con un `<button>` dentro, y el navegador
+cambiaba el estado dos veces. Las tareas de Inicio no se podían marcar.
+
 ## Qué comprueban `camara.mjs`, `pizarra.mjs` y `video.mjs`
 
 La pizarra se mira desde donde se quiera: la cámara gira y se inclina. Eso son

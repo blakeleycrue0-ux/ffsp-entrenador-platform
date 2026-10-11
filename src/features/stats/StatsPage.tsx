@@ -80,7 +80,7 @@ export default function StatsPage() {
   const sinDatos = rows.filter((r) => r.computable === 0);
 
   const selector = (
-    <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-auto min-w-[170px]">
+    <Select variante="filtro" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
       {teams.map((t) => (
         <option key={t.id} value={t.id}>
           {t.name}

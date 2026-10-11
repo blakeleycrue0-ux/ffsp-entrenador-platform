@@ -321,7 +321,16 @@ export interface AttendanceRecord {
 
 /* ───────────────────────────── Calendario / eventos ───────────────────────── */
 
-export type EventKind = 'entrenamiento' | 'partido' | 'convocatoria' | 'reunion' | 'evento';
+/**
+ * Los tipos de cita que el calendario puede llegar a pintar.
+ *
+ * Eran cinco: estaban también `reunion` y `evento`. Nada las creaba —la agenda
+ * se construye a partir de sesiones, partidos y convocatorias, y no hay
+ * ninguna pantalla donde se dé de alta una reunión—, así que lo único que
+ * hacían era aparecer en la leyenda del calendario como dos colores que nunca
+ * salían. Cuando exista la pantalla de crearlas, vuelven.
+ */
+export type EventKind = 'entrenamiento' | 'partido' | 'convocatoria';
 
 export interface CalendarEvent {
   id: string;
