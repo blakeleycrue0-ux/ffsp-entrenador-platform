@@ -115,6 +115,11 @@ for (const p of PANTALLAS) {
        en todas las pantallas de la sección. */
     const clon = main.cloneNode(true);
     clon.querySelectorAll('nav').forEach((n) => n.remove());
+    /* Y lo que hay dentro de un desplegable cerrado tampoco se lee: es el
+       mismo punto ciego que con las decisiones, y aquí hacía que plegar una
+       explicación SUBIERA la cuenta de palabras, porque el titular del
+       desplegable se suma y lo de dentro no se restaba. */
+    clon.querySelectorAll('details:not([open]) > *:not(summary)').forEach((n) => n.remove());
     const texto = (clon.innerText || clon.textContent || '').trim();
     const navegacion = Array.from(main.querySelectorAll('nav a[href], nav button')).filter(visible).length;
     return {
