@@ -218,9 +218,17 @@ export default function AvailabilityPage() {
                   ? 'Cuando una jugadora se lesione o tenga molestias, anótalo aquí para que quede constancia del seguimiento.'
                   : 'Aquí se guardan los partes ya resueltos, con su historial.'
               }
+              /* EL BOTÓN DE LA CABECERA Y ÉSTE SON LA MISMA ACCIÓN, y estaban
+                 los dos pintados como la principal: dos botones azules a
+                 cuatro centímetros uno de otro para hacer lo mismo. Aquí baja
+                 a secundario —el de arriba es el que manda— porque dentro de
+                 un cartel de vacío lo que hace falta es decir por dónde se
+                 empieza, no competir con la cabecera. */
               action={
                 tab === 'abiertos' && squad.length > 0 ? (
                   <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() =>
                       setEditing({ state: 'lesionada', startedOn: toISODate(today()), playerId: squad[0]?.id })
                     }

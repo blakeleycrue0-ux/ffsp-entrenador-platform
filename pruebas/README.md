@@ -112,6 +112,64 @@ encontró, sin que nadie lo buscara, que **pulsar una casilla no hacía nada** e
 toda la aplicación: era un `<label>` con un `<button>` dentro, y el navegador
 cambiaba el estado dos veces. Las tareas de Inicio no se podían marcar.
 
+## Qué comprueba `complejidad.mjs`
+
+«Es demasiado complicada» es una opinión hasta que se cuenta. Esto la cuenta:
+para cada pantalla, en un iPhone de 390 px, mide cuántas cosas se pueden
+pulsar o escribir (**decisiones**), cuántas se pintan como «la» acción
+(**principales**), cuántos huecos hay que rellenar (**campos**), en cuántas
+cajas está repartido (**paneles**), cuánto hay que leer (**palabras**) y cuánto
+mide de arriba abajo (**alto**).
+
+No mide la cabecera, la pastilla del móvil ni las pestañas de la sección: están
+en todas las pantallas de una sección por igual y falsearían la comparación.
+
+Cada pantalla tiene su tope, y el tope no es un gusto: es el punto donde deja
+de poder entenderse de un vistazo. Si algo lo pasa, no es que «sea rica en
+funciones»: es que hay que repartirla en dos o guardar lo avanzado detrás de
+«Más opciones».
+
+Esta prueba es la que puso números al rediseño:
+
+```
+                      antes   después
+Pasar lista              99        19     (y 0 → 1 acción principal)
+Plantilla                28        24
+Nuevo entrenamiento      27         7     (11 campos → 5)
+Nuevo ejercicio          25         7     (2 principales → 1)
+Nueva jugadora           24         7     (14 campos → 4)
+Inicio                   15        11     (7 paneles → 2)
+Equipo técnico           12        12     (3 principales → 1)
+```
+
+Y tiene un punto ciego que conviene recordar: en este Chromium, **lo que hay
+dentro de un `<details>` cerrado sigue teniendo caja** —mide 324×48 y dice
+`visibility: visible`—, así que la comprobación de siempre contaba los campos
+guardados detrás de «Más opciones» como si estuvieran a la vista. Es justo lo
+contrario de lo que esto mide.
+
+## Qué comprueban `crear.mjs`, `lista.mjs` y `partido.mjs`
+
+Las tres tareas que un entrenador hace de verdad: apuntar un entrenamiento,
+pasar lista y preparar un partido. **No miran botones: miran lo que se escribe
+en el servidor.** Si no sale un `POST`, no se ha creado nada, diga lo que diga
+la pantalla.
+
+```sh
+npm run app:crear     # crear entrenamientos, uno o el trimestre entero
+npm run app:lista     # pasar lista
+npm run app:partido   # apuntar un partido y convocar
+npm run app:complejidad
+```
+
+Las tres han encontrado cosas que nadie buscaba: `crear.mjs` vio que **pulsar
+una casilla no hacía nada** en toda la aplicación (un `<label>` con un
+`<button>` dentro: el navegador cambiaba el estado dos veces); `lista.mjs`, que
+se podía estar pasando lista **de otro día** sin enterarse, porque la pantalla
+no miraba la dirección; y `partido.mjs` se dio por buena a sí misma con el
+identificador `nuevo`, que choca con la ruta `/app/partidos/nuevo` —el mock
+mandaba a la ficha y se llegaba al formulario—.
+
 ## Qué comprueban `camara.mjs`, `pizarra.mjs` y `video.mjs`
 
 La pizarra se mira desde donde se quiera: la cámara gira y se inclina. Eso son

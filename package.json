@@ -26,6 +26,7 @@
     "app:ics": "node pruebas/ics.mjs",
     "app:crear": "node pruebas/crear.mjs",
     "app:lista": "node pruebas/lista.mjs",
+    "app:partido": "node pruebas/partido.mjs",
     "app:complejidad": "node pruebas/complejidad.mjs",
     "capturas": "node pruebas/capturas.mjs",
     "maqueta:enteras": "node pruebas/capturas-enteras.mjs",
