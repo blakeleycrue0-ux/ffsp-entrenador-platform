@@ -1,32 +1,69 @@
 /**
- * Asistencia.
- * ---------------------------------------------------------------------------
- * Pantalla optimizada para el móvil, de pie en el campo, con prisa:
- * equipo → sesión → marcar → guardar. «Marcar todos como presentes» primero,
- * y luego sólo se corrigen las excepciones. Un toque por estado.
+ * PASAR LISTA. Un toque por jugadora que falta.
+ * ═══════════════════════════════════════════════════════════════════════════
  *
- * «Sin registrar» no es una ausencia: mientras nadie haya pasado lista, así se
- * dice — no se cuenta como falta ni se convierte en un cero.
+ * ERA LA PEOR PANTALLA DE LA APLICACIÓN, y con diferencia:
+ * `pruebas/complejidad.mjs` le contó 99 cosas que pulsar y 2.681 px de alto,
+ * sin una sola acción pintada como la principal. Y es la pantalla que se usa
+ * dos veces por semana, de pie en el campo, con el móvil en una mano.
+ *
+ * Las 99 salían de una cuenta muy simple: dieciséis jugadoras × cinco botones
+ * de estado = ochenta, más dieciséis nombres enlazados a su ficha, más los
+ * desplegables. Ochenta botones para decir que faltaron dos.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * LO QUE DE VERDAD PASA EN UN ENTRENAMIENTO: vienen casi todas. El trabajo no
+ * es decidir el estado de cada una: es señalar las dos que no están. Así que:
+ *
+ *  1. «TODAS VINIERON» ES LA ACCIÓN PRINCIPAL, grande y la primera. Un toque y
+ *     la lista está hecha —menos las excepciones—. Antes existía, pero era un
+ *     botón secundario pequeño perdido entre los otros ochenta.
+ *  2. CADA FILA ES UN INTERRUPTOR. Toda la fila, no un botón dentro de ella:
+ *     se toca el nombre y cambia de «Vino» a «No vino». Un toque por
+ *     excepción, y el área que hay que acertar es de 390 × 60 px.
+ *  3. EL MOTIVO SÓLO APARECE DONDE HAY UNA FALTA. Cuando alguien no viene sale
+ *     un «¿Por qué?» en SU fila, y ahí están los cinco estados de siempre
+ *     —tarde, justificada, lesionada, sin avisar—. En una lista normal eso son
+ *     dos chips, no ochenta botones.
+ *
+ * NO SE HA PERDIDO NINGÚN ESTADO: los cinco siguen existiendo y se siguen
+ * guardando igual. Lo que cambia es cuándo se preguntan.
+ *
+ * Y «SIN REGISTRAR» SIGUE SIENDO «SIN REGISTRAR». La lista no empieza con
+ * todas presentes: empieza sin marcar, porque mientras nadie haya pasado lista
+ * no hay asistencia, y rellenarla sola convertiría un descuido en dieciséis
+ * presencias falsas. Lo que se ofrece es un botón para decirlo de una vez, que
+ * es distinto de darlo por hecho.
+ *
+ * LA SESIÓN SALE DE LA DIRECCIÓN, que es de donde venía. Esta pantalla se abre
+ * desde la ficha de un entrenamiento —`/app/entrenamientos/:id/asistencia`— y
+ * aun así elegía la sesión por su cuenta: la de hoy, o la primera de la lista.
+ * Se podía estar pasando lista de otro día sin enterarse.
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CheckCheck, Save, Undo2 } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { Check, ChevronLeft, Save, Undo2, X } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { squadOf, visibleTeams } from '@/store/selectors';
-import { Avatar, Button, EmptyState, PageHeader, Panel, Select } from '@/components/ui';
+import { Avatar, Button, EmptyState, LinkButton, Modal, PageHeader, Panel, Select } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { AvailabilityDot, asistencia, disponibilidad } from '@/components/domain/StatusBits';
+import { ATTENDANCE, asistencia, disponibilidad } from '@/components/domain/StatusBits';
 import { cn, longDate, relativeDay, toISODate, today } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
-import type { AttendanceMark } from '@/types';
+import type { AttendanceMark, Player } from '@/types';
 import { useAnchura } from '@/components/layout/AppShell';
 
-const MARKS: AttendanceMark[] = ['presente', 'tarde', 'justificada', 'lesionada', 'ausente'];
+/** Los motivos de una falta, en el orden en el que se dan de verdad. */
+const MOTIVOS: AttendanceMark[] = ['tarde', 'justificada', 'lesionada', 'ausente'];
+
+/** Un estado cuenta como «no vino» cuando no es presente ni sin marcar. */
+const falta = (m: AttendanceMark) => m !== 'presente' && m !== 'sin_registrar';
 
 export default function AttendancePage() {
   /* El ancho lo decide la tarea, no la pantalla. */
   useAnchura('tabla');
+  const { sessionId: enLaDireccion } = useParams();
   const { data, teamId, setTeamId, actions } = useClub();
   const toast = useToast();
   const teams = visibleTeams(data);
@@ -34,7 +71,7 @@ export default function AttendancePage() {
 
   const squad = useMemo(() => squadOf(data, teamId), [data, teamId]);
 
-  /** Sesiones seleccionables: las de hoy y días próximos, más las recientes. */
+  /** Sesiones seleccionables: las recientes de este equipo. */
   const sessions = useMemo(
     () =>
       data.sessions
@@ -44,97 +81,96 @@ export default function AttendancePage() {
     [data.sessions, teamId],
   );
 
-  const todaySession = sessions.find((s) => s.date === toISODate(today()));
-  const [sessionId, setSessionId] = useState(() => todaySession?.id ?? sessions[0]?.id ?? '');
-  const session = sessions.find((s) => s.id === sessionId);
+  /* La de la dirección manda. Sólo si no hay ninguna se elige: la de hoy, o la
+     última. */
+  const deLaDireccion = data.sessions.find((s) => s.id === enLaDireccion);
+  const [sessionId, setSessionId] = useState(
+    () => deLaDireccion?.id ?? sessions.find((s) => s.date === toISODate(today()))?.id ?? sessions[0]?.id ?? '',
+  );
+  const session = data.sessions.find((s) => s.id === sessionId);
 
   const existing = data.attendance.find((a) => a.sessionId === sessionId);
   const [marks, setMarks] = useState<Record<string, { mark: AttendanceMark; reason?: string }>>({});
   const [dirty, setDirty] = useState(false);
+  /** De quién se está eligiendo el motivo. */
+  const [porQue, setPorQue] = useState<Player | null>(null);
+
+  /** El estado de partida de una jugadora: lo guardado, o su parte médico. */
+  const dePartida = (p: Player): { mark: AttendanceMark; reason?: string } =>
+    existing?.marks[p.id] ?? {
+      /* Una jugadora con parte médico abierto entra ya como justificada: es un
+         dato que ya está en la base, no una suposición. */
+      mark: p.availability.status === 'lesionada'
+        ? 'lesionada'
+        : ['enferma', 'sancionada'].includes(p.availability.status)
+          ? 'justificada'
+          : 'sin_registrar',
+      reason: ['lesionada', 'enferma', 'sancionada'].includes(p.availability.status)
+        ? disponibilidad(p.availability.status).label
+        : undefined,
+    };
 
   // Al cambiar de sesión o de equipo se recarga lo ya registrado.
   useEffect(() => {
     const base: Record<string, { mark: AttendanceMark; reason?: string }> = {};
-    squad.forEach((p) => {
-      base[p.id] = existing?.marks[p.id] ?? {
-        // Una jugadora con parte médico abierto entra ya como justificada.
-        mark: p.availability.status === 'lesionada'
-          ? 'lesionada'
-          : ['enferma', 'sancionada'].includes(p.availability.status)
-            ? 'justificada'
-            : 'sin_registrar',
-        reason: ['lesionada', 'enferma', 'sancionada'].includes(p.availability.status)
-          ? disponibilidad(p.availability.status).label
-          : undefined,
-      };
-    });
+    squad.forEach((p) => { base[p.id] = dePartida(p); });
     setMarks(base);
     setDirty(false);
   }, [sessionId, teamId, squad.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* Si la sesión elegida deja de existir —se ha cambiado de equipo—, se coge
+     una de las que hay. Nunca se queda la pantalla en blanco. */
   useEffect(() => {
-    const first = sessions.find((s) => s.date === toISODate(today())) ?? sessions[0];
-    if (first && !sessions.some((s) => s.id === sessionId)) setSessionId(first.id);
+    if (sessions.length === 0 || sessions.some((s) => s.id === sessionId)) return;
+    setSessionId(sessions.find((s) => s.date === toISODate(today()))?.id ?? sessions[0].id);
   }, [sessions, sessionId]);
 
-  const counts = useMemo(() => {
-    const list = Object.values(marks);
+  const cuenta = useMemo(() => {
+    const list = squad.map((p) => marks[p.id]?.mark ?? 'sin_registrar');
     return {
-      presente: list.filter((m) => m.mark === 'presente').length,
-      tarde: list.filter((m) => m.mark === 'tarde').length,
-      justificada: list.filter((m) => m.mark === 'justificada').length,
-      lesionada: list.filter((m) => m.mark === 'lesionada').length,
-      ausente: list.filter((m) => m.mark === 'ausente').length,
-      sinRegistrar: list.filter((m) => m.mark === 'sin_registrar').length,
+      vinieron: list.filter((m) => m === 'presente' || m === 'tarde').length,
+      faltaron: list.filter((m) => m === 'ausente' || m === 'justificada' || m === 'lesionada').length,
+      sinMarcar: list.filter((m) => m === 'sin_registrar').length,
     };
-  }, [marks]);
+  }, [squad, marks]);
 
-  /** El estado de partida, para poder contar los cambios y deshacerlos. */
-  const partida = useMemo(() => {
-    const base: Record<string, AttendanceMark> = {};
-    squad.forEach((p) => {
-      base[p.id] = existing?.marks[p.id]?.mark
-        ?? (p.availability.status === 'lesionada'
-          ? 'lesionada'
-          : ['enferma', 'sancionada'].includes(p.availability.status)
-            ? 'justificada'
-            : 'sin_registrar');
-    });
-    return base;
-  }, [squad, existing]);
-
-  /* Cuántas marcas se han tocado. La barra de guardar dice esto y sólo esto:
-     un número que no se sabe de dónde sale no sirve para decidir si guardar. */
   const cambios = useMemo(
-    () => Object.entries(marks).filter(([id, m]) => m.mark !== partida[id]).length,
-    [marks, partida],
+    () => squad.filter((p) => (marks[p.id]?.mark ?? 'sin_registrar') !== dePartida(p).mark).length,
+    [squad, marks], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
-  const descartar = () => {
-    const base: Record<string, { mark: AttendanceMark; reason?: string }> = {};
-    squad.forEach((p) => { base[p.id] = existing?.marks[p.id] ?? { mark: partida[p.id] }; });
-    setMarks(base);
-    setDirty(false);
-  };
-
-  const setMark = (playerId: string, mark: AttendanceMark) => {
-    setMarks((m) => ({ ...m, [playerId]: { ...m[playerId], mark } }));
+  const poner = (playerId: string, mark: AttendanceMark, reason?: string) => {
+    setMarks((m) => ({ ...m, [playerId]: { mark, reason: reason ?? m[playerId]?.reason } }));
     setDirty(true);
   };
 
-  const markAllPresent = () => {
+  /** El interruptor de la fila: vino ⇄ no vino. */
+  const alternar = (p: Player) => {
+    const actual = marks[p.id]?.mark ?? 'sin_registrar';
+    poner(p.id, actual === 'presente' ? 'ausente' : 'presente');
+  };
+
+  const todasVinieron = () => {
     setMarks((m) => {
       const next = { ...m };
       squad.forEach((p) => {
-        // No se pisa a quien ya tiene parte médico.
-        if (!['justificada', 'lesionada'].includes(next[p.id]?.mark)) next[p.id] = { mark: 'presente' };
+        /* No se pisa a quien tiene parte médico: eso ya es un dato. */
+        const actual = next[p.id]?.mark;
+        if (actual !== 'justificada' && actual !== 'lesionada') next[p.id] = { mark: 'presente' };
       });
       return next;
     });
     setDirty(true);
   };
 
-  const save = async () => {
+  const descartar = () => {
+    const base: Record<string, { mark: AttendanceMark; reason?: string }> = {};
+    squad.forEach((p) => { base[p.id] = dePartida(p); });
+    setMarks(base);
+    setDirty(false);
+  };
+
+  const guardar = async () => {
     if (!session) return;
     setSaving(true);
     try {
@@ -149,13 +185,18 @@ export default function AttendancePage() {
       await actions.log({
         kind: 'asistencia',
         teamId,
-        text: `Has registrado la asistencia del ${relativeDay(session.date).toLowerCase()} (${counts.presente} presentes).`,
+        text: `Has pasado lista del ${relativeDay(session.date).toLowerCase()} (${cuenta.vinieron} vinieron).`,
         link: `/app/entrenamientos/${session.id}/asistencia`,
       });
-      toast.success('Asistencia registrada', `${counts.presente} presentes · ${counts.ausente} ausentes`);
+      toast.success(
+        'Lista guardada',
+        cuenta.faltaron === 0
+          ? `Vinieron las ${cuenta.vinieron}.`
+          : `${cuenta.vinieron} vinieron · ${cuenta.faltaron} faltaron`,
+      );
       setDirty(false);
     } catch (e) {
-      toast.error('No hemos podido guardar la asistencia', humanError(e));
+      toast.error('No he podido guardar la lista', humanError(e));
     } finally {
       setSaving(false);
     }
@@ -164,163 +205,181 @@ export default function AttendancePage() {
   if (sessions.length === 0) {
     return (
       <>
-        <PageHeader title="Asistencia" description="Pasa lista en menos de treinta segundos." />
+        <PageHeader title="Pasar lista" />
         <Panel>
-          <EmptyState size="pleno"
-           
-            title="No hay entrenamientos de este equipo"
-            description="Crea una sesión y podrás registrar la asistencia desde aquí."
-            action={
-              <Link
-                to="/app/entrenamientos/nuevo"
-                className="inline-flex h-9 items-center rounded-lg bg-ink-900 px-4 text-sm font-medium text-ink-0"
-              >
-                Crear entrenamiento
-              </Link>
-            }
+          <EmptyState
+            size="pleno"
+            title="Este equipo no tiene entrenamientos"
+            description="La lista se pasa sobre un entrenamiento: apunta uno y podrás pasarla aquí."
+            action={<LinkButton to="/app/entrenamientos/nuevo" size="sm">Apuntar entrenamiento</LinkButton>}
           />
         </Panel>
       </>
     );
   }
 
+  /* QUEDA GENTE SIN MARCAR, Y ESO ES LO QUE DECIDE SI SE OFRECE EL ATAJO.
+     Antes la condición era «no hay NADIE marcado», y bastaba con una jugadora
+     lesionada —que entra ya justificada, porque es un dato guardado— para que
+     el botón de «Vinieron todas» no apareciera nunca. Lo cazó la auditoría:
+     esta pantalla se quedaba con cero acciones principales. */
+  const quedanPorMarcar = cuenta.sinMarcar > 0;
+  /* «Sin empezar» ES QUE LA ENTRENADORA NO HAYA TOCADO NADA, no que no haya
+     ninguna marca: una jugadora con parte médico abierto llega ya justificada
+     —es un dato de la base— y eso no significa que la lista esté empezada. Con
+     la otra definición, el botón decía «Las otras 15 vinieron» antes de que
+     nadie hubiera hecho nada. */
+  const sinEmpezar = !dirty && !existing?.savedAt;
+
   return (
     <>
-      <PageHeader
-        title="Asistencia"
-        description="Marca a todas como presentes y cambia sólo las excepciones."
-      />
-
-      {/* ── QUÉ SESIÓN ────────────────────────────────────────────────────────
-          Dos desplegables y la fecha debajo. Sin caja: agrupar dos campos que
-          ya están juntos no añade ninguna información, sólo un borde más. */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="label" htmlFor="asis-equipo">Equipo</label>
-          <Select id="asis-equipo" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
-            {teams.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <label className="label" htmlFor="asis-sesion">Entrenamiento</label>
-          <Select id="asis-sesion" value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
-            {sessions.map((s) => (
-              <option key={s.id} value={s.id}>
-                {relativeDay(s.date)} · {s.start}
-              </option>
-            ))}
-          </Select>
-        </div>
-      </div>
-
       {session && (
-        <p className="mt-3 text-sm leading-relaxed text-ink-500">
-          {/* El título va aquí y no dentro del desplegable: ahí se cortaba a
-              media palabra, porque un `<select>` nativo no se puede recortar
-              con puntos suspensivos. */}
-          {session.title && <span className="text-ink-700">{session.title} · </span>}
-          {longDate(session.date)} · {session.start}
-          {session.venue ? ` · ${session.venue}` : ''}
-          {existing?.savedAt && <span className="text-ink-400"> · ya registrada, puedes corregirla</span>}
+        <Link
+          to={`/app/entrenamientos/${session.id}`}
+          className="mb-3 inline-flex h-8 items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-900"
+        >
+          <ChevronLeft size={15} /> {session.title || 'El entrenamiento'}
+        </Link>
+      )}
+
+      <PageHeader title="Pasar lista" />
+
+      {/* DE QUÉ SESIÓN. Si se ha llegado desde su ficha, se dice y no se
+          ofrece cambiarla: un desplegable que puede cambiarte de día sin que
+          te enteres es justo lo que hacía que se pasara lista del día
+          equivocado. Sin dirección —entrando desde el menú— sí hay que
+          elegirla, y entonces el desplegable es la pregunta de la pantalla. */}
+      {deLaDireccion ? (
+        <p className="text-base leading-relaxed text-ink-600">
+          {longDate(session?.date ?? '')} · {session?.start}
+          {session?.venue ? ` · ${session.venue}` : ''}
+          {existing?.savedAt && <span className="text-ink-400"> · ya la pasaste, puedes corregirla</span>}
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {teams.length > 1 && (
+            <div>
+              <label className="label" htmlFor="asis-equipo">Equipo</label>
+              <Select id="asis-equipo" value={teamId} onChange={(e) => setTeamId(e.target.value)}>
+                {teams.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </Select>
+            </div>
+          )}
+          <div>
+            <label className="label" htmlFor="asis-sesion">Entrenamiento</label>
+            <Select id="asis-sesion" value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
+              {sessions.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {relativeDay(s.date)} · {s.start}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </div>
+      )}
+
+      {/* LA ACCIÓN PRINCIPAL, Y CAMBIA SEGÚN LO QUE FALTE POR HACER. Antes de
+          empezar, lo que hace falta es decir que vinieron todas; a partir de
+          ahí, lo que hace falta es guardar. Nunca las dos a la vez
+          compitiendo. */}
+      {quedanPorMarcar && (
+        <div className="mt-5">
+          {/* Y SÓLO HAY UNA ACCIÓN PRINCIPAL A LA VEZ. En cuanto hay algo sin
+              guardar, la importante es guardar —y está abajo, pegada—, así que
+              ésta baja a secundaria en vez de pelearse con ella. */}
+          <Button
+            size="lg"
+            block
+            variant={dirty ? 'secondary' : 'primary'}
+            icon={<Check size={18} />}
+            onClick={todasVinieron}
+          >
+            {sinEmpezar
+              ? 'Vinieron todas'
+              : cuenta.sinMarcar === 1 ? 'La otra vino' : `Las otras ${cuenta.sinMarcar} vinieron`}
+          </Button>
+          {sinEmpezar && (
+            <p className="mt-2.5 text-base leading-relaxed text-ink-500">
+              Y luego toca sólo a las que faltaron. {squad.length} jugadoras en la plantilla.
+            </p>
+          )}
+        </div>
+      )}
+
+      {!sinEmpezar && (
+        <p className="mt-5 text-md text-ink-700">
+          <span className="font-semibold text-ink-900">{cuenta.vinieron}</span> de {squad.length} vinieron
+          {cuenta.faltaron > 0 && <span className="text-ink-500"> · {cuenta.faltaron} faltaron</span>}
+          {cuenta.sinMarcar > 0 && (
+            <span className="text-ink-500">
+              {' · '}
+              {cuenta.sinMarcar === 1 ? '1 sin marcar' : `${cuenta.sinMarcar} sin marcar`}
+            </span>
+          )}
         </p>
       )}
 
-      {/* ── RESUMEN ───────────────────────────────────────────────────────────
-          Cuatro cifras con su palabra debajo, y nada más. Antes eran cuatro
-          cajas con borde, fondo, radio y relleno, más una barra de colores en
-          una quinta caja: cinco rectángulos para decir «18 de 22». La cifra
-          grande ya es el contraste; el recuadro no añadía nada. */}
-      {/* Rejilla, no una fila que se parte: envuelto, el cuarto dato caía solo
-          a la línea de abajo y parecía que sobraba. */}
-      <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-        <Cifra valor={squad.length} etiqueta="Plantilla" />
-        <Cifra valor={counts.presente + counts.tarde} etiqueta="Presentes" tono="ok" />
-        <Cifra valor={counts.ausente} etiqueta="Ausentes" tono="bad" />
-        <Cifra valor={counts.justificada + counts.lesionada} etiqueta="Justificadas" tono="warn" />
-      </div>
-
-      {counts.sinRegistrar > 0 && (
-        <p className="mt-3 text-sm text-ink-500">
-          {counts.sinRegistrar === 1
-            ? 'Queda 1 jugadora sin marcar.'
-            : `Quedan ${counts.sinRegistrar} jugadoras sin marcar.`}
-        </p>
-      )}
-
-      {/* ── JUGADORAS ─────────────────────────────────────────────────────────
-          La acción de «todas presentes» vive AQUÍ, al lado de la lista sobre la
-          que actúa, y no en una barra flotante permanente junto al guardar: son
-          dos cosas distintas y estaban en el mismo sitio, tocándose. */}
-      <div className="mt-8 flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="text-md font-semibold text-ink-900">Jugadoras</h2>
-        <Button variant="secondary" size="sm" icon={<CheckCheck size={15} />} onClick={markAllPresent}>
-          Marcar todas presentes
-        </Button>
-      </div>
-
-      <ul className="mt-2 divide-y divide-line">
+      {/* LA LISTA. Una fila, un interruptor, y el motivo sólo donde hay falta. */}
+      <ul className="mt-4 divide-y divide-line">
         {squad.map((p) => {
-          const current = marks[p.id]?.mark ?? 'sin_registrar';
+          const marca = marks[p.id]?.mark ?? 'sin_registrar';
+          const a = asistencia(marca);
           return (
-            <li key={p.id} className="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-center sm:gap-4">
-              <Link to={`/app/plantilla/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3">
-                <Avatar name={p.name} size={36} badge={p.number} />
-                <span className="min-w-0">
-                  <span className="block truncate text-base font-medium text-ink-900">{p.shortName}</span>
-                  <span className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-ink-500">
-                    <AvailabilityDot status={p.availability.status} />
-                    {p.position}
-                    {p.availability.status !== 'disponible' && (
-                      <span className="truncate text-ink-400">· {disponibilidad(p.availability.status).label}</span>
-                    )}
+            <li key={p.id}>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => alternar(p)}
+                  aria-pressed={marca === 'presente'}
+                  aria-label={`${p.shortName}: ${a.label}`}
+                  className="flex min-h-[60px] min-w-0 flex-1 items-center gap-3 py-2 text-left"
+                >
+                  <Avatar name={p.name} size={36} badge={p.number} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-base font-medium text-ink-900">{p.shortName}</span>
+                    <span className="block truncate text-sm text-ink-500">{p.position}</span>
                   </span>
-                </span>
-              </Link>
 
-              {/* Cinco estados, siempre en una fila que se desliza si no cabe:
-                  partida en dos filas se convertía en un bloque y empujaba a
-                  la jugadora de al lado. */}
-              <div className="flex shrink-0 gap-1.5">
-                {MARKS.map((m) => {
-                  const a = asistencia(m);
-                  const active = current === m;
-                  return (
-                    <button
-                      key={m}
-                      onClick={() => setMark(p.id, m)}
-                      aria-pressed={active}
-                      className={cn(
-                        'h-10 min-w-0 flex-1 rounded-xl border px-2 text-sm font-medium transition-colors sm:h-9 sm:flex-none sm:px-3',
-                        active
-                          ? m === 'presente'
-                            ? 'border-transparent bg-ok/15 text-ok'
-                            : m === 'tarde' || m === 'justificada'
-                              ? 'border-transparent bg-warn/15 text-warn'
-                              : m === 'lesionada'
-                                ? 'border-transparent bg-bad/12 text-bad'
-                                : 'border-transparent bg-bad/15 text-bad'
-                          : 'border-line text-ink-500 hover:border-ink-400 hover:text-ink-800',
-                      )}
-                    >
-                      <span className="hidden sm:inline">{a.label}</span>
-                      <span className="sm:hidden">{a.short}</span>
-                    </button>
-                  );
-                })}
+                  {/* El estado, como una pastilla que se lee de lejos. */}
+                  <span
+                    className={cn(
+                      'flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium',
+                      marca === 'presente'
+                        ? 'bg-ok/15 text-ok'
+                        : marca === 'sin_registrar'
+                          ? 'bg-panel text-ink-500'
+                          : marca === 'lesionada' || marca === 'ausente'
+                            ? 'bg-bad/15 text-bad'
+                            : 'bg-warn/15 text-warn',
+                    )}
+                  >
+                    {marca === 'presente' && <Check size={14} strokeWidth={3} aria-hidden />}
+                    {marca === 'ausente' && <X size={14} strokeWidth={3} aria-hidden />}
+                    {marca === 'presente' ? 'Vino' : marca === 'ausente' ? 'No vino' : a.label}
+                  </span>
+                </button>
+
+                {/* Y SÓLO SI FALTÓ. En una lista normal son dos o tres, no
+                    dieciséis: por eso esto no es una columna de botones. */}
+                {falta(marca) && (
+                  <button
+                    type="button"
+                    onClick={() => setPorQue(p)}
+                    className="h-9 shrink-0 rounded-full px-3 text-sm font-medium text-ink-500 underline decoration-ink-500/40 underline-offset-2 transition-colors hover:text-ink-900"
+                  >
+                    ¿Por qué?
+                  </button>
+                )}
               </div>
             </li>
           );
         })}
       </ul>
 
-      {/* ── GUARDAR ───────────────────────────────────────────────────────────
-          Sólo existe cuando hay algo que guardar. Antes había una barra fija
-          permanente con las cifras, «Todos», «Descartar» y «Guardar» a la vez,
-          y encima el botón redondo de crear se le montaba por la derecha; para
-          que no se tocaran, la propia barra se reservaba 72 px a mano.
-          Una barra, una responsabilidad: cuántos cambios hay y guardarlos. */}
+      {/* GUARDAR. Sólo cuando hay algo que guardar, y entonces es lo único
+          pegado abajo. */}
       {dirty && (
         <div
           data-barra-fija
@@ -334,42 +393,58 @@ export default function AttendancePage() {
             <Button variant="ghost" size="sm" icon={<Undo2 size={15} />} onClick={descartar}>
               <span className="hidden sm:inline">Descartar</span>
             </Button>
-            <Button size="sm" icon={<Save size={15} />} loading={saving} onClick={save}>
+            <Button size="sm" icon={<Save size={15} />} loading={saving} onClick={() => void guardar()}>
               Guardar
             </Button>
           </div>
         </div>
       )}
-    </>
-  );
-}
 
-/**
- * Una cifra y su palabra. Sin caja, sin borde y sin cápsula de color.
- *
- * EL NÚMERO VA EN BLANCO Y EL COLOR ES UN PUNTO. Tres cifras enormes en verde,
- * rojo y ámbar sobre negro se pelean entre ellas y ninguna destaca; además el
- * color acaba siendo lo primero que se ve, cuando lo primero que hay que leer
- * es cuántas son. El punto dice de qué es cada una sin gritar.
- */
-function Cifra({
-  valor, etiqueta, tono,
-}: { valor: number; etiqueta: string; tono?: 'ok' | 'warn' | 'bad' }) {
-  return (
-    <div className="min-w-0">
-      <p className="cifra text-3xl text-ink-900">{valor}</p>
-      <p className="mt-1.5 flex items-center gap-1.5 text-sm text-ink-500">
-        {tono && (
-          <span
-            aria-hidden
-            className={cn(
-              'h-1.5 w-1.5 shrink-0 rounded-full',
-              tono === 'ok' ? 'bg-ok' : tono === 'warn' ? 'bg-warn' : 'bg-bad',
-            )}
-          />
-        )}
-        <span className="truncate">{etiqueta}</span>
-      </p>
-    </div>
+      {/* EL MOTIVO DE UNA FALTA. Los cinco estados de siempre, preguntados
+          sólo de quien no vino. */}
+      <Modal
+        open={!!porQue}
+        onClose={() => setPorQue(null)}
+        size="sm"
+        title={porQue ? `¿Por qué no vino ${porQue.shortName}?` : ''}
+      >
+        <div className="space-y-1.5">
+          {MOTIVOS.map((m) => {
+            const info = ATTENDANCE[m];
+            const elegido = porQue ? (marks[porQue.id]?.mark ?? 'sin_registrar') === m : false;
+            return (
+              <button
+                key={m}
+                type="button"
+                onClick={() => {
+                  if (porQue) poner(porQue.id, m, info.label);
+                  setPorQue(null);
+                }}
+                className={cn(
+                  'flex h-12 w-full items-center gap-3 rounded-xl px-3.5 text-left text-base transition-colors',
+                  elegido ? 'bg-marca-600 font-semibold text-white' : 'bg-panel text-ink-800 active:bg-raised',
+                )}
+              >
+                <span
+                  aria-hidden
+                  className={cn('h-2 w-2 shrink-0 rounded-full', elegido ? 'bg-white' : info.bg)}
+                />
+                {m === 'ausente' ? 'No avisó' : info.label}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => {
+              if (porQue) poner(porQue.id, 'presente');
+              setPorQue(null);
+            }}
+            className="flex h-12 w-full items-center rounded-xl px-3.5 text-left text-base text-ink-500 transition-colors active:bg-panel"
+          >
+            Me he equivocado, sí vino
+          </button>
+        </div>
+      </Modal>
+    </>
   );
 }
