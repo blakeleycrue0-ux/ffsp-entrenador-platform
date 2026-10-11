@@ -1,6 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Bell, CheckCheck, PanelLeftOpen, Plus, Search } from 'lucide-react';
-import { Avatar, Button, Dot, Dropdown } from '@/components/ui';
+import { useNavigate } from 'react-router-dom';
+import { Bell, CheckCheck, LogOut, PanelLeftOpen, Plus, Search } from 'lucide-react';
+import { Avatar, Button, Dot, Dropdown, MenuItem } from '@/components/ui';
+import { CUENTA } from './navigation';
 import { useClub } from '@/store/store';
 import { currentStaff } from '@/store/selectors';
 import { cn, relativeTime } from '@/lib/utils';
@@ -23,7 +24,7 @@ export function Topbar({
   menu: boolean;
   onMenu: () => void;
 }) {
-  const { data, actions } = useClub();
+  const { data, actions, signOut } = useClub();
   const navigate = useNavigate();
   const staff = currentStaff(data);
   const unread = data.notifications.filter((n) => !n.read).length;
@@ -58,9 +59,37 @@ export function Topbar({
           Sin logotipo, también a propósito: ocupaba de 96 a 150 px de una
           barra de 320 para decir dónde estás cuando ya estás dentro. La
           marca está en la portada, en la entrada y en el cajón. */}
-      <Link to="/app/perfil" aria-label="Mi perfil" className="-ml-0.5 shrink-0 lg:hidden">
-        <Avatar name={staff?.name ?? '—'} size={38} />
-      </Link>
+      {/* TU AVATAR ABRE TU CUENTA, y eso es lo que sustituye al cajón de once
+          secciones en el móvil. Antes llevaba directamente a «Mi perfil» y
+          Ajustes vivía en la lista del cajón; sin cajón, Ajustes tenía que
+          estar en algún sitio, y el sitio donde cualquiera lo busca en una
+          aplicación del teléfono es detrás de su propia cara. */}
+      <Dropdown
+        align="left"
+        className="w-[228px]"
+        trigger={
+          <button aria-label="Mi cuenta" className="-ml-0.5 shrink-0 lg:hidden">
+            <Avatar name={staff?.name ?? '—'} size={38} />
+          </button>
+        }
+      >
+        {(close) => (
+          <>
+            <p className="truncate px-2.5 pb-1.5 pt-1 text-sm font-semibold text-ink-900">
+              {staff?.name ?? '—'}
+            </p>
+            {CUENTA.map((p) => (
+              <MenuItem key={p.to} to={p.to} onClick={close}>
+                {p.label}
+              </MenuItem>
+            ))}
+            <div className="my-1 hairline" />
+            <MenuItem icon={<LogOut size={15} />} tone="danger" onClick={signOut}>
+              Cerrar sesión
+            </MenuItem>
+          </>
+        )}
+      </Dropdown>
 
       {/* Sólo cuando está plegado: con el menú a la vista, el botón de
           desplegarlo no dice nada y el de plegarlo ya está dentro de él. */}

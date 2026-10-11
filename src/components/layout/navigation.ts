@@ -1,81 +1,170 @@
 /**
- * Las secciones NO LLEVAN ICONO, y es una decisión.
- * ---------------------------------------------------------------------------
- * Un icono sólo se gana su sitio si se reconoce más rápido que la palabra.
- * «Plantilla», «Entrenamientos» o «Pizarra táctica» no tienen un dibujo
- * universal: cualquier cosa que se ponga hay que aprendérsela, y mientras
- * tanto lo único que aporta es ruido a la izquierda del texto.
+ * CUATRO SITIOS. No once.
+ * ═══════════════════════════════════════════════════════════════════════════
  *
- * Sin ellos, la navegación la ordenan el peso y el espacio, que es lo que de
- * verdad se lee. Los iconos que quedan en el producto son los funcionales
- * —buscar, cerrar, una flecha—, donde la forma SÍ es más rápida que la
- * palabra.
+ * Había once secciones en una lista plana con cuatro títulos de grupo: Inicio,
+ * Calendario, Plantilla, Disponibilidad y lesiones, Entrenamientos, Biblioteca
+ * de ejercicios, Pizarra táctica, Partidos, Analíticas, Equipo técnico, y
+ * Ajustes y ayuda. Once decisiones antes de poder hacer nada, y cinco de ellas
+ * —entrenamientos, partidos, disponibilidad, analíticas, ejercicios— son
+ * respuestas a preguntas que un entrenador no se hace por separado.
+ *
+ * Porque nadie piensa «voy a Disponibilidad»: piensa «¿con quién cuento el
+ * jueves?», y eso es una pregunta sobre su equipo. Nadie piensa «voy a
+ * Analíticas»: piensa «¿quién está faltando?». Y nadie piensa «voy a
+ * Entrenamientos» y «voy a Partidos» como dos cosas distintas: piensa «¿qué
+ * hay esta semana?».
+ *
+ * Así que son cuatro, y cada una contesta una pregunta entera:
+ *
+ *   INICIO       ¿qué toca ahora?
+ *   CALENDARIO   ¿qué hay esta semana?        · agenda, entrenos, partidos
+ *   EQUIPO       ¿con quién cuento?           · plantilla, disponibilidad,
+ *                                               datos, equipos
+ *   EJERCICIOS   ¿qué hacemos en el campo?    · biblioteca, pizarra
+ *
+ * Y la cuenta —perfil, ajustes, plan— no es una sección: es quien eres, y vive
+ * detrás de tu avatar, como en cualquier aplicación del teléfono.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * NO SE HA BORRADO NINGUNA PANTALLA, Y NINGUNA DIRECCIÓN HA CAMBIADO.
+ *
+ * `/app/disponibilidad` sigue siendo `/app/disponibilidad`: lo que cambia es
+ * que se llega a ella desde Equipo, con sus hermanas a la vista en una fila de
+ * pestañas, en vez de buscarla en una lista de once. Un enlace de hace tres
+ * meses, un aviso del registro de actividad o un marcador del navegador siguen
+ * funcionando igual.
+ *
+ * LAS PESTAÑAS SE PINTAN SOLAS, y sustituyen al título de la pantalla. Antes
+ * cada una de esas nueve pantallas gastaba un titular y una frase de
+ * explicación para decir dónde estabas; la pestaña encendida ya lo dice, y de
+ * paso enseña a dónde más se puede ir desde ahí. Las pantallas de dentro
+ * —fichas, formularios— no llevan pestañas: ahí se está haciendo una cosa, y
+ * lo que hace falta es volver.
  */
 
-export interface NavItem {
+import { CalendarDays, Dumbbell, Home, Users } from 'lucide-react';
+
+export interface Pagina {
   to: string;
+  /** La palabra de la pestaña. Corta: tienen que caber cuatro a 320 px. */
   label: string;
-  /** Etiqueta corta para la barra inferior en móvil. */
-  short?: string;
-  /** Coincidencia por prefijo para marcar activo el ítem en rutas de detalle. */
-  match?: string;
-  /** Sólo visible para quien administra el club. */
-  adminOnly?: boolean;
 }
 
-export interface NavGroup {
-  id: string;
-  label?: string;
-  items: NavItem[];
+export interface Seccion {
+  /** Lo que se abre al tocar la sección: siempre la primera de `paginas`. */
+  to: string;
+  /** La palabra de la navegación. */
+  label: string;
+  icono: typeof Home;
+  /**
+   * Las pantallas que SON esta sección, en pestañas. Vacío = la sección es una
+   * sola pantalla y no se pintan pestañas.
+   */
+  paginas: Pagina[];
+  /**
+   * Prefijos que pertenecen a la sección sin ser pestaña: fichas, formularios
+   * y pantallas de detalle. Sirven para que la navegación siga marcando dónde
+   * estás cuando entras en una jugadora o editas un partido.
+   */
+  tambien?: string[];
 }
 
-/**
- * Las secciones del producto. El orden es el del trabajo real de una
- * entrenadora: qué toca hoy, qué hay planificado, con quién cuenta.
- */
-export const NAV: NavGroup[] = [
+export const SECCIONES: Seccion[] = [
   {
-    id: 'hoy',
-    items: [
-      { to: '/app', label: 'Inicio' },
-      { to: '/app/calendario', label: 'Calendario', short: 'Agenda' },
-    ],
+    to: '/app',
+    label: 'Inicio',
+    icono: Home,
+    paginas: [],
   },
   {
-    id: 'equipo',
-    label: 'Equipo',
-    items: [
-      { to: '/app/plantilla', label: 'Plantilla' },
-      { to: '/app/disponibilidad', label: 'Disponibilidad y lesiones', short: 'Disponibilidad' },
-    ],
-  },
-  {
-    id: 'trabajo',
-    label: 'Trabajo en campo',
-    items: [
-      { to: '/app/entrenamientos', label: 'Entrenamientos', short: 'Entrenos' },
-      { to: '/app/ejercicios', label: 'Biblioteca de ejercicios', short: 'Ejercicios' },
-      { to: '/app/pizarra', label: 'Pizarra táctica', short: 'Pizarra' },
+    to: '/app/calendario',
+    label: 'Calendario',
+    icono: CalendarDays,
+    paginas: [
+      { to: '/app/calendario', label: 'Agenda' },
+      { to: '/app/entrenamientos', label: 'Entrenos' },
       { to: '/app/partidos', label: 'Partidos' },
     ],
   },
   {
-    id: 'club',
-    label: 'Club',
-    items: [
-      { to: '/app/analiticas', label: 'Analíticas' },
-      { to: '/app/equipo-tecnico', label: 'Equipo técnico' },
-      { to: '/app/ajustes', label: 'Ajustes y ayuda', short: 'Ajustes' },
+    to: '/app/plantilla',
+    label: 'Equipo',
+    icono: Users,
+    paginas: [
+      { to: '/app/plantilla', label: 'Plantilla' },
+      { to: '/app/disponibilidad', label: 'Disponibilidad' },
+      { to: '/app/analiticas', label: 'Datos' },
+      { to: '/app/equipo-tecnico', label: 'Equipos' },
+    ],
+  },
+  {
+    to: '/app/ejercicios',
+    label: 'Ejercicios',
+    icono: Dumbbell,
+    paginas: [
+      { to: '/app/ejercicios', label: 'Biblioteca' },
+      { to: '/app/pizarra', label: 'Pizarra' },
     ],
   },
 ];
 
-/** Atajos de la barra inferior en móvil; el resto vive en «Más». */
-export const MOBILE_NAV: string[] = ['/app', '/app/calendario', '/app/entrenamientos', '/app/plantilla'];
+/** La cuenta: detrás del avatar, no en la navegación. */
+export const CUENTA: Pagina[] = [
+  { to: '/app/perfil', label: 'Mi perfil' },
+  { to: '/app/ajustes', label: 'Ajustes y ayuda' },
+  { to: '/app/ajustes/plan', label: 'Plan del club' },
+];
 
-export const ALL_NAV_ITEMS: NavItem[] = NAV.flatMap((g) => g.items);
+/** Todas las pantallas con nombre, para la búsqueda y para las pruebas. */
+export const TODAS_LAS_PAGINAS: Pagina[] = [
+  ...SECCIONES.flatMap((s) => (s.paginas.length > 0 ? s.paginas : [{ to: s.to, label: s.label }])),
+  ...CUENTA,
+];
 
-export const isActive = (pathname: string, item: NavItem): boolean => {
-  if (item.to === '/app') return pathname === '/app' || pathname === '/app/';
-  return pathname.startsWith(item.match ?? item.to);
-};
+const empiezaPor = (pathname: string, base: string) =>
+  pathname === base || pathname.startsWith(`${base}/`);
+
+/**
+ * ¿De qué sección es esta dirección?
+ *
+ * Gana la coincidencia más larga, que es lo que hace que `/app/plantilla` no
+ * se la quede `/app`. Si no es de ninguna —la cuenta, una dirección vieja—,
+ * devuelve nulo y la navegación no marca nada, que es la verdad.
+ */
+export function seccionDe(pathname: string): Seccion | null {
+  let mejor: Seccion | null = null;
+  let largo = -1;
+  for (const s of SECCIONES) {
+    const bases = [s.to, ...s.paginas.map((p) => p.to), ...(s.tambien ?? [])];
+    for (const base of bases) {
+      /* `/app` sólo coincide exacto: si no, se quedaría con todo. */
+      const coincide = base === '/app' ? pathname === '/app' || pathname === '/app/' : empiezaPor(pathname, base);
+      if (coincide && base.length > largo) {
+        mejor = s;
+        largo = base.length;
+      }
+    }
+  }
+  return mejor;
+}
+
+/** ¿Está la navegación encendida en esta sección? */
+export const seccionActiva = (pathname: string, s: Seccion) => seccionDe(pathname) === s;
+
+/**
+ * La página exacta en la que estamos, si es una de las pestañas.
+ *
+ * Que sea EXACTA es lo que decide si se pintan las pestañas: en
+ * `/app/plantilla` sí, porque se está mirando una lista y las hermanas son
+ * alternativas de verdad; en `/app/plantilla/nueva` no, porque ahí se está
+ * rellenando un formulario y cambiar de pestaña sería perderlo.
+ */
+export function paginaExacta(pathname: string): { seccion: Seccion; pagina: Pagina } | null {
+  const limpio = pathname.replace(/\/$/, '') || '/app';
+  for (const seccion of SECCIONES) {
+    const pagina = seccion.paginas.find((p) => p.to === limpio);
+    if (pagina) return { seccion, pagina };
+  }
+  return null;
+}

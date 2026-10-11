@@ -37,8 +37,6 @@ export default function SessionsPage() {
   return (
     <>
       <PageHeader
-        title="Entrenamientos"
-        description="Todas tus sesiones de entrenamiento, con su estructura y su material."
         actions={
           <>
             <LinkButton to="/app/entrenamientos/nuevo" size="sm" icon={<Plus size={16} />}>

@@ -2,39 +2,30 @@
  * La pastilla de navegación del móvil.
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * NO ES EL DIQUE QUE SE QUITÓ. Aquello era una barra de borde a borde pegada
- * al suelo, con cuatro atajos y una hoja «Más» donde vivían escondidas otras
- * siete secciones en un orden distinto al del escritorio. Esto es otra cosa:
+ * LAS CUATRO SECCIONES, Y NADA MÁS. Ya no hay un «Menú» que abra una lista de
+ * once: la lista de once no existe. Lo que hay son cuatro sitios, cada uno con
+ * sus pantallas dentro en pestañas, y los cuatro están aquí. Así que esta
+ * pastilla ya no es un atajo a lo más usado con el resto escondido detrás: es
+ * la navegación entera, a la vista, siempre.
  *
- *  · TRES SITIOS, no cuatro más un cajón de sastre. Los tres a los que se
- *    vuelve todo el rato. La lista completa de once sigue estando donde
- *    estaba, en el cajón que se abre desde la cabecera, y en el mismo orden
- *    que en el escritorio.
+ * Eso quita de encima la pregunta que dejaba a la gente parada: «¿esto estará
+ * en el menú o en la barra de abajo?». No hay dos sitios donde mirar.
+ *
  *  · FLOTA. Tiene esquinas, aire a los lados y sombra: se lee como un objeto
  *    que está por encima de la página, no como el final de la pantalla. Es
  *    la diferencia entre «aquí se acaba» y «esto va contigo».
  *  · RESERVA SU SITIO. El alto está en `--nav-h` y todo lo que se coloca por
  *    encima de lo que haya abajo lo lee de ahí. Nada se queda debajo.
+ *  · SIEMPRE MARCA DÓNDE ESTÁS, también dentro de una ficha: `seccionDe` sabe
+ *    que la ficha de una jugadora es Equipo y que editar un partido es
+ *    Calendario. Antes, en ocho de las once secciones, aquí abajo no se
+ *    encendía nada.
  *
- * POR QUÉ ESTAS TRES. Inicio es a donde se vuelve; Calendario es lo que
- * contesta «qué hay esta semana» —entrenamientos y partidos en el mismo
- * sitio—; Plantilla es la lista que se abre antes de cada sesión. Las
- * etiquetas caben enteras a 320 px, que es el motivo por el que no están
- * aquí «Entrenamientos» ni «Equipo técnico»: a 11 px miden más que su celda
- * y habría que partirlas o recortarlas, y una etiqueta recortada en una
- * navegación es peor que no ponerla.
- *
- * Y EL CUARTO ES EL MENÚ. Estaba de hamburguesa en la cabecera, y eso dejaba
- * la pastilla sin marcar en ocho de las once secciones: entrabas en
- * Entrenamientos y abajo no se encendía nada, como si estuvieras en ningún
- * sitio. Con el menú aquí dentro, la navegación siempre dice dónde estás —en
- * uno de los tres destinos o «en el menú»— y la cabecera se queda con lo
- * suyo: quién eres, buscar y los avisos.
- *
- * CADA DESTINO MIDE 84 px, no 92. Con 92, la pastilla entera medía 296 y a
- * 320 px de pantalla sólo quedan 288 entre los márgenes: se salía cuatro
- * píxeles por cada lado y quedaba pegada a los bordes. Con 84 son 272 y
- * respira.
+ * LAS CUATRO ETIQUETAS CABEN A 320 px, que es el motivo de que sean éstas y no
+ * las once de antes: «Entrenamientos» o «Equipo técnico» miden más que su
+ * celda a 11 px, y una etiqueta recortada en una navegación es peor que no
+ * ponerla. Cada destino mide 68 px: 4 × 68 + huecos + relleno = 290, y entre
+ * márgenes quedan 288 en la pantalla más estrecha.
  *
  * SIN DESENFOQUE. El fondo es un color opaco, no cristal. Un `backdrop-filter`
  * aquí obliga al navegador a recomponer todo lo que pasa por debajo en cada
@@ -43,14 +34,8 @@
  */
 
 import { Link, useLocation } from 'react-router-dom';
-import { CalendarDays, Home, Menu, Users } from 'lucide-react';
+import { SECCIONES, seccionActiva } from './navigation';
 import { cn } from '@/lib/utils';
-
-const DESTINOS = [
-  { to: '/app', etiqueta: 'Inicio', icono: Home },
-  { to: '/app/calendario', etiqueta: 'Calendario', icono: CalendarDays },
-  { to: '/app/plantilla', etiqueta: 'Plantilla', icono: Users },
-] as const;
 
 /* Cuatro destinos en 320 px: 4 × 68 + 3 × 2 de hueco + 12 de relleno = 290,
    y entre márgenes quedan 288. Se le quitan dos píxeles al relleno lateral
@@ -61,15 +46,8 @@ const DESTINO =
 const ACTIVO = 'bg-white/[0.10] text-ink-900';
 const REPOSO = 'text-ink-600 active:bg-white/[0.05]';
 
-/** Inicio sólo está activo en la raíz; los demás, también en sus subpáginas. */
-const activo = (ruta: string, destino: string) =>
-  destino === '/app' ? ruta === '/app' : ruta === destino || ruta.startsWith(`${destino}/`);
-
-export function NavFlotante({ onMenu }: { onMenu: () => void }) {
+export function NavFlotante() {
   const { pathname } = useLocation();
-  /* Si no estás en ninguno de los tres, estás en una sección que vive en el
-     menú: entonces el que se marca es el menú. */
-  const enElMenu = !DESTINOS.some((d) => activo(pathname, d.to));
 
   return (
     <div
@@ -99,35 +77,23 @@ export function NavFlotante({ onMenu }: { onMenu: () => void }) {
         aria-label="Navegación principal"
         className="pointer-events-auto flex items-center gap-0.5 rounded-full border border-line bg-[#0C1628] p-1.5 shadow-pop"
       >
-        {DESTINOS.map(({ to, etiqueta, icono: Icono }) => {
-          const aqui = activo(pathname, to);
+        {SECCIONES.map((s) => {
+          const Icono = s.icono;
+          const aqui = seccionActiva(pathname, s);
           return (
             <Link
-              key={to}
-              to={to}
+              key={s.to}
+              to={s.to}
               aria-current={aqui ? 'page' : undefined}
               className={cn(DESTINO, aqui ? ACTIVO : REPOSO)}
             >
               <Icono size={19} strokeWidth={aqui ? 2.2 : 1.8} aria-hidden />
               <span className={cn('text-2xs leading-none', aqui ? 'font-semibold' : 'font-medium')}>
-                {etiqueta}
+                {s.label}
               </span>
             </Link>
           );
         })}
-
-        <button
-          type="button"
-          onClick={onMenu}
-          aria-label="Abrir el menú"
-          aria-current={enElMenu ? 'page' : undefined}
-          className={cn(DESTINO, enElMenu ? ACTIVO : REPOSO)}
-        >
-          <Menu size={19} strokeWidth={enElMenu ? 2.2 : 1.8} aria-hidden />
-          <span className={cn('text-2xs leading-none', enElMenu ? 'font-semibold' : 'font-medium')}>
-            Menú
-          </span>
-        </button>
       </nav>
     </div>
   );

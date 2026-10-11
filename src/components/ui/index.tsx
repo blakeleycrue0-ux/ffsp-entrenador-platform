@@ -972,34 +972,46 @@ export function MenuItem({
  *
  * Lo que NO cambia: el escritorio, donde hay sitio y la descripción ayuda.
  */
+/**
+ * La cabecera de una pantalla.
+ *
+ * EL TÍTULO ES OPCIONAL, y en las pantallas de sección no se pone. Ahí el
+ * título lo dice la pestaña encendida, que está dos dedos más arriba: ponerlo
+ * otra vez en grande es decir «Plantilla» dos veces seguidas y gastar en ello
+ * el sitio de la primera jugadora. Sin título, esto es sólo la fila de
+ * acciones, y la pantalla empieza por su contenido.
+ */
 export function PageHeader({
   eyebrow, title, description, actions, children, className,
 }: {
   eyebrow?: React.ReactNode;
-  title: React.ReactNode;
+  title?: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
 }) {
+  const conTitulo = title != null;
   return (
-    <div className={cn('mb-5 sm:mb-8', className)}>
-      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+    <div className={cn(conTitulo ? 'mb-5 sm:mb-8' : 'mb-4 sm:mb-5', className)}>
+      <div className={cn('flex flex-wrap items-start gap-x-4 gap-y-3', conTitulo ? 'justify-between' : 'justify-end')}>
         {/* `basis-[15rem]`: sin una anchura de partida, el navegador prefiere
             ESTRECHAR el título antes que bajar los botones a la línea de
             abajo, y «Entrenamientos» acababa en una caja de 139 px pidiendo
             187. Con una base, lo que se parte primero son los botones. */}
-        <div className="min-w-0 flex-1 basis-[15rem]">
-          {eyebrow && (
-            <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2 text-sm text-ink-500">{eyebrow}</div>
-          )}
-          <h1 className="break-words text-xl font-semibold leading-tight sm:text-2xl">{title}</h1>
-          {description && (
-            <p className="mt-2 hidden max-w-[62ch] text-base leading-relaxed text-ink-500 sm:block">
-              {description}
-            </p>
-          )}
-        </div>
+        {conTitulo && (
+          <div className="min-w-0 flex-1 basis-[15rem]">
+            {eyebrow && (
+              <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2 text-sm text-ink-500">{eyebrow}</div>
+            )}
+            <h1 className="break-words text-xl font-semibold leading-tight sm:text-2xl">{title}</h1>
+            {description && (
+              <p className="mt-2 hidden max-w-[62ch] text-base leading-relaxed text-ink-500 sm:block">
+                {description}
+              </p>
+            )}
+          </div>
+        )}
         {/* En el móvil, una sola fila que se desliza; a partir de `sm`, lo de
             siempre. Los márgenes negativos hacen que el deslizamiento llegue
             hasta el borde de la pantalla en vez de cortarse en el margen. */}

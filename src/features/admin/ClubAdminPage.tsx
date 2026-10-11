@@ -44,9 +44,6 @@ export default function ClubAdminPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Administración del club"
-        title="Equipo técnico"
-        description="Equipos de la temporada, quién trabaja en cada uno e invitaciones pendientes."
         actions={
           <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm" icon={<Plus size={16} />}>
             Crear equipo

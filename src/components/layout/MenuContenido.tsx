@@ -22,7 +22,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ChevronsUpDown, LogOut, Plus, UserRound } from 'lucide-react';
 import { ClubCrest } from '@/components/ui/Brand';
 import { Avatar, Dropdown, MenuItem } from '@/components/ui';
-import { NAV, isActive } from './navigation';
+import { CUENTA, SECCIONES, seccionActiva } from './navigation';
 import { useClub } from '@/store/store';
 import { clubName, currentStaff, visibleTeams } from '@/store/selectors';
 import { ROLE_LABEL } from '@/services/auth';
@@ -114,50 +114,55 @@ export function MenuCrear({ onCreate }: { onCreate: () => void }) {
   );
 }
 
-/** Las secciones, agrupadas. `onIr` sirve para cerrar el cajón al navegar. */
+/**
+ * Las cuatro secciones.
+ *
+ * Eran once en cuatro grupos con sus títulos —«Equipo», «Trabajo en campo»,
+ * «Club»—, y los títulos eran la prueba de que la lista era demasiado larga:
+ * una lista que necesita índice no se lee de un vistazo. Ahora son cuatro
+ * palabras sin grupos, y lo que había dentro de cada grupo está dentro de su
+ * sección, en pestañas, a la vista al llegar.
+ */
 export function MenuSecciones({ onIr }: { onIr?: () => void }) {
   const { pathname } = useLocation();
   return (
-    <nav aria-label="Secciones" className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
-      {NAV.map((group) => (
-        <div key={group.id} className="mb-0.5">
-          {group.label && (
-            <p className="px-3 pb-1.5 pt-5 font-display text-2xs font-semibold uppercase tracking-[0.12em] text-ink-400">
-              {group.label}
-            </p>
-          )}
-          <ul className="space-y-px">
-            {group.items.map((item) => {
-              const active = isActive(pathname, item);
-              return (
-                <li key={item.to}>
-                  <Link
-                    to={item.to}
-                    onClick={onIr}
-                    aria-current={active ? 'page' : undefined}
-                    className={cn(
-                      /* Sin icono, lo que marca la sección abierta es el peso
-                         del texto, el fondo azul y la barra de la izquierda. */
-                      'relative flex items-center rounded-2xl py-2.5 pl-4 pr-3 text-md transition-colors',
-                      active
-                        ? 'bg-marca-600/14 font-semibold text-ink-900'
-                        : 'font-medium text-ink-500 hover:bg-panel hover:text-ink-900',
-                    )}
-                  >
-                    {active && (
-                      <span
-                        aria-hidden
-                        className="absolute inset-y-2.5 left-0 w-[3px] rounded-full bg-marca-500"
-                      />
-                    )}
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+    <nav aria-label="Secciones" className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 pt-2">
+      <ul className="space-y-px">
+        {SECCIONES.map((s) => {
+          const active = seccionActiva(pathname, s);
+          const Icono = s.icono;
+          return (
+            <li key={s.to}>
+              <Link
+                to={s.to}
+                onClick={onIr}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'relative flex items-center gap-3 rounded-2xl py-2.5 pl-4 pr-3 text-md transition-colors',
+                  active
+                    ? 'bg-marca-600/14 font-semibold text-ink-900'
+                    : 'font-medium text-ink-500 hover:bg-panel hover:text-ink-900',
+                )}
+              >
+                {active && (
+                  <span
+                    aria-hidden
+                    className="absolute inset-y-2.5 left-0 w-[3px] rounded-full bg-marca-500"
+                  />
+                )}
+                {/* AHORA SÍ LLEVAN ICONO, y antes no. El motivo de entonces
+                    sigue siendo bueno —«Pizarra táctica» no tiene dibujo
+                    universal—, pero estas cuatro sí: una casa, un calendario,
+                    unas personas y una pesa. Y son las mismas cuatro formas
+                    que la pastilla del móvil, así que lo que se aprende en un
+                    sitio sirve en el otro. */}
+                <Icono size={17} strokeWidth={active ? 2.2 : 1.8} aria-hidden className="shrink-0" />
+                <span className="truncate">{s.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }
@@ -185,9 +190,16 @@ export function MenuPie({ onIr }: { onIr?: () => void }) {
       >
         {(close) => (
           <>
-            <MenuItem icon={<UserRound size={15} />} to="/app/perfil" onClick={() => { close(); onIr?.(); }}>
-              Mi perfil
-            </MenuItem>
+            {CUENTA.map((p) => (
+              <MenuItem
+                key={p.to}
+                icon={p.to === '/app/perfil' ? <UserRound size={15} /> : undefined}
+                to={p.to}
+                onClick={() => { close(); onIr?.(); }}
+              >
+                {p.label}
+              </MenuItem>
+            ))}
             <div className="my-1 hairline" />
             <MenuItem icon={<LogOut size={15} />} tone="danger" onClick={signOut}>
               Cerrar sesión

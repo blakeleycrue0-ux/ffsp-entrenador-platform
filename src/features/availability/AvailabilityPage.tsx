@@ -121,7 +121,6 @@ export default function AvailabilityPage() {
   if (teams.length === 0) {
     return (
       <>
-        <PageHeader title="Disponibilidad y lesiones" />
         <Panel>
           <EmptyState size="pleno"
             title="Todavía no tienes ningún equipo asignado"
@@ -135,8 +134,6 @@ export default function AvailabilityPage() {
   return (
     <>
       <PageHeader
-        title="Disponibilidad y lesiones"
-        description="Con quién puedes contar esta semana y en qué situación está cada jugadora."
         actions={
           <Button
             icon={<Plus size={15} />}

@@ -92,11 +92,7 @@ export default function StatsPage() {
   if (records.length === 0) {
     return (
       <>
-        <PageHeader
-          title="Analíticas"
-          description="Lo que se puede calcular con lo que habéis registrado."
-          actions={selector}
-        />
+        <PageHeader actions={selector} />
         <Panel>
           <EmptyState size="pleno"
             title="Todavía no hay asistencia registrada"
@@ -110,8 +106,6 @@ export default function StatsPage() {
   return (
     <>
       <PageHeader
-        title="Analíticas"
-        description="Asistencia y participación, calculadas sobre lo que habéis registrado."
         actions={
           <>
             <Segmented<Periodo>

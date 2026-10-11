@@ -50,8 +50,6 @@ export default function PlayersPage() {
   return (
     <>
       <PageHeader
-        title="Plantilla"
-        description="Fichas, posiciones, disponibilidad y asistencia de la plantilla."
         actions={
           <>
             <Segmented
