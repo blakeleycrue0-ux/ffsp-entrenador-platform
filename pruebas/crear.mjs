@@ -134,11 +134,11 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   const hoja = page.getByRole('dialog');
   comprueba('se abre la hoja de importar', await hoja.isVisible());
 
-  await hoja.getByRole('button', { name: /del horario del equipo/i }).click();
+  await hoja.getByRole('button', { name: /los días que entrenáis/i }).click();
   await page.waitForTimeout(250);
   comprueba(
     'enseña los días que ya están guardados',
-    /mar 18:00/i.test(await hoja.textContent()),
+    /martes a las 18:00/i.test(await hoja.textContent()),
   );
 
   await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
@@ -185,6 +185,73 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await ctx.close();
 }
 
+/* ═══════ 2 bis. SIN NINGÚN HORARIO GUARDADO, QUE ES EL CASO NORMAL ════════ */
+{
+  console.log('\n  Un equipo sin horario guardado\n');
+  /* Esto es lo que se encuentra cualquiera el primer día, y es lo que estaba
+     roto: la opción del horario salía apagada y el único camino abierto era
+     buscar un archivo .ics, que en un móvil no hay forma de conseguir. Ahora
+     los días se marcan aquí mismo. */
+  const ctx = await navegador.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  const escrituras = [];
+  await mock(page, { equipos: [TEAMS[0], TEAMS[1]] }); // training_slots: [] en los dos
+  await page.route('**/rest/v1/sessions**', async (route) => {
+    const req = route.request();
+    if (req.method() !== 'POST') return route.fallback();
+    const cuerpo = JSON.parse(req.postData() ?? '[]');
+    const filas = (Array.isArray(cuerpo) ? cuerpo : [cuerpo]).map((f, i) => ({ ...f, id: `n${i}`, blocks: [], material: [] }));
+    escrituras.push(filas);
+    return route.fulfill(j(filas));
+  });
+  await page.addInitScript(([u]) => sessionStorage.setItem('p360.desbloqueado', u), [USER]);
+  await page.goto(`${BASE}/app/calendario`, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(1200);
+
+  await page.getByRole('button', { name: /añadir varios/i }).first().click();
+  await page.waitForTimeout(400);
+  const hoja = page.getByRole('dialog');
+
+  const opcion = hoja.getByRole('button', { name: /los días que entrenáis/i });
+  comprueba('la opción de los días NO está apagada', await opcion.isEnabled());
+  await opcion.click();
+  await page.waitForTimeout(250);
+
+  comprueba('pregunta qué días entrenáis', /qué días entrenáis/i.test(await hoja.textContent()));
+  const letras = hoja.locator('button[aria-pressed]');
+  comprueba('hay siete días que tocar', (await letras.count()) === 7, `${await letras.count()}`);
+
+  const caja = await letras.first().boundingBox();
+  comprueba('y se pueden tocar con el dedo', caja.height >= 40 && caja.width >= 32,
+    `${Math.round(caja.width)}×${Math.round(caja.height)}`);
+
+  /* Martes y jueves. */
+  await hoja.getByRole('button', { name: 'martes' }).click();
+  await hoja.getByRole('button', { name: 'jueves' }).click();
+  await page.waitForTimeout(150);
+  comprueba(
+    'quedan marcados los dos',
+    (await hoja.locator('button[aria-pressed="true"]').count()) === 2,
+  );
+
+  await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
+  await page.waitForTimeout(400);
+  const filas = await hoja.locator('li').count();
+  comprueba('sale la lista de los tres meses', filas > 20, `${filas} filas`);
+
+  await hoja.getByRole('button', { name: /crear \d+ entrenamiento/i }).click();
+  await page.waitForTimeout(900);
+  comprueba('y se crean sin haber tocado ningún archivo', (escrituras[0] ?? []).length === filas,
+    `${(escrituras[0] ?? []).length} de ${filas}`);
+  comprueba(
+    'todos el día y la hora que se marcaron',
+    (escrituras[0] ?? []).every((f) => f.start_time === '18:00'),
+    (escrituras[0] ?? [])[0]?.start_time,
+  );
+
+  await ctx.close();
+}
+
 /* ══════════════ 3. Lo que ya está no se duplica ════════════════════════════ */
 {
   console.log('\n  Sin duplicados\n');
@@ -206,7 +273,7 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.getByRole('button', { name: /añadir varios/i }).first().click();
   await page.waitForTimeout(400);
   const hoja = page.getByRole('dialog');
-  await hoja.getByRole('button', { name: /del horario del equipo/i }).click();
+  await hoja.getByRole('button', { name: /los días que entrenáis/i }).click();
   await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
   await page.waitForTimeout(400);
 
@@ -229,7 +296,7 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.getByRole('button', { name: /añadir varios/i }).first().click();
   await page.waitForTimeout(400);
   const hoja = page.getByRole('dialog');
-  await hoja.getByRole('button', { name: /de un archivo/i }).click();
+  await hoja.getByRole('button', { name: /un calendario que ya tienes/i }).click();
   await page.waitForTimeout(250);
 
   const ics = [
@@ -265,6 +332,24 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   comprueba('un .zip se reconoce', /archivo comprimido/i.test(quejaZip));
   comprueba('y se dice qué hacer con él', /Descomprímelo/i.test(quejaZip));
   comprueba('sin ofrecer crear nada', await hoja.getByRole('button', { name: /^crear entrenamientos$/i }).isDisabled());
+
+  /* EL SELECTOR NO PUEDE LLEVAR FILTRO: con `accept=".ics"`, en el iPhone no
+     aparece ningún archivo —los deja todos en gris— y no hay manera de
+     elegirlo. Fue la queja. */
+  await hoja.getByRole('button', { name: /^atrás$/i }).click();
+  await page.waitForTimeout(250);
+  comprueba(
+    'el selector de archivos no filtra por tipo',
+    (await hoja.locator('input[type="file"]').getAttribute('accept')) === null,
+  );
+
+  /* Y se puede pegar el texto, que en un móvil es más fácil que encontrar un
+     archivo. */
+  await hoja.locator('textarea').fill(ics);
+  await hoja.getByRole('button', { name: /leer lo pegado/i }).click();
+  await page.waitForTimeout(400);
+  comprueba('pegar el texto también vale', (await hoja.locator('li').count()) === 3,
+    `${await hoja.locator('li').count()} filas`);
 
   /* Se vuelve atrás y se elige el bueno. */
   await hoja.getByRole('button', { name: /^atrás$/i }).click();
@@ -345,7 +430,7 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await hoja.getByRole('button', { name: /varios entrenamientos/i }).click();
   await page.waitForTimeout(900);
   comprueba('que abre la hoja de importar', (await page.getByRole('dialog').count()) === 1
-    && /del horario del equipo/i.test(await page.getByRole('dialog').textContent()));
+    && /los días que entrenáis/i.test(await page.getByRole('dialog').textContent()));
   comprueba(
     'y la dirección queda limpia para que recargar no la vuelva a abrir',
     !page.url().includes('importar'),
@@ -397,7 +482,7 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   await page.getByRole('button', { name: /añadir varios/i }).first().click();
   await page.waitForTimeout(500);
   const hoja = page.getByRole('dialog');
-  await hoja.getByRole('button', { name: /del horario del equipo/i }).click();
+  await hoja.getByRole('button', { name: /los días que entrenáis/i }).click();
   await hoja.getByRole('button', { name: /ver lo que entraría/i }).click();
   await page.waitForTimeout(400);
 

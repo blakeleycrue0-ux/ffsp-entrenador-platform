@@ -41,14 +41,14 @@ import { CalendarClock, FileUp, Info } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { visibleTeams } from '@/store/selectors';
 import {
-  Button, Checkbox, Field, Input, LinkButton, Modal, Select,
+  Button, Checkbox, Field, Input, LinkButton, Modal, Select, Textarea,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { citasDelHorario } from '@/lib/horario';
 import { leerIcs } from '@/lib/ics';
 import { addMinutes, cn, dayName, dayShort, toISODate, today } from '@/lib/utils';
 import { humanError } from '@/services/supabase';
-import type { TrainingSession } from '@/types';
+import type { TrainingSession, TrainingSlot } from '@/types';
 
 type Fuente = 'horario' | 'archivo';
 
@@ -94,20 +94,40 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
   const [avisos, setAvisos] = useState<string[]>([]);
   const [guardando, setGuardando] = useState(false);
   const archivo = useRef<HTMLInputElement>(null);
+  /* Los días a mano, aquí mismo. Antes, para repartir un horario había que
+     tenerlo guardado en la ficha del equipo; quien no lo tenía se encontraba
+     con la opción apagada y un enlace a otra pantalla. Eso es mandar a alguien
+     a hacer dos cosas para hacer una. */
+  const [aMano, setAMano] = useState(false);
+  const [dias, setDias] = useState<number[]>([]);
+  const [hora, setHora] = useState('18:00');
+  /* Pegar el texto del calendario: en un móvil es más fácil copiar que
+     encontrar un archivo. */
+  const [pegado, setPegado] = useState('');
+
+  const elEquipo = teams.find((t) => t.id === equipo);
+  const horarios = elEquipo?.trainingSlots ?? [];
 
   /* Al abrir se empieza de cero: una lista de la vez anterior, con otro equipo
-     o otro archivo, es la forma más fácil de crear algo que nadie ha pedido. */
+     o otro archivo, es la forma más fácil de crear algo que nadie ha pedido.
+     Los días y la hora se proponen con lo que el equipo ya tenga guardado. */
   useEffect(() => {
     if (!abierto) return;
     setFuente(null);
     setCitas(null);
     setAvisos([]);
     setFuera(new Set());
+    setPegado('');
+    setAMano(false);
     setEquipo(teamId || teams[0]?.id || '');
   }, [abierto, teamId, teams]);
 
-  const elEquipo = teams.find((t) => t.id === equipo);
-  const horarios = elEquipo?.trainingSlots ?? [];
+  useEffect(() => {
+    if (!abierto) return;
+    setDias(horarios.map((h) => h.weekday));
+    setHora(horarios[0]?.start || '18:00');
+    setAMano(false);
+  }, [abierto, equipo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** Lo que ya está guardado, para no meterlo dos veces. */
   const yaHay = useMemo(() => {
@@ -119,13 +139,13 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
   const marcarRepetidas = (lista: Omit<Cita, 'repetida'>[]): Cita[] =>
     lista.map((c) => ({ ...c, repetida: yaHay.has(`${c.fecha} ${c.inicio}`) }));
 
-  /** El horario del equipo, repartido entre las dos fechas. */
-  const leerDelHorario = () => {
-    const citasDeHorario = citasDelHorario(horarios, desde, hasta, duracion);
+  /** Unos días y unas horas, repartidos entre las dos fechas. */
+  const repartir = (slots: TrainingSlot[]) => {
+    const citasDeHorario = citasDelHorario(slots, desde, hasta, duracion);
     if (citasDeHorario.length === 0) {
       toast.error(
         'No sale ningún entrenamiento',
-        'Revisa las fechas: entre esas dos no cae ninguno de los días del horario.',
+        'Revisa las fechas: entre esas dos no cae ninguno de los días elegidos.',
       );
       return;
     }
@@ -145,6 +165,25 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
     setCitas(lista);
   };
 
+  /** El horario que el equipo ya tiene guardado, con su hora para cada día. */
+  const repartirElGuardado = () => repartir(horarios);
+
+  /** Los días marcados aquí mismo, todos a la misma hora. */
+  const repartirLosDias = () => {
+    if (dias.length === 0) {
+      toast.error('Elige al menos un día', 'Toca los días de la semana en los que entrenáis.');
+      return;
+    }
+    repartir(
+      dias.map((d) => ({
+        weekday: d,
+        start: hora,
+        end: addMinutes(hora, duracion),
+        venue: elEquipo?.venue ?? '',
+      })),
+    );
+  };
+
   /** El archivo, leído aquí mismo. No se sube a ningún servidor. */
   const leerDelArchivo = async (f: File) => {
     let contenido = '';
@@ -154,13 +193,24 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
       toast.error('No he podido abrir el archivo', 'Vuelve a elegirlo, o prueba a exportarlo otra vez.');
       return;
     }
+    leerElTexto(contenido, f.name);
+  };
 
+  /**
+   * El contenido de un calendario, venga de un archivo o pegado a mano.
+   *
+   * SIN FILTRO DE TIPO EN EL SELECTOR. Lo había —`.ics`— y el resultado era que
+   * en el iPhone no aparecía ningún archivo: el selector de Archivos no
+   * reconoce ese tipo y los deja todos en gris. Ahora se puede elegir
+   * cualquiera y de decir si es un calendario se encarga esto.
+   */
+  const leerElTexto = (contenido: string, nombre = '') => {
     /* GOOGLE CALENDAR NO DA UN .ICS: DA UN .ZIP CON EL .ICS DENTRO. Es el
        tropiezo más probable de toda esta pantalla, y sin esto lo único que
        salía era «esto no parece un archivo de calendario», que es verdad pero
        no ayuda. Un zip empieza por `PK`, así que se reconoce al instante y se
        dice exactamente qué hacer con él. */
-    if (/\.zip$/i.test(f.name) || contenido.startsWith('PK')) {
+    if (/\.zip$/i.test(nombre) || contenido.startsWith('PK')) {
       setAvisos([
         'Esto es un archivo comprimido (.zip), que es lo que da Google Calendar al exportar.',
         'Descomprímelo —en el móvil, tócalo en Archivos; en el ordenador, doble clic— y elige el archivo .ics que hay dentro.',
@@ -171,7 +221,7 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
 
     const { eventos, avisos: queja } = leerIcs(contenido);
     if (eventos.length === 0) {
-      setAvisos(queja.length > 0 ? queja : ['El archivo no trae ninguna cita.']);
+      setAvisos(queja.length > 0 ? queja : ['Ahí no hay ninguna cita.']);
       setCitas([]);
       return;
     }
@@ -261,7 +311,7 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
       onClose={onCerrar}
       size="lg"
       title="Añadir varios entrenamientos"
-      description="Del horario del equipo o de un archivo de calendario."
+      description="Marca los días que entrenáis y entran todos de golpe."
       footer={
         citas
           ? (
@@ -312,40 +362,61 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
             </Select>
           </Field>
 
+          {/* EL PRIMER CAMINO NO PIDE ARCHIVOS, Y ÉSE ES EL CAMBIO. Antes la
+              opción del horario se apagaba si el equipo no tenía uno guardado
+              y mandaba a otra pantalla a ponerlo; lo único que quedaba
+              encendido era buscar un archivo .ics, que en un móvil es casi
+              imposible. Los días se marcan aquí. */}
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             <Origen
               icono={<CalendarClock size={18} />}
-              titulo="Del horario del equipo"
+              titulo="Los días que entrenáis"
               detalle={
-                horarios.length === 0
-                  ? 'Este equipo no tiene horario guardado'
-                  : horarios.map((h) => `${dayShort(diaDeLaSemana(h.weekday))} ${h.start}`).join(' · ')
+                horarios.length > 0
+                  ? horarios.map((h) => `${dayShort(diaDeLaSemana(h.weekday))} ${h.start}`).join(' · ')
+                  : 'Se marcan aquí. Sin archivos'
               }
               activo={fuente === 'horario'}
-              desactivado={horarios.length === 0}
               onClick={() => setFuente('horario')}
             />
             <Origen
               icono={<FileUp size={18} />}
-              titulo="De un archivo .ics"
-              detalle="Se lee aquí, en tu navegador"
+              titulo="Un calendario que ya tienes"
+              detalle="Un archivo .ics, o pegando su texto"
               activo={fuente === 'archivo'}
               onClick={() => setFuente('archivo')}
             />
           </div>
 
-          {horarios.length === 0 && (
-            <p className="text-sm leading-relaxed text-muted">
-              Para repartir el horario del equipo hace falta tenerlo puesto.{' '}
-              <Link to={`/app/equipo-tecnico/${equipo}`} className="font-medium text-marca-400 underline underline-offset-2">
-                Ponle los días y las horas
-              </Link>{' '}
-              y vuelve aquí.
-            </p>
-          )}
-
-          {fuente === 'horario' && horarios.length > 0 && (
+          {fuente === 'horario' && (
             <div className="space-y-4 border-t border-line pt-4">
+              {horarios.length > 0 && !aMano ? (
+                <div>
+                  <p className="label">Horario del equipo</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    {horarios.map((h, i) => (
+                      <span key={i} className="text-base text-ink-800">
+                        {dayName(diaDeLaSemana(h.weekday))} a las {h.start}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAMano(true)}
+                    className="mt-2 h-8 text-sm font-medium text-marca-400 underline underline-offset-2"
+                  >
+                    Usar otros días
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Dias elegidos={dias} onCambiar={setDias} />
+                  <Field label="Hora de inicio">
+                    <Input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
+                  </Field>
+                </>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Desde">
                   <Input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
@@ -354,35 +425,53 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
                   <Input type="date" value={hasta} min={desde} onChange={(e) => setHasta(e.target.value)} />
                 </Field>
               </div>
-              <Field label="Duración" hint="Sólo para los horarios a los que les falte la hora de fin.">
+
+              <Field
+                label={horarios.length > 0 && !aMano ? 'Duración' : 'Cuánto dura cada uno'}
+                hint={
+                  horarios.length > 0 && !aMano
+                    ? 'Sólo para los días del horario a los que les falte la hora de fin.'
+                    : undefined
+                }
+              >
                 <Select value={duracion} onChange={(e) => setDuracion(Number(e.target.value))}>
                   {DURACIONES.map((m) => (
                     <option key={m} value={m}>{m} minutos</option>
                   ))}
                 </Select>
               </Field>
-              <Button block onClick={leerDelHorario}>Ver lo que entraría</Button>
+
+              <Button block onClick={horarios.length > 0 && !aMano ? repartirElGuardado : repartirLosDias}>
+                Ver lo que entraría
+              </Button>
+
+              {horarios.length === 0 && (
+                <p className="text-sm leading-relaxed text-muted">
+                  Si quieres que esto quede guardado para la próxima,{' '}
+                  <Link to={`/app/equipo-tecnico/${equipo}`} className="font-medium text-marca-400 underline underline-offset-2">
+                    ponlo en la ficha del equipo
+                  </Link>
+                  . No hace falta para lo de aquí.
+                </p>
+              )}
             </div>
           )}
 
           {fuente === 'archivo' && (
             <div className="space-y-4 border-t border-line pt-4">
-              <Field label="Duración" hint="Para las citas del archivo que no digan cuánto duran.">
+              <Field label="Duración" hint="Para las citas que no digan cuánto duran.">
                 <Select value={duracion} onChange={(e) => setDuracion(Number(e.target.value))}>
                   {DURACIONES.map((m) => (
                     <option key={m} value={m}>{m} minutos</option>
                   ))}
                 </Select>
               </Field>
+              {/* SIN `accept`. Con el filtro puesto, el selector del iPhone no
+                  enseñaba ningún archivo. Mejor poder elegir cualquiera y
+                  decir después si no es un calendario. */}
               <input
                 ref={archivo}
                 type="file"
-                /* `.ics` a secas no basta en el iPhone: el selector de
-                   Archivos no reconoce ese tipo y deja el archivo en gris,
-                   sin poder tocarlo. Con los tipos genéricos detrás se puede
-                   elegir, y de que sea un calendario ya se encarga la lectura
-                   —que además sabe reconocer el .zip de Google—. */
-                accept=".ics,text/calendar,text/plain,application/octet-stream"
                 className="sr-only"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
@@ -390,16 +479,84 @@ export function ImportarEntrenos({ abierto, onCerrar }: { abierto: boolean; onCe
                   if (f) void leerDelArchivo(f);
                 }}
               />
-              <Button block onClick={() => archivo.current?.click()}>Elegir el archivo</Button>
-              <p className="text-sm leading-relaxed text-muted">
-                En el calendario del móvil o del ordenador, exporta el calendario y te dará un
-                archivo que acaba en <code className="text-ink-700">.ics</code>. Ése.
-              </p>
+              <Button block onClick={() => archivo.current?.click()}>Elegir un archivo</Button>
+
+              <Field
+                label="O pega aquí el texto del calendario"
+                hint="Si abres el archivo y lo copias entero, con esto vale. Empieza por BEGIN:VCALENDAR."
+              >
+                <Textarea
+                  value={pegado}
+                  onChange={(e) => setPegado(e.target.value)}
+                  placeholder="BEGIN:VCALENDAR…"
+                  className="min-h-[88px] font-mono text-sm"
+                />
+              </Field>
+              <Button
+                block
+                variant="secondary"
+                disabled={pegado.trim().length === 0}
+                onClick={() => leerElTexto(pegado)}
+              >
+                Leer lo pegado
+              </Button>
             </div>
           )}
         </div>
       )}
     </Modal>
+  );
+}
+
+/**
+ * Los días de la semana, para marcarlos con el dedo.
+ *
+ * Siete botones de 44 px en una fila caben a 320 px (7 × 40 + 6 × 2 = 292) y
+ * se marcan de un toque. Es la pieza que hace que no haga falta ni un archivo
+ * ni pasar por la ficha del equipo: el 90 % de los clubes entrena dos o tres
+ * días fijos a la misma hora, y eso son tres toques.
+ */
+function Dias({ elegidos, onCambiar }: { elegidos: number[]; onCambiar: (d: number[]) => void }) {
+  /* De lunes a domingo, con el número que usa `Date.getDay()` debajo. */
+  const SEMANA: { n: number; letra: string; nombre: string }[] = [
+    { n: 1, letra: 'L', nombre: 'lunes' },
+    { n: 2, letra: 'M', nombre: 'martes' },
+    { n: 3, letra: 'X', nombre: 'miércoles' },
+    { n: 4, letra: 'J', nombre: 'jueves' },
+    { n: 5, letra: 'V', nombre: 'viernes' },
+    { n: 6, letra: 'S', nombre: 'sábado' },
+    { n: 0, letra: 'D', nombre: 'domingo' },
+  ];
+
+  const alternar = (n: number) =>
+    onCambiar(elegidos.includes(n) ? elegidos.filter((x) => x !== n) : [...elegidos, n].sort());
+
+  return (
+    <div>
+      <p className="label">¿Qué días entrenáis?</p>
+      <div className="mt-1.5 flex gap-1.5">
+        {SEMANA.map((d) => {
+          const puesto = elegidos.includes(d.n);
+          return (
+            <button
+              key={d.n}
+              type="button"
+              aria-pressed={puesto}
+              aria-label={d.nombre}
+              onClick={() => alternar(d.n)}
+              className={cn(
+                'h-11 flex-1 rounded-xl border text-base font-semibold transition-colors',
+                puesto
+                  ? 'border-marca-600 bg-marca-600 text-white'
+                  : 'border-line text-ink-600 hover:border-line-fuerte',
+              )}
+            >
+              {d.letra}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
