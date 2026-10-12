@@ -17,7 +17,7 @@ import {
 } from '@/services/invitations';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { Button, Field, Input, Tag } from '@/components/ui';
-import { OndasDeFondo } from '@/components/layout/FondoPlataforma';
+import { ImagenDeFondo } from '@/components/layout/FondoPlataforma';
 import { Wordmark } from '@/components/ui/Brand';
 import { cn } from '@/lib/utils';
 
@@ -172,12 +172,13 @@ export default function Login() {
           dentro. En el móvil no se apila debajo —eso es lo que hace una
           maqueta que sólo «responde»— sino que se convierte en la cabecera:
           una franja de ambiente detrás de la marca, y el formulario debajo. */}
-      {/* EL PANEL VISUAL, EN NEGRO. Tenía dentro el «cielo»: un degradado
-          azul con partículas. Es el ambiente de la página pública y ahí se
-          queda; la entrada pertenece al producto, y el producto es negro con
-          sus ondas. */}
+      {/* EL PANEL VISUAL, CON LA MISMA IMAGEN QUE INICIO. Tuvo dentro el
+          «cielo» —un degradado azul con partículas, que es el ambiente de la
+          página pública— y después unas ondas dibujadas. Ahora es la misma
+          foto en blanco y negro que hay detrás de Inicio: lo que se ve antes
+          de entrar es lo que se encuentra al entrar. */}
       <div className="relative hidden overflow-hidden rounded-3xl bg-black lg:flex lg:flex-col lg:justify-between">
-        <OndasDeFondo />
+        <ImagenDeFondo velo="bg-black/55" />
 
         <div className="relative p-10">
           <Link
@@ -243,7 +244,7 @@ export default function Login() {
             Medido en 375×667: el primer campo pasa de empezar en y=404 a
             empezar en y=250. */}
         <div className="relative shrink-0 overflow-hidden bg-black lg:hidden">
-          <OndasDeFondo />
+          <ImagenDeFondo velo="bg-black/55" />
           <div className="relative flex h-[76px] items-center justify-between gap-3 px-5 pt-[var(--safe-top)]">
             <Wordmark size="sm" tone="light" />
             <Link

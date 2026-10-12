@@ -28,7 +28,15 @@ import { humanError } from '@/services/supabase';
 import { cn } from '@/lib/utils';
 import type { DatosDeInicio } from './datos';
 
-export function Pendientes({ d, className }: { d: DatosDeInicio; className?: string }) {
+/**
+ * `sobreFoto`: en Inicio esta lista va encima de la imagen de fondo, sin hoja
+ * clara debajo, así que su texto es blanco y sus separadores también. En el
+ * escritorio sigue sobre una superficie clara y no cambia nada. Es la misma
+ * pieza y la misma lista: lo único que cambia es sobre qué está apoyada.
+ */
+export function Pendientes({
+  d, className, sobreFoto = false,
+}: { d: DatosDeInicio; className?: string; sobreFoto?: boolean }) {
   const toast = useToast();
 
   /* UNA LÍNEA, NO UNA TARJETA VACÍA. No tener nada pendiente es una buena
@@ -37,17 +45,30 @@ export function Pendientes({ d, className }: { d: DatosDeInicio; className?: str
      movimiento» con su explicación de dos renglones cada uno. */
   if (d.pendientes.length === 0) {
     return (
-      <p className={cn('text-base text-ink-500', className)}>Nada pendiente. Todo al día.</p>
+      <p className={cn('px-1 text-base', sobreFoto ? 'text-white/60' : 'text-ink-500', className)}>
+        Nada pendiente. Todo al día.
+      </p>
     );
   }
 
+  const texto = sobreFoto ? 'text-white/90' : 'text-ink-800';
+
   return (
     <section className={className}>
-      <SectionHeader
-        title="Pendiente"
-        hint={d.pendientes.length > 1 ? `${d.pendientes.length} cosas` : undefined}
-      />
-      <ul className="mt-2 divide-y divide-line-sutil">
+      {sobreFoto ? (
+        <div className="flex items-baseline justify-between gap-3 px-1">
+          <h2 className="text-2xs font-semibold uppercase tracking-[0.09em] text-white/50">Pendiente</h2>
+          {d.pendientes.length > 1 && (
+            <span className="truncate text-2xs text-white/50">{d.pendientes.length} cosas</span>
+          )}
+        </div>
+      ) : (
+        <SectionHeader
+          title="Pendiente"
+          hint={d.pendientes.length > 1 ? `${d.pendientes.length} cosas` : undefined}
+        />
+      )}
+      <ul className={cn('mt-2 divide-y', sobreFoto ? 'divide-white/12 px-1' : 'divide-line-sutil')}>
         {d.pendientes.map((p) => (
           <li key={p.clave}>
             {p.tarea ? (
@@ -55,6 +76,7 @@ export function Pendientes({ d, className }: { d: DatosDeInicio; className?: str
               <div className="flex min-h-[52px] items-center gap-3 py-2">
                 <Checkbox
                   checked={false}
+                  sobreFoto={sobreFoto}
                   onChange={() =>
                     d.actions
                       .toggleTask(p.tarea!)
@@ -62,20 +84,30 @@ export function Pendientes({ d, className }: { d: DatosDeInicio; className?: str
                   }
                   className="-ml-1.5 shrink-0"
                 />
-                <span className="min-w-0 flex-1 text-base leading-snug text-ink-800">{p.texto}</span>
+                <span className={cn('min-w-0 flex-1 text-base leading-snug', texto)}>{p.texto}</span>
                 {p.urgente && <span className="shrink-0 text-sm text-warn">Vencida</span>}
               </div>
             ) : (
               <Link
                 to={p.a}
-                className="flex min-h-[52px] items-center gap-3 py-2 transition-colors active:bg-raised lg:hover:bg-raised"
+                className={cn(
+                  'flex min-h-[52px] items-center gap-3 py-2 transition-colors',
+                  sobreFoto ? 'active:bg-white/10' : 'active:bg-raised lg:hover:bg-raised',
+                )}
               >
                 <span
                   aria-hidden
-                  className={cn('h-1.5 w-1.5 shrink-0 rounded-full', p.urgente ? 'bg-warn' : 'bg-ink-400')}
+                  className={cn(
+                    'h-1.5 w-1.5 shrink-0 rounded-full',
+                    p.urgente ? 'bg-warn' : sobreFoto ? 'bg-white/50' : 'bg-ink-400',
+                  )}
                 />
-                <span className="min-w-0 flex-1 text-base leading-snug text-ink-800">{p.texto}</span>
-                <ChevronRight size={16} className="shrink-0 text-ink-400" aria-hidden />
+                <span className={cn('min-w-0 flex-1 text-base leading-snug', texto)}>{p.texto}</span>
+                <ChevronRight
+                  size={16}
+                  className={cn('shrink-0', sobreFoto ? 'text-white/50' : 'text-ink-400')}
+                  aria-hidden
+                />
               </Link>
             )}
           </li>
