@@ -50,21 +50,39 @@ export const error = (mensaje: string, status = 400) => json({ error: mensaje },
  * quedaba enterrado en el registro de la función, que es el último sitio donde
  * va a mirar quien está intentando pagar.
  *
- * Ahora el motivo sale en la pantalla. Y SE ELIGE QUÉ SE CUENTA:
+ * Ahora el motivo sale en la pantalla, SIEMPRE Y SEA EL QUE SEA.
  *
- *   · Lo que dice Stripe se enseña tal cual. Sus mensajes están escritos para
- *     que los lea una persona —«the price is archived», «no such price»— y no
- *     llevan nada de la cuenta ni de la clave.
- *   · El permiso tiene mensaje propio, porque es el fallo que da una clave
- *     restringida recién creada y la pantalla puede decir exactamente qué hay
- *     que marcar en Stripe para arreglarlo.
- *   · Cualquier otra cosa se queda en una frase genérica. Un fallo que no
- *     viene de Stripe puede llevar dentro detalles del servidor, y esto es un
- *     punto público.
+ * La primera versión de esto se guardaba los fallos que no venían de Stripe
+ * «por prudencia» y contestaba una frase genérica. Eso dejó la pantalla
+ * exactamente igual de muda que antes: se veía «No hemos podido abrir la
+ * pasarela, inténtalo de nuevo» ante un fallo que no se arreglaba
+ * intentándolo de nuevo nunca, porque no era pasajero. La prudencia, cuando
+ * esconde la única pista que hay, no protege a nadie: deja a quien intenta
+ * pagar y a quien tiene que arreglarlo con la misma nada.
  *
- * Y TODO SE REGISTRA ENTERO, pase lo que pase: la pantalla da lo justo para
- * saber qué hacer, el registro de la función da lo necesario para depurarlo.
+ * Así que se dice el motivo, y lo que se hace con lo delicado es LIMPIARLO,
+ * no callarlo: `sinClaves` tacha de cualquier mensaje lo que tenga forma de
+ * clave —de Stripe, de un webhook o de un testigo JWT— antes de que salga de
+ * aquí. Un mensaje tachado sigue siendo útil; uno que no existe, no.
+ *
+ * Y TODO SE REGISTRA ENTERO, sin tachar, pase lo que pase: la pantalla da lo
+ * justo para saber qué hacer, el registro da lo necesario para depurarlo.
  */
+
+/**
+ * Tacha de un texto cualquier cosa con forma de clave.
+ *
+ * No se fía de que los mensajes de otras librerías nunca incluyan la clave
+ * que acaban de rechazar: algunos la incluyen. Son tres formas —`sk_`/`rk_`/
+ * `pk_` de Stripe, `whsec_` de un webhook, y un JWT de tres tramos— y cubren
+ * todo lo que este servidor maneja.
+ */
+const sinClaves = (texto: string): string =>
+  texto
+    .replace(/\b[sprk]k_(live|test)_[A-Za-z0-9]{8,}/g, '«clave»')
+    .replace(/\bwhsec_[A-Za-z0-9]{8,}/g, '«clave»')
+    .replace(/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g, '«clave»');
+
 export function fallo(e: unknown, donde: string): Response {
   console.error(`Fallo en ${donde}:`, e);
 
@@ -80,7 +98,7 @@ export function fallo(e: unknown, donde: string): Response {
     if (e.type === 'StripeAuthenticationError') {
       return error('La clave de Stripe configurada no es válida.', 502);
     }
-    return error(`Stripe ha rechazado la operación: ${e.message}`, 502);
+    return error(`Stripe ha rechazado la operación: ${sinClaves(e.message)}`, 502);
   }
 
   /* `exige` falla con el nombre de la variable que falta, nunca con su valor:
@@ -89,7 +107,12 @@ export function fallo(e: unknown, donde: string): Response {
     return error(`${e.message}. Hay que definirla en el panel de Netlify.`, 500);
   }
 
-  return error('No hemos podido abrir la pasarela de pago. Inténtalo de nuevo en un momento.', 500);
+  /* TODO LO DEMÁS, CON SU NOMBRE Y SU MENSAJE. Es lo que queda cuando falla
+     algo que no es Stripe —la red, Supabase, un fallo de programación— y es
+     justo lo que hace falta para saber por dónde seguir. Tachado de claves y
+     cortado a 300 caracteres: un mensaje de pantalla, no un volcado. */
+  const detalle = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+  return error(`Fallo en «${donde}» — ${sinClaves(detalle).slice(0, 300)}`, 500);
 }
 
 /**

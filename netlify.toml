@@ -15,9 +15,30 @@
   publish = "dist"
 
 [build.environment]
-  # Se fija la versión de Node para que la publicación no cambie de
-  # comportamiento el día que Netlify actualice la suya por defecto.
-  NODE_VERSION = "20"
+  # ── NODE 22, Y NO ES UNA ACTUALIZACIÓN DE RUTINA ──────────────────────────
+  # Se fija la versión para que la publicación no cambie de comportamiento el
+  # día que Netlify actualice la suya por defecto. Estaba en 20, y 20 TENÍA
+  # EL COBRO ROTO ENTERO.
+  #
+  # Esta misma versión manda también en las funciones, y ahí `createClient` de
+  # `@supabase/supabase-js` levanta un cliente de tiempo real que necesita un
+  # `WebSocket` global. En Node 20 no existe —llegó en la 22—, así que
+  # `createClient` reventaba:
+  #
+  #     Error: Node.js detected but native WebSocket not found.
+  #         at createClient (@supabase/supabase-js)
+  #         at admin (pagar.mjs:19)
+  #
+  # Y `admin()` es la PRIMERA línea útil de las tres funciones que tocan la
+  # base: pagar, portal y el webhook de Stripe. Reventaba antes de mirar
+  # ninguna clave y antes de hablar con Stripe, así que no había clave, ni
+  # permiso, ni variable de entorno que lo arreglara. `estado-pago` decía que
+  # sí porque es la única que no toca Supabase: sólo mira si hay variables.
+  #
+  # La propia librería ya avisaba en cada ejecución de que dejaba de soportar
+  # Node 20. El aviso estaba en el registro de la función, que es donde nadie
+  # mira hasta que algo se rompe.
+  NODE_VERSION = "22"
 
   # ── EL ESCÁNER DE SECRETOS, Y LA ÚNICA EXCEPCIÓN ──────────────────────────
   # Netlify busca en todo lo que se publica el VALOR de cada variable de
