@@ -19,8 +19,8 @@
  * toque.
  */
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button, PageHeader, Panel, PanelHeader, Tag } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useClub } from '@/store/store';
@@ -37,10 +37,12 @@ export default function BillingPage() {
   /* El ancho lo decide la tarea, no la pantalla. */
   useAnchura('tabla');
   const toast = useToast();
-  const { data } = useClub();
+  const { data, actions } = useClub();
   const { confirmar, hoja } = useConfirmacion();
   const [cambiando, setCambiando] = useState(false);
   const [yendo, setYendo] = useState<PlanTier | 'portal' | null>(null);
+  const [revisando, setRevisando] = useState(false);
+  const [params, setParams] = useSearchParams();
 
   const club = data.club;
   const sub = data.subscription;
@@ -59,6 +61,47 @@ export default function BillingPage() {
      se pueda contratar nada son TODAS las capacidades construidas, y eso es
      exactamente lo que `puede()` está aplicando. */
   const enLosTres = todoLoQueTrae('free', per.hayQueVender);
+
+  /**
+   * Preguntarle a Stripe en qué plan está este club y apuntarlo.
+   *
+   * Se usa de dos maneras y hace lo mismo en las dos: a mano, desde el botón,
+   * y sola al volver de pagar. Es idempotente, así que repetirla no hace daño.
+   */
+  const revisar = async (silencioso: boolean) => {
+    if (!club) return;
+    setRevisando(true);
+    try {
+      const r = await billing.sincronizar(club.id);
+      await actions.refresh();
+      if (r.encontrada) toast.info('Plan actualizado', 'Ya está al día con lo que dice Stripe.');
+      else if (!silencioso) toast.info('Nada que actualizar', r.mensaje ?? 'En Stripe no hay ninguna suscripción para este club.');
+    } catch (e) {
+      if (!silencioso) toast.error('No hemos podido revisar el pago', humanError(e));
+    } finally {
+      setRevisando(false);
+    }
+  };
+
+  const revisarPago = () => void revisar(false);
+
+  /* AL VOLVER DE PAGAR, SIN QUE NADIE PULSE NADA. `pagar` manda de vuelta a
+     `/app/ajustes?pago=hecho`, y el plan de este club lo escribe el aviso de
+     Stripe, que puede tardar o no llegar. Esto lo comprueba en cuanto se
+     vuelve, y quita el parámetro de la dirección para que no se repita al
+     recargar. */
+  const yaRevisado = useRef(false);
+  const volviendoDePagar = params.get('pago') === 'hecho';
+  useEffect(() => {
+    if (!volviendoDePagar || yaRevisado.current || !club) return;
+    yaRevisado.current = true;
+    void revisar(true).then(() => {
+      const otros = new URLSearchParams(params);
+      otros.delete('pago');
+      setParams(otros, { replace: true });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [volviendoDePagar, club?.id]);
 
   if (!club) return null;
 
@@ -176,6 +219,15 @@ export default function BillingPage() {
                   Gestionar el pago
                 </Button>
               )}
+              {/* LA SALIDA CUANDO EL AVISO DE STRIPE NO LLEGA. Pasó: un club
+                  contrató la prueba, Stripe lo cobró y lo apuntó, y aquí
+                  seguía poniendo «Gratis». Sin este botón no había nada que
+                  hacer desde la aplicación —ni siquiera cancelar, porque el
+                  portal necesita el cliente de Stripe que está en la fila que
+                  no se escribió—. Esto va a preguntárselo a Stripe. */}
+              <Button variant="quiet" loading={revisando} disabled={!admin} onClick={revisarPago}>
+                Revisar el pago
+              </Button>
             </div>
 
             {tieneCuentaDePago ? (
@@ -185,7 +237,8 @@ export default function BillingPage() {
               </p>
             ) : (
               <p className="text-sm leading-relaxed text-ink-500">
-                Todavía no hay ningún pago asociado a este club.
+                Todavía no hay ningún pago asociado a este club. Si acabas de pagar y esto no se ha
+                enterado, pulsa «Revisar el pago»: lo busca en Stripe y lo pone al día.
               </p>
             )}
 

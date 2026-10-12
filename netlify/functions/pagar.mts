@@ -61,7 +61,11 @@ export default protegido('pagar', async (req: Request): Promise<Response> => {
     .maybeSingle();
 
   const origen = new URL(req.url).origin;
-  const volverA = `${origen}/app/ajustes`;
+  /* A LA PANTALLA DE FACTURACIÓN, NO A AJUSTES. Volvía a `/app/ajustes`, que
+     es otra pantalla: la que recoge la vuelta del pago y comprueba con Stripe
+     que el plan está apuntado es ésta, `/app/ajustes/plan`. Con la dirección
+     anterior, el `?pago=hecho` caía en un sitio donde nadie lo miraba. */
+  const volverA = `${origen}/app/ajustes/plan`;
 
   /* Sin `try` aquí: `protegido` envuelve el manejador entero, así que un «no»
      de Stripe —o de cualquiera de los pasos de arriba— sale por el mismo sitio

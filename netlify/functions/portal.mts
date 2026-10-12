@@ -40,7 +40,10 @@ export default protegido('portal', async (req: Request): Promise<Response> => {
   /* Igual que en `pagar`: lo que diga Stripe sale por `protegido`. */
   const sesion = await stripe().billingPortal.sessions.create({
     customer: data.stripe_customer_id,
-    return_url: `${new URL(req.url).origin}/app/ajustes`,
+    /* Con `?pago=hecho` también a la vuelta del portal: quien acaba de
+       cancelar o de cambiar la tarjeta tiene que ver el cambio al instante,
+       sin depender de que llegue el aviso de Stripe. */
+    return_url: `${new URL(req.url).origin}/app/ajustes/plan?pago=hecho`,
     locale: 'es',
   });
   return json({ url: sesion.url });
