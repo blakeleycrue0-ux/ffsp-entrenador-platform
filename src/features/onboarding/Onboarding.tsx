@@ -37,7 +37,8 @@ import { Button, Field, Input, Select } from '@/components/ui';
 import { Marca, Wordmark } from '@/components/ui/Brand';
 import { ConfigurarCodigo } from '@/features/passcode/ConfigurarCodigo';
 import { PasoPlan } from './PasoPlan';
-import { cn } from '@/lib/utils';
+import { cn, dayName, toISODate } from '@/lib/utils';
+import { citasDelHorario } from '@/lib/horario';
 import type { Staff, TrainingSlot } from '@/types';
 
 const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -154,7 +155,7 @@ export default function Onboarding() {
         setError('Se ha perdido el club por el camino. Recarga la página y vuelve a intentarlo.');
         return;
       }
-      await db.saveTeam(
+      const creado = await db.saveTeam(
         {
           id: '',
           clubId,
@@ -167,6 +168,55 @@ export default function Onboarding() {
         },
         userId,
       );
+
+      /* ── Y LOS ENTRENAMIENTOS, DE VERDAD ───────────────────────────────────
+         Esta pantalla decía «los horarios que pongas aquí aparecen solos en el
+         calendario, semana tras semana» y debajo ponía «Ya están en el
+         calendario». No era cierto: el horario se guardaba en la ficha del
+         equipo y ahí se quedaba. Quien terminaba el alta abría el calendario y
+         lo encontraba vacío, después de que la propia aplicación le hubiera
+         dicho dos veces que estaba lleno.
+
+         Ahora se crean. Tres meses por delante, que es el mismo tramo que
+         propone «Añadir varios» y lo que dura un trimestre: suficiente para
+         que el calendario tenga sentido desde el primer día, y no tanto como
+         para llenar la base de sesiones de una temporada que igual cambia en
+         noviembre.
+
+         SI ESTO FALLA, EL ALTA SIGUE. El equipo ya está creado y el horario
+         guardado; las sesiones se pueden volver a repartir cuando se quiera
+         desde «Añadir varios». Parar el alta entera porque no se han podido
+         escribir unas fechas sería cambiar un problema pequeño por uno
+         grande. */
+      if (horarios.length > 0) {
+        try {
+          const hasta = new Date();
+          hasta.setMonth(hasta.getMonth() + 3);
+          const citas = citasDelHorario(horarios, toISODate(new Date()), toISODate(hasta));
+          if (citas.length > 0) {
+            await db.saveSessions(
+              citas.map((c) => ({
+                id: '',
+                teamId: creado.id,
+                title: `Entrenamiento del ${dayName(c.fecha).toLowerCase()}`,
+                date: c.fecha,
+                start: c.inicio,
+                duration: c.minutos,
+                venue: c.lugar,
+                objective: '',
+                expectedPlayers: 0,
+                material: [],
+                blocks: [],
+                status: 'planificado' as const,
+              })),
+              userId,
+            );
+          }
+        } catch (e) {
+          console.error('No se han podido repartir los entrenamientos del horario', e);
+        }
+      }
+
       setEquipoCreado(true);
       /* No se recarga todavía: falta elegir plan. Recargar aquí haría que la
          aplicación diera el alta por terminada y se llevara por delante los

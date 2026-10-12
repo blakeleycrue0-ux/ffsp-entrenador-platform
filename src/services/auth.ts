@@ -41,8 +41,54 @@ export const auth = {
     if (error) throw error;
   },
 
-  async updatePassword(password: string) {
-    const { error } = await supabase.auth.updateUser({ password });
+  /**
+   * La contraseña nueva de quien la ha olvidado.
+   * ─────────────────────────────────────────────────────────────────────────
+   * AQUÍ NO SE PIDE LA ANTERIOR, Y NO ES UN DESCUIDO: quien llega por este
+   * camino es precisamente alguien que no la sabe. Lo que demuestra su
+   * identidad es el correo —ha recibido el enlace en su buzón y Supabase ha
+   * abierto la sesión con él—, igual que en cualquier recuperación.
+   *
+   * Está separada de `updatePassword` a propósito. Si fuera la misma función
+   * con un argumento opcional, el día que alguien se dejara ese argumento sin
+   * poner, la pantalla de ajustes volvería a dejar cambiar la contraseña sin
+   * saber la anterior, y nadie se enteraría. Son dos caminos distintos y se
+   * llaman distinto.
+   */
+  async setPasswordAfterRecovery(nueva: string) {
+    const { error } = await supabase.auth.updateUser({ password: nueva });
+    if (error) throw error;
+  },
+
+  /**
+   * Cambia la contraseña, pero sólo después de comprobar la que había.
+   * ─────────────────────────────────────────────────────────────────────────
+   * ANTES BASTABA CON ESCRIBIR UNA NUEVA. Una sesión abierta en un móvil que
+   * anda de mano en mano —que es exactamente el caso de un entrenador en un
+   * campo— era todo lo que hacía falta para quedarse con la cuenta del club:
+   * cambias la contraseña y quien la tenía ya no entra. Eso también vale para
+   * un móvil perdido y para alguien que lo coge dos minutos.
+   *
+   * La comprobación la hace el servidor, no esta pantalla: `signInWithPassword`
+   * con la contraseña actual. Si no es la correcta, Supabase lo rechaza y aquí
+   * no se cambia nada. No es un adorno de interfaz que se pueda saltar
+   * llamando a la función directamente desde la consola del navegador.
+   *
+   * Y deja la sesión recién renovada, que es justo lo que se quiere después de
+   * tocar la contraseña.
+   */
+  async updatePassword(nueva: string, actual: string) {
+    const { data } = await supabase.auth.getUser();
+    const email = data.user?.email;
+    if (!email) throw new Error('Tu sesión ha caducado. Vuelve a entrar.');
+
+    const { error: mala } = await supabase.auth.signInWithPassword({
+      email,
+      password: actual,
+    });
+    if (mala) throw new Error('La contraseña actual no es correcta.');
+
+    const { error } = await supabase.auth.updateUser({ password: nueva });
     if (error) throw error;
   },
 

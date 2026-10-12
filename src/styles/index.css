@@ -430,7 +430,19 @@
      desplaza con él, va de borde a borde —por eso los márgenes negativos— y
      llega hasta abajo del todo. En Inicio empieza justo debajo del héroe,
      que es lo único que se apoya en el negro. */
+  /* Y NO EMPIEZA DE GOLPE. El pliego cortaba la imagen con una línea recta de
+     lado a lado: foto arriba, gris liso abajo, y entre las dos un canto duro
+     justo debajo del buscador. En Inicio no se notaba —ahí el corte cae lejos,
+     después de los accesos— pero en el resto de pantallas queda a dos dedos de
+     la cabecera y es lo primero que se ve.
+     Este velo sube noventa y seis píxeles por encima del pliego y va de
+     transparente a su mismo gris, así que la imagen se apaga en lugar de
+     cortarse. No pinta nada nuevo: es el mismo color del pliego, desvanecido.
+     Va por encima del borde superior —`bottom: 100%`— para no robarle ni un
+     píxel al contenido, y la cabecera sigue pasando por delante porque flota
+     en su propia capa. */
   .pliego {
+    position: relative;
     margin-inline: calc(var(--pagina-x) * -1);
     padding-inline: var(--pagina-x);
     /* El hueco de abajo vive AQUÍ y no en el armazón. Estaba en `main`, por
@@ -439,6 +451,22 @@
        reaparecía el degradado. */
     padding-bottom: var(--hueco-inferior);
     background-color: #E8E8EB;
+  }
+
+  .pliego::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 100%;
+    height: 96px;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(232, 232, 235, 0) 0%,
+      rgba(232, 232, 235, 0.35) 45%,
+      rgba(232, 232, 235, 0.78) 75%,
+      #E8E8EB 100%
+    );
   }
 
   /* ── CRISTAL SOBRE LA IMAGEN ──────────────────────────────────────────────
