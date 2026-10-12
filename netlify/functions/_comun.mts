@@ -37,6 +37,62 @@ export const json = (body: unknown, status = 200) =>
 export const error = (mensaje: string, status = 400) => json({ error: mensaje }, status);
 
 /**
+ * CUANDO LA PASARELA FALLA, QUE SE SEPA POR QUÉ.
+ * ---------------------------------------------------------------------------
+ * Las llamadas a Stripe estaban sin recoger. Si Stripe decía que no —por un
+ * permiso, por un precio archivado, por lo que fuera—, la excepción subía sin
+ * tocar, Netlify devolvía un 500 con un cuerpo que no es JSON, el navegador no
+ * conseguía leer ningún `error` y la pantalla acababa diciendo lo único que
+ * sabía: «No hemos podido conectar con la pasarela de pago».
+ *
+ * Esa frase es falsa y además es un callejón sin salida: la conexión había
+ * funcionado perfectamente, el que se había negado era Stripe. El motivo real
+ * quedaba enterrado en el registro de la función, que es el último sitio donde
+ * va a mirar quien está intentando pagar.
+ *
+ * Ahora el motivo sale en la pantalla. Y SE ELIGE QUÉ SE CUENTA:
+ *
+ *   · Lo que dice Stripe se enseña tal cual. Sus mensajes están escritos para
+ *     que los lea una persona —«the price is archived», «no such price»— y no
+ *     llevan nada de la cuenta ni de la clave.
+ *   · El permiso tiene mensaje propio, porque es el fallo que da una clave
+ *     restringida recién creada y la pantalla puede decir exactamente qué hay
+ *     que marcar en Stripe para arreglarlo.
+ *   · Cualquier otra cosa se queda en una frase genérica. Un fallo que no
+ *     viene de Stripe puede llevar dentro detalles del servidor, y esto es un
+ *     punto público.
+ *
+ * Y TODO SE REGISTRA ENTERO, pase lo que pase: la pantalla da lo justo para
+ * saber qué hacer, el registro de la función da lo necesario para depurarlo.
+ */
+export function fallo(e: unknown, donde: string): Response {
+  console.error(`Fallo en ${donde}:`, e);
+
+  if (e instanceof Stripe.errors.StripeError) {
+    if (e.type === 'StripePermissionError' || e.statusCode === 403) {
+      return error(
+        'La clave de Stripe configurada no tiene permiso para esto. Si es una clave '
+        + 'restringida (rk_live_…), dale permiso de escritura sobre Checkout Sessions, '
+        + 'Customers, Subscriptions y Billing Portal, o usa la clave secreta normal.',
+        502,
+      );
+    }
+    if (e.type === 'StripeAuthenticationError') {
+      return error('La clave de Stripe configurada no es válida.', 502);
+    }
+    return error(`Stripe ha rechazado la operación: ${e.message}`, 502);
+  }
+
+  /* `exige` falla con el nombre de la variable que falta, nunca con su valor:
+     decirlo ahorra media hora de buscar a ciegas y no enseña ningún secreto. */
+  if (e instanceof Error && e.message.startsWith('Falta la variable de entorno')) {
+    return error(`${e.message}. Hay que definirla en el panel de Netlify.`, 500);
+  }
+
+  return error('No hemos podido abrir la pasarela de pago. Inténtalo de nuevo en un momento.', 500);
+}
+
+/**
  * Quién llama, comprobado contra Supabase — no contra lo que diga el cuerpo de
  * la petición. Devuelve el id de la persona o `null` si el testigo no vale.
  */
