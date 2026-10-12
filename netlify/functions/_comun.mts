@@ -93,6 +93,32 @@ export function fallo(e: unknown, donde: string): Response {
 }
 
 /**
+ * NINGUNA FUNCIÓN DE COBRO PUEDE CAERSE SIN CONTESTAR.
+ * ---------------------------------------------------------------------------
+ * Recoger la llamada a Stripe no bastaba. Antes de llegar a Stripe hay media
+ * docena de pasos que también pueden fallar —leer quién llama, comprobar que
+ * administra el club, buscar el plan, leer la suscripción previa— y cada uno
+ * habla con Supabase por la red. Si uno de ésos revienta, la excepción sube
+ * sin recoger, Netlify contesta un 502 con un cuerpo que no es JSON y el
+ * navegador se queda sin motivo que enseñar: vuelve la pantalla muda, sólo
+ * que ahora con un número al lado.
+ *
+ * Esto envuelve el manejador entero. A partir de aquí, pase lo que pase
+ * dentro, la respuesta SIEMPRE es un JSON con su `error` dentro, y el detalle
+ * completo queda en el registro de la función. Un punto que cobra dinero no
+ * puede tener una forma de fallar que no sepa contar.
+ */
+export const protegido =
+  (nombre: string, manejador: (req: Request) => Promise<Response>) =>
+    async (req: Request): Promise<Response> => {
+      try {
+        return await manejador(req);
+      } catch (e) {
+        return fallo(e, nombre);
+      }
+    };
+
+/**
  * Quién llama, comprobado contra Supabase — no contra lo que diga el cuerpo de
  * la petición. Devuelve el id de la persona o `null` si el testigo no vale.
  */
