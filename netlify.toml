@@ -19,6 +19,33 @@
   # comportamiento el día que Netlify actualice la suya por defecto.
   NODE_VERSION = "20"
 
+  # ── EL ESCÁNER DE SECRETOS, Y LA ÚNICA EXCEPCIÓN ──────────────────────────
+  # Netlify busca en todo lo que se publica el VALOR de cada variable de
+  # entorno del sitio, y si lo encuentra, para la publicación. Es una buena
+  # red: este repositorio es público y la base tiene datos de menores, así
+  # que una clave que se cuele en el paquete del navegador no puede llegar a
+  # publicarse.
+  #
+  # `SUPABASE_URL` no es un secreto y nunca lo ha sido. Es la dirección del
+  # proyecto —`https://<ref>.supabase.co`—, y va en cada petición que hace el
+  # navegador: cualquiera la ve abriendo las herramientas del navegador. Está
+  # escrita a propósito en dos sitios: como valor por defecto en
+  # `src/services/supabase.ts`, para que el sitio funcione aunque nadie
+  # defina la variable, y en `.env.example` como documentación.
+  #
+  # Al marcarla como secreta en el panel de Netlify, el escáner empezó a
+  # buscarla, la encontró justo donde tiene que estar y tumbó el despliegue.
+  # Lo que se excluye aquí es ESA clave y sólo ésa.
+  #
+  # LAS TRES QUE SÍ SON SECRETAS —STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET y
+  # SUPABASE_SERVICE_ROLE_KEY— SE SIGUEN VIGILANDO. Con cualquiera de ellas
+  # se podría cobrar en nombre del club o leer la base entera saltándose las
+  # políticas de acceso. Si alguna apareciera algún día en lo que se publica,
+  # el despliegue tiene que fallar. Por eso no se apaga el escáner entero
+  # (`SECRETS_SCAN_ENABLED = "false"`), que era la otra salida y habría
+  # silenciado también las tres que importan.
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL"
+
 # ── Funciones ───────────────────────────────────────────────────────────────
 # El cobro necesita servidor. La clave secreta de Stripe y la clave de servicio
 # de Supabase viven aquí y NUNCA en el navegador: con cualquiera de las dos se
