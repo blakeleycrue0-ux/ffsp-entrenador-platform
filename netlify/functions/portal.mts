@@ -5,7 +5,7 @@
  * al portal de Stripe, donde el club lo hace solo y en dos clics.
  */
 
-import { administraElClub, admin, error, json, quienLlama, stripe } from './_comun.mts';
+import { administraElClub, admin, error, fallo, json, quienLlama, stripe } from './_comun.mts';
 
 export default async (req: Request): Promise<Response> => {
   if (req.method !== 'POST') return error('Sólo POST', 405);
@@ -35,11 +35,15 @@ export default async (req: Request): Promise<Response> => {
     return error('Este club todavía no tiene ningún pago que gestionar.', 409);
   }
 
-  const sesion = await stripe().billingPortal.sessions.create({
-    customer: data.stripe_customer_id,
-    return_url: `${new URL(req.url).origin}/app/ajustes`,
-    locale: 'es',
-  });
-
-  return json({ url: sesion.url });
+  /* Igual que en `pagar`: lo que diga Stripe llega a la pantalla. */
+  try {
+    const sesion = await stripe().billingPortal.sessions.create({
+      customer: data.stripe_customer_id,
+      return_url: `${new URL(req.url).origin}/app/ajustes`,
+      locale: 'es',
+    });
+    return json({ url: sesion.url });
+  } catch (e) {
+    return fallo(e, 'portal');
+  }
 };

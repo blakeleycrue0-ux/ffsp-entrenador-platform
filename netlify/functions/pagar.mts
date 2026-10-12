@@ -11,7 +11,8 @@
  */
 
 import {
-  administraElClub, admin, error, json, NIVELES_DE_PAGO, plan as buscarPlan, quienLlama, stripe,
+  administraElClub, admin, error, fallo, json, NIVELES_DE_PAGO, plan as buscarPlan, quienLlama,
+  stripe,
 } from './_comun.mts';
 
 export default async (req: Request): Promise<Response> => {
@@ -62,27 +63,34 @@ export default async (req: Request): Promise<Response> => {
   const origen = new URL(req.url).origin;
   const volverA = `${origen}/app/ajustes`;
 
-  const s = stripe();
-  const sesion = await s.checkout.sessions.create({
-    mode: 'subscription',
-    line_items: [{ price, quantity: 1 }],
-    // Un cliente por club, reutilizado: así el portal enseña todo su historial.
-    customer: previa?.stripe_customer_id ?? undefined,
-    client_reference_id: clubId,
-    subscription_data: {
-      // Sin prueba si ya la gastó: `trial_days` sólo se aplica la primera vez.
-      trial_period_days: previa?.stripe_customer_id ? undefined : plan?.trial_days || undefined,
-      /* `nivel` viaja con la suscripción porque es lo que el webhook leerá para
-         saber si este club es Pro o Max. Sin esto habría que adivinarlo por el
-         precio, y un precio se cambia en Stripe sin avisar a nadie. */
-      metadata: { club_id: clubId, nivel, club_name: club?.name ?? '' },
-    },
-    metadata: { club_id: clubId, nivel },
-    locale: 'es',
-    allow_promotion_codes: true,
-    success_url: `${volverA}?pago=hecho`,
-    cancel_url: `${volverA}?pago=cancelado`,
-  });
+  /* RECOGIDO. Sin este `try`, un «no» de Stripe subía sin tocar y la pantalla
+     acababa diciendo «No hemos podido conectar con la pasarela», que no es lo
+     que había pasado: la conexión fue bien y el que se negó fue Stripe. */
+  let sesion;
+  try {
+    sesion = await stripe().checkout.sessions.create({
+      mode: 'subscription',
+      line_items: [{ price, quantity: 1 }],
+      // Un cliente por club, reutilizado: así el portal enseña todo su historial.
+      customer: previa?.stripe_customer_id ?? undefined,
+      client_reference_id: clubId,
+      subscription_data: {
+        // Sin prueba si ya la gastó: `trial_days` sólo se aplica la primera vez.
+        trial_period_days: previa?.stripe_customer_id ? undefined : plan?.trial_days || undefined,
+        /* `nivel` viaja con la suscripción porque es lo que el webhook leerá para
+           saber si este club es Pro o Max. Sin esto habría que adivinarlo por el
+           precio, y un precio se cambia en Stripe sin avisar a nadie. */
+        metadata: { club_id: clubId, nivel, club_name: club?.name ?? '' },
+      },
+      metadata: { club_id: clubId, nivel },
+      locale: 'es',
+      allow_promotion_codes: true,
+      success_url: `${volverA}?pago=hecho`,
+      cancel_url: `${volverA}?pago=cancelado`,
+    });
+  } catch (e) {
+    return fallo(e, 'pagar');
+  }
 
   if (!sesion.url) return error('Stripe no ha devuelto una dirección de pago', 502);
   return json({ url: sesion.url });

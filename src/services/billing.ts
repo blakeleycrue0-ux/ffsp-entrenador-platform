@@ -196,7 +196,13 @@ async function llamar(ruta: string, cuerpo: Record<string, unknown>): Promise<st
 
   const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
   if (!res.ok || !json.url) {
-    throw new Error(json.error || 'No hemos podido conectar con la pasarela de pago.');
+    /* EL MOTIVO, SI EL SERVIDOR LO MANDA. Y SI NO, EL CÓDIGO.
+       «No hemos podido conectar» era lo único que se decía, y casi nunca era
+       verdad: la conexión funcionaba y lo que fallaba estaba al otro lado.
+       Con el código de respuesta, quien lo lea sabe al menos si fue la sesión
+       (401), el permiso (403) o la pasarela (502), en vez de quedarse con una
+       frase que no lleva a ninguna parte. */
+    throw new Error(json.error || `La pasarela ha respondido con un error (${res.status}).`);
   }
   return json.url;
 }
