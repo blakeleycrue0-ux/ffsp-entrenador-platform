@@ -181,6 +181,37 @@ export const billing = {
   async irAlPortal(clubId: string): Promise<string> {
     return llamar('/.netlify/functions/portal', { clubId });
   },
+
+  /**
+   * Pregúntale a Stripe en qué plan está este club y apúntalo.
+   *
+   * LA RED DE SEGURIDAD. El plan lo escribe el aviso de Stripe, que es
+   * instantáneo cuando llega. Cuando no llega —y pasó— el club ha pagado y la
+   * aplicación no se entera: sigue en gratis y encima no puede abrir el
+   * portal para cancelar, porque el portal necesita el identificador de
+   * cliente que está en la fila que no se escribió.
+   *
+   * Esto se llama al volver de pagar y desde el botón de la pantalla de
+   * facturación. No manda ningún plan: sólo el club. Quién manda es Stripe.
+   */
+  async sincronizar(clubId: string): Promise<{ encontrada: boolean; mensaje?: string }> {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) throw new Error('Tu sesión ha caducado. Vuelve a entrar.');
+
+    const res = await fetch('/.netlify/functions/sincronizar', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+      body: JSON.stringify({ clubId }),
+    });
+    const json = (await res.json().catch(() => ({}))) as {
+      encontrada?: boolean; mensaje?: string; error?: string;
+    };
+    if (!res.ok) {
+      throw new Error(json.error || `La pasarela ha respondido con un error (${res.status}).`);
+    }
+    return { encontrada: json.encontrada === true, mensaje: json.mensaje };
+  },
 };
 
 async function llamar(ruta: string, cuerpo: Record<string, unknown>): Promise<string> {

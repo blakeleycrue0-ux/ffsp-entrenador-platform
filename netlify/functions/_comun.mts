@@ -186,3 +186,82 @@ export async function plan(tier: string): Promise<Plan | null> {
     .maybeSingle();
   return (data as Plan | null) ?? null;
 }
+
+/* ──────────────────────────── La suscripción ─────────────────────────────
+   ESTO VIVE AQUÍ Y NO EN EL WEBHOOK, y el motivo es una factura cobrada.
+
+   Escribir la suscripción era cosa sólo del aviso de Stripe. Mientras el
+   aviso llegue, perfecto. El día que no llega —y no llegó— el club ha
+   pagado, Stripe lo tiene todo apuntado y la aplicación no se entera de
+   nada: sigue en el plan gratis, con un equipo, y encima sin poder abrir el
+   portal para cancelar, porque el portal necesita el cliente de Stripe que
+   está justo en la fila que no se escribió.
+
+   Un cobro no puede depender de que una petición de un tercero llegue a la
+   primera. Así que el mismo guardado lo usan dos caminos: el aviso de
+   Stripe, que es el rápido, y `sincronizar`, que va a preguntárselo a Stripe
+   cuando hace falta. Los dos escriben exactamente lo mismo, porque son la
+   misma función. */
+
+/** Los estados de Stripe, tal cual, para poder cuadrarlos con su panel. */
+const ESTADOS = new Set([
+  'trialing', 'active', 'past_due', 'canceled', 'unpaid', 'incomplete',
+]);
+
+const enSegundos = (t: number | null | undefined) =>
+  typeof t === 'number' ? new Date(t * 1000).toISOString() : null;
+
+/**
+ * Deja en la base lo que Stripe dice de esta suscripción.
+ *
+ * Devuelve el club al que se ha aplicado, o `null` si el aviso no traía
+ * ninguno: sin club no se puede aplicar a nadie.
+ */
+export async function guardarSuscripcion(
+  sub: Stripe.Subscription,
+  clubDeRespaldo?: string,
+): Promise<string | null> {
+  const clubId = (sub.metadata?.club_id as string | undefined) ?? clubDeRespaldo;
+  if (!clubId) {
+    /* Se registra y se acepta: devolver un error haría que Stripe reintentara
+       este aviso para siempre. */
+    console.error('Aviso de Stripe sin club_id', sub.id);
+    return null;
+  }
+
+  const estado = ESTADOS.has(sub.status) ? sub.status : 'incomplete';
+  const item = sub.items.data[0] as
+    (Stripe.SubscriptionItem & { current_period_end?: number }) | undefined;
+
+  /* Qué plan ha contratado. Lo dijimos nosotros al abrir el pago y viaja en la
+     suscripción, así que no hay que deducirlo del precio. Si faltara, se
+     supone el más bajo de los de pago: equivocarse a la baja deja al club con
+     menos de lo que pagó, que se arregla; a la alta le regala lo que no ha
+     pagado, que no se entera nadie. */
+  const pedido = sub.metadata?.nivel;
+  const nivel = (NIVELES_DE_PAGO as readonly string[]).includes(pedido ?? '') ? pedido! : 'pro';
+
+  const { error: e } = await admin()
+    .from('subscriptions')
+    .upsert(
+      {
+        club_id: clubId,
+        // El plan lo decide que la suscripción exista, no lo que diga nadie.
+        tier: estado === 'canceled' || estado === 'unpaid' ? 'free' : nivel,
+        status: estado,
+        trial_ends_at: enSegundos(sub.trial_end),
+        current_period_end: enSegundos(item?.current_period_end),
+        cancel_at_period_end: sub.cancel_at_period_end ?? false,
+        stripe_customer_id: typeof sub.customer === 'string' ? sub.customer : sub.customer.id,
+        stripe_subscription_id: sub.id,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'club_id' },
+    );
+
+  if (e) {
+    console.error('No se ha podido guardar la suscripción', clubId, e.message);
+    throw new Error(`No se ha podido guardar la suscripción: ${e.message}`);
+  }
+  return clubId;
+}
