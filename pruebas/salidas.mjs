@@ -32,7 +32,7 @@ execFileSync('npx', ['esbuild', 'src/features/board/scene.ts', '--bundle', '--fo
   `--outfile=${salida}`, '--log-level=error'], { stdio: 'inherit' });
 const {
   sampleScene, moveTrack, patchKeyframe, setSalida, reajustaSalidas, puedeEsperar,
-  tramoDeTrack, duracionDeTrack,
+  tramoDeTrack, duracionDeTrack, moveObject,
 } = await import(salida);
 
 let fallos = 0;
@@ -183,6 +183,61 @@ console.log('\n  «sale cuando llegue la anterior»\n');
   comprueba(
     'recolocar dos veces no la mueve dos veces',
     tramoDeTrack(reajustaSalidas(recolocada).tracks.cris).sale === 6000,
+  );
+}
+
+console.log('\n  tocar una ficha retrasada no le borra el retraso\n');
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EL FOTOGRAMA QUE APARECÍA SOLO.
+   ═══════════════════════════════════════════════════════════════════════════
+   Retrasar funcionaba, y aun así «no funciona, lo tengo que eliminar, es como
+   que se pone solo». Tenía razón y era esto: con una ficha que sale en el
+   segundo 2, bastaba con arrastrarla con el cabezal en el cero —recolocarla
+   un metro, lo primero que hace cualquiera— para que se le metiera un
+   fotograma NUEVO en el cero. La pista pasaba de [2000, 4000] a
+   [0, 2000, 4000] y volvía a arrancar desde el principio.
+
+   Lo peor no era el fallo, era que no se veía: el mando seguía diciendo lo
+   que se había puesto, y había aparecido un fotograma que nadie pidió.
+   ═══════════════════════════════════════════════════════════════════════════ */
+{
+  const tarde = moveTrack(base, 'bea', 2000);
+  const tocada = moveObject(tarde, 'bea', 0, { x: 25, y: 31 });
+
+  comprueba(
+    'arrastrarla en el segundo 0 NO le añade un fotograma',
+    tocada.tracks.bea.length === 2,
+    tocada.tracks.bea.map((k) => k.t).join(' · '),
+  );
+  comprueba(
+    'y sigue saliendo cuando se le dijo',
+    tramoDeTrack(tocada.tracks.bea).sale === 2000,
+    `${tramoDeTrack(tocada.tracks.bea).sale} ms`,
+  );
+  comprueba(
+    'lo que sí se mueve es de dónde sale: el recorrido entero se traslada',
+    Math.abs(tocada.tracks.bea[0].x - 25) < 0.01
+      && Math.abs(tocada.tracks.bea[1].x - 55) < 0.01,
+    `sale de x=${tocada.tracks.bea[0].x}, llega a x=${tocada.tracks.bea[1].x}`,
+  );
+
+  /* Con «cuando llegue Ana» puesto, igual: ni fotograma de más ni descuadre. */
+  const encadenada = setSalida(base, 'bea', { tras: 'ana' });
+  const tocada2 = reajustaSalidas(moveObject(encadenada, 'bea', 0, { x: 25, y: 31 }));
+  comprueba(
+    'con «cuando llegue Ana» tampoco',
+    tocada2.tracks.bea.length === 2 && tramoDeTrack(tocada2.tracks.bea).sale === 2000,
+    tocada2.tracks.bea.map((k) => k.t).join(' · '),
+  );
+
+  /* Y DESPUÉS de salir sí se anima, que es lo que se pide ahí: arrastrarla a
+     mitad de carrera tiene que doblar el recorrido, no trasladarlo. */
+  const aMitad = moveObject(tarde, 'bea', 3000, { x: 40, y: 20 });
+  comprueba(
+    'pero a mitad de carrera sí crea un fotograma, que es lo que se pide ahí',
+    aMitad.tracks.bea.length === 3,
+    aMitad.tracks.bea.map((k) => k.t).join(' · '),
   );
 }
 

@@ -16,7 +16,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowUpRight, Copy, Hand, Image as ImageIcon, Maximize2, Minus, MousePointer2, Move,
   Pause, Play, Redo2, Repeat, RotateCcw, Slash, Spline, Square, Trash2, Undo2,
-  Box, Crosshair, Download, RotateCw, X, ZoomIn, ZoomOut,
+  Box, Crosshair, Download, Expand, Minimize2, RotateCw, X, ZoomIn, ZoomOut,
 } from 'lucide-react';
 import { Button, Field, Input, Panel, PanelHeader, Segmented, Select, Tag, Toggle } from '@/components/ui';
 import { BoardStage, useBoardView, type Tool } from './BoardStage';
@@ -148,6 +148,17 @@ export function BoardEditor({
   const [drawColor, setDrawColor] = useState('#FFFFFF');
   const [drawWidth, setDrawWidth] = useState(0.36);
   const [presenting, setPresenting] = useState(false);
+  /**
+   * PANTALLA COMPLETA PERO EDITANDO, que es lo que faltaba.
+   *
+   * «Presentar» llena la pantalla y quita TODO: es para enseñar una jugada
+   * hecha, no para montarla. Así que quien quería el campo grande mientras
+   * trabaja no tenía a dónde ir, y se quedaba con el campo metido en un
+   * hueco de la página con los mandos alrededor.
+   *
+   * `ampliado` es la misma pantalla completa con el editor entero dentro.
+   */
+  const [ampliado, setAmpliado] = useState(false);
   const shell = useRef<HTMLDivElement>(null);
   const vista = useBoardView();
   /* En el móvil los mandos van donde llega el pulgar —las herramientas abajo—
@@ -165,6 +176,10 @@ export function BoardEditor({
       ? { muelle: 'arriba', x: 12, y: 24, plegado: true }
       : { muelle: 'abajo', x: 24, y: 400, plegado: false },
   );
+  /* Lo que ocupan los mandos acoplados arriba y abajo. Lo miden ellos y lo
+     dicen aquí; el campo se aparta otro tanto. Cero mientras flotan. */
+  const [altoArriba, setAltoArriba] = useState(0);
+  const [altoAbajo, setAltoAbajo] = useState(0);
   /* Con el campo vacío, el panel arranca abierto: no hay nada que mirar y todo
      que añadir, y un campo en blanco sin la paleta a la vista deja a cualquiera
      buscando por dónde se empieza. En cuanto hay algo puesto, se quita de en
@@ -287,7 +302,7 @@ export function BoardEditor({
     if (vista.enElCampoEntero && !document.fullscreenElement) vista.ajustar(scene);
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
-      else await el.requestFullscreen();
+      else { setPresenting(true); setAmpliado(false); await el.requestFullscreen(); }
     } catch {
       // Sin pantalla completa (iOS no la da en cualquier elemento) se presenta
       // igual: se ocultan los paneles y el campo ocupa lo que haya.
@@ -295,8 +310,28 @@ export function BoardEditor({
     }
   }, [vista, scene]);
 
+  /** Pantalla completa SIN quitar los mandos: para montar, no para enseñar. */
+  const ampliar = useCallback(async () => {
+    const el = shell.current;
+    if (!el) return;
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else { setAmpliado(true); await el.requestFullscreen(); }
+    } catch {
+      setAmpliado((a) => !a);
+    }
+  }, []);
+
+  /* Salir de pantalla completa por cualquier vía —la tecla de escape del
+     navegador, el botón, el gesto del sistema— tiene que apagar los dos
+     modos. Si sólo se apagara el que se encendió, quedaría la aplicación
+     creyéndose a pantalla completa fuera de ella. */
   useEffect(() => {
-    const onChange = () => setPresenting(document.fullscreenElement === shell.current);
+    const onChange = () => {
+      const dentro = document.fullscreenElement === shell.current;
+      if (!dentro) { setPresenting(false); setAmpliado(false); }
+      else setPresenting((p) => p && dentro);
+    };
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
@@ -319,9 +354,12 @@ export function BoardEditor({
       /* Las dos que hacen falta para enseñar una jugada en un ordenador, sin
          ir a buscar un icono: F la pone a pantalla completa, A se acerca a la
          jugada y vuelve a sacar el campo entero. */
+      /* F amplía para trabajar; F con mayúscula presenta limpio. La de
+         trabajar es la que se usa cien veces al día, así que se queda la
+         tecla sin modificador. */
       if (e.key.toLowerCase() === 'f' && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
-        void presentar();
+        void (e.shiftKey ? presentar() : ampliar());
       }
       if (e.key.toLowerCase() === 'a' && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
@@ -348,7 +386,7 @@ export function BoardEditor({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [playback, undo, redo, selected, selectedDrawing, editable, commit, scene, presentar, vista]);
+  }, [playback, undo, redo, selected, selectedDrawing, editable, commit, scene, presentar, ampliar, vista]);
 
   /* ───────────────────────────── Paneles ─────────────────────────────────── */
 
@@ -949,9 +987,25 @@ export function BoardEditor({
         >
           <Download size={15} />
         </button>
+        {/* Dos cosas distintas y por eso dos botones. Ampliar es para
+            MONTAR la jugada con el campo grande y los mandos a mano;
+            presentar es para ENSEÑARLA, sin nada alrededor. Meterlas en un
+            botón obligaría a elegir cuál pierde. */}
+        <button
+          onClick={ampliar}
+          aria-label={ampliado ? 'Salir de pantalla completa' : 'Pantalla completa (F)'}
+          title={ampliado ? 'Salir de pantalla completa · Esc' : 'Pantalla completa, sin dejar de editar · F'}
+          className={cn(
+            'grid h-9 w-9 place-items-center rounded-xl transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900',
+            ampliado ? 'bg-ink-900/[0.08] text-ink-900' : 'text-ink-700',
+          )}
+        >
+          {ampliado ? <Minimize2 size={15} /> : <Expand size={15} />}
+        </button>
         <button
           onClick={presentar}
           aria-label="Presentar"
+          title="Presentar: pantalla completa y sin mandos · Mayús + F"
           className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900"
         >
           <Maximize2 size={15} />
@@ -1145,19 +1199,47 @@ export function BoardEditor({
            que hay, más 170 px para las dos islas de mandos, y `min` se queda
            con el menor de los dos. En un escritorio ancho sigue mandando la
            ventana, que es lo que debe pasar. */
-        style={{
-          height:
-            'min(calc(100dvh - var(--header-h) - var(--pagina-top) - var(--hueco-inferior) - 52px),' +
-            ' calc((100vw - 2 * var(--pagina-x) - var(--sidebar-w)) / 1.544 + 170px))',
-        }}
+        /* Ampliado, la ventana ES el lienzo: las variables del armazón
+           —cabecera, márgenes de página, barra lateral— describen un sitio en
+           el que ya no estamos, y restarlas dejaría una franja vacía del alto
+           de una cabecera que no se ve. */
+        style={ampliado
+          ? { height: '100dvh' }
+          : {
+            height:
+              'min(calc(100dvh - var(--header-h) - var(--pagina-top) - var(--hueco-inferior) - 52px),'
+              + ' calc((100vw - 2 * var(--pagina-x) - var(--sidebar-w)) / 1.544 + 170px))',
+          }}
       >
         {/* El campo y sus mandos viven en una caja que se encoge cuando se abre
             el panel. Sin esto, la regla de tiempo —centrada sobre el lienzo—
             se metía por debajo del panel y se perdía la mitad. */}
         <div className={cn('absolute inset-0 transition-[right] duration-200', cajon && 'lg:right-[316px]')}>
-          <div className="absolute inset-0 p-1.5 lg:p-2">{campoLleno}</div>
+          {/* ── LOS MANDOS ACOPLADOS QUITAN SITIO, NO LO TAPAN ──────────────
+              Estaban SIEMPRE por encima del campo. La idea era que el campo
+              fuera la pantalla entera, y sobre el papel suena bien; en la mesa
+              lo que pasa es que la barra de herramientas tapa el área grande
+              de arriba y la de reproducción tapa la de abajo, que son
+              justamente las dos zonas donde se monta una jugada. Y no hay
+              forma de trabajar: lo que quieres arrastrar está debajo de un
+              botón.
+              Acopladas arriba o abajo, ahora el campo se aparta. Flotando
+              siguen por encima, que es para lo que sirve soltarlas en medio:
+              quien quiera el campo de borde a borde las deja flotando o las
+              pliega. */}
+          <div
+            className="absolute inset-0 p-1.5 transition-[padding] duration-200 lg:p-2"
+            style={{ paddingTop: `${altoArriba + 8}px`, paddingBottom: `${altoAbajo + 8}px` }}
+          >
+            {campoLleno}
+          </div>
 
-          <Isla sitio={sitioHerramientas} onSitio={setSitioHerramientas} etiqueta="Herramientas">
+          <Isla
+            sitio={sitioHerramientas}
+            onSitio={setSitioHerramientas}
+            etiqueta="Herramientas"
+            onAlto={sitioHerramientas.muelle === 'abajo' ? setAltoAbajo : setAltoArriba}
+          >
             {herramientas}
           </Isla>
 
@@ -1165,6 +1247,7 @@ export function BoardEditor({
             sitio={sitioTiempo}
             onSitio={setSitioTiempo}
             etiqueta="Reproducción"
+            onAlto={sitioTiempo.muelle === 'arriba' ? setAltoArriba : setAltoAbajo}
           >
             <div className="w-[min(600px,calc(100vw-120px))] px-1">
               {mandosDeTiempo}

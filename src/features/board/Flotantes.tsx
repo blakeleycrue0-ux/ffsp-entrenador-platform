@@ -11,7 +11,7 @@
  * no tiene nada que hacer en la base de datos—.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -77,7 +77,7 @@ const ANCLAJE: Record<Muelle, string> = {
  * cerca de un borde se acopla ahí, y en el centro se queda flotando.
  */
 export function Isla({
-  sitio, onSitio, children, className, etiqueta, plegable = true,
+  sitio, onSitio, children, className, etiqueta, plegable = true, onAlto,
 }: {
   sitio: Sitio;
   onSitio: (s: Sitio) => void;
@@ -85,12 +85,41 @@ export function Isla({
   className?: string;
   etiqueta: string;
   plegable?: boolean;
+  /**
+   * Cuánto alto ocupa, cuando está acoplada arriba o abajo. Lo usa el campo
+   * para APARTARSE en vez de quedar debajo. Es `0` mientras flota o está
+   * acoplada a un lado, que es cuando sí se superpone a propósito.
+   */
+  onAlto?: (px: number) => void;
 }) {
   const caja = useRef<HTMLDivElement>(null);
   const arrastre = useRef<{ id: number; dx: number; dy: number } | null>(null);
   const [moviendo, setMoviendo] = useState(false);
 
   const enVertical = sitio.muelle === 'izquierda' || sitio.muelle === 'derecha';
+  const reservaSitio = sitio.muelle === 'arriba' || sitio.muelle === 'abajo';
+
+  /* ── CUÁNTO SITIO SE QUEDA ─────────────────────────────────────────────
+     Se mide en vez de calcularse: la isla cambia de alto al plegarla, al
+     girar el móvil y al pasar la barra de herramientas a dos filas, y un
+     número escrito a mano se quedaría viejo en los tres casos y dejaría el
+     campo cortado o con una franja vacía. */
+  useEffect(() => {
+    const el = caja.current;
+    if (!el || !onAlto) return undefined;
+    if (!reservaSitio) {
+      onAlto(0);
+      return undefined;
+    }
+    const medir = () => onAlto(el.getBoundingClientRect().height);
+    medir();
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      onAlto(0);
+    };
+  }, [onAlto, reservaSitio, sitio.plegado]);
 
   const bajar = (e: React.PointerEvent) => {
     const el = caja.current;
