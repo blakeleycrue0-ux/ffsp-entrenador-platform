@@ -34,6 +34,7 @@
     "pizarra:salidas": "node pruebas/salidas.mjs",
     "pizarra:encuadre": "node pruebas/encuadre.mjs",
     "app:correo": "node pruebas/correo.mjs",
+    "app:guia-al-entrar": "node pruebas/guia-al-entrar.mjs",
     "guia": "node presentacion/guia-pdf.mjs",
     "marca": "node presentacion/marca-tinta.mjs",
     "capturas": "node pruebas/capturas.mjs",
