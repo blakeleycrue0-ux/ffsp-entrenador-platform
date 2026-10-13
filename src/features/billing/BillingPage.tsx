@@ -29,7 +29,8 @@ import { billing, diasDePrueba, importe, NIVELES, type Plan, type PlanTier } fro
 import { todoLoQueTrae } from '@/services/entitlements';
 import { humanError } from '@/services/supabase';
 import { useConfirmacion } from '@/features/passcode/Confirmar';
-import { BotonDePlan, limiteDeEquipos, SelectorDePlanes, useSeleccionDePlan } from './SelectorDePlanes';
+import { BotonDePlan, SelectorDePlanes, useSeleccionDePlan } from './SelectorDePlanes';
+import { Comparativa } from './Comparativa';
 import { cn } from '@/lib/utils';
 import { useAnchura } from '@/components/layout/AppShell';
 
@@ -305,25 +306,24 @@ export default function BillingPage() {
           </Panel>
         )}
 
+        {/* LA MISMA COMPARATIVA QUE LA PORTADA, Y POR LOS MISMOS MOTIVOS.
+            Aquí había tres renglones con el límite de equipos y nada más: ni
+            precio, ni para quién es cada plan, ni una sola de las herramientas
+            que trae. Quien ya había entrado veía MENOS que quien miraba la
+            página pública sin registrarse, justo en la pantalla donde se
+            decide pagar. Ahora es la misma tabla, leyendo de las mismas dos
+            fuentes —`plans` y el catálogo de capacidades—, así que las dos no
+            pueden contradecirse. */}
         <Panel className="lg:col-span-2">
-          <PanelHeader title="Qué cambia entre planes" />
-          <div className="divide-y divide-line px-5">
-            {planes.map((p) => (
-              <div key={p.tier} className="flex items-baseline justify-between gap-4 py-3.5">
-                <span className={cn('text-base', p.tier === per.nivel ? 'font-semibold text-ink-900' : 'text-ink-700')}>
-                  {p.name}
-                </span>
-                <span className="text-base text-ink-500">{limiteDeEquipos(p)}</span>
-              </div>
-            ))}
-          </div>
+          <PanelHeader title="Qué trae cada plan" />
+          <Comparativa planes={planes} nivelActual={per.nivel} />
           {/* QUÉ HAY EN LOS TRES, CONTADO POR EL CATÁLOGO. Esta línea era una
               lista escrita a mano que terminaba en «y cuerpo técnico están en
               los tres», y «cuerpo técnico» pasó a ser de Max: el día que se
               abra el cobro, esa frase quedaría desmentida por la pantalla de
               al lado. Preguntándoselo a `todoLoQueTrae('free')` dice siempre
               lo que de verdad trae el plan de abajo. */}
-          <p className="px-5 pb-5 pt-3 text-sm leading-relaxed text-ink-500">
+          <p className="border-t border-line px-5 pb-5 pt-4 text-sm leading-relaxed text-ink-500">
             {enLosTres.length > 0 && (
               <>{enumerar(enLosTres)} {enLosTres.length === 1 ? 'está' : 'están'} en los tres. </>
             )}

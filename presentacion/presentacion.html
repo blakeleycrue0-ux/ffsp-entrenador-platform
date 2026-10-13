@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Playoff360 — Beyond the game</title>
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  LA PRESENTACIÓN, EN HTML, PARA QUE EL PDF NO SEA UN CALLEJÓN SIN SALIDA
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Esto es el ORIGEN del PDF, no un adorno. Un PDF maquetado a mano se
+  actualiza volviendo a maquetarlo; éste se actualiza cambiando una línea aquí
+  y volviendo a correr `node presentacion/construir.mjs`.
+
+  CADA `<section class="lamina">` ES UNA PÁGINA, de 1920 × 1080 px, que es la
+  misma proporción que la portada que vino hecha (16:9) y la de cualquier
+  pantalla donde se vaya a enseñar.
+
+  LAS LETRAS Y LOS COLORES SON LOS DE LA CASA, y no una aproximación: las
+  fuentes son los mismos cuatro archivos que sirve la web —`public/fuentes`—
+  y los colores están copiados de `tailwind.config.js` con su nombre al lado.
+  Las capturas son las de verdad, las que hay en `public/producto`, no
+  maquetas dibujadas para la ocasión.
+
+  LO QUE NO HAY AQUÍ, Y NO ES UN OLVIDO: ni número de clubes, ni testimonios,
+  ni valoraciones, ni un «+500 equipos confían en nosotros». No existen. Las
+  únicas cifras son los precios —que están en la tabla `plans` de la base de
+  datos— y el número de módulos, que se cuentan mirando el producto. Hay una
+  lámina entera dedicada a lo que todavía NO está construido, que es la parte
+  que nadie pone en una presentación y la que de verdad se agradece.
+-->
+<style>
+  /* ── LAS LETRAS ──────────────────────────────────────────────────────────
+     Los mismos archivos que sirve la web. Space Grotesk para titulares y
+     cifras; Plus Jakarta Sans para todo lo que se lee seguido. */
+  @font-face {
+    font-family: 'Space Grotesk';
+    font-style: normal;
+    font-weight: 300 700;
+    src: url('../public/fuentes/space-grotesk-latin.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Space Grotesk';
+    font-style: normal;
+    font-weight: 300 700;
+    src: url('../public/fuentes/space-grotesk-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02AF, U+1E00-1E9F, U+2020, U+20A0-20AB, U+20AD-20C0;
+  }
+  @font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 200 800;
+    src: url('../public/fuentes/jakarta-latin.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 200 800;
+    src: url('../public/fuentes/jakarta-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02AF, U+1E00-1E9F, U+2020, U+20A0-20AB, U+20AD-20C0;
+  }
+
+  /* ── LOS COLORES ─────────────────────────────────────────────────────────
+     Copiados de `tailwind.config.js`, con el nombre que tienen allí. */
+  :root {
+    --abismo:  #060C1B;  /* el azul profundo de las secciones oscuras */
+    --abismo2: #0A1427;
+    --tinta:   #10131A;  /* el casi negro del texto */
+    --marca:   #0868F9;  /* el azul de marca */
+    --cielo:   #36C8FF;  /* el claro, para realces */
+    --lavanda: #6965FF;  /* el frío, sólo en degradados */
+    --lima:    #CFFF48;  /* un acento, y casi nunca */
+    --grisis:  #727988;  /* el gris de los párrafos */
+    --nieve:   #F4F7FC;
+    --linea:   rgba(16,19,26,0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: #2a2e36;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── LA LÁMINA ───────────────────────────────────────────────────────────
+     1920 × 1080 clavados. `overflow: hidden` para que nada se escape a la
+     página siguiente: si un texto no cabe, se ve recortado en la revisión y
+     se arregla, que es mejor que una página fantasma. */
+  .lamina {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: #fff;
+    color: var(--tinta);
+    padding: 104px 132px;
+    display: flex;
+    flex-direction: column;
+    page-break-after: always;
+    break-after: page;
+  }
+  .lamina:last-child { page-break-after: auto; break-after: auto; }
+
+  .oscura {
+    background: var(--abismo);
+    color: #fff;
+  }
+  /* Un resplandor muy flojo en una esquina. Es lo que impide que un fondo
+     plano de 1920 px se lea como un cartón. */
+  .oscura::before {
+    content: '';
+    position: absolute;
+    inset: -30% 40% 30% -20%;
+    background: radial-gradient(60% 60% at 30% 40%, rgba(8,104,249,0.28), transparent 70%);
+    pointer-events: none;
+  }
+  .nieve { background: var(--nieve); }
+
+  /* ── TIPOGRAFÍA: TRES TAMAÑOS Y NINGUNO MÁS ──────────────────────────── */
+  .rotulo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--marca);
+  }
+  .oscura .rotulo { color: var(--cielo); }
+  .rotulo.lima { color: var(--lima); }
+
+  h1, h2, h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+  }
+  h1 { font-size: 104px; }
+  h2 { font-size: 78px; }
+  h3 { font-size: 34px; letter-spacing: -0.02em; line-height: 1.15; font-weight: 600; }
+
+  p { font-size: 25px; line-height: 1.62; color: var(--grisis); }
+  .oscura p { color: rgba(255,255,255,0.62); }
+  .entradilla { font-size: 29px; line-height: 1.55; max-width: 34ch; }
+  .pequeno { font-size: 20px; line-height: 1.55; }
+
+  strong { font-weight: 600; color: var(--tinta); }
+  .oscura strong { color: #fff; }
+
+  /* El pie: la marca a la izquierda y el número a la derecha. Mismo sitio en
+     todas, para que al pasar páginas no baile nada. */
+  .pie {
+    position: absolute;
+    left: 132px; right: 132px; bottom: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px; letter-spacing: -0.01em;
+    color: rgba(16,19,26,0.35);
+  }
+  .oscura .pie { color: rgba(255,255,255,0.35); }
+  .pie .num { font-variant-numeric: tabular-nums; }
+
+  /* ── PIEZAS ──────────────────────────────────────────────────────────── */
+
+  /* La captura, enmarcada. Un rectángulo pegado tal cual flota; con su barra
+     de ventana y su sombra, se lee como una pantalla abierta. */
+  .marco {
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--linea);
+    box-shadow: 0 50px 90px -40px rgba(6,12,27,0.45), 0 2px 8px rgba(6,12,27,0.06);
+  }
+  .oscura .marco { border-color: rgba(255,255,255,0.12); }
+  .marco .barra {
+    display: flex; align-items: center; gap: 9px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--linea);
+    background: #fff;
+  }
+  .marco .barra i { width: 10px; height: 10px; border-radius: 99px; background: rgba(16,19,26,0.12); display: block; }
+  .marco .barra span {
+    margin-left: 10px; font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; color: rgba(16,19,26,0.45);
+  }
+  .marco img { display: block; width: 100%; }
+  /* RECORTADAS POR ABAJO, Y NO ES UN APAÑO.
+     El club de ejemplo tiene una sesión y un partido esta semana, que es lo
+     honesto —no se inventan quince entrenamientos para que la foto quede
+     llena—, pero eso deja media captura en blanco y en una lámina de 1920 px
+     ese blanco se lee como una pantalla vacía. Recortando a la mitad de
+     arriba se ve lo que hay que ver, que es la herramienta, y no el hueco. */
+  .marco .recorte { aspect-ratio: 2.05 / 1; overflow: hidden; }
+  .marco .recorte img { height: 100%; object-fit: cover; object-position: top left; }
+
+  .dos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 90px;
+    align-items: center;
+    flex: 1;
+  }
+  .dos.estrecha { grid-template-columns: 0.85fr 1.15fr; }
+  .dos.ancha { grid-template-columns: 1.15fr 0.85fr; }
+
+  /* Una lista de puntos sin viñetas redondas: un filete corto y el texto. */
+  .puntos { list-style: none; margin-top: 44px; display: grid; gap: 26px; }
+  .puntos li { display: grid; grid-template-columns: 34px 1fr; align-items: start; gap: 4px; }
+  .puntos .tic {
+    margin-top: 11px; width: 18px; height: 2px; background: var(--marca); display: block;
+  }
+  .oscura .puntos .tic { background: var(--cielo); }
+  .puntos p { font-size: 24px; color: var(--tinta); }
+  .oscura .puntos p { color: rgba(255,255,255,0.86); }
+  .puntos .nota { font-size: 21px; color: var(--grisis); margin-top: 3px; }
+  .oscura .puntos .nota { color: rgba(255,255,255,0.52); }
+
+  /* La rejilla de módulos. */
+  .rejilla { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: var(--linea); border: 1px solid var(--linea); border-radius: 20px; overflow: hidden; margin-top: 56px; flex-shrink: 0; }
+  .rejilla div { background: #fff; padding: 32px 32px 36px; }
+  .rejilla .n { font-family: 'Space Grotesk', sans-serif; font-size: 15px; color: var(--marca); letter-spacing: 0.08em; }
+  .rejilla h3 { margin-top: 14px; font-size: 27px; }
+  .rejilla p { margin-top: 10px; font-size: 19px; line-height: 1.5; }
+
+  /* Los planes. Tres columnas de una sola pieza, con la del medio en oscuro:
+     es la misma jerarquía que la página de precios.
+
+     `flex-shrink: 0` NO ES DECORATIVO. Sin él, esta pieza es un hijo flexible
+     con `overflow: hidden`, y eso le da un tamaño mínimo automático de cero:
+     el navegador la encoge para que quepa y se come en silencio las cuatro
+     últimas líneas de la columna de Gratis. Con esto, si no cabe, se desborda
+     —y entonces lo canta la comprobación de `construir.mjs` en vez de salir
+     recortado en el PDF. */
+  .planes { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 34px; border: 1px solid var(--linea); border-radius: 24px; overflow: hidden; background: #fff; flex-shrink: 0; }
+  .planes > div { padding: 36px 38px 36px; border-left: 1px solid var(--linea); display: flex; flex-direction: column; }
+  .planes > div:first-child { border-left: 0; }
+  .planes .destacado { background: var(--abismo); color: #fff; }
+  .planes .nombre { font-family: 'Space Grotesk', sans-serif; font-size: 25px; font-weight: 600; letter-spacing: -0.02em; }
+  .planes .sello { display: inline-block; margin-left: 12px; background: var(--lima); color: var(--abismo); border-radius: 99px; padding: 4px 12px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; vertical-align: 3px; }
+  .planes .para { font-size: 19px; line-height: 1.45; color: var(--grisis); margin-top: 12px; min-height: 2.9em; }
+  .planes .destacado .para { color: rgba(255,255,255,0.58); }
+  .planes .precio { font-family: 'Space Grotesk', sans-serif; font-size: 54px; font-weight: 500; letter-spacing: -0.045em; margin-top: 22px; line-height: 1; }
+  .planes .mes { font-size: 22px; color: var(--grisis); font-weight: 400; letter-spacing: -0.01em; }
+  .planes .destacado .mes { color: rgba(255,255,255,0.58); }
+  .planes .anual { font-size: 18px; color: var(--grisis); margin-top: 11px; }
+  .planes .destacado .anual { color: rgba(255,255,255,0.58); }
+  .planes .equipos { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 600; margin-top: 24px; letter-spacing: -0.015em; }
+  .planes .cab { font-family: 'Space Grotesk', sans-serif; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--grisis); margin-top: 22px; }
+  .planes .destacado .cab { color: rgba(255,255,255,0.45); }
+  .planes ul { list-style: none; margin-top: 16px; display: grid; gap: 9px; }
+  .planes li { font-size: 19px; line-height: 1.35; color: var(--tinta); display: grid; grid-template-columns: 21px 1fr; }
+  .planes .destacado li { color: rgba(255,255,255,0.82); }
+  .planes li span:first-child { color: var(--marca); font-weight: 700; }
+  .planes .destacado li span:first-child { color: var(--lima); }
+  .planes .prueba { margin-top: auto; padding-top: 22px; font-size: 17px; color: var(--grisis); }
+  .planes .destacado .prueba { color: rgba(255,255,255,0.55); }
+
+  /* Tres móviles asomando por el borde de abajo. Cortados a propósito: una
+     fila de tres rectángulos completos y pequeños se lee como tres iconos; una
+     fila cortada por el canto de la lámina se lee como que hay más producto
+     del que cabe, que es justo lo que pasa. */
+  .moviles { position: absolute; left: 50%; transform: translateX(-50%); bottom: -176px; display: flex; gap: 30px; }
+  .moviles figure { width: 236px; border-radius: 30px; overflow: hidden; border: 7px solid #10131A; background: #10131A; box-shadow: 0 40px 80px -30px rgba(6,12,27,0.45); }
+  .moviles img { display: block; width: 100%; }
+
+  /* Las preguntas, en una banda oscura al pie de la lámina de los límites.
+     Llenan el hueco con algo que se pregunta de verdad, en vez de con aire. */
+  .preguntas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: auto; background: var(--abismo); border-radius: 22px; overflow: hidden; flex-shrink: 0; }
+  .preguntas > div { padding: 36px 38px 40px; border-left: 1px solid rgba(255,255,255,0.10); }
+  .preguntas > div:first-child { border-left: 0; }
+  .preguntas h3 { color: #fff; font-size: 23px; }
+  .preguntas p { color: rgba(255,255,255,0.58); font-size: 19px; line-height: 1.5; margin-top: 12px; }
+
+  /* Dos columnas de «esto sí / esto todavía no». */
+  .estado { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; margin-top: 58px; flex: 1; }
+  .estado ul { list-style: none; display: grid; gap: 14px; margin-top: 26px; align-content: start; }
+  .estado li { font-size: 22px; line-height: 1.4; display: grid; grid-template-columns: 30px 1fr; color: var(--tinta); }
+  .estado li span:first-child { font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
+  .estado .si li span:first-child { color: var(--marca); }
+  .estado .no li { color: var(--grisis); }
+  .estado .no li span:first-child { color: #B9BEC9; }
+  .estado .titulin { font-family: 'Space Grotesk', sans-serif; font-size: 27px; font-weight: 600; letter-spacing: -0.02em; }
+
+  /* La ficha técnica: pares de dato y valor. */
+  .ficha { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 90px; margin-top: 56px; }
+  .ficha > div { display: grid; grid-template-columns: 290px 1fr; gap: 24px; padding: 26px 0; border-top: 1px solid rgba(255,255,255,0.12); align-items: baseline; }
+  .ficha dt { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 600; color: #fff; letter-spacing: -0.015em; }
+  .ficha dd { font-size: 21px; line-height: 1.5; color: rgba(255,255,255,0.62); }
+
+  /* La portada y la contraportada: la foto a sangre, sin nada encima. */
+  .foto { padding: 0; }
+  .foto img { width: 1920px; height: 1080px; object-fit: cover; display: block; }
+
+  .cierre { align-items: center; justify-content: center; text-align: center; }
+  .cierre h2 { font-size: 92px; }
+  .cierre .url { font-family: 'Space Grotesk', sans-serif; font-size: 27px; color: var(--cielo); margin-top: 46px; letter-spacing: -0.01em; }
+  .cierre .raya { width: 1px; height: 86px; background: rgba(255,255,255,0.25); margin: 0 auto 50px; }
+
+  @page { size: 1920px 1080px; margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- ════════════ 1 · PORTADA ════════════════════════════════════════════════
+     Tal cual vino. No se le añade nada: ya dice el nombre, la promesa y el
+     año, y cualquier cosa encima de esa fotografía la ensucia. -->
+<section class="lamina foto">
+  <img src="portada.jpg" alt="PlayOff360 · Beyond the game" />
+</section>
+
+<!-- ════════════ 2 · QUÉ ES ═══════════════════════════════════════════════ -->
+<section class="lamina oscura">
+  <p class="rotulo">Qué es</p>
+  <h1 style="margin-top:46px; max-width:24ch;">El sistema de trabajo del cuerpo técnico.</h1>
+  <p class="entradilla" style="margin-top:48px; max-width:44ch;">
+    Un sitio para la plantilla, la semana de entrenamientos, la convocatoria del sábado y la
+    jugada que quieres que salga. Lo mismo para un equipo que para todo un club.
+  </p>
+  <p style="margin-top:auto; margin-bottom:56px; max-width:60ch; font-size:23px;">
+    Se abre en el navegador, en el móvil igual que en el ordenador.
+    <strong>No hay nada que instalar ni que actualizar.</strong>
+  </p>
+  <div class="pie"><span>Playoff360</span><span class="num">02</span></div>
+</section>
+
+<!-- ════════════ 3 · EL PROBLEMA ══════════════════════════════════════════ -->
+<section class="lamina">
+  <div class="dos">
+    <div>
+      <p class="rotulo">El problema</p>
+      <h2 style="margin-top:38px;">Hoy está todo<br />en cinco sitios.</h2>
+    </div>
+    <div>
+      <p class="entradilla" style="max-width:38ch;">
+        La plantilla en una hoja de cálculo. La asistencia en una libreta. La convocatoria en un
+        grupo de mensajería. Las jugadas en fotos del móvil. Y lo que pasó en marzo, en la
+        memoria de alguien.
+      </p>
+      <ul class="puntos">
+        <li><i class="tic"></i><div>
+          <p>Nada se cruza con nada.</p>
+          <p class="nota">Saber quién faltó a los tres últimos entrenamientos antes de hacer la convocatoria es un trabajo manual.</p>
+        </div></li>
+        <li><i class="tic"></i><div>
+          <p>Y cuando alguien se va, se va con la información.</p>
+          <p class="nota">El historial del equipo no puede vivir en el teléfono de una persona.</p>
+        </div></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">03</span></div>
+</section>
+
+<!-- ════════════ 4 · LOS MÓDULOS ══════════════════════════════════════════ -->
+<section class="lamina nieve">
+  <p class="rotulo">La plataforma</p>
+  <h2 style="margin-top:36px;">Diez herramientas, una cuenta.</h2>
+  <div class="rejilla">
+    <div><p class="n">01</p><h3>Plantilla</h3><p>Cada jugadora con su dorsal, su posición, su contacto y su estado.</p></div>
+    <div><p class="n">02</p><h3>Asistencia</h3><p>Se pasa lista en el campo, desde el móvil, en menos de un minuto.</p></div>
+    <div><p class="n">03</p><h3>Disponibilidad y lesiones</h3><p>Quién está, quién no y por qué. Lo que anota el cuerpo técnico.</p></div>
+    <div><p class="n">04</p><h3>Entrenamientos</h3><p>La sesión por bloques, con su duración y sus ejercicios.</p></div>
+    <div><p class="n">05</p><h3>Biblioteca de ejercicios</h3><p>Lo que funciona, guardado, con material y número de jugadoras.</p></div>
+    <div><p class="n">06</p><h3>Partidos y convocatorias</h3><p>El rival, la hora, quién va y quién se queda.</p></div>
+    <div><p class="n">07</p><h3>Calendario</h3><p>La semana entera: entrenamientos y partidos en el mismo sitio.</p></div>
+    <div><p class="n">08</p><h3>Pizarra táctica</h3><p>Las jugadas, con movimiento y con tiempo. Se exportan en vídeo.</p></div>
+    <div><p class="n">09</p><h3>Analíticas</h3><p>Asistencia, minutos y resultados a partir de lo que ya se apuntó.</p></div>
+    <div><p class="n">10</p><h3>Cuerpo técnico</h3><p>Varias personas en el mismo equipo, cada una con su cuenta.</p></div>
+    <div style="background:var(--abismo); color:#fff; display:flex; flex-direction:column; justify-content:center;">
+      <h3 style="color:#fff; font-size:25px;">Todo esto, en el plan gratuito.</h3>
+      <p style="color:rgba(255,255,255,0.6); margin-top:12px; font-size:19px;">Menos el acceso para varios entrenadores, que es de Max.</p>
+    </div>
+    <div style="display:flex; flex-direction:column; justify-content:center;">
+      <h3 style="font-size:25px;">Y en castellano.</h3>
+      <p style="margin-top:12px; font-size:19px;">Toda la interfaz, de principio a fin.</p>
+    </div>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">04</span></div>
+</section>
+
+<!-- ════════════ 5 · PLANTILLA ════════════════════════════════════════════ -->
+<section class="lamina">
+  <div class="dos estrecha">
+    <div>
+      <p class="rotulo">Plantilla</p>
+      <h2 style="margin-top:34px; font-size:66px;">Quién está<br />en el equipo.</h2>
+      <p style="margin-top:34px; max-width:30ch;">
+        Dorsal, posición, fecha de nacimiento, contacto y estado. Se ve de un vistazo quién está
+        disponible y quién no, sin abrir una ficha por jugadora.
+      </p>
+      <ul class="puntos">
+        <li><i class="tic"></i><div><p>Se filtra por posición y por estado.</p></div></li>
+        <li><i class="tic"></i><div><p>La asistencia de cada una, al lado de su nombre.</p></div></li>
+      </ul>
+    </div>
+    <div class="marco">
+      <div class="barra"><i></i><i></i><i></i><span>Plantilla · Cadete A</span></div>
+      <div class="recorte"><img src="img/plantilla.png" alt="La pantalla de plantilla con las jugadoras, su posición y su estado." /></div>
+    </div>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">05</span></div>
+</section>
+
+<!-- ════════════ 6 · ENTRENAMIENTOS ═══════════════════════════════════════ -->
+<section class="lamina nieve">
+  <div class="dos ancha">
+    <div class="marco">
+      <div class="barra"><i></i><i></i><i></i><span>Entrenamiento · martes</span></div>
+      <div class="recorte"><img src="img/entrenamientos.png" alt="Una sesión de entrenamiento repartida en bloques." /></div>
+    </div>
+    <div>
+      <p class="rotulo">Entrenamientos</p>
+      <h2 style="margin-top:34px; font-size:66px;">Cada sesión,<br />en bloques.</h2>
+      <p style="margin-top:34px; max-width:30ch;">
+        Calentamiento, parte principal, vuelta a la calma. Cada bloque con su duración y sus
+        ejercicios, sacados de la biblioteca.
+      </p>
+      <ul class="puntos">
+        <li><i class="tic"></i><div><p>Se pasa lista desde la propia sesión.</p></div></li>
+        <li><i class="tic"></i><div><p>Lo que funcionó se guarda y se repite.</p></div></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">06</span></div>
+</section>
+
+<!-- ════════════ 7 · CALENDARIO ═══════════════════════════════════════════ -->
+<section class="lamina">
+  <div class="dos estrecha">
+    <div>
+      <p class="rotulo">Calendario</p>
+      <h2 style="margin-top:34px; font-size:66px;">La semana,<br />completa.</h2>
+      <p style="margin-top:34px; max-width:30ch;">
+        Entrenamientos y partidos en el mismo sitio. Al crear el equipo se dice a qué hora se
+        entrena y el calendario se llena solo, tres meses por delante.
+      </p>
+      <ul class="puntos">
+        <li><i class="tic"></i><div><p>Lo de hoy, siempre lo primero.</p></div></li>
+        <li><i class="tic"></i><div><p>Y en el móvil, en el campo, igual.</p></div></li>
+      </ul>
+    </div>
+    <div class="marco">
+      <div class="barra"><i></i><i></i><i></i><span>Calendario</span></div>
+      <div class="recorte"><img src="img/calendario.png" alt="El calendario del equipo con los entrenamientos y el partido de la semana." /></div>
+    </div>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">07</span></div>
+</section>
+
+<!-- ════════════ 8 · ANALÍTICAS ═══════════════════════════════════════════ -->
+<section class="lamina nieve">
+  <div class="dos ancha">
+    <div class="marco">
+      <div class="barra"><i></i><i></i><i></i><span>Analíticas · temporada</span></div>
+      <div class="recorte"><img src="img/analiticas.png" alt="Las analíticas del equipo: asistencia, minutos y resultados." /></div>
+    </div>
+    <div>
+      <p class="rotulo">Partidos y analíticas</p>
+      <h2 style="margin-top:34px; font-size:66px;">Los números<br />ya los tienes.</h2>
+      <p style="margin-top:34px; max-width:32ch;">
+        No hay que rellenar nada aparte: la asistencia, los minutos y los resultados salen de lo
+        que se apuntó en su momento.
+      </p>
+      <ul class="puntos">
+        <li><i class="tic"></i><div>
+          <p>Un dato que falta se queda en blanco.</p>
+          <p class="nota">No se convierte en un cero, que es la forma más fácil de que una gráfica mienta.</p>
+        </div></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">08</span></div>
+</section>
+
+<!-- ════════════ 9 · PIZARRA ══════════════════════════════════════════════ -->
+<section class="lamina oscura">
+  <div class="dos estrecha">
+    <div>
+      <p class="rotulo lima">Pizarra táctica</p>
+      <h2 style="margin-top:34px; font-size:66px;">La jugada,<br />en movimiento.</h2>
+      <p style="margin-top:34px; max-width:32ch;">
+        No es un dibujo con flechas: las fichas se mueven en el tiempo. Se le da al play y la
+        jugada ocurre, con la duración que tiene de verdad.
+      </p>
+      <ul class="puntos">
+        <li><i class="tic"></i><div><p>El balón va pegado a quien lo conduce.</p></div></li>
+        <li><i class="tic"></i><div><p>Cada jugadora sale cuando le toca, no todas en el segundo cero.</p>
+          <p class="nota">Que es lo que hace falta para montar un circuito: una llega al cono y entonces sale la siguiente.</p></div></li>
+        <li><i class="tic"></i><div><p>Se exporta en vídeo, tal y como se reproduce.</p></div></li>
+      </ul>
+    </div>
+    <div class="marco">
+      <div class="barra"><i></i><i></i><i></i><span>Pizarra · salida de balón</span></div>
+      <img src="img/pizarra.png" alt="La pizarra táctica con las fichas colocadas sobre el campo y sus recorridos." />
+    </div>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">09</span></div>
+</section>
+
+<!-- ════════════ 10 · PARA CLUBES ═════════════════════════════════════════ -->
+<section class="lamina">
+  <p class="rotulo">Para clubes</p>
+  <h2 style="margin-top:36px; max-width:20ch;">Un club son varios equipos y varias personas.</h2>
+  <div class="rejilla" style="grid-template-columns:repeat(4,1fr);">
+    <div><p class="n">01</p><h3>Cada club, en su sitio</h3><p>Lo tuyo no lo ve nadie de fuera. Y dentro, cada entrenador ve los equipos que le tocan.</p></div>
+    <div><p class="n">02</p><h3>Varios equipos, una cuenta</h3><p>Cadete, juvenil, femenino. Cambias de equipo desde arriba y sigues donde estabas.</p></div>
+    <div><p class="n">03</p><h3>Se entra por invitación</h3><p>Un enlace a un correo, con fecha de caducidad. Sin contraseñas compartidas por el grupo.</p></div>
+    <div><p class="n">04</p><h3>En el campo, desde el móvil</h3><p>Se abre en el navegador. No hay nada que instalar ni que actualizar.</p></div>
+  </div>
+  <p style="margin-top:54px; max-width:62ch;">
+    La separación entre clubes <strong>no depende de que la aplicación se porte bien</strong>: la
+    impone la base de datos, en cada consulta, para cualquiera que entre.
+  </p>
+  <div class="moviles" data-sangra>
+    <figure><img src="img/calendario-movil.png" alt="El calendario en el móvil." /></figure>
+    <figure><img src="img/plantilla-movil.png" alt="La plantilla en el móvil." /></figure>
+    <figure><img src="img/analiticas-movil.png" alt="Las analíticas en el móvil." /></figure>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">10</span></div>
+</section>
+
+<!-- ════════════ 11 · LO QUE NO HACE ══════════════════════════════════════ -->
+<section class="lamina nieve">
+  <p class="rotulo">Los límites</p>
+  <h2 style="margin-top:36px; max-width:22ch;">Lo que no hace, dicho aquí.</h2>
+  <p style="margin-top:34px; max-width:52ch;">
+    Descubrir un límite después de haber metido la plantilla entera es lo que hace perder la
+    confianza. Así que va aquí, en medio, y no en la letra pequeña.
+  </p>
+  <div class="rejilla" style="grid-template-columns:repeat(3,1fr); margin-top:56px;">
+    <div style="background:#fff;">
+      <h3>No manda mensajes a las familias</h3>
+      <p>Preparas la convocatoria y la copias donde ya habléis.</p>
+    </div>
+    <div style="background:#fff;">
+      <h3>No valora lesiones</h3>
+      <p>Guarda lo que anota el cuerpo técnico. El criterio médico es del club.</p>
+    </div>
+    <div style="background:#fff;">
+      <h3>No analiza vídeo de partidos</h3>
+      <p>La pizarra es para dibujar jugadas, no para leer un partido grabado.</p>
+    </div>
+  </div>
+  <div class="preguntas">
+    <div>
+      <h3>¿Puede otro club ver lo nuestro?</h3>
+      <p>No. Cada club está separado del resto, y la separación no depende de que la aplicación se
+      porte bien: la impone la base de datos. Dentro del club, cada persona ve sólo los equipos que
+      tiene asignados.</p>
+    </div>
+    <div>
+      <h3>¿Hace falta instalar algo?</h3>
+      <p>No. Se abre en el navegador, en el móvil igual que en el ordenador, y no hay nada que
+      actualizar.</p>
+    </div>
+    <div>
+      <h3>¿Y si dejo de pagar?</h3>
+      <p>No se borra nada. Conservas los equipos y los datos; sólo dejas de crear equipos nuevos
+      por encima del límite del plan.</p>
+    </div>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">11</span></div>
+</section>
+
+<!-- ════════════ 12 · PLANES ══════════════════════════════════════════════
+     LAS CIFRAS SON LAS DE LA TABLA `plans`, no un redondeo bonito. Si mañana
+     cambian allí, hay que cambiarlas aquí: es el único sitio de todo el
+     proyecto donde un precio está escrito a mano, y es porque un PDF no puede
+     consultar una base de datos. -->
+<section class="lamina" style="padding:56px 132px 94px;">
+  <p class="rotulo">Precios</p>
+  <h2 style="margin-top:24px; font-size:60px;">Gratis de verdad. Y barato en serio.</h2>
+  <div class="planes">
+    <div>
+      <p><span class="nombre">Gratis</span></p>
+      <p class="para">Para empezar con un equipo y ver si esto te sirve.</p>
+      <p class="precio">0 €</p>
+      <p class="anual">Para siempre, sin tarjeta</p>
+      <p class="equipos">Un equipo</p>
+      <p class="cab">Incluye</p>
+      <ul>
+        <li><span>+</span><span>Plantilla</span></li>
+        <li><span>+</span><span>Asistencia</span></li>
+        <li><span>+</span><span>Disponibilidad y lesiones</span></li>
+        <li><span>+</span><span>Entrenamientos</span></li>
+        <li><span>+</span><span>Biblioteca de ejercicios</span></li>
+        <li><span>+</span><span>Partidos y convocatorias</span></li>
+        <li><span>+</span><span>Calendario</span></li>
+        <li><span>+</span><span>Pizarra táctica</span></li>
+        <li><span>+</span><span>Analíticas</span></li>
+      </ul>
+    </div>
+    <div class="destacado">
+      <p><span class="nombre">Pro</span><span class="sello">Recomendado</span></p>
+      <p class="para">Para el entrenador que lleva su equipo y quiere la pizarra entera.</p>
+      <p class="precio">5,99 €<span class="mes"> /mes</span></p>
+      <p class="anual">o 59,99 € al año — ahorras 11,89 €</p>
+      <p class="equipos">Hasta 2 equipos</p>
+      <p class="cab">Todo lo de Gratis, y</p>
+      <ul>
+        <li><span>+</span><span>Trayectorias a mano alzada</span></li>
+        <li><span>+</span><span>Exportar jugadas en vídeo</span></li>
+      </ul>
+      <p class="prueba">7 días de prueba antes del primer cobro</p>
+    </div>
+    <div>
+      <p><span class="nombre">Max</span></p>
+      <p class="para">Para el club con varios equipos y varias personas en el cuerpo técnico.</p>
+      <p class="precio">12,99 €<span class="mes"> /mes</span></p>
+      <p class="anual">o 129,99 € al año — ahorras 25,89 €</p>
+      <p class="equipos">Hasta 5 equipos</p>
+      <p class="cab">Todo lo de Pro, y</p>
+      <ul>
+        <li><span>+</span><span>Acceso para varios entrenadores</span></li>
+      </ul>
+      <p class="prueba">7 días de prueba antes del primer cobro</p>
+    </div>
+  </div>
+  <p class="pequeno" style="margin-top:26px;">
+    Si se deja de pagar no se borra nada: se conservan los equipos y los datos, y sólo se deja de
+    crear equipos nuevos por encima del límite del plan.
+  </p>
+  <div class="pie"><span>Playoff360</span><span class="num">12</span></div>
+</section>
+
+<!-- ════════════ 13 · CÓMO ESTÁ HECHO ═════════════════════════════════════ -->
+<section class="lamina oscura">
+  <p class="rotulo">Por dentro</p>
+  <h2 style="margin-top:34px;">Cómo está hecho.</h2>
+  <div class="ficha">
+    <div><dt>Interfaz</dt><dd>React con TypeScript, compilado con Vite. Una sola página, sin recargas.</dd></div>
+    <div><dt>Base de datos</dt><dd>PostgreSQL en Supabase. El esquema va en migraciones numeradas, no a mano.</dd></div>
+    <div><dt>Entrar</dt><dd>Supabase Auth: correo y contraseña, con recuperación por enlace.</dd></div>
+    <div><dt>Permisos</dt><dd>Políticas de acceso en la propia base de datos. Esconder un botón no es autorización.</dd></div>
+    <div><dt>Servidor</dt><dd>Funciones sueltas en Netlify. Sólo para lo que no puede vivir en el navegador: el cobro.</dd></div>
+    <div><dt>Cobro</dt><dd>Stripe. La tarjeta nunca pasa por aquí ni se guarda aquí.</dd></div>
+    <div><dt>Vídeo</dt><dd>La jugada se graba en el propio navegador, tal y como se reproduce.</dd></div>
+    <div><dt>Pruebas</dt><dd>Veinticuatro, que abren la aplicación de verdad y miden lo que sale en pantalla.</dd></div>
+    <div><dt>Idioma</dt><dd>Todo en castellano, de los botones a los mensajes de error.</dd></div>
+    <div><dt>Dónde vive</dt><dd>playoff360.site. Cada cambio se publica solo al entrar en el repositorio.</dd></div>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">13</span></div>
+</section>
+
+<!-- ════════════ 14 · LOS DATOS ═══════════════════════════════════════════ -->
+<section class="lamina oscura">
+  <div class="dos">
+    <div>
+      <p class="rotulo">Los datos</p>
+      <h2 style="margin-top:34px; font-size:66px;">Son de menores.<br />Se tratan como tal.</h2>
+      <p style="margin-top:34px; max-width:32ch;">
+        En una ficha hay un nombre, una fecha de nacimiento y un teléfono de contacto. No es una
+        lista de clientes: es una lista de niñas y niños.
+      </p>
+    </div>
+    <div>
+      <ul class="puntos" style="margin-top:0;">
+        <li><i class="tic"></i><div>
+          <p>Cada club, aislado por la base de datos.</p>
+          <p class="nota">La regla se aplica en cada consulta y no se puede saltar desde el navegador.</p>
+        </div></li>
+        <li><i class="tic"></i><div>
+          <p>Dentro del club, cada quien ve sus equipos.</p>
+        </div></li>
+        <li><i class="tic"></i><div>
+          <p>Se entra por invitación, con caducidad.</p>
+          <p class="nota">Nada de una contraseña compartida en el grupo del club.</p>
+        </div></li>
+        <li><i class="tic"></i><div>
+          <p>El código de la aplicación no guarda el PIN en claro.</p>
+        </div></li>
+        <li><i class="tic"></i><div>
+          <p>Ni un solo dato de tarjeta pasa por nuestros servidores.</p>
+          <p class="nota">El cobro entero lo lleva Stripe; aquí sólo se sabe qué plan está activo.</p>
+        </div></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pie"><span>Playoff360</span><span class="num">14</span></div>
+</section>
+
+<!-- ════════════ 15 · EN QUÉ PUNTO ESTÁ ═══════════════════════════════════
+     LA LÁMINA QUE NADIE PONE. La columna de la derecha es lo que todavía NO
+     está construido, con su nombre. Está aquí porque la alternativa —callarlo
+     y que se descubra al segundo día— es peor para todos. -->
+<section class="lamina nieve">
+  <p class="rotulo">Hoy</p>
+  <h2 style="margin-top:34px;">En qué punto está.</h2>
+  <div class="estado">
+    <div class="si">
+      <p class="titulin">Funcionando, en producción</p>
+      <ul>
+        <li><span>✓</span><span>Las diez herramientas de la página anterior</span></li>
+        <li><span>✓</span><span>Alta de club y de equipos, con invitaciones</span></li>
+        <li><span>✓</span><span>El calendario se llena solo al crear el equipo</span></li>
+        <li><span>✓</span><span>Pizarra con movimiento, circuitos y exportación a vídeo</span></li>
+        <li><span>✓</span><span>Cobro por Stripe, con prueba de 7 días y cancelación</span></li>
+        <li><span>✓</span><span>Entrar, recuperar la contraseña y cambiarla</span></li>
+      </ul>
+    </div>
+    <div class="no">
+      <p class="titulin">Todavía no, y por eso no se cobra</p>
+      <ul>
+        <li><span>—</span><span>Evaluaciones de jugadoras del 1 al 10</span></li>
+        <li><span>—</span><span>Estadísticas avanzadas</span></li>
+        <li><span>—</span><span>Comparativas de rendimiento</span></li>
+        <li><span>—</span><span>Informes exportables en PDF</span></li>
+        <li><span>—</span><span>Historial completo de rendimiento</span></li>
+        <li><span>—</span><span>Panel del club y analíticas entre equipos</span></li>
+        <li><span>—</span><span>Roles y permisos por persona</span></li>
+      </ul>
+    </div>
+  </div>
+  <p class="pequeno" style="margin-top:10px; max-width:70ch;">
+    Nada de la columna de la derecha aparece anunciado en la página de precios ni dentro de la
+    aplicación. Se añadirá a su plan cuando esté hecho, sin cobrarlo por adelantado.
+  </p>
+  <div class="pie"><span>Playoff360</span><span class="num">15</span></div>
+</section>
+
+<!-- ════════════ 16 · CIERRE ══════════════════════════════════════════════ -->
+<section class="lamina oscura cierre">
+  <p class="rotulo" style="letter-spacing:0.22em; margin-bottom:40px;">PlayOff360</p>
+  <div class="raya"></div>
+  <h2 style="max-width:18ch;">Beyond the game</h2>
+  <p style="margin-top:34px; max-width:40ch; font-size:26px;">
+    El trabajo que no se ve desde la grada: la semana, la plantilla, la jugada y lo que pasó en
+    marzo.
+  </p>
+  <p class="url">playoff360.site</p>
+</section>
+
+</body>
+</html>

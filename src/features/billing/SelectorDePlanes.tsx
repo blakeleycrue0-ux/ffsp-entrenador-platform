@@ -49,7 +49,7 @@ export const limiteDeEquipos = (plan: Plan): string =>
    con su equipo, Max es un club con varios— porque son la misma oferta vista
    desde fuera y desde dentro, y contradecirse entre las dos pantallas es la
    forma más rápida de que no se crea ninguna. */
-const PARA_QUIEN: Record<PlanTier, string> = {
+export const PARA_QUIEN: Record<PlanTier, string> = {
   free: 'Para empezar con un equipo y ver si esto te sirve.',
   pro: 'Para el entrenador que lleva su equipo y quiere la pizarra entera.',
   max: 'Para el club con varios equipos y varias personas en el cuerpo técnico.',
@@ -94,6 +94,9 @@ export function SelectorDePlanes({
   const seVende = ordenados.some((p) => p.contratable);
   const precio = importe(periodo === 'anual' ? plan.priceYearly : plan.priceMonthly, plan.currency);
   const ahorro = ahorroAnual(plan);
+  /* Lo que este plan añade sobre el de debajo, para poder señalarlo dentro de
+     la lista entera sin repetirla dos veces. */
+  const nuevasAqui = plan.tier === 'free' ? [] : loQueFalta(plan.tier, seVende);
 
   return (
     <div>
@@ -173,11 +176,18 @@ export function SelectorDePlanes({
           </div>
         )}
 
+        {/* TODO LO QUE TRAE, NO SÓLO LO QUE AÑADE.
+            Aquí se ve UN plan cada vez, así que no hay nada al lado con lo que
+            comparar: poner «Todo lo de Gratis» y debajo dos líneas deja sin
+            responder la única pregunta que se hace quien está mirando esto,
+            que es qué incluye lo que va a pagar. En la comparativa de tres
+            columnas sí se enseña sólo la diferencia, porque allí lo heredado
+            está a la vista en la columna de al lado. Lo que este plan añade
+            sobre el anterior se marca con su sello. */}
         <div className="mt-6 divide-y divide-line">
           <Linea texto={limiteDeEquipos(plan)} fuerte />
-          {plan.tier !== 'free' && <Linea texto={`Todo lo de ${ordenados[0]?.name ?? 'Gratis'}`} />}
-          {(plan.tier === 'free' ? todoLoQueTrae('free', seVende) : loQueFalta(plan.tier, seVende)).map((t) => (
-            <Linea key={t} texto={t} />
+          {todoLoQueTrae(plan.tier, seVende).map((t) => (
+            <Linea key={t} texto={t} nuevo={nuevasAqui.includes(t)} />
           ))}
         </div>
 
@@ -198,10 +208,20 @@ export function SelectorDePlanes({
   );
 }
 
-function Linea({ texto, fuerte }: { texto: string; fuerte?: boolean }) {
+function Linea({ texto, fuerte, nuevo }: { texto: string; fuerte?: boolean; nuevo?: boolean }) {
   return (
-    <p className={cn('py-3 text-base', fuerte ? 'font-semibold text-ink-900' : 'text-ink-600')}>
+    <p
+      className={cn(
+        'flex flex-wrap items-center gap-2 py-3 text-base',
+        fuerte ? 'font-semibold text-ink-900' : 'text-ink-600',
+      )}
+    >
       {texto}
+      {nuevo && (
+        <span className="rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-ink-0">
+          Nuevo en este plan
+        </span>
+      )}
     </p>
   );
 }

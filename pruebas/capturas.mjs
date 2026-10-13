@@ -19,7 +19,10 @@ import { mkdirSync } from 'node:fs';
 import { mock, SUPA, USER, CLUB, j } from './mock.mjs';
 
 const BASE = 'http://localhost:4173';
-const DESTINO = 'public/producto';
+/* Por omisión, las de la portada. La presentación en PDF pide las suyas
+   —`DESTINO=presentacion/img`— porque enseña el producto de HOY y las de la
+   portada son otra decisión, de otra persona, que no se toca desde aquí. */
+const DESTINO = process.env.DESTINO ?? 'public/producto';
 const JUGADA = '44444444-4444-4444-4444-444444444444';
 
 /* Una jugada para la captura de la pizarra: salida desde atrás, en
