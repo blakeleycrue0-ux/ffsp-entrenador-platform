@@ -31,11 +31,35 @@ function exige(nombre: string): string {
   return v;
 }
 
-/** De dónde sale el correo. Tiene que ser el mismo que el del aviso legal. */
+/**
+ * DE DÓNDE SALE EL CORREO, Y POR QUÉ NO PUEDE SALIR DE UN GMAIL.
+ * ───────────────────────────────────────────────────────────────────────────
+ * Estaba puesto `playoff360.info@gmail.com` por defecto y eso habría mandado
+ * todos los correos a la carpeta de spam, o los habría hecho rebotar.
+ *
+ * Google publica una política DMARC para gmail.com que dice, en resumen: «si
+ * un correo dice venir de @gmail.com y no lo ha mandado Google, recházalo».
+ * Brevo no es Google. Así que un correo firmado por Brevo que diga venir de
+ * un gmail falla la comprobación en el servidor de destino, y lo hace de
+ * forma silenciosa para quien lo manda: aquí se vería «enviado».
+ *
+ * El remitente tiene que ser del dominio que se verifica en Brevo, que es
+ * `playoff360.site`. Para eso están sus registros DNS: son los que le dan
+ * permiso a Brevo para firmar en nombre del dominio.
+ *
+ * EL DE RESPUESTA SÍ PUEDE SER EL GMAIL, y por eso van separados. El correo
+ * invita a responder —«responde a este correo y lo leo yo»— y esa respuesta
+ * tiene que llegar a un buzón que exista de verdad. Montar un buzón en
+ * playoff360.site es otra tarea; mientras no la haya, el `reply-to` manda la
+ * respuesta al gmail de siempre. DMARC no mira el `reply-to`.
+ */
 export const REMITENTE = {
   nombre: 'Playoff360',
-  correo: process.env.CORREO_REMITENTE ?? 'playoff360.info@gmail.com',
+  correo: process.env.CORREO_REMITENTE ?? 'hola@playoff360.site',
 };
+
+/** A dónde va la respuesta. Un buzón que exista, no el remitente. */
+export const RESPONDER_A = process.env.CORREO_RESPUESTA ?? 'playoff360.info@gmail.com';
 
 /** La dirección pública del sitio, para los enlaces de los correos. */
 export const SITIO = process.env.URL ?? 'https://playoff360.site';
@@ -70,6 +94,7 @@ export async function envia(carta: Carta): Promise<string> {
     },
     body: JSON.stringify({
       sender: { name: REMITENTE.nombre, email: REMITENTE.correo },
+      replyTo: { email: RESPONDER_A, name: REMITENTE.nombre },
       to: [{ email: carta.a, ...(carta.nombre ? { name: carta.nombre } : {}) }],
       subject: carta.asunto,
       htmlContent: carta.html,
