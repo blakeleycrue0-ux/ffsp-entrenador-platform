@@ -24,36 +24,50 @@ import { ObjectShape } from './piezas';
 import { largo as largoDe } from './trazo';
 import type { Playback } from './playback';
 import { cn } from '@/lib/utils';
+import { encuadraJugada, VIEW_INICIAL, ZOOM_MAX, ZOOM_MIN, type View } from './encuadre';
 
 /* ──────────────────────────── Zoom y encuadre ────────────────────────────── */
 
-export interface View {
-  /** 1 es «todo el campo a la vista». */
-  s: number;
-  /** Desplazamiento en unidades del lienzo. */
-  tx: number;
-  ty: number;
-}
-
-export const VIEW_INICIAL: View = { s: 1, tx: 0, ty: 0 };
+/* La cuenta vive en `encuadre.ts`, que no sabe nada de React. Se reexporta
+   desde aquí porque todo lo que la usa ya importa de este archivo. */
+export { encuadraJugada, VIEW_INICIAL, ZOOM_MAX, ZOOM_MIN, type View };
 
 export function useBoardView() {
   const [view, setView] = useState<View>(VIEW_INICIAL);
   const zoom = useCallback((factor: number) => {
     setView((v) => {
-      const s = Math.min(4, Math.max(0.6, v.s * factor));
+      const s = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, v.s * factor));
       // Se amplía respecto al centro: lo que estabas mirando se queda donde está.
       return { s, tx: v.tx * (s / v.s), ty: v.ty * (s / v.s) };
     });
   }, []);
-  const fit = useCallback(() => setView(VIEW_INICIAL), []);
+
+  const todoElCampo = useCallback(() => setView(VIEW_INICIAL), []);
+
+  /**
+   * El mismo botón hace las dos cosas, porque son la misma pregunta: «quiero
+   * ver esto más grande» y, cuando ya se ve grande, «sácame otra vez el campo
+   * entero». Dos botones para eso serían dos botones que hay que leer.
+   */
+  const ajustar = useCallback((scene: Scene) => {
+    setView((v) => {
+      const esElCampoEntero = v.s === 1 && v.tx === 0 && v.ty === 0;
+      return esElCampoEntero ? encuadraJugada(scene) : VIEW_INICIAL;
+    });
+  }, []);
+
+  const enElCampoEntero = view.s === 1 && view.tx === 0 && view.ty === 0;
   return {
     view,
     setView,
     zoomIn: useCallback(() => zoom(1.25), [zoom]),
     zoomOut: useCallback(() => zoom(1 / 1.25), [zoom]),
-    fit,
-    ajustado: view.s === 1 && view.tx === 0 && view.ty === 0,
+    ajustar,
+    todoElCampo,
+    enElCampoEntero,
+    /** Se mantiene el nombre de antes: lo usan la ficha y la vista de sólo ver. */
+    fit: todoElCampo,
+    ajustado: enElCampoEntero,
   };
 }
 

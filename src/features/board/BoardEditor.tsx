@@ -16,7 +16,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowUpRight, Copy, Hand, Image as ImageIcon, Maximize2, Minus, MousePointer2, Move,
   Pause, Play, Redo2, Repeat, RotateCcw, Slash, Spline, Square, Trash2, Undo2,
-  Box, Download, RotateCw, X, ZoomIn, ZoomOut,
+  Box, Crosshair, Download, RotateCw, X, ZoomIn, ZoomOut,
 } from 'lucide-react';
 import { Button, Field, Input, Panel, PanelHeader, Segmented, Select, Tag, Toggle } from '@/components/ui';
 import { BoardStage, useBoardView, type Tool } from './BoardStage';
@@ -274,9 +274,17 @@ export function BoardEditor({
 
   /* ─────────────────────────── Presentación ──────────────────────────────── */
 
+  /**
+   * Al presentar, acercarse a la jugada — pero sólo si no se había tocado la
+   * vista. Llenar la pantalla de césped vacío es lo que hacía que en pantalla
+   * completa se siguiera viendo todo pequeño: lo que llenaba era el campo, no
+   * la jugada. Si el entrenador ya había encuadrado algo a mano, eso manda:
+   * se habrá puesto justo donde quería enseñar.
+   */
   const presentar = useCallback(async () => {
     const el = shell.current;
     if (!el) return;
+    if (vista.enElCampoEntero && !document.fullscreenElement) vista.ajustar(scene);
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
       else await el.requestFullscreen();
@@ -285,7 +293,7 @@ export function BoardEditor({
       // igual: se ocultan los paneles y el campo ocupa lo que haya.
       setPresenting((p) => !p);
     }
-  }, []);
+  }, [vista, scene]);
 
   useEffect(() => {
     const onChange = () => setPresenting(document.fullscreenElement === shell.current);
@@ -308,6 +316,17 @@ export function BoardEditor({
         setTool(null);
         setPresenting(false);
       }
+      /* Las dos que hacen falta para enseñar una jugada en un ordenador, sin
+         ir a buscar un icono: F la pone a pantalla completa, A se acerca a la
+         jugada y vuelve a sacar el campo entero. */
+      if (e.key.toLowerCase() === 'f' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        void presentar();
+      }
+      if (e.key.toLowerCase() === 'a' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        vista.ajustar(scene);
+      }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         if (e.shiftKey) redo();
@@ -329,7 +348,7 @@ export function BoardEditor({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [playback, undo, redo, selected, selectedDrawing, editable, commit, scene]);
+  }, [playback, undo, redo, selected, selectedDrawing, editable, commit, scene, presentar, vista]);
 
   /* ───────────────────────────── Paneles ─────────────────────────────────── */
 
@@ -729,10 +748,10 @@ export function BoardEditor({
         <Button
           size="sm"
           variant="ghost"
-          onClick={vista.fit}
-          disabled={vista.ajustado}
-          icon={<Move size={15} />}
-          aria-label="Encuadrar todo"
+          onClick={() => vista.ajustar(scene)}
+          icon={vista.enElCampoEntero ? <Crosshair size={15} /> : <Move size={15} />}
+          aria-label={vista.enElCampoEntero ? 'Ajustar a la jugada' : 'Ver el campo entero'}
+          title={vista.enElCampoEntero ? 'Ajustar a la jugada' : 'Ver el campo entero'}
         />
       </div>
     </div>
@@ -805,13 +824,16 @@ export function BoardEditor({
       >
         <ZoomIn size={15} />
       </button>
+      {/* Acercarse a la jugada, que es lo que se quiere mirar, y no al campo,
+          que es casi todo césped vacío. El mismo botón devuelve el campo
+          entero cuando ya se está encima. */}
       <button
-        onClick={vista.fit}
-        disabled={vista.ajustado}
-        aria-label="Encuadrar todo"
-        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900 disabled:opacity-35"
+        onClick={() => vista.ajustar(scene)}
+        aria-label={vista.enElCampoEntero ? 'Ajustar a la jugada' : 'Ver el campo entero'}
+        title={vista.enElCampoEntero ? 'Ajustar a la jugada' : 'Ver el campo entero'}
+        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900"
       >
-        <Move size={15} />
+        {vista.enElCampoEntero ? <Crosshair size={15} /> : <Move size={15} />}
       </button>
 
       {/* Cambiar de sitio para mirar, sin abrir el panel. Girar y tumbar son
