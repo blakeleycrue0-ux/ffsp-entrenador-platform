@@ -92,6 +92,20 @@ const sobre = (titulo: string, cuerpo: string, pie: string) => `<!doctype html>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
              style="max-width:560px; background:#FFFFFF; border:1px solid ${LINEA}; border-radius:14px;">
         <tr><td style="padding:30px 32px 0;">
+          <!-- ── LA MARCA, Y POR QUÉ ES OTRO ARCHIVO ──────────────────────
+               playoff360.png es BLANCO con transparencia, porque en la
+               aplicación se usa como máscara CSS y el color sale de
+               currentColor. Un correo no sabe enmascarar —Outlook y Gmail
+               recortan media hoja de estilo—, así que aquí sólo cabe una
+               etiqueta img, y el blanco sobre el fondo blanco del correo es
+               un cuadrado vacío. playoff360-tinta.png se deriva del otro con
+               presentacion/marca-tinta.mjs, para que no se separen.
+
+               Lleva alt con el nombre a propósito: la mitad de los clientes
+               de correo no cargan imágenes hasta que se lo pides, y con el
+               texto alternativo se sigue sabiendo de quién es. -->
+          <img src="${SITIO}/playoff360-tinta.png" alt="Playoff360" width="30" height="30"
+               style="display:block; width:30px; height:30px; border:0; margin:0 0 12px;" />
           <p style="margin:0 0 22px; font-family:${FUENTE}; font-size:13px; font-weight:700;
                     letter-spacing:0.08em; text-transform:uppercase; color:${TINTA};">Playoff360</p>
         </td></tr>

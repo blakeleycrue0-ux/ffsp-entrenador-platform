@@ -74,8 +74,12 @@
   .gris { color: var(--gris); }
   .pequeno { font-size: 9pt; line-height: 1.45; }
 
-  /* La cabecera de la primera página. */
+  /* La cabecera de la primera página.
+     La marca va en el PNG en tinta y no en el blanco de la aplicación: ahí
+     se usa como máscara CSS y el color sale de `currentColor`, pero esto es
+     papel y un logotipo blanco sobre papel blanco no es nada. */
   .portadilla { border-bottom: 2px solid var(--tinta); padding-bottom: 16px; }
+  .portadilla .marca { width: 34px; height: 34px; display: block; margin-bottom: 12px; }
   .portadilla .rotulo {
     font-family: 'Space Grotesk', sans-serif; font-size: 8.5pt; font-weight: 600;
     letter-spacing: 0.18em; text-transform: uppercase; color: var(--marca);
@@ -153,6 +157,7 @@
 <body>
 
 <header class="portadilla">
+  <img class="marca" src="../public/playoff360-tinta.png" alt="" />
   <p class="rotulo">Playoff360 · Guía</p>
   <h1>Cómo funciona Playoff360</h1>
   <p class="sub">

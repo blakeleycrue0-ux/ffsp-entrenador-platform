@@ -35,6 +35,7 @@
     "pizarra:encuadre": "node pruebas/encuadre.mjs",
     "app:correo": "node pruebas/correo.mjs",
     "guia": "node presentacion/guia-pdf.mjs",
+    "marca": "node presentacion/marca-tinta.mjs",
     "capturas": "node pruebas/capturas.mjs",
     "maqueta:enteras": "node pruebas/capturas-enteras.mjs",
     "pizarra:colocar": "node pruebas/colocar.mjs",
