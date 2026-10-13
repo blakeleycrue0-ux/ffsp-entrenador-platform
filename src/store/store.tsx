@@ -20,6 +20,7 @@ import { db, loadWorkspace } from '@/services/db';
 import { auth } from '@/services/auth';
 import { olvidarDesbloqueo } from '@/services/passcode';
 import { humanError } from '@/services/supabase';
+import { cambiaNovedades } from '@/services/correo';
 
 /* ────────────────────────────── Estado local ──────────────────────────────── */
 
@@ -161,6 +162,8 @@ export interface ClubActions {
   updateProfile: (id: string, patch: { full_name?: string; phone?: string; licence?: string; role?: Staff['role'] }) => Promise<void>;
   /** Apaga (o vuelve a encender) la guía de primeros pasos de Inicio. */
   setupGuia: (visible: boolean) => Promise<void>;
+  /** Permiso para novedades y avisos. No toca los correos de la cuenta. */
+  novedadesCorreo: (quiere: boolean) => Promise<void>;
 
   savePlayer: (player: Player) => Promise<Player>;
   deletePlayer: (id: string) => Promise<void>;
@@ -351,6 +354,12 @@ export function ClubProvider({ children }: { children: React.ReactNode }) {
       async setupGuia(visible) {
         const id = requireUser();
         await db.setupGuia(id, visible);
+        await hydrate(id);
+      },
+
+      async novedadesCorreo(quiere) {
+        const id = requireUser();
+        await cambiaNovedades(id, quiere);
         await hydrate(id);
       },
 

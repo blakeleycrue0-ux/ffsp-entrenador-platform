@@ -33,6 +33,8 @@
     "pizarra:circuito": "node pruebas/circuito.mjs",
     "pizarra:salidas": "node pruebas/salidas.mjs",
     "pizarra:encuadre": "node pruebas/encuadre.mjs",
+    "app:correo": "node pruebas/correo.mjs",
+    "guia": "node presentacion/guia-pdf.mjs",
     "capturas": "node pruebas/capturas.mjs",
     "maqueta:enteras": "node pruebas/capturas-enteras.mjs",
     "pizarra:colocar": "node pruebas/colocar.mjs",

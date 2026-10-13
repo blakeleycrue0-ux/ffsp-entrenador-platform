@@ -24,11 +24,20 @@ export const auth = {
     return data.user;
   },
 
-  async signUp(email: string, password: string, fullName: string) {
+  /**
+   * Alta.
+   *
+   * `novedades` viaja en los metadatos y no en una actualización posterior
+   * del perfil, porque en este instante el perfil TODAVÍA NO EXISTE —y si
+   * hace falta confirmar el correo, tampoco hay sesión con la que escribirlo.
+   * Lo copia `asegurar_perfil()` al crear la fila. Es el mismo camino que
+   * sigue el nombre desde que existe el alta.
+   */
+  async signUp(email: string, password: string, fullName: string, novedades = false) {
     const { data, error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
-      options: { data: { full_name: fullName.trim() } },
+      options: { data: { full_name: fullName.trim(), marketing_consent: novedades } },
     });
     if (error) throw error;
     return data;

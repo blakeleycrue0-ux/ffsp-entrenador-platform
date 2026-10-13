@@ -33,6 +33,8 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  /* Sin marcar, y eso es el valor por defecto a propósito: ver la casilla. */
+  const [novedades, setNovedades] = useState(false);
   const [busy, setBusy] = useState(false);
   const [verClave, setVerClave] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +135,7 @@ export default function Login() {
            a la aplicación, no para entrar. */
         if (user) marcarDesbloqueado(user.id);
       } else if (mode === 'registro') {
-        const result = await auth.signUp(email, password, fullName);
+        const result = await auth.signUp(email, password, fullName, novedades);
         if (result.session?.user) marcarDesbloqueado(result.session.user.id);
         if (!result.session) {
           setNotice(
@@ -340,6 +342,28 @@ export default function Login() {
                     autoCapitalize="words"
                   />
                 </Field>
+              )}
+
+              {/* ── EL PERMISO, Y VA SIN MARCAR ────────────────────────────
+                  Una casilla premarcada no es consentimiento: el RGPD pide un
+                  acto, y marcarla de antemano es justo lo contrario de un
+                  acto. La guía del alta no depende de esto —es un correo de
+                  servicio y sale igual—; esto es sólo para las novedades y
+                  los avisos. Quien no la marque no recibe ninguno, y se puede
+                  cambiar de idea en Ajustes o desde el pie de cualquiera. */}
+              {mode === 'registro' && (
+                <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-line bg-panel/60 p-3 text-sm leading-relaxed text-ink-700">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={novedades}
+                    onChange={(e) => setNovedades(e.target.checked)}
+                  />
+                  <span>
+                    Quiero recibir novedades de Playoff360 y algún aviso si dejo la cuenta
+                    parada. Puedes darte de baja de un clic en cualquier momento.
+                  </span>
+                </label>
               )}
 
               <Field label="Correo electrónico" required>

@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Playoff360 — Cómo funciona</title>
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  LA GUÍA QUE SE MANDA AL DARSE DE ALTA. A4, PARA LEER O IMPRIMIR.
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Se escribió mirando lo que pasa de verdad, no lo que estaría bien contar.
+  Los dos clubes que se dieron de alta la semana del 12 de octubre hicieron
+  exactamente lo mismo: crearon el club, crearon el equipo y se pararon ahí,
+  con cero jugadoras. Por eso el recuadro de la primera página no es un
+  «bienvenido», es el orden de los diez primeros minutos, con el paso de las
+  jugadoras marcado como el que desbloquea todo lo demás.
+
+  NO SE ANUNCIA NADA QUE NO EXISTA. La tabla de planes sale del mismo
+  catálogo que la aplicación (`src/services/entitlements.ts`), y
+  `pruebas/guia.mjs` comprueba que no se haya colado aquí una función que
+  está en el código marcada como no construida. Un folleto que promete lo que
+  el programa no hace es peor que no mandar folleto.
+
+  MISMO ESTILO QUE LA HOJA DE ADMINISTRACIÓN, y por eso la hoja de estilo es
+  literalmente la misma copiada: los dos son documentos A4 en blanco y negro
+  para imprimir, y mantener dos hojas de estilo parecidas acaba siempre en
+  dos documentos que no se parecen.
+-->
+<style>
+  @font-face {
+    font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700;
+    src: url('../public/fuentes/space-grotesk-latin.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700;
+    src: url('../public/fuentes/space-grotesk-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02AF, U+1E00-1E9F, U+2020, U+20A0-20AB, U+20AD-20C0;
+  }
+  @font-face {
+    font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 200 800;
+    src: url('../public/fuentes/jakarta-latin.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 200 800;
+    src: url('../public/fuentes/jakarta-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02AF, U+1E00-1E9F, U+2020, U+20A0-20AB, U+20AD-20C0;
+  }
+
+  :root {
+    --tinta: #10131A;
+    --gris: #5A6170;
+    --linea: #D7DAE0;
+    --marca: #0868F9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: var(--tinta);
+    font-size: 10.2pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; }
+  h1 { font-size: 26pt; font-weight: 600; line-height: 1.05; }
+  h2 {
+    font-size: 14pt; font-weight: 600; margin-top: 26px; padding-top: 12px;
+    border-top: 2px solid var(--tinta);
+  }
+  h3 { font-size: 11pt; font-weight: 600; margin-top: 16px; }
+  p { margin-top: 8px; }
+  .gris { color: var(--gris); }
+  .pequeno { font-size: 9pt; line-height: 1.45; }
+
+  /* La cabecera de la primera página. */
+  .portadilla { border-bottom: 2px solid var(--tinta); padding-bottom: 16px; }
+  .portadilla .rotulo {
+    font-family: 'Space Grotesk', sans-serif; font-size: 8.5pt; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--marca);
+  }
+  .portadilla h1 { margin-top: 10px; }
+  .portadilla .sub { margin-top: 10px; font-size: 11pt; color: var(--gris); max-width: 52ch; }
+
+  /* El aviso de las claves. Recuadro grueso: es lo que no hay que saltarse. */
+  .aviso {
+    border: 2px solid var(--tinta); border-radius: 6px; padding: 14px 16px; margin-top: 22px;
+  }
+  .aviso h3 { margin-top: 0; }
+  .aviso p { font-size: 9.6pt; }
+
+  /* Las tablas. Sin color de fondo: se imprimen. */
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th {
+    font-family: 'Space Grotesk', sans-serif; font-size: 8.5pt; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--gris);
+    text-align: left; padding: 0 10px 7px 0; border-bottom: 1px solid var(--tinta);
+  }
+  td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--linea); vertical-align: top; font-size: 9.6pt; }
+  td:last-child, th:last-child { padding-right: 0; }
+  .nombre { font-family: 'Space Grotesk', sans-serif; font-weight: 600; }
+  .clave { font-family: 'Space Grotesk', sans-serif; font-size: 9pt; font-weight: 600; }
+  tr { break-inside: avoid; }
+
+  /* La línea para escribir a mano. */
+  .raya { display: block; border-bottom: 1px solid var(--tinta); height: 17px; margin-top: 3px; }
+  .raya.corta { max-width: 58mm; }
+
+  /* La casilla de verificación.
+     CON POSICIÓN ABSOLUTA Y NO CON UNA REJILLA, y hay un motivo caro: en un
+     contenedor de rejilla, CADA hijo es una celda. El `::before`, el `<b>` y
+     el `<span class="nota">` se repartían en tres celdas, así que la nota
+     caía en una columna de dieciocho píxeles y se partía letra a letra. El
+     documento salía con diecisiete páginas en vez de cinco. */
+  ul.lista { list-style: none; margin-top: 10px; }
+  ul.lista li {
+    position: relative; padding: 7px 0 7px 27px;
+    border-bottom: 1px solid var(--linea); break-inside: avoid;
+  }
+  ul.lista li::before {
+    content: ''; position: absolute; left: 0; top: 10px;
+    width: 12px; height: 12px;
+    border: 1.5px solid var(--tinta); border-radius: 2px;
+  }
+  ul.lista li.hecho::before {
+    /* Una casilla ya marcada, para lo que está hecho. */
+    background: var(--tinta);
+  }
+  ul.lista b { font-weight: 600; }
+  ul.lista .nota { display: block; color: var(--gris); font-size: 9pt; margin-top: 2px; }
+
+  ol.pasos { margin-top: 10px; padding-left: 0; list-style: none; counter-reset: paso; }
+  ol.pasos li {
+    counter-increment: paso; position: relative; padding: 5px 0 5px 24px;
+    font-size: 9.6pt; break-inside: avoid;
+  }
+  ol.pasos li::before {
+    content: counter(paso) '.'; position: absolute; left: 0; top: 5px;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+  }
+
+  .seccion { break-inside: auto; }
+  .junto { break-inside: avoid; }
+  .salto { break-before: page; }
+
+  @page {
+    size: A4 portrait;
+    margin: 17mm 16mm 16mm;
+  }
+</style>
+</head>
+<body>
+
+<header class="portadilla">
+  <p class="rotulo">Playoff360 · Guía</p>
+  <h1>Cómo funciona Playoff360</h1>
+  <p class="sub">
+    Lo que hace la herramienta y cómo se hace cada cosa. Pensada para leerla de una
+    sentada el primer día, o para tenerla abierta al lado la primera semana.
+  </p>
+  <p class="pequeno gris" style="margin-top:12px;">playoff360.site</p>
+</header>
+
+<div class="aviso junto">
+  <h3>Los diez primeros minutos, por orden</h3>
+  <ol class="pasos">
+    <li><b>Crea el club y el equipo.</b> Nombre, temporada y categoría. Treinta segundos.</li>
+    <li><b>Mete a tus jugadoras.</b> Esto es lo que desbloquea el resto. Sin ellas no hay a
+        quién convocar, a quién pasar lista ni a quién puntuar. Una plantilla entera son
+        diez minutos y se hace una sola vez en la temporada.</li>
+    <li><b>Pon el horario de entrenamiento.</b> Los días y las horas fijas del equipo. Con
+        eso el calendario se rellena solo hasta final de temporada.</li>
+    <li>Lo demás —partidos, ejercicios, pizarra— ya puede esperar al día que lo necesites.</li>
+  </ol>
+  <p class="pequeno gris" style="margin-top:10px;">
+    Si sólo haces el paso 2, ya le has sacado más partido que a un grupo de WhatsApp.
+  </p>
+</div>
+
+<div class="seccion">
+<h2>Qué es esto</h2>
+<p>
+  Una herramienta para llevar un equipo de fútbol base: la plantilla, la asistencia, las
+  lesiones, los entrenamientos, los partidos y las jugadas. Está hecha para el entrenador
+  que lo lleva todo en la cabeza y en tres libretas, no para un club con departamento de
+  análisis.
+</p>
+<p>
+  Funciona en el móvil y en el ordenador con el mismo usuario y los mismos datos. En el
+  campo se usa el móvil —pasar lista, apuntar una lesión, ver la convocatoria—; en casa, el
+  ordenador, que es donde se montan los entrenamientos y las jugadas.
+</p>
+
+<h3>Lo que NO hace, para que no lo busques</h3>
+<p class="pequeno gris">
+  No manda mensajes a las familias, no cobra cuotas, no ficha jugadoras ni se conecta con la
+  federación. Y no hay app que instalar: se abre en el navegador y se puede añadir a la
+  pantalla de inicio del móvil como si lo fuera.
+</p>
+</div>
+
+<div class="seccion">
+<h2>La plantilla</h2>
+<p>
+  <b>Equipo</b> es la lista de tus jugadoras. Cada una tiene nombre, dorsal, posición y
+  fecha de nacimiento, y todo lo demás de la aplicación cuelga de aquí.
+</p>
+<h3>Cómo se añade una</h3>
+<ol class="pasos">
+  <li>Entra en <b>Equipo</b> y pulsa <b>Añadir jugadora</b>.</li>
+  <li>Nombre y dorsal son lo único obligatorio. El resto se puede dejar para luego.</li>
+  <li>Guarda. Ya aparece en las convocatorias, en la asistencia y en la pizarra.</li>
+</ol>
+<h3>Disponibilidad y lesiones</h3>
+<p>
+  Desde la ficha de cada jugadora se marca si está disponible, tocada o lesionada, con la
+  fecha y una nota. Una jugadora marcada como lesionada sale avisada al hacer la convocatoria,
+  que es justo el momento en el que uno se olvida.
+</p>
+</div>
+
+<div class="seccion salto">
+<h2>Los entrenamientos</h2>
+<p>
+  Una sesión es un día, una hora y una lista de ejercicios en orden. Se monta arrastrando
+  desde la biblioteca, se guarda y queda para repetirla o copiarla a otra semana.
+</p>
+<h3>El horario fijo</h3>
+<p>
+  En los ajustes del equipo se ponen los días y las horas de entrenamiento habituales. A
+  partir de ahí el calendario se rellena solo: no hay que crear una por una las sesiones de
+  toda la temporada, sólo abrir la del día y ponerle contenido.
+</p>
+
+<h3>La asistencia</h3>
+<p>
+  Se pasa desde el móvil, en el campo, tocando cada nombre. Queda guardada por sesión y por
+  jugadora, y es lo que luego alimenta las analíticas: quién viene, quién falta y desde
+  cuándo. Es el dato más barato de recoger y el que más dice en una reunión con los padres.
+</p>
+</div>
+
+<div class="seccion">
+<h2>La biblioteca de ejercicios</h2>
+<p>
+  Cada ejercicio tiene nombre, descripción, duración, material y una jugada dibujada si
+  quieres. Se marcan como favoritos los que usas siempre, y desde ahí se arrastran a una
+  sesión sin volver a escribirlos.
+</p>
+<p class="pequeno gris">
+  Los ejercicios son del club, no del equipo: si llevas dos categorías, los compartes entre
+  las dos sin duplicar nada.
+</p>
+</div>
+
+<div class="seccion">
+<h2>Los partidos</h2>
+<p>
+  Un partido es rival, fecha, campo y una convocatoria. Al convocar sale la plantilla entera
+  con las lesionadas marcadas, y se eligen las que van. Queda guardado quién fue convocada y
+  quién no, que es exactamente la pregunta que llega por WhatsApp el sábado por la mañana.
+</p>
+</div>
+
+<div class="seccion salto">
+<h2>La pizarra táctica</h2>
+<p>
+  Es la parte que más se usa y la que más tiene dentro. Sirve para dibujar una jugada, un
+  circuito o una salida de balón, y verla <b>moverse</b>.
+</p>
+
+<h3>Lo básico</h3>
+<ol class="pasos">
+  <li>Elige el campo —entero, medio campo, fútbol 7— y pon las fichas arrastrándolas desde
+      el panel de la izquierda.</li>
+  <li>Cambia a <b>Animar</b>, lleva el cabezal del tiempo a un instante posterior y arrastra
+      una ficha a su nueva posición. Eso crea el movimiento.</li>
+  <li>Dale al play.</li>
+</ol>
+
+<h3>Que cada una salga cuando le toca</h3>
+<p>
+  Por defecto todas arrancan en el segundo cero, que no es lo que pasa en un circuito. En la
+  ficha de cada jugadora, en <b>Sale</b>, puedes decir <b>«cuando llegue el 7»</b> y, si
+  quieres, cuánto espera después. Si luego alargas el recorrido del 7, las que le esperan se
+  van detrás solas.
+</p>
+<p class="pequeno gris">
+  Debajo de la línea de tiempo hay una barra por ficha: si están todas pegadas al borde
+  izquierdo, es que salen todas a la vez.
+</p>
+
+<h3>El balón va con quien lo lleva</h3>
+<p>
+  Marca un tramo como <b>conducción</b> y el balón va pegado a esa jugadora mientras dura.
+  No hay que animarlo aparte. Si en algún momento el balón tiene recorrido propio —un
+  pase—, el pase manda y sale disparado.
+</p>
+
+<h3>Que se vea grande</h3>
+<p>
+  Una jugada de treinta metros dibujada sobre un campo de ciento cinco se ve diminuta. El
+  botón de la cruz —o la tecla <b>A</b>— se acerca a la jugada y la deja llenando la
+  pantalla; púlsalo otra vez y vuelve el campo entero. La tecla <b>F</b> la pone a pantalla
+  completa para enseñarla, y al presentar se acerca sola.
+</p>
+
+<h3>Las vistas</h3>
+<p>
+  El campo se puede girar y tumbar: cenital para colocar, vertical para el móvil, de banda o
+  desde detrás de la portería para enseñársela a alguien. La vista se guarda con la jugada.
+</p>
+</div>
+
+<div class="seccion">
+<h2>Qué trae cada plan</h2>
+<table>
+  <thead><tr><th>Plan</th><th>Equipos</th><th>Qué añade</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="nombre">Gratis</td><td>1</td>
+      <td>Plantilla, asistencia, disponibilidad y lesiones, entrenamientos, biblioteca de
+          ejercicios, partidos y convocatorias, calendario, pizarra táctica y analíticas.</td>
+    </tr>
+    <tr>
+      <td class="nombre">Pro</td><td>2</td>
+      <td>Todo lo de Gratis, más trayectorias a mano alzada en la pizarra y exportar las
+          jugadas en vídeo.</td>
+    </tr>
+    <tr>
+      <td class="nombre">Max</td><td>5</td>
+      <td>Todo lo de Pro, más acceso para varios entrenadores en el mismo equipo.</td>
+    </tr>
+  </tbody>
+</table>
+<p class="pequeno gris" style="margin-top:10px;">
+  Los precios y los días de prueba están en la pantalla de plan, dentro de la aplicación, que
+  es el sitio que siempre dice la verdad: este papel puede quedarse viejo.
+</p>
+</div>
+
+<div class="seccion">
+<h2>Dudas que salen siempre</h2>
+
+<h3>¿Se pierden los datos si cambio de móvil?</h3>
+<p>No. Está todo guardado en el servidor, no en el teléfono. Entras con tu correo y está igual.</p>
+
+<h3>¿Pueden ver mis datos otros clubes?</h3>
+<p>
+  No. Cada club ve lo suyo y nada más, y eso no lo decide la pantalla: lo impone la base de
+  datos, para cada consulta.
+</p>
+
+<h3>¿Dónde están guardados?</h3>
+<p>
+  En servidores de Supabase en Irlanda, dentro de la Unión Europea. No salen del Espacio
+  Económico Europeo.
+</p>
+
+<h3>Llevo dos equipos, ¿tengo que pagar?</h3>
+<p>
+  Con Gratis cabe uno. Para dos, Pro; hasta cinco, Max. Puedes probar los de pago antes de
+  pagar nada.
+</p>
+
+<h3>¿Cómo dejo de recibir correos?</h3>
+<p>
+  En <b>Ajustes → Correo</b>, o con el enlace del pie de cualquiera de ellos: un clic, sin
+  entrar. Los de la cuenta —confirmar el alta, recuperar la contraseña— siguen llegando,
+  porque sin ésos no se puede usar la cuenta.
+</p>
+
+<h3>No va algo, o no se entiende</h3>
+<p>
+  Responde al correo con el que te llegó esta guía, o escribe a
+  <b>playoff360.info@gmail.com</b>. Lo leo yo.
+</p>
+</div>
+
+</body>
+</html>

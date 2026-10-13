@@ -180,6 +180,23 @@ export default function LegalPage() {
                   Las anotaciones de lesión sirven para que el cuerpo técnico sepa con quién puede
                   contar. <strong>La plataforma no emite diagnósticos ni recomendaciones médicas.</strong>
                 </p>
+                {/* ── ESTO HAY QUE DECIRLO, Y HAY QUE DECIRLO SEPARADO ───────
+                    Arriba pone que los datos no se usan con fines comerciales,
+                    y de los datos de las jugadoras sigue siendo verdad. Del
+                    correo de quien tiene la cuenta ya no lo sería si no se
+                    dijera aquí: desde que existen las novedades, esa dirección
+                    sí se usa para escribirle. Son dos cosas distintas y por eso
+                    van en dos párrafos, no en una frase con un «salvo». */}
+                <p className="mt-2">
+                  <strong>El correo de quien tiene la cuenta</strong> se usa además para dos cosas:
+                  los avisos imprescindibles del servicio —confirmar el alta, recuperar la
+                  contraseña y una guía de uso al darse de alta— y, <strong>sólo si se ha dado
+                  permiso expreso</strong>, novedades del producto y algún recordatorio por
+                  inactividad. Ese permiso se pide sin marcar al crear la cuenta, se puede retirar
+                  en Ajustes o con el enlace de baja de cualquiera de esos correos, y retirarlo no
+                  afecta a los avisos del servicio. <strong>Los datos de las jugadoras no se usan
+                  nunca para esto</strong>, ni para ninguna otra comunicación comercial.
+                </p>
               </section>
 
               <section>
@@ -197,8 +214,9 @@ export default function LegalPage() {
                 <p className="mt-2">
                   Los datos se alojan en la infraestructura de Supabase, en servidores situados en{' '}
                   <strong>Irlanda (Unión Europea)</strong>. La web y las funciones de cobro las sirve
-                  Netlify. No hay transferencias internacionales de datos fuera del Espacio Económico
-                  Europeo.{' '}
+                  Netlify, y el correo sale por <strong>Brevo (Sendinblue SAS, Francia)</strong>, que
+                  trata únicamente la dirección y el nombre de quien tiene la cuenta. No hay
+                  transferencias internacionales de datos fuera del Espacio Económico Europeo.{' '}
                   <Pendiente>contratos de encargado de tratamiento con ambos proveedores</Pendiente>
                 </p>
               </section>
