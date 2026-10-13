@@ -332,19 +332,29 @@
     que sí lo sea.
   </p>
 
-  <h3>A · Quién eres (va en el aviso legal)</h3>
+  <h3>A · Quién es el titular (va en el aviso legal)</h3>
+  <p class="pequeno gris" style="margin-top:6px;">
+    <b>Quien lleva la plataforma y quien figura como titular no tienen por qué ser la misma
+    persona, y aquí no lo son.</b> El titular es quien firma, quien factura y quien responde, y
+    para eso hace falta ser mayor de edad: Stripe lo exige en sus condiciones y los contratos de
+    un menor son anulables. La cuenta de Stripe ya está a nombre de un adulto de la familia, así
+    que lo que sigue es poner <b>ese mismo nombre</b> —o el del club, si es una asociación con
+    CIF— en todo lo demás. Tienen que coincidir los tres: Stripe, el aviso legal y las facturas.
+  </p>
   <ul class="lista">
-    <li><b>Denominación</b><span class="nota">El nombre con el que se factura: tu nombre y apellidos si eres autónomo, o la razón social.</span></li>
-    <li><b>CIF o NIF</b></li>
+    <li><b>Comprobar a nombre de quién está la cuenta de Stripe</b><span class="nota">Dashboard › Settings › Business. Ese es el nombre que manda sobre los dos siguientes.</span></li>
+    <li><b>Denominación</b><span class="nota">El nombre con el que se factura: el del adulto titular, o la razón social del club.</span></li>
+    <li><b>CIF o NIF</b><span class="nota">El de ese mismo titular.</span></li>
     <li><b>Domicilio postal completo</b></li>
     <li><b>Correo de contacto</b><span class="nota">Uno que se lea. Es por donde la gente ejercerá sus derechos y por donde llegará cualquier reclamación.</span></li>
-    <li><b>Inscripción registral</b><span class="nota">Registro y número, si la actividad lo exige. Si eres autónomo, normalmente no aplica.</span></li>
+    <li><b>Inscripción registral</b><span class="nota">Registro y número, si la actividad lo exige. Para una persona física normalmente no aplica.</span></li>
     <li><b>Jurisdicción y legislación aplicable</b><span class="nota">Qué ley rige y qué juzgados, en las condiciones de uso.</span></li>
     <li><b>Titular de los derechos del software</b><span class="nota">Quién es el dueño del programa. Hoy el código es público en GitHub: conviene decidir con qué licencia.</span></li>
   </ul>
 
   <h3>B · Datos de menores y protección de datos</h3>
   <ul class="lista">
+    <li><b>Quién es el responsable de los datos</b><span class="nota">No puede serlo un menor. Lo natural es que sea el club, que es de quien son las fichas; si no, el mismo adulto del apartado A.</span></li>
     <li><b>Cómo se recoge el consentimiento de los padres o tutores</b><span class="nota">Es el hueco más serio. En España, por debajo de catorce años el consentimiento lo dan los titulares de la patria potestad. Hace falta un procedimiento escrito: quién firma, cómo se guarda y cómo se revoca.</span></li>
     <li><b>Plazos de conservación</b><span class="nota">Cuánto se guarda la ficha de una jugadora que deja el club, y qué se borra al terminar.</span></li>
     <li><b>Contrato de encargado del tratamiento con Supabase</b><span class="nota">Se acepta desde el panel de Supabase. Los datos ya están en Irlanda, dentro de la Unión Europea, que es la parte difícil y está resuelta.</span></li>
@@ -356,8 +366,9 @@
 
   <h3>C · El cobro (Stripe)</h3>
   <ul class="lista">
-    <li><b>Cuenta de Stripe verificada y a nombre de quién factura</b><span class="nota">Tiene que coincidir con la denominación del apartado A.</span></li>
+    <li><b>Cuenta de Stripe verificada</b><span class="nota">Ya está a nombre de un adulto, que es lo que exigen sus condiciones. Falta que ese nombre sea el mismo del apartado A.</span></li>
     <li><b>Datos fiscales e IVA</b><span class="nota">Si el precio lleva IVA incluido o no, y cómo se declara. 5,99 € y 12,99 € hoy se enseñan sin decirlo.</span></li>
+    <li><b>Qué declara quien cobra</b><span class="nota">El dinero entra en la cuenta del titular y es él quien lo declara. Si esto pasa de cobrarse a uno mismo a cobrar a clubes todos los meses, deja de ser algo puntual: ahí hay que preguntar a una gestoría si hace falta alta de autónomo.</span></li>
     <li><b>Facturas</b><span class="nota">Stripe las puede emitir solo. Hay que activarlo y poner los datos fiscales.</span></li>
     <li><b>Condiciones de contratación</b><span class="nota">Qué se contrata, cuánto dura, cómo se renueva y cómo se cancela. La cancelación ya funciona desde el portal de Stripe.</span></li>
     <li><b>Derecho de desistimiento</b><span class="nota">Catorce días para un consumidor. En servicios digitales que empiezan de inmediato hay que informarlo y pedir la renuncia expresa antes de cobrar.</span></li>
