@@ -37,7 +37,7 @@ const TITULAR = {
   nombre: 'Leon Bryn Blakeley',
   nif: 'X2453564Q',
   domicilio: 'Carrer de les Illes Balears, 36, 07180 Galatzó, Illes Balears, España',
-  correo: 'secretariaspfc@gmail.com',
+  correo: 'playoff360.info@gmail.com',
 } as const;
 
 /**
