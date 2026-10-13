@@ -11,12 +11,34 @@ import { Wordmark } from '@/components/ui/Brand';
 import { Button, Tag } from '@/components/ui';
 import { decidir, decision } from '@/services/analitica';
 
-/** Dato que el club tiene que facilitar antes de publicar. */
+/** Dato que todavía falta por decidir antes de dar esto por definitivo. */
 const Pendiente = ({ children }: { children: React.ReactNode }) => (
   <span className="inline-flex items-center gap-1.5 rounded border border-warn/35 bg-warn/8 px-1.5 py-0.5 text-sm text-warn">
     {children}
   </span>
 );
+
+/**
+ * EL TITULAR, EN UN SOLO SITIO.
+ * ---------------------------------------------------------------------------
+ * Quien presta el servicio y responde de él. La LSSI obliga a publicarlo, así
+ * que estos datos son públicos por obligación legal, no por descuido: van en
+ * el aviso legal, en las facturas y en la cuenta de Stripe, y los tres tienen
+ * que decir lo mismo. Si cambia uno, cambia aquí y cambia en todas partes.
+ *
+ * EL DOMICILIO NO ES UNA VIVIENDA, y eso es deliberado: la ley pide una
+ * dirección donde se pueda recibir una notificación, no dónde se duerme.
+ *
+ * NO ES UNA EMPRESA. Es una persona física, así que no hay CIF ni inscripción
+ * registral: el identificador fiscal es el NIE, que para un residente
+ * extranjero hace de NIF.
+ */
+const TITULAR = {
+  nombre: 'Leon Bryn Blakeley',
+  nif: 'X2453564Q',
+  domicilio: 'Carrer de les Illes Balears, 36, 07180 Galatzó, Illes Balears, España',
+  correo: 'secretariaspfc@gmail.com',
+} as const;
 
 /**
  * Cambiar de opinión sobre la medición, aquí mismo.
@@ -96,31 +118,26 @@ export default function LegalPage() {
         </div>
 
         <div className="rounded-md border border-warn/30 bg-warn/6 px-4 py-3 text-base leading-relaxed text-ink-800">
-          Este texto está redactado pero <strong>no está completo ni revisado</strong>. Los datos
-          marcados en amarillo los debe aportar el club antes de publicar la web, y el conjunto debe
-          revisarlo alguien con criterio jurídico. Hasta entonces no puede considerarse un documento
-          legal válido.
+          Los datos del titular ya están completos. Lo que sigue marcado en amarillo son decisiones
+          pendientes, y <strong>el conjunto todavía no lo ha revisado nadie con criterio
+          jurídico</strong>: hasta que lo haga, este texto es el compromiso que se asume, no un
+          documento revisado.
         </div>
 
         <div className="mt-8 space-y-7 text-base leading-relaxed text-ink-800 [&_h2]:text-lg [&_h2]:font-semibold">
           <section>
             <h2>Titular</h2>
             <ul className="mt-2 space-y-1.5">
+              <li>Denominación: {TITULAR.nombre}</li>
+              <li>Identificación fiscal (NIE): {TITULAR.nif}</li>
+              <li>Domicilio: {TITULAR.domicilio}</li>
               <li>
-                Denominación: <Pendiente>razón social del club</Pendiente>
+                Contacto:{' '}
+                <a href={`mailto:${TITULAR.correo}`} className="underline underline-offset-2">
+                  {TITULAR.correo}
+                </a>
               </li>
-              <li>
-                Identificación fiscal: <Pendiente>CIF / NIF</Pendiente>
-              </li>
-              <li>
-                Domicilio: <Pendiente>dirección postal completa</Pendiente>
-              </li>
-              <li>
-                Contacto: <Pendiente>correo electrónico de contacto</Pendiente>
-              </li>
-              <li>
-                Inscripción registral: <Pendiente>registro y número, si procede</Pendiente>
-              </li>
+              <li>Inscripción registral: no procede (persona física).</li>
             </ul>
           </section>
 
@@ -178,8 +195,11 @@ export default function LegalPage() {
               <section>
                 <h2>Dónde se guardan</h2>
                 <p className="mt-2">
-                  Los datos se alojan en la infraestructura de Supabase.{' '}
-                  <Pendiente>región de alojamiento y contrato de encargado de tratamiento</Pendiente>
+                  Los datos se alojan en la infraestructura de Supabase, en servidores situados en{' '}
+                  <strong>Irlanda (Unión Europea)</strong>. La web y las funciones de cobro las sirve
+                  Netlify. No hay transferencias internacionales de datos fuera del Espacio Económico
+                  Europeo.{' '}
+                  <Pendiente>contratos de encargado de tratamiento con ambos proveedores</Pendiente>
                 </p>
               </section>
 
@@ -227,8 +247,12 @@ export default function LegalPage() {
                   se introducen en una página de Stripe y{' '}
                   <strong>no pasan en ningún momento por esta plataforma</strong>, que no los recibe
                   ni los almacena. De la suscripción se guarda aquí el plan, su estado y las fechas
-                  de renovación. Las facturas las conserva Stripe.{' '}
-                  <Pendiente>contrato con Stripe y datos fiscales del titular</Pendiente>
+                  de renovación. Las facturas las conserva Stripe.
+                </p>
+                <p className="mt-2">
+                  El servicio de pago lo presta Stripe Payments Europe, Ltd., conforme al contrato
+                  suscrito por el titular indicado en el aviso legal, que es quien factura y quien
+                  responde de los cobros.
                 </p>
               </section>
 
@@ -237,7 +261,10 @@ export default function LegalPage() {
                 <p className="mt-2">
                   Puede solicitarse el acceso, la rectificación, la supresión, la limitación, la
                   portabilidad y la oposición al tratamiento escribiendo a{' '}
-                  <Pendiente>correo de contacto para ejercer derechos</Pendiente>. También puede
+                  <a href={`mailto:${TITULAR.correo}`} className="underline underline-offset-2">
+                    {TITULAR.correo}
+                  </a>
+                  . También puede
                   presentarse una reclamación ante la Agencia Española de Protección de Datos.
                 </p>
               </section>
@@ -283,7 +310,10 @@ export default function LegalPage() {
               <section>
                 <h2>Legislación aplicable</h2>
                 <p className="mt-2">
-                  <Pendiente>jurisdicción y legislación que determine el club</Pendiente>
+                  Estas condiciones se rigen por la legislación española. Para cualquier
+                  controversia, cuando quien contrata lo hace como consumidor, son competentes los
+                  juzgados de su propio domicilio; en los demás casos, los del domicilio del
+                  titular.
                 </p>
               </section>
             </>
@@ -291,8 +321,7 @@ export default function LegalPage() {
         </div>
 
         <p className="mt-10 border-t border-line pt-5 text-sm text-muted">
-          Última revisión: pendiente. Este documento no debe publicarse como definitivo hasta que se
-          completen los datos marcados y lo revise el club.
+          Última actualización: 13 de octubre de 2026. Revisión jurídica: pendiente.
         </p>
       </main>
     </div>
