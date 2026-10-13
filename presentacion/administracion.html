@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Playoff360 — Hoja de administración</title>
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  LA HOJA DE ADMINISTRACIÓN. PARA IMPRIMIR.
+  ═══════════════════════════════════════════════════════════════════════════
+
+  A4 vertical, tinta negra sobre blanco y sin un solo fondo de color: esto se
+  imprime, se rellena a mano y se guarda. Nada de degradados que se coman un
+  cartucho ni de texto gris claro que no se lea en papel.
+
+  AQUÍ NO VA ESCRITA NINGUNA CLAVE, Y ES LA DECISIÓN MÁS IMPORTANTE DE TODO
+  EL DOCUMENTO. Van los NOMBRES, para qué sirve cada una, dónde vive y dónde
+  se cambia, con una línea en blanco al lado por si hay que anotarla a mano.
+  Un papel con la clave secreta de Stripe dentro no es una hoja de notas: es
+  una llave del dinero de verdad. Y este documento vive en un repositorio
+  PÚBLICO, así que una clave escrita aquí estaría publicada en el momento de
+  guardarla.
+
+  Las dos últimas páginas son la lista de lo que falta para que todo sea
+  legal, con casillas, sacada de los huecos que los propios textos legales de
+  la aplicación marcan como pendientes (`src/features/legal/LegalPage.tsx`).
+-->
+<style>
+  @font-face {
+    font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700;
+    src: url('../public/fuentes/space-grotesk-latin.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700;
+    src: url('../public/fuentes/space-grotesk-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02AF, U+1E00-1E9F, U+2020, U+20A0-20AB, U+20AD-20C0;
+  }
+  @font-face {
+    font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 200 800;
+    src: url('../public/fuentes/jakarta-latin.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 200 800;
+    src: url('../public/fuentes/jakarta-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02AF, U+1E00-1E9F, U+2020, U+20A0-20AB, U+20AD-20C0;
+  }
+
+  :root {
+    --tinta: #10131A;
+    --gris: #5A6170;
+    --linea: #D7DAE0;
+    --marca: #0868F9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: var(--tinta);
+    font-size: 10.2pt;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.02em; }
+  h1 { font-size: 26pt; font-weight: 600; line-height: 1.05; }
+  h2 {
+    font-size: 14pt; font-weight: 600; margin-top: 26px; padding-top: 12px;
+    border-top: 2px solid var(--tinta);
+  }
+  h3 { font-size: 11pt; font-weight: 600; margin-top: 16px; }
+  p { margin-top: 8px; }
+  .gris { color: var(--gris); }
+  .pequeno { font-size: 9pt; line-height: 1.45; }
+
+  /* La cabecera de la primera página. */
+  .portadilla { border-bottom: 2px solid var(--tinta); padding-bottom: 16px; }
+  .portadilla .rotulo {
+    font-family: 'Space Grotesk', sans-serif; font-size: 8.5pt; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--marca);
+  }
+  .portadilla h1 { margin-top: 10px; }
+  .portadilla .sub { margin-top: 10px; font-size: 11pt; color: var(--gris); max-width: 52ch; }
+
+  /* El aviso de las claves. Recuadro grueso: es lo que no hay que saltarse. */
+  .aviso {
+    border: 2px solid var(--tinta); border-radius: 6px; padding: 14px 16px; margin-top: 22px;
+  }
+  .aviso h3 { margin-top: 0; }
+  .aviso p { font-size: 9.6pt; }
+
+  /* Las tablas. Sin color de fondo: se imprimen. */
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th {
+    font-family: 'Space Grotesk', sans-serif; font-size: 8.5pt; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--gris);
+    text-align: left; padding: 0 10px 7px 0; border-bottom: 1px solid var(--tinta);
+  }
+  td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--linea); vertical-align: top; font-size: 9.6pt; }
+  td:last-child, th:last-child { padding-right: 0; }
+  .nombre { font-family: 'Space Grotesk', sans-serif; font-weight: 600; }
+  .clave { font-family: 'Space Grotesk', sans-serif; font-size: 9pt; font-weight: 600; }
+  tr { break-inside: avoid; }
+
+  /* La línea para escribir a mano. */
+  .raya { display: block; border-bottom: 1px solid var(--tinta); height: 17px; margin-top: 3px; }
+  .raya.corta { max-width: 58mm; }
+
+  /* La casilla de verificación.
+     CON POSICIÓN ABSOLUTA Y NO CON UNA REJILLA, y hay un motivo caro: en un
+     contenedor de rejilla, CADA hijo es una celda. El `::before`, el `<b>` y
+     el `<span class="nota">` se repartían en tres celdas, así que la nota
+     caía en una columna de dieciocho píxeles y se partía letra a letra. El
+     documento salía con diecisiete páginas en vez de cinco. */
+  ul.lista { list-style: none; margin-top: 10px; }
+  ul.lista li {
+    position: relative; padding: 7px 0 7px 27px;
+    border-bottom: 1px solid var(--linea); break-inside: avoid;
+  }
+  ul.lista li::before {
+    content: ''; position: absolute; left: 0; top: 10px;
+    width: 12px; height: 12px;
+    border: 1.5px solid var(--tinta); border-radius: 2px;
+  }
+  ul.lista li.hecho::before {
+    /* Una casilla ya marcada, para lo que está hecho. */
+    background: var(--tinta);
+  }
+  ul.lista b { font-weight: 600; }
+  ul.lista .nota { display: block; color: var(--gris); font-size: 9pt; margin-top: 2px; }
+
+  ol.pasos { margin-top: 10px; padding-left: 0; list-style: none; counter-reset: paso; }
+  ol.pasos li {
+    counter-increment: paso; position: relative; padding: 5px 0 5px 24px;
+    font-size: 9.6pt; break-inside: avoid;
+  }
+  ol.pasos li::before {
+    content: counter(paso) '.'; position: absolute; left: 0; top: 5px;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+  }
+
+  .seccion { break-inside: auto; }
+  .junto { break-inside: avoid; }
+  .salto { break-before: page; }
+
+  @page {
+    size: A4 portrait;
+    margin: 17mm 16mm 16mm;
+  }
+</style>
+</head>
+<body>
+
+<header class="portadilla">
+  <p class="rotulo">Playoff360 · Interno</p>
+  <h1>Hoja de administración</h1>
+  <p class="sub">
+    Dónde está cada cosa, quién la tiene, qué hacer si se filtra una clave y qué falta
+    para que todo sea legal.
+  </p>
+  <p class="pequeno gris" style="margin-top:12px;">
+    Generada el 13 de octubre de 2026 · playoff360.site
+  </p>
+</header>
+
+<div class="aviso junto">
+  <h3>Aquí no hay ninguna clave escrita, y es a propósito</h3>
+  <p>
+    Están los <b>nombres</b>, para qué sirve cada una y dónde se cambia, con una línea en blanco
+    al lado por si quieres anotarlas a mano. No las escribo yo por dos motivos: un papel con la
+    clave secreta de Stripe dentro es una llave del dinero de verdad, y este documento vive en un
+    repositorio <b>público</b>, así que una clave escrita aquí quedaría publicada en el momento de
+    guardarla. Si las quieres en papel, escríbelas tú y guarda la hoja bajo llave.
+  </p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<section class="seccion">
+  <h2>1 · Las cuentas</h2>
+  <p class="pequeno gris">
+    Todo lo que hace falta para que playoff360.site esté en pie. Si se pierde el acceso a una de
+    estas seis, hay un trozo del producto que no se puede tocar.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:26%">Servicio</th>
+        <th style="width:38%">Para qué</th>
+        <th style="width:36%">A nombre de</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="nombre">Supabase<span class="pequeno gris" style="display:block;font-weight:400">supabase.com</span></td>
+        <td>La base de datos y las cuentas de quien entra. Proyecto <b>Entrenadores</b>,
+          referencia <b>snywuosknlaewkynrtdc</b>, servidores en <b>Irlanda (Unión Europea)</b>.</td>
+        <td><span class="raya"></span><span class="pequeno gris">correo de la cuenta</span></td>
+      </tr>
+      <tr>
+        <td class="nombre">Netlify<span class="pequeno gris" style="display:block;font-weight:400">app.netlify.com</span></td>
+        <td>Publica la web y ejecuta las cinco funciones de cobro. Proyecto <b>entrenadorapp</b>.
+          Aquí viven las claves secretas.</td>
+        <td><span class="raya"></span><span class="pequeno gris">correo de la cuenta</span></td>
+      </tr>
+      <tr>
+        <td class="nombre">Stripe<span class="pequeno gris" style="display:block;font-weight:400">dashboard.stripe.com</span></td>
+        <td>Cobra las suscripciones y guarda las tarjetas. En modo <b>real</b>, cobrando de verdad.</td>
+        <td><span class="raya"></span><span class="pequeno gris">titular de la cuenta</span></td>
+      </tr>
+      <tr>
+        <td class="nombre">GitHub<span class="pequeno gris" style="display:block;font-weight:400">github.com</span></td>
+        <td>El código. <b>El repositorio es público</b>: cualquiera puede leerlo, así que no puede
+          entrar ahí ni una clave ni un dato de ninguna jugadora.</td>
+        <td><span class="raya"></span><span class="pequeno gris">usuario</span></td>
+      </tr>
+      <tr>
+        <td class="nombre">Dominio<span class="pequeno gris" style="display:block;font-weight:400">playoff360.site</span></td>
+        <td>La dirección. Se renueva todos los años; si caduca, la web desaparece aunque todo lo
+          demás siga funcionando.</td>
+        <td><span class="raya"></span><span class="pequeno gris">registrador y fecha de renovación</span></td>
+      </tr>
+      <tr>
+        <td class="nombre">Google Analytics<span class="pequeno gris" style="display:block;font-weight:400">analytics.google.com</span></td>
+        <td>Cuenta las visitas de la web pública, y sólo si quien entra dice que sí.
+          Identificador <b>G-41JCMJGND0</b>.</td>
+        <td><span class="raya"></span><span class="pequeno gris">correo de la cuenta</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<section class="seccion salto">
+  <h2>2 · Las claves</h2>
+  <p class="pequeno gris">
+    Las tres primeras son secretas y viven <b>sólo</b> en Netlify › Project configuration ›
+    Environment variables. No están en el código, no están en el repositorio y no se pueden
+    volver a ver una vez creadas: si se pierden, se generan otras.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:33%">Nombre</th>
+        <th style="width:42%">Qué abre</th>
+        <th style="width:25%">Apúntala aquí</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="clave">STRIPE_SECRET_KEY<span class="pequeno gris" style="display:block;font-weight:400">empieza por sk_live_</span></td>
+        <td><b>Secreta.</b> Cobrar, devolver y consultar en tu nombre. Quien la tenga puede mover
+          dinero de tu cuenta de Stripe.</td>
+        <td><span class="raya"></span></td>
+      </tr>
+      <tr>
+        <td class="clave">STRIPE_WEBHOOK_SECRET<span class="pequeno gris" style="display:block;font-weight:400">empieza por whsec_</span></td>
+        <td><b>Secreta.</b> Comprobar que un aviso de pago viene de Stripe de verdad. Sin ella,
+          cualquiera podría decir que ha pagado.</td>
+        <td><span class="raya"></span></td>
+      </tr>
+      <tr>
+        <td class="clave">SUPABASE_SERVICE_ROLE_KEY<span class="pequeno gris" style="display:block;font-weight:400">un JWT largo</span></td>
+        <td><b>Secreta, y la más peligrosa de las tres.</b> La base de datos entera saltándose
+          todas las reglas de acceso: todos los clubes, todas las fichas, todos los menores.</td>
+        <td><span class="raya"></span></td>
+      </tr>
+      <tr>
+        <td class="clave">SUPABASE_URL</td>
+        <td>Pública. La dirección del proyecto:
+          <span style="white-space:nowrap">https://snywuosknlaewkynrtdc.supabase.co</span></td>
+        <td class="pequeno gris">No hace falta</td>
+      </tr>
+      <tr>
+        <td class="clave">VITE_SUPABASE_ANON_KEY</td>
+        <td>Pública por diseño: va dentro del propio programa, en el navegador de cualquiera.
+          Sola no abre nada — sólo puede hacer lo que permitan las políticas de la base de datos.</td>
+        <td class="pequeno gris">No hace falta</td>
+      </tr>
+      <tr>
+        <td class="clave">G-41JCMJGND0</td>
+        <td>Pública. El identificador de medición de visitas.</td>
+        <td class="pequeno gris">No hace falta</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Si se filtra una clave secreta</h3>
+  <ol class="pasos">
+    <li>Entra en el servicio que la emitió y <b>revócala o regenérala</b>. En Stripe:
+      Developers › API keys › la clave › Roll. En Supabase: Project Settings › API keys ›
+      service_role › Generate new key.</li>
+    <li>Copia la nueva en <b>Netlify › Environment variables</b>, encima de la vieja.</li>
+    <li>Vuelve a publicar (<i>Deploys › Trigger deploy › Deploy site</i>). Hasta que no se publica
+      otra vez, las funciones siguen usando la anterior.</li>
+    <li>Comprueba que el cobro sigue vivo: entra en Ajustes › Plan y pulsa <b>Revisar el pago</b>.
+      Si contesta sin error, las claves nuevas funcionan.</li>
+    <li>En Stripe, mira <i>Developers › Events</i> y los pagos del día por si hubo algo raro
+      mientras la clave estuvo fuera.</li>
+  </ol>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<section class="seccion">
+  <h2>3 · Pendiente ahora mismo</h2>
+  <div class="aviso junto" style="margin-top:12px;">
+    <h3>Tres claves siguen activas después de haberse escrito en un chat</h3>
+    <p>
+      Durante la puesta en marcha del cobro se pegaron en una conversación la clave secreta de
+      Stripe (<b>sk_live_…</b>), una clave restringida (<b>rk_live_…</b>) y la
+      <b>service_role</b> de Supabase. Ninguna se ha cambiado desde entonces. Mientras sigan
+      válidas hay que darlas por conocidas por alguien más.
+    </p>
+  </div>
+  <ul class="lista">
+    <li><b>Stripe › Developers › API keys</b><span class="nota">Roll de la clave secreta, y borrar la clave restringida <i>rk_live_</i> que ya no usa nadie.</span></li>
+    <li><b>Supabase › Project Settings › API keys</b><span class="nota">Generar una service_role nueva.</span></li>
+    <li><b>Netlify › Environment variables</b><span class="nota">Pegar las dos nuevas y volver a publicar.</span></li>
+    <li><b>Comprobar</b><span class="nota">Ajustes › Plan › Revisar el pago. Y un cobro de prueba, si quieres estar seguro.</span></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<section class="seccion salto">
+  <h2>4 · Qué falta para que sea legal</h2>
+  <p class="pequeno gris">
+    Los textos legales de la aplicación —aviso legal, privacidad y condiciones— están escritos y
+    publicados, pero con <b>doce huecos marcados</b> que sólo puede rellenar quien sea el titular.
+    Hasta que se rellenen, la propia página avisa de que no es un documento válido. Esto es la
+    lista de esos huecos y de lo que va con ellos.
+    <b>No es asesoramiento jurídico:</b> es la lista de lo que falta, para llevársela a alguien
+    que sí lo sea.
+  </p>
+
+  <h3>A · Quién eres (va en el aviso legal)</h3>
+  <ul class="lista">
+    <li><b>Denominación</b><span class="nota">El nombre con el que se factura: tu nombre y apellidos si eres autónomo, o la razón social.</span></li>
+    <li><b>CIF o NIF</b></li>
+    <li><b>Domicilio postal completo</b></li>
+    <li><b>Correo de contacto</b><span class="nota">Uno que se lea. Es por donde la gente ejercerá sus derechos y por donde llegará cualquier reclamación.</span></li>
+    <li><b>Inscripción registral</b><span class="nota">Registro y número, si la actividad lo exige. Si eres autónomo, normalmente no aplica.</span></li>
+    <li><b>Jurisdicción y legislación aplicable</b><span class="nota">Qué ley rige y qué juzgados, en las condiciones de uso.</span></li>
+    <li><b>Titular de los derechos del software</b><span class="nota">Quién es el dueño del programa. Hoy el código es público en GitHub: conviene decidir con qué licencia.</span></li>
+  </ul>
+
+  <h3>B · Datos de menores y protección de datos</h3>
+  <ul class="lista">
+    <li><b>Cómo se recoge el consentimiento de los padres o tutores</b><span class="nota">Es el hueco más serio. En España, por debajo de catorce años el consentimiento lo dan los titulares de la patria potestad. Hace falta un procedimiento escrito: quién firma, cómo se guarda y cómo se revoca.</span></li>
+    <li><b>Plazos de conservación</b><span class="nota">Cuánto se guarda la ficha de una jugadora que deja el club, y qué se borra al terminar.</span></li>
+    <li><b>Contrato de encargado del tratamiento con Supabase</b><span class="nota">Se acepta desde el panel de Supabase. Los datos ya están en Irlanda, dentro de la Unión Europea, que es la parte difícil y está resuelta.</span></li>
+    <li><b>Lo mismo con Netlify</b><span class="nota">Es quien sirve la web y ejecuta las funciones.</span></li>
+    <li><b>Registro de actividades de tratamiento</b><span class="nota">Un documento interno. Si tratas datos de menores no te libras por ser pequeño.</span></li>
+    <li><b>Procedimiento para una brecha de seguridad</b><span class="nota">Quién avisa, a quién y en cuánto. Hay setenta y dos horas para comunicarlo a la autoridad.</span></li>
+    <li><b>Correo para ejercer derechos</b><span class="nota">Acceso, rectificación, supresión, oposición, portabilidad y limitación. Puede ser el mismo de contacto.</span></li>
+  </ul>
+
+  <h3>C · El cobro (Stripe)</h3>
+  <ul class="lista">
+    <li><b>Cuenta de Stripe verificada y a nombre de quién factura</b><span class="nota">Tiene que coincidir con la denominación del apartado A.</span></li>
+    <li><b>Datos fiscales e IVA</b><span class="nota">Si el precio lleva IVA incluido o no, y cómo se declara. 5,99 € y 12,99 € hoy se enseñan sin decirlo.</span></li>
+    <li><b>Facturas</b><span class="nota">Stripe las puede emitir solo. Hay que activarlo y poner los datos fiscales.</span></li>
+    <li><b>Condiciones de contratación</b><span class="nota">Qué se contrata, cuánto dura, cómo se renueva y cómo se cancela. La cancelación ya funciona desde el portal de Stripe.</span></li>
+    <li><b>Derecho de desistimiento</b><span class="nota">Catorce días para un consumidor. En servicios digitales que empiezan de inmediato hay que informarlo y pedir la renuncia expresa antes de cobrar.</span></li>
+    <li><b>Política de devoluciones</b><span class="nota">Qué pasa si alguien paga el año y se va al tercer mes.</span></li>
+  </ul>
+</section>
+
+<section class="seccion">
+  <h3>D · Lo que ya está hecho</h3>
+  <p class="pequeno gris">
+    Para que la lista de arriba no parezca más larga de lo que es.
+  </p>
+  <ul class="lista">
+    <li class="hecho"><b>Aviso de cookies que de verdad pide permiso</b><span class="nota">Hasta que alguien responde no se carga nada de Google, y decir que no cuesta un solo toque, igual que decir que sí. La medición no se activa nunca dentro de la aplicación.</span></li>
+    <li class="hecho"><b>Cada club aislado por la base de datos</b><span class="nota">No depende de que la aplicación se porte bien: la regla se aplica en cada consulta.</span></li>
+    <li class="hecho"><b>Ni un dato de tarjeta pasa por aquí</b><span class="nota">El cobro entero lo lleva Stripe. Aquí sólo se sabe qué plan está activo.</span></li>
+    <li class="hecho"><b>Los datos, en la Unión Europea</b><span class="nota">Servidores en Irlanda. Sin transferencias internacionales que justificar.</span></li>
+    <li class="hecho"><b>Los tres textos legales redactados y publicados</b><span class="nota">Con los huecos marcados en amarillo y un aviso arriba de que todavía no son válidos.</span></li>
+    <li class="hecho"><b>La aplicación no da ningún diagnóstico médico</b><span class="nota">Guarda lo que anota el cuerpo técnico y lo dice en pantalla. El criterio médico es del club.</span></li>
+    <li class="hecho"><b>El código de acceso no se guarda en claro</b><span class="nota">Se guarda su huella cifrada, que no se puede deshacer.</span></li>
+  </ul>
+
+  <p class="pequeno gris" style="margin-top:22px; border-top:1px solid var(--linea); padding-top:12px;">
+    Esto no es asesoramiento jurídico y no lo ha revisado nadie con criterio jurídico. Es el
+    inventario de lo que falta, hecho mirando el código y los textos que ya están escritos, para
+    que la visita a quien sepa dure media hora en vez de tres.
+  </p>
+</section>
+
+</body>
+</html>
