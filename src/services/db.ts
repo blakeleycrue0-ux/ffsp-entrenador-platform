@@ -446,21 +446,32 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
    * es que el perfil esté y no pase nada, y dejar a alguien sin entrar por
    * esto sería peor que el problema.
    */
-  const perfilRecienCreado = await supabase.rpc('asegurar_perfil').then(
-    ({ data }) => data === true,
-    () => false,
+  await supabase.rpc('asegurar_perfil').then(
+    () => undefined,
+    () => undefined,
   );
 
-  /* ── LA GUÍA, JUSTO DESPUÉS DE QUE EXISTA EL PERFIL ──────────────────────
-     Aquí y no en la pantalla de alta, porque aquí es donde se sabe que la
-     fila existe: la función del servidor lee el nombre y la dirección de
+  /* ── LA GUÍA, AL ENTRAR ──────────────────────────────────────────────────
+     Aquí y no en la pantalla de alta, porque aquí es donde se sabe que el
+     perfil existe: la función del servidor lee el nombre y la dirección de
      `profiles`, y si se llamara antes no habría de dónde leerlos.
 
-     `asegurar_perfil` devuelve `true` sólo la vez que lo crea, así que esto
-     se intenta una vez por cuenta. Y si falla —sin red, sin clave de Brevo
-     configurada todavía— no se corta nada: la ronda diaria repasa quién se
-     quedó sin guía, y `emails_enviados` impide que salga dos veces. */
-  if (perfilRecienCreado) void mandaLaGuia();
+     SE INTENTA AL ENTRAR Y NO SÓLO AL CREAR LA CUENTA. Antes iba colgado de
+     que `asegurar_perfil` devolviera `true`, que pasa una sola vez en la
+     vida: quien ya tenía cuenta cuando se montó el correo —y quien se diera
+     de alta mientras el envío estuviera caído— se quedaba esperando a la
+     ronda del día siguiente. Al entrar es cuando la persona está delante de
+     la pantalla, que es cuando sirve de algo.
+
+     QUE SE INTENTE A CADA RATO NO MANDA NADA A CADA RATO. Quien decide es
+     `emails_enviados` en el servidor, con su clave primaria: el segundo
+     intento choca y se va sin mandar. Esto no puede duplicar un correo
+     aunque se llame mil veces.
+
+     Y si falla —sin red, sin clave de Brevo— no se corta nada: la ronda
+     diaria repasa de todas formas quién se quedó sin guía, que es quien
+     nunca llega a entrar. */
+  void mandaLaGuia();
 
   const [profileRes, staffRes, teamsRes, teamStaffRes, clubRes, tasksRes, notifsRes, plansRes] =
     await Promise.all([
