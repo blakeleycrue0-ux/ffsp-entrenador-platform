@@ -17,6 +17,7 @@ import type {
   MessageThread, Notification, Player, Staff, Team, TeamStaffLink, TrainingSession,
 } from '@/types';
 import { EMPTY_CLUB_DATA } from '@/types';
+import { mandaLaGuia } from './correo';
 
 /* ─────────────────────────────── Traductores ──────────────────────────────── */
 
@@ -33,6 +34,7 @@ const toStaff = (r: Row, teamIds: string[] = []): Staff => ({
   teamIds,
   createdAt: r.created_at as string,
   setupHiddenAt: (r.setup_hidden_at as string | null) ?? null,
+  quiereNovedades: (r.marketing_consent as boolean | null) ?? false,
 });
 
 /**
@@ -444,10 +446,21 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
    * es que el perfil esté y no pase nada, y dejar a alguien sin entrar por
    * esto sería peor que el problema.
    */
-  await supabase.rpc('asegurar_perfil').then(
-    () => undefined,
-    () => undefined,
+  const perfilRecienCreado = await supabase.rpc('asegurar_perfil').then(
+    ({ data }) => data === true,
+    () => false,
   );
+
+  /* ── LA GUÍA, JUSTO DESPUÉS DE QUE EXISTA EL PERFIL ──────────────────────
+     Aquí y no en la pantalla de alta, porque aquí es donde se sabe que la
+     fila existe: la función del servidor lee el nombre y la dirección de
+     `profiles`, y si se llamara antes no habría de dónde leerlos.
+
+     `asegurar_perfil` devuelve `true` sólo la vez que lo crea, así que esto
+     se intenta una vez por cuenta. Y si falla —sin red, sin clave de Brevo
+     configurada todavía— no se corta nada: la ronda diaria repasa quién se
+     quedó sin guía, y `emails_enviados` impide que salga dos veces. */
+  if (perfilRecienCreado) void mandaLaGuia();
 
   const [profileRes, staffRes, teamsRes, teamStaffRes, clubRes, tasksRes, notifsRes, plansRes] =
     await Promise.all([

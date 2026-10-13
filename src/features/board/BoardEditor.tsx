@@ -16,7 +16,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowUpRight, Copy, Hand, Image as ImageIcon, Maximize2, Minus, MousePointer2, Move,
   Pause, Play, Redo2, Repeat, RotateCcw, Slash, Spline, Square, Trash2, Undo2,
-  Box, Download, RotateCw, X, ZoomIn, ZoomOut,
+  Box, Crosshair, Download, RotateCw, X, ZoomIn, ZoomOut,
 } from 'lucide-react';
 import { Button, Field, Input, Panel, PanelHeader, Segmented, Select, Tag, Toggle } from '@/components/ui';
 import { BoardStage, useBoardView, type Tool } from './BoardStage';
@@ -28,10 +28,12 @@ import { Timeline } from './Timeline';
 import { formatSeconds, type Playback, type Speed } from './playback';
 import {
   DRAW_COLORS, DRAW_LABEL, KIND_LABEL, MOVE_LABEL, MOVES, PITCH_OPTIONS, RESIZABLE, ROTATABLE,
-  type DrawKind, type Keyframe, type ObjectKind, type PitchKind, type Point, type Scene, type Surface,
+  type BoardObject, type DrawKind, type Keyframe, type ObjectKind, type PitchKind, type Point,
+  type Scene, type Surface,
   addDrawing, addObject, colocaObjeto, curvaTramo, duplicateObject, enderezaTramo, layoutSquad,
   layoutTeam, moveObject, patchDrawing, PITCHES, quitaRecorrido, sitioLibre,
   patchKeyframe, patchObject, putRuta, removeDrawing, removeKeyframe, removeObject,
+  duracionDeTrack, moveTrack, puedeEsperar, reajustaSalidas, setSalida, tramoDeTrack,
 } from './scene';
 import { largo as largoTrazo, procesaTrazo } from './trazo';
 import { cn } from '@/lib/utils';
@@ -73,11 +75,21 @@ export function useBoardHistory(scene: Scene, setScene: (s: Scene) => void) {
   const future = useRef<Scene[]>([]);
   const [, bump] = useState(0);
 
+  /**
+   * Todo cambio pasa por aquí, y por eso aquí se recolocan las salidas: si
+   * alargo el recorrido de la primera, las que la esperan tienen que irse
+   * detrás solas. Si se recalculara sólo al elegir «Cuando llegue ___», el
+   * circuito quedaría cuadrado hasta el primer retoque y descuadrado después,
+   * que es peor que no tenerlo.
+   *
+   * `reajustaSalidas` es idempotente y no toca nada si nadie espera a nadie,
+   * así que ponerlo en el camino de todos los cambios no cuesta nada.
+   */
   const commit = useCallback(
     (next: Scene) => {
       past.current = [...past.current.slice(-49), scene];
       future.current = [];
-      setScene(next);
+      setScene(reajustaSalidas(next));
       bump((n) => n + 1);
     },
     [scene, setScene],
@@ -262,9 +274,17 @@ export function BoardEditor({
 
   /* ─────────────────────────── Presentación ──────────────────────────────── */
 
+  /**
+   * Al presentar, acercarse a la jugada — pero sólo si no se había tocado la
+   * vista. Llenar la pantalla de césped vacío es lo que hacía que en pantalla
+   * completa se siguiera viendo todo pequeño: lo que llenaba era el campo, no
+   * la jugada. Si el entrenador ya había encuadrado algo a mano, eso manda:
+   * se habrá puesto justo donde quería enseñar.
+   */
   const presentar = useCallback(async () => {
     const el = shell.current;
     if (!el) return;
+    if (vista.enElCampoEntero && !document.fullscreenElement) vista.ajustar(scene);
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
       else await el.requestFullscreen();
@@ -273,7 +293,7 @@ export function BoardEditor({
       // igual: se ocultan los paneles y el campo ocupa lo que haya.
       setPresenting((p) => !p);
     }
-  }, []);
+  }, [vista, scene]);
 
   useEffect(() => {
     const onChange = () => setPresenting(document.fullscreenElement === shell.current);
@@ -296,6 +316,17 @@ export function BoardEditor({
         setTool(null);
         setPresenting(false);
       }
+      /* Las dos que hacen falta para enseñar una jugada en un ordenador, sin
+         ir a buscar un icono: F la pone a pantalla completa, A se acerca a la
+         jugada y vuelve a sacar el campo entero. */
+      if (e.key.toLowerCase() === 'f' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        void presentar();
+      }
+      if (e.key.toLowerCase() === 'a' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        vista.ajustar(scene);
+      }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         if (e.shiftKey) redo();
@@ -317,7 +348,7 @@ export function BoardEditor({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [playback, undo, redo, selected, selectedDrawing, editable, commit, scene]);
+  }, [playback, undo, redo, selected, selectedDrawing, editable, commit, scene, presentar, vista]);
 
   /* ───────────────────────────── Paneles ─────────────────────────────────── */
 
@@ -595,7 +626,14 @@ export function BoardEditor({
               lleva el cabezal a un instante posterior y arrástrala a su nueva posición.
             </p>
           ) : (
-            <ul className="space-y-2">
+            <>
+              <Salida
+                scene={scene}
+                objeto={selectedObject}
+                editable={editable}
+                onChange={(next) => commit(next)}
+              />
+              <ul className="mt-2.5 space-y-2">
               {selectedTrack.map((k, i) => (
                 <KeyframeRow
                   key={`${k.t}-${i}`}
@@ -607,7 +645,8 @@ export function BoardEditor({
                   onRemove={() => commit(removeKeyframe(scene, selectedObject.id, k.t))}
                 />
               ))}
-            </ul>
+              </ul>
+            </>
           )}
         </div>
       </div>
@@ -709,10 +748,10 @@ export function BoardEditor({
         <Button
           size="sm"
           variant="ghost"
-          onClick={vista.fit}
-          disabled={vista.ajustado}
-          icon={<Move size={15} />}
-          aria-label="Encuadrar todo"
+          onClick={() => vista.ajustar(scene)}
+          icon={vista.enElCampoEntero ? <Crosshair size={15} /> : <Move size={15} />}
+          aria-label={vista.enElCampoEntero ? 'Ajustar a la jugada' : 'Ver el campo entero'}
+          title={vista.enElCampoEntero ? 'Ajustar a la jugada' : 'Ver el campo entero'}
         />
       </div>
     </div>
@@ -785,13 +824,16 @@ export function BoardEditor({
       >
         <ZoomIn size={15} />
       </button>
+      {/* Acercarse a la jugada, que es lo que se quiere mirar, y no al campo,
+          que es casi todo césped vacío. El mismo botón devuelve el campo
+          entero cuando ya se está encima. */}
       <button
-        onClick={vista.fit}
-        disabled={vista.ajustado}
-        aria-label="Encuadrar todo"
-        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900 disabled:opacity-35"
+        onClick={() => vista.ajustar(scene)}
+        aria-label={vista.enElCampoEntero ? 'Ajustar a la jugada' : 'Ver el campo entero'}
+        title={vista.enElCampoEntero ? 'Ajustar a la jugada' : 'Ver el campo entero'}
+        className="grid h-9 w-9 place-items-center rounded-xl text-ink-700 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-900"
       >
-        <Move size={15} />
+        {vista.enElCampoEntero ? <Crosshair size={15} /> : <Move size={15} />}
       </button>
 
       {/* Cambiar de sitio para mirar, sin abrir el panel. Girar y tumbar son
@@ -1245,6 +1287,101 @@ function Paleta({
   );
 }
 
+/**
+ * CUÁNDO SALE ESTA FICHA.
+ * ───────────────────────────────────────────────────────────────────────────
+ * Aquí estaba el agujero que hacía que todas arrancasen a la vez en el
+ * segundo cero. Había un mando, pero pedía un número de milisegundos puesto a
+ * ojo —y ni siquiera retrasaba: acortaba la carrera—, así que un circuito
+ * había que cuadrarlo a mano ficha por ficha y se descuadraba en cuanto se
+ * retocaba cualquier recorrido.
+ *
+ * Un circuito se piensa en orden, no en milisegundos: «ésta sale cuando la
+ * anterior llegue al cono». Eso es lo que se elige aquí, y se recalcula solo.
+ * El número sigue estando para quien lo quiera, pero ya no es la única forma.
+ */
+function Salida({
+  scene, objeto, editable, onChange,
+}: {
+  scene: Scene;
+  objeto: BoardObject;
+  editable: boolean;
+  onChange: (next: Scene) => void;
+}) {
+  const track = scene.tracks[objeto.id] ?? [];
+  const { sale } = tramoDeTrack(track);
+  const espera = objeto.salida?.espera ?? 0;
+
+  /* Sólo se ofrece lo que se mueve y lo que no cierra la cadena sobre sí
+     misma: a una ficha quieta no se la puede esperar, y dos esperándose la
+     una a la otra no salen nunca. */
+  const candidatas = scene.objects.filter(
+    (o) => o.id !== objeto.id
+      && (scene.tracks[o.id]?.length ?? 0) >= 2
+      && puedeEsperar(scene, objeto.id, o.id),
+  );
+
+  const etiqueta = (o: BoardObject) => (o.kind === 'balon' ? 'el balón' : o.label || KIND_LABEL[o.kind]);
+
+  return (
+    <div className="space-y-2 rounded-md border border-line bg-panel/60 p-2">
+      <Field label="Sale" hint="Hasta que le toque se queda quieta donde está.">
+        <Select
+          value={objeto.salida?.tras ?? 'inicio'}
+          disabled={!editable}
+          onChange={(e) => {
+            const v = e.target.value;
+            onChange(v === 'inicio'
+              ? setSalida(scene, objeto.id, undefined)
+              : setSalida(scene, objeto.id, { tras: v, espera }));
+          }}
+        >
+          <option value="inicio">A su hora</option>
+          {candidatas.map((o) => (
+            <option key={o.id} value={o.id}>
+              Cuando llegue {etiqueta(o)}
+            </option>
+          ))}
+        </Select>
+      </Field>
+
+      {objeto.salida?.tras ? (
+        <Field label={`Y espera ${formatSeconds(espera)}`}>
+          <Input
+            type="range"
+            min={0}
+            max={3000}
+            step={100}
+            value={espera}
+            disabled={!editable}
+            onChange={(e) => onChange(setSalida(scene, objeto.id, {
+              tras: objeto.salida!.tras,
+              espera: Number(e.target.value),
+            }))}
+            className="h-6 px-0"
+          />
+        </Field>
+      ) : (
+        /* Mover la pista ENTERA, no sólo su primer fotograma: el recorrido es
+           el mismo, lo único que cambia es cuándo empieza. Moviendo el primer
+           fotograma la jugadora llegaba a la misma hora corriendo más. */
+        <Field label={`A los ${formatSeconds(sale)}`}>
+          <Input
+            type="range"
+            min={0}
+            max={Math.max(0, scene.durationMs - duracionDeTrack(track))}
+            step={100}
+            value={sale}
+            disabled={!editable}
+            onChange={(e) => onChange(moveTrack(scene, objeto.id, Number(e.target.value)))}
+            className="h-6 px-0"
+          />
+        </Field>
+      )}
+    </div>
+  );
+}
+
 /** Una fila de la lista de fotogramas: instante, tipo de movimiento y trazo. */
 function KeyframeRow({
   k, first, max, onSeek, onPatch, onRemove,
@@ -1276,30 +1413,10 @@ function KeyframeRow({
         )}
       </div>
 
-      {/* ── CUÁNDO EMPIEZA A MOVERSE, Y AQUÍ ESTABA EL AGUJERO ───────────────
-          Se podía decir cuándo LLEGA cada movimiento, pero no cuándo SALE: el
-          primer fotograma era «Inicio» a cero y punto. Así todo el mundo
-          arrancaba en el segundo cero a la vez, que es justo lo que no pasa
-          en un circuito: una sale, llega al cono, y entonces sale la
-          siguiente.
-          Moviendo este primer fotograma, la ficha se queda quieta donde está
-          hasta ese instante y entonces arranca. No hace falta nada más: la
-          reproducción ya mantiene la posición antes del primer fotograma. */}
-      {first && (
-        <div className="mt-2">
-          <Field label="Sale en" hint="Hasta entonces se queda quieta donde está.">
-            <Input
-              type="range"
-              min={0}
-              max={max}
-              step={100}
-              value={k.t}
-              onChange={(e) => onPatch({ t: Number(e.target.value) })}
-              className="h-6 px-0"
-            />
-          </Field>
-        </div>
-      )}
+      {/* El primer fotograma no lleva mandos: cuándo sale la ficha es cosa
+          suya, no de uno de sus fotogramas, y se decide arriba en «Sale».
+          Estuvo aquí, como un número de milisegundos a ojo, y era el mando
+          equivocado en el sitio equivocado. */}
 
       {!first && (
         <div className="mt-2 space-y-2">

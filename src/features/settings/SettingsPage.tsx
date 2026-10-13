@@ -30,6 +30,7 @@ export default function SettingsPage() {
   const [repeatPassword, setRepeatPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
   const [tab, setTab] = useState('cuenta');
+  const [guardandoCorreo, setGuardandoCorreo] = useState(false);
 
   /**
    * Cambiar la contraseña, con la actual por delante.
@@ -242,6 +243,51 @@ export default function SettingsPage() {
                   )}
                 </div>
               </div>
+            </div>
+          </Panel>
+
+          <Panel>
+            <PanelHeader title="Correo" />
+            <div className="p-4">
+              {/* Lo que se puede apagar es SÓLO esto. Los correos de la
+                  cuenta no se pueden apagar porque no son publicidad: sin el
+                  de recuperar la contraseña, quien la olvide se queda fuera.
+                  Decirlo aquí evita la pregunta y evita la sorpresa. */}
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={staff?.quiereNovedades ?? false}
+                  disabled={!userId || guardandoCorreo}
+                  onChange={async (e) => {
+                    if (!userId) return;
+                    setGuardandoCorreo(true);
+                    try {
+                      await actions.novedadesCorreo(e.target.checked);
+                      toast.success(e.target.checked
+                        ? 'Hecho, te llegarán las novedades'
+                        : 'Hecho, no te llegarán más novedades');
+                    } catch {
+                      toast.error('No se ha podido guardar', 'Inténtalo otra vez.');
+                    } finally {
+                      setGuardandoCorreo(false);
+                    }
+                  }}
+                />
+                <span>
+                  <span className="block text-base font-medium text-ink-900">
+                    Novedades y avisos
+                  </span>
+                  <span className="mt-0.5 block text-sm leading-relaxed text-muted">
+                    Qué cosas nuevas hay en la herramienta, y algún recordatorio si dejas
+                    la cuenta parada. Poco y de vez en cuando.
+                  </span>
+                </span>
+              </label>
+              <p className="mt-3 border-t border-line pt-3 text-sm leading-relaxed text-muted">
+                Los correos de la cuenta —confirmar el alta, recuperar la contraseña— llegan
+                siempre: ésos no son novedades, son parte del servicio.
+              </p>
             </div>
           </Panel>
 

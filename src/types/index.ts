@@ -36,6 +36,13 @@ export interface Staff {
    * también en el ordenador.
    */
   setupHiddenAt?: string | null;
+  /**
+   * Si quiere novedades y avisos por inactividad. Falso mientras no diga que
+   * sí: el consentimiento es un acto. No afecta a los correos de la cuenta
+   * —confirmar el alta, recuperar la contraseña— ni a la guía del alta, que
+   * son servicio y no publicidad.
+   */
+  quiereNovedades?: boolean;
 }
 
 /**
