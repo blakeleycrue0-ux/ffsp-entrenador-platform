@@ -19,6 +19,7 @@ import { squadOf, visibleTeams } from '@/store/selectors';
 import { plays, type Play as SavedPlay, type PlaySummary } from '@/services/plays';
 import { humanError } from '@/services/supabase';
 import { BoardEditor, useBoardHistory } from './BoardEditor';
+import { useCabeElEditor, VisorDeJugada } from './VisorDeJugada';
 import { formatSeconds, usePlayback } from './playback';
 import { escenaNueva, layoutTeam, type Scene } from './scene';
 import { exportSceneImage } from './exportImage';
@@ -45,6 +46,9 @@ export default function BoardPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [openList, setOpenList] = useState(false);
 
+  /* Qué pizarra se monta: el editor entero o sólo el visor. Una u otra, nunca
+     las dos: son dos lienzos completos y sólo se ve uno. */
+  const cabeElEditor = useCabeElEditor();
   const playback = usePlayback(scene.durationMs);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -176,6 +180,11 @@ export default function BoardPage() {
           844 que hay, gastados en decir dónde estás mientras el campo —que es
           a lo que se ha venido— se queda con la mitad de lo que le toca. */}
       <div className="mb-3 flex items-center gap-2">
+        {/* En el móvil el nombre no se edita —ahí no se edita nada— así que
+            es texto y no una caja que invita a escribir en ella. */}
+        <p className="min-w-0 flex-1 truncate px-1.5 py-1 text-lg font-semibold leading-tight lg:hidden">
+          {name || 'Jugada sin nombre'}
+        </p>
         <input
           value={name}
           onChange={(e) => {
@@ -183,13 +192,18 @@ export default function BoardPage() {
             setSaveState('idle');
           }}
           aria-label="Nombre de la jugada"
-          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-1.5 py-1 text-lg font-semibold leading-tight outline-none transition-colors hover:border-line focus:border-ink-600 sm:text-xl"
+          className="hidden min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-1.5 py-1 text-lg font-semibold leading-tight outline-none transition-colors hover:border-line focus:border-ink-600 lg:block sm:text-xl"
         />
-        <SaveIndicator state={saveState} />
+        <span className="hidden lg:contents">
+          <SaveIndicator state={saveState} />
+        </span>
         <Button size="sm" variant="secondary" onClick={() => setOpenList(true)}>
           Mis jugadas
         </Button>
-        <Button size="sm" onClick={save} loading={saveState === 'saving'}>
+        {/* Guardar sólo donde se puede cambiar algo. En el móvil no habría
+            nada que guardar, y un botón que no hace nada es peor que no
+            tenerlo. */}
+        <Button size="sm" onClick={save} loading={saveState === 'saving'} className="hidden lg:inline-flex">
           Guardar
         </Button>
       </div>
@@ -197,6 +211,17 @@ export default function BoardPage() {
       {loading && !current && scene.objects.length === 0 ? (
         <Skeleton className="aspect-[111/74] w-full" />
       ) : (
+        /* ── EN EL MÓVIL SE VE, NO SE EDITA ────────────────────────────────
+           Montar una jugada es colocar quince fichas con precisión de medio
+           metro y dibujar recorridos a mano: pide un puntero fino y ver el
+           campo entero a la vez. Con un dedo en 390 px no hay ni una cosa ni
+           la otra —el dedo tapa justo lo que mueve— y el resultado era una
+           herramienta que se podía abrir pero no usar.
+           Abrir una jugada y verla en marcha, que es para lo que se abre una
+           pizarra en un campo, sí funciona con un dedo. Eso se queda. */
+        !cabeElEditor ? (
+          <VisorDeJugada scene={scene} playback={playback} />
+        ) : (
         <BoardEditor
           nombreDeLaJugada={name}
           scene={scene}
@@ -266,9 +291,12 @@ export default function BoardPage() {
             </>
           }
         />
+        )
       )}
 
-      {scene.objects.length === 0 && !loading && (
+      {/* El estado vacío y el botón de alinear son para montar, así que sólo
+          en la pantalla donde se puede montar. */}
+      {cabeElEditor && scene.objects.length === 0 && !loading && (
         <Panel className="mt-3">
           <EmptyState size="pleno"
             title="El campo está vacío"

@@ -110,6 +110,16 @@ export interface BoardObject {
   /** Tamaño en metros. Sólo lo usan zonas, porterías y notas. */
   w?: number;
   h?: number;
+  /**
+   * Cuánto se agranda o se encoge la ficha. 1 es el tamaño de siempre.
+   *
+   * Todo esto se dibuja en metros sobre un campo de 105 × 68, así que las
+   * fichas van exageradas a la fuerza: un cono de verdad sería invisible. Pero
+   * cuánto hay que exagerar depende de la jugada —un ataque en campo entero
+   * pide fichas pequeñas; un rondó en veinte metros las pide grandes— y eso no
+   * lo puede decidir un número fijo escrito en el código.
+   */
+  escala?: number;
   /** Giro en grados. */
   rot?: number;
   /** Forma de una zona. */
@@ -315,6 +325,39 @@ export function sampleHeading(track: Track, t: number): number | null {
   return (Math.atan2(dy, dx) * 180) / Math.PI;
 }
 
+/**
+ * ¿Hay alguien conduciendo el balón en este instante, y quién?
+ * ───────────────────────────────────────────────────────────────────────────
+ * «Conducción» ya existía, pero sólo cambiaba el trazo de la estela: la
+ * jugadora salía corriendo y el balón se quedaba clavado donde estaba. Para
+ * montar un circuito eso no sirve de nada —lo primero que hace cualquiera es
+ * llevarse el balón— y obligaba a animar el balón aparte, con su propio
+ * recorrido, cuadrando los tiempos a mano para que no se separasen.
+ *
+ * Ahora la palabra significa lo que dice. Un tramo marcado como conducción
+ * ARRASTRA EL BALÓN: mientras dura, el balón va pegado a quien lo lleva.
+ *
+ * Devuelve el identificador de quien conduce, o `null`.
+ */
+function quienConduce(scene: Scene, t: number): string | null {
+  for (const obj of scene.objects) {
+    if (obj.kind === 'balon') continue;
+    const track = scene.tracks[obj.id];
+    if (!track || track.length < 2) continue;
+    /* El tramo que está corriendo ahora mismo es el que TERMINA después de
+       `t`: su fotograma de llegada es el que lleva el tipo de movimiento. */
+    for (let i = 1; i < track.length; i += 1) {
+      const a = track[i - 1];
+      const b = track[i];
+      if (t >= a.t && t <= b.t && b.move === 'conduccion') return obj.id;
+    }
+  }
+  return null;
+}
+
+/** Un paso por delante de la bota, para que no se solapen las dos fichas. */
+const DELANTE = 0.9;
+
 /** Todas las posiciones de la escena en el instante `t`. */
 export function sampleScene(scene: Scene, t: number): Record<string, Point> {
   const out: Record<string, Point> = {};
@@ -322,6 +365,30 @@ export function sampleScene(scene: Scene, t: number): Record<string, Point> {
     const p = sampleTrack(scene.tracks[obj.id], t);
     if (p) out[obj.id] = p;
   }
+
+  /* EL BALÓN SIGUE A QUIEN LO CONDUCE, salvo que tenga plan propio.
+     Si alguien ha dibujado un pase —el balón con su propio recorrido en este
+     tramo— manda el pase: el balón sale disparado y deja de estar pegado.
+     Ese es justo el instante en el que una conducción se convierte en pase, y
+     tiene que poder contarse. */
+  const balon = scene.objects.find((o) => o.kind === 'balon');
+  if (!balon) return out;
+
+  const suyo = scene.tracks[balon.id] ?? [];
+  const tienePlanPropio = suyo.some((k, i) => i > 0 && t >= suyo[i - 1].t && t <= k.t);
+  if (tienePlanPropio) return out;
+
+  const lleva = quienConduce(scene, t);
+  if (!lleva || !out[lleva]) return out;
+
+  /* Delante de la ficha, en la dirección en la que corre: un balón centrado
+     sobre la jugadora se esconde debajo y parece que no está. */
+  const rumbo = sampleHeading(scene.tracks[lleva], t);
+  const a = rumbo === null ? 0 : (rumbo * Math.PI) / 180;
+  out[balon.id] = {
+    x: out[lleva].x + Math.cos(a) * DELANTE,
+    y: out[lleva].y + Math.sin(a) * DELANTE,
+  };
   return out;
 }
 
@@ -531,13 +598,41 @@ export function quitaRecorrido(scene: Scene, objectId: string): Scene {
 }
 
 /** Cambia el instante o el tipo de un fotograma sin tocar el resto. */
+/** Lo mínimo que puede durar un tramo: por debajo es un salto, no un movimiento. */
+const TRAMO_MINIMO = 200;
+
+/**
+ * Cambia un fotograma, sin dejar que se cuele por delante del anterior.
+ *
+ * EL PRIMERO YA NO ESTÁ CLAVADO EN CERO. Lo estaba, y por eso todas las fichas
+ * arrancaban a la vez en el segundo cero: no había manera de decir «ésta sale
+ * cuando la otra llegue al cono», que es lo único que hace falta para montar
+ * un circuito. Ahora se puede mover, y la ficha se queda quieta donde está
+ * hasta ese instante.
+ *
+ * Lo que sí se respeta es el ORDEN. Antes se cambiaba el instante y se
+ * reordenaba la lista, así que arrastrar un fotograma por delante del
+ * anterior los intercambiaba: el recorrido se daba la vuelta solo y lo que se
+ * veía era la ficha haciendo el camino al revés. Aquí cada fotograma se queda
+ * dentro de su hueco, entre el de antes y el de después, con dos décimas de
+ * margen para que el tramo siga siendo un movimiento y no un salto.
+ */
 export function patchKeyframe(
   scene: Scene, objectId: string, t: number, patch: Partial<Keyframe>,
 ): Scene {
-  const track = (scene.tracks[objectId] ?? []).map((k) => (k.t === t ? { ...k, ...patch } : k));
-  // El primer fotograma siempre se queda en el instante cero.
-  track.sort((a, b) => a.t - b.t);
-  return { ...scene, tracks: { ...scene.tracks, [objectId]: track } };
+  const track = scene.tracks[objectId] ?? [];
+  const i = track.findIndex((k) => k.t === t);
+  if (i === -1) return scene;
+
+  let nuevo = { ...track[i], ...patch };
+  if (patch.t !== undefined) {
+    const suelo = i === 0 ? 0 : track[i - 1].t + TRAMO_MINIMO;
+    const techo = i === track.length - 1 ? Infinity : track[i + 1].t - TRAMO_MINIMO;
+    nuevo = { ...nuevo, t: Math.max(suelo, Math.min(techo, patch.t)) };
+  }
+
+  const salida = track.map((k, j) => (j === i ? nuevo : k));
+  return { ...scene, tracks: { ...scene.tracks, [objectId]: salida } };
 }
 
 export function removeKeyframe(scene: Scene, objectId: string, t: number): Scene {
