@@ -59,6 +59,16 @@ export function Timeline({
 
   const ticks = Math.min(20, Math.max(2, Math.round(duration / 1000)));
 
+  /** Lo que se mueve, con su tramo: de aquí sale la tira de abajo. */
+  const mueven = scene.objects
+    .map((obj) => ({ obj, track: scene.tracks[obj.id] ?? [] }))
+    .filter(({ track }) => track.length >= 2)
+    .map(({ obj, track }) => ({
+      obj,
+      sale: track[0].t,
+      termina: track[track.length - 1].t,
+    }));
+
   return (
     <div className="select-none">
       <div className="mb-1.5 flex items-center justify-between text-xs text-muted">
@@ -140,10 +150,55 @@ export function Timeline({
         </div>
       </div>
 
+      {/* ── QUIÉN SALE CUÁNDO ────────────────────────────────────────────────
+          Arriba, todas las marcas caen sobre la misma línea: se ve que hay
+          fotogramas, no se ve de quién son ni en qué orden entra cada una. Con
+          todo amontonado, una jugada en la que las cinco arrancan a la vez en
+          el segundo cero y otra escalonada se dibujan casi igual, y la única
+          manera de notar la diferencia era darle al play.
+          Una barra por ficha, cada una empezando donde empieza de verdad, lo
+          dice de un vistazo: si están todas pegadas al borde izquierdo, salen
+          todas a la vez. */}
+      {mueven.length > 0 && (
+        <div className="mt-2 space-y-1">
+          {mueven.map(({ obj, sale, termina }) => {
+            const on = obj.id === selected;
+            return (
+              <div key={obj.id} className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    'w-14 shrink-0 truncate text-right text-[11px] leading-none',
+                    on ? 'font-semibold text-ink-900' : 'text-muted',
+                  )}
+                  title={obj.kind === 'balon' ? 'Balón' : obj.label}
+                >
+                  {obj.kind === 'balon' ? 'Balón' : obj.label}
+                </span>
+                <div className="relative h-2 flex-1 rounded-full bg-ink-900/5">
+                  <div
+                    className={cn(
+                      'absolute inset-y-0 rounded-full',
+                      on ? 'bg-ink-900' : 'bg-ink-900/30',
+                    )}
+                    style={{
+                      left: `${(sale / duration) * 100}%`,
+                      width: `${Math.max(1.5, ((termina - sale) / duration) * 100)}%`,
+                    }}
+                  />
+                </div>
+                <span className="w-9 shrink-0 text-[11px] leading-none tabular-nums text-muted">
+                  {formatSeconds(sale)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {editable && (
         <p className="mt-1.5 text-xs text-muted">
           Arrastra sobre la barra para ir a cualquier instante. Doble clic en una marca para borrar
-          ese fotograma.
+          ese fotograma. Cuándo sale cada una se cambia en su ficha, en «Sale».
         </p>
       )}
     </div>

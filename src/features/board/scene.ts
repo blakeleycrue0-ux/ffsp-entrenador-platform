@@ -124,6 +124,20 @@ export interface BoardObject {
   rot?: number;
   /** Forma de una zona. */
   shape?: 'rect' | 'circulo';
+  /**
+   * CUÁNDO SALE ESTA FICHA, dicho como lo dice un entrenador.
+   *
+   * Sin esto sólo se podía poner un número de milisegundos a ojo, y un
+   * circuito no se piensa así: se piensa «ésta sale cuando la anterior llegue
+   * al cono». Con el número a mano, además, cada vez que se retocaba el
+   * recorrido de la primera había que recolocar los de todas las demás.
+   *
+   * `tras` es el id de la ficha a la que se espera y `espera` los
+   * milisegundos de más desde que aquélla termina. Sin este campo la ficha
+   * sale en el instante en el que esté su primer fotograma, que es como se
+   * comportaban todas las jugadas de antes.
+   */
+  salida?: { tras: string; espera?: number };
 }
 
 /** Tamaño por defecto, en metros, de lo que se puede redimensionar. */
@@ -638,6 +652,151 @@ export function patchKeyframe(
 export function removeKeyframe(scene: Scene, objectId: string, t: number): Scene {
   const track = (scene.tracks[objectId] ?? []).filter((k) => k.t !== t);
   return { ...scene, tracks: { ...scene.tracks, [objectId]: track } };
+}
+
+/* ──────────────────────────── Cuándo sale cada una ────────────────────────
+ *
+ * EL FALLO QUE ARREGLA ESTE BLOQUE, Y POR QUÉ NO BASTABA CON LO ANTERIOR.
+ *
+ * Se añadió «Sale en» para poder retrasar una ficha, y movía el primer
+ * fotograma con `patchKeyframe`. Pero `patchKeyframe` sujeta cada fotograma
+ * DENTRO DE SU HUECO: el techo del primero es el segundo menos dos décimas.
+ * Así que arrastrar «Sale en» no retrasaba la salida, ACORTABA LA CARRERA.
+ * Una jugadora que tardaba tres segundos en llegar al cono seguía llegando en
+ * el segundo tres, pero corriendo el doble de rápido. En un circuito eso es
+ * exactamente lo contrario de lo que se pide: el recorrido es el mismo, lo
+ * único que cambia es cuándo empieza.
+ *
+ * Ahora retrasar una ficha mueve SU PISTA ENTERA, con los mismos tramos y las
+ * mismas duraciones.
+ *
+ * Y encima el número seguía siendo un número a ojo. Un circuito no se piensa
+ * en milisegundos, se piensa en orden: «sale cuando la anterior llegue». Eso
+ * es `salida.tras`, y se vuelve a resolver después de cada cambio, así que
+ * alargar el recorrido de la primera arrastra al de todas las que esperan.
+ */
+
+/** Cuánto dura el recorrido de una ficha, del primer fotograma al último. */
+export function duracionDeTrack(track: Track): number {
+  if (!track || track.length < 2) return 0;
+  return track[track.length - 1].t - track[0].t;
+}
+
+/** En qué instante sale, en qué instante termina. Sin recorrido, las dos a 0. */
+export function tramoDeTrack(track: Track): { sale: number; termina: number } {
+  if (!track || track.length === 0) return { sale: 0, termina: 0 };
+  return { sale: track[0].t, termina: track[track.length - 1].t };
+}
+
+/**
+ * Mueve la pista entera para que salga en `inicio`, conservando los tramos.
+ *
+ * Se recorta para que no se salga de la jugada por ningún lado: ni antes del
+ * cero ni después de la duración. Si el recorrido fuera más largo que la
+ * jugada entera, sale en cero: mejor que se corte el final a que no se vea
+ * salir.
+ */
+export function moveTrack(scene: Scene, objectId: string, inicio: number): Scene {
+  const track = scene.tracks[objectId] ?? [];
+  if (track.length === 0) return scene;
+
+  const dura = duracionDeTrack(track);
+  const tope = Math.max(0, scene.durationMs - dura);
+  const destino = Math.max(0, Math.min(tope, Math.round(inicio)));
+  const delta = destino - track[0].t;
+  if (delta === 0) return scene;
+
+  const movida = track.map((k) => ({ ...k, t: k.t + delta }));
+  return { ...scene, tracks: { ...scene.tracks, [objectId]: movida } };
+}
+
+/** Pone —o quita, con `undefined`— a quién espera esta ficha para salir. */
+export function setSalida(
+  scene: Scene, objectId: string, salida: BoardObject['salida'],
+): Scene {
+  const objects = scene.objects.map((o) => {
+    if (o.id !== objectId) return o;
+    const { salida: _fuera, ...resto } = o;
+    return salida ? { ...resto, salida } : resto;
+  });
+  return reajustaSalidas({ ...scene, objects });
+}
+
+/**
+ * ¿Puede esta ficha esperar a aquélla sin que se muerdan la cola?
+ *
+ * Dos fichas esperándose la una a la otra no tienen instante de salida, y una
+ * cadena que se cierre sobre sí misma dejaría la jugada congelada. Como el
+ * desplegable sólo ofrece lo que es posible, el caso no llega a darse, pero
+ * `reajustaSalidas` tampoco se fía: una jugada guardada por una versión futura
+ * o editada a mano podría traerlo.
+ */
+export function puedeEsperar(scene: Scene, objectId: string, tras: string): boolean {
+  if (objectId === tras) return false;
+  const porId = new Map(scene.objects.map((o) => [o.id, o]));
+  const visto = new Set<string>([objectId]);
+  let actual: string | undefined = tras;
+  while (actual) {
+    if (visto.has(actual)) return false;
+    visto.add(actual);
+    actual = porId.get(actual)?.salida?.tras;
+  }
+  return true;
+}
+
+/**
+ * Recoloca las pistas de todas las fichas que esperan a otra.
+ *
+ * Se resuelve en cadena y no de una pasada: la tercera espera a la segunda,
+ * que espera a la primera. Cada vuelta coloca a las que ya tienen resuelta la
+ * suya, y se para cuando no queda ninguna por colocar. Lo que no se puede
+ * resolver —porque espera a una ficha que ya no existe, o porque la cadena se
+ * cierra sobre sí misma— se queda como está: una jugada que no se entiende es
+ * mejor que una jugada que desaparece.
+ *
+ * Es idempotente, así que puede correr después de cada cambio sin acumular
+ * desplazamientos.
+ */
+export function reajustaSalidas(scene: Scene): Scene {
+  const esperan = scene.objects.filter((o) => o.salida?.tras);
+  if (esperan.length === 0) return scene;
+
+  let out = scene;
+  const pendientes = new Set(esperan.map((o) => o.id));
+  const resueltas = new Set(
+    scene.objects.filter((o) => !o.salida?.tras).map((o) => o.id),
+  );
+
+  let movio = true;
+  while (movio && pendientes.size > 0) {
+    movio = false;
+    for (const id of [...pendientes]) {
+      const obj = out.objects.find((o) => o.id === id);
+      const tras = obj?.salida?.tras;
+      if (!tras) {
+        pendientes.delete(id);
+        continue;
+      }
+      /* La que espera a una que no existe, o a una que todavía no está
+         colocada, se queda para la vuelta siguiente. */
+      if (!resueltas.has(tras)) continue;
+      if (!puedeEsperar(out, id, tras)) {
+        pendientes.delete(id);
+        continue;
+      }
+
+      const anterior = out.tracks[tras] ?? [];
+      const propia = out.tracks[id] ?? [];
+      if (propia.length > 0) {
+        const { termina } = tramoDeTrack(anterior);
+        out = moveTrack(out, id, termina + (obj?.salida?.espera ?? 0));
+      }
+      resueltas.add(id);
+      pendientes.delete(id);
+      movio = true;
+    }
+  }
+  return out;
 }
 
 /**
