@@ -25,9 +25,54 @@ export default function SettingsPage() {
   const toast = useToast();
   const staff = currentStaff(data);
   const teams = visibleTeams(data);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
   const [tab, setTab] = useState('cuenta');
+
+  /**
+   * Cambiar la contraseña, con la actual por delante.
+   *
+   * Las tres comprobaciones de aquí son para no hacer viajes al servidor con
+   * algo que ya se sabe que está mal. La que de verdad protege es la de
+   * `auth.updatePassword`, que es del servidor: ninguna de éstas se puede
+   * saltar para acabar cambiando nada.
+   *
+   * OCHO CARACTERES, NO SEIS. Seis es el mínimo que acepta Supabase, no una
+   * recomendación. Con lo que hay detrás de esta cuenta —los datos de las
+   * jugadoras de un club, varias de ellas menores— seis es poco.
+   */
+  const cambiarContrasena = async () => {
+    if (!currentPassword) {
+      toast.error('Falta la contraseña actual', 'Escríbela para confirmar que eres tú.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error('Contraseña demasiado corta', 'Debe tener al menos 8 caracteres.');
+      return;
+    }
+    if (newPassword !== repeatPassword) {
+      toast.error('Las dos nuevas no coinciden', 'Repítela igual para evitar una errata.');
+      return;
+    }
+    if (newPassword === currentPassword) {
+      toast.error('Es la misma de siempre', 'Escribe una contraseña distinta.');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await auth.updatePassword(newPassword, currentPassword);
+      setCurrentPassword('');
+      setNewPassword('');
+      setRepeatPassword('');
+      toast.success('Contraseña actualizada', 'La próxima vez que entres, usa la nueva.');
+    } catch (e) {
+      toast.error('No hemos podido cambiarla', humanError(e));
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   // Comentarios privados para el club: no son reseñas públicas.
   const [feedback, setFeedback] = useState('');
@@ -94,11 +139,29 @@ export default function SettingsPage() {
             <GuiaPanel />
           </div>
 
+          {/* ── LA CONTRASEÑA, Y POR QUÉ CUESTA MÁS QUE ANTES ──────────────────
+              Era un campo y un botón. Con la sesión abierta —un móvil encima
+              de una mesa en un campo, un móvil perdido, dos minutos de
+              descuido— cualquiera cambiaba la contraseña del club, y quien la
+              tenía dejaba de entrar.
+              Ahora hay que escribir la actual y repetir la nueva. No está más
+              escondida: está donde estaba, visible, pero pide lo que tiene que
+              pedir. Y quien la comprueba es el servidor, no esta pantalla. */}
           <div className="py-7">
             <h3 className="text-lg text-ink-900">Contraseña</h3>
-            <p className="mt-1 text-sm text-ink-600">Se aplica la próxima vez que entres.</p>
+            <p className="mt-1 text-sm text-ink-600">
+              Hay que escribir la actual. Se aplica la próxima vez que entres.
+            </p>
             <div className="mt-4 max-w-[380px] space-y-3">
-              <Field label="Nueva contraseña" hint="Mínimo 6 caracteres.">
+              <Field label="Contraseña actual" required>
+                <Input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  autoComplete="current-password"
+                />
+              </Field>
+              <Field label="Nueva contraseña" hint="Mínimo 8 caracteres." required>
                 <Input
                   type="password"
                   value={newPassword}
@@ -106,25 +169,18 @@ export default function SettingsPage() {
                   autoComplete="new-password"
                 />
               </Field>
+              <Field label="Repite la nueva" required>
+                <Input
+                  type="password"
+                  value={repeatPassword}
+                  onChange={(e) => setRepeatPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+              </Field>
               <Button
                 variant="secondary"
                 loading={changingPassword}
-                onClick={async () => {
-                  if (newPassword.length < 6) {
-                    toast.error('Contraseña demasiado corta', 'Debe tener al menos 6 caracteres.');
-                    return;
-                  }
-                  setChangingPassword(true);
-                  try {
-                    await auth.updatePassword(newPassword);
-                    setNewPassword('');
-                    toast.success('Contraseña actualizada');
-                  } catch (e) {
-                    toast.error('No hemos podido cambiarla', humanError(e));
-                  } finally {
-                    setChangingPassword(false);
-                  }
-                }}
+                onClick={cambiarContrasena}
               >
                 Cambiar contraseña
               </Button>

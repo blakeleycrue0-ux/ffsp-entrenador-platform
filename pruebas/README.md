@@ -141,6 +141,39 @@ no miraba la dirección; y `partido.mjs` se dio por buena a sí misma con el
 identificador `nuevo`, que choca con la ruta `/app/partidos/nuevo` —el mock
 mandaba a la ficha y se llegaba al formulario—.
 
+## Qué comprueba `alta.mjs`
+
+El alta entera, desde una cuenta sin club, sin equipo y sin nada.
+
+```sh
+npm run app:alta
+```
+
+Recorre las siete pantallas como las recorre una persona —escribiendo en los
+campos, eligiendo el cargo, añadiendo un horario— y mira **lo que llega al
+servidor** en cada paso: el nombre y el cargo en el perfil, el club con su
+nombre, el equipo con su categoría y su horario.
+
+El alta es la única pantalla por la que pasa **todo el mundo, exactamente una
+vez**, y la única que no se puede repetir para ver si salió bien. Lo que se
+pierda ahí se pierde para siempre, y quien se da de alta no sabe lo que tenía
+que haberse guardado.
+
+Y se perdía. El paso del horario decía, con todas las letras, «los horarios
+que pongas aquí aparecen solos en el calendario, semana tras semana», y debajo
+ponía «Ya están en el calendario». No era verdad: el horario se guardaba en la
+ficha del equipo y ahí se quedaba. El calendario pinta sesiones, y no había
+ninguna. **La aplicación prometía dos veces algo que no hacía.**
+
+Por eso la comprobación grande de esta prueba no es que el equipo se cree: es
+que el horario se convierta en entrenamientos de verdad, con su día, su hora y
+su duración, repartidos semana tras semana. Sin el arreglo da 0 y la prueba se
+pone roja; con él da 14 en tres meses.
+
+También vigila aquí el fallo que tumbó el alta en bloque en producción:
+ninguna fila puede salir con el identificador en nulo, mirando las filas como
+las ve PostgREST y no como las escribe el cliente.
+
 ## Qué comprueba `sin-azul.mjs`
 
 El encargo decía dos cosas a la vez, y las dos son medibles: **dentro de la

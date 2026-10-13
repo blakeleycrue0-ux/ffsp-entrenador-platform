@@ -85,6 +85,29 @@ export default function Login() {
       .finally(() => setBusy(false));
   }, [token, userId, accepted, invite, actions]);
 
+  /* ── QUIEN LLEGA DESDE EL CORREO DE RECUPERACIÓN ────────────────────────
+     El enlace de «he olvidado la contraseña» traía aquí, Supabase abría la
+     sesión con el testigo del enlace… y ya está: entraba en la aplicación sin
+     haber puesto ninguna contraseña nueva. La que no recordaba seguía siendo
+     la suya, y para cambiarla en Ajustes hace falta escribir la anterior, que
+     es justo la que no sabe. El camino de recuperación no llevaba a ninguna
+     parte.
+     Supabase marca estas vueltas con `type=recovery` en el trozo de después
+     de la almohadilla. Se lee una vez al cargar y se limpia la dirección, para
+     que un `F5` no vuelva a plantar el formulario. */
+  const [recuperando, setRecuperando] = useState(false);
+  useEffect(() => {
+    const trozo = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    if (trozo.get('type') === 'recovery') {
+      setRecuperando(true);
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }, []);
+
+  if (recuperando) {
+    return <NuevaContrasena onHecho={() => setRecuperando(false)} />;
+  }
+
   if (userId && !loading && (!token || accepted)) {
     return <Navigate to={location.state?.from ?? '/app'} replace />;
   }
@@ -446,6 +469,117 @@ export default function Login() {
               </p>
             )}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Poner una contraseña nueva tras el enlace del correo.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Es la pantalla que faltaba. El correo de recuperación abría la sesión y
+ * dejaba a la persona dentro de la aplicación sin haber cambiado nada: la
+ * contraseña que no recordaba seguía siendo la suya, y en Ajustes hace falta
+ * escribir la anterior para cambiarla. El camino se quedaba a medias.
+ *
+ * AQUÍ NO SE PIDE LA ANTERIOR, Y ES CORRECTO. Quien llega por este camino es
+ * precisamente quien no la sabe. Lo que demuestra que es ella es el correo:
+ * ha recibido el enlace en su buzón y Supabase ha abierto la sesión con él.
+ *
+ * Las dos casillas son la misma contraseña escrita dos veces. Con una sola, un
+ * dedo torpe en un móvil deja la cuenta con una contraseña que nadie conoce y
+ * hay que volver a empezar.
+ */
+function NuevaContrasena({ onHecho }: { onHecho: () => void }) {
+  const [clave, setClave] = useState('');
+  const [repetida, setRepetida] = useState('');
+  const [ver, setVer] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hecho, setHecho] = useState(false);
+
+  const guardar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (clave.length < 8) return setError('La contraseña debe tener al menos 8 caracteres.');
+    if (clave !== repetida) return setError('Las dos no coinciden. Repítela igual.');
+    setGuardando(true);
+    try {
+      await auth.setPasswordAfterRecovery(clave);
+      setHecho(true);
+    } catch (err) {
+      setError(humanError(err));
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <div className="plataforma relative flex min-h-[100svh] flex-col bg-surface">
+      <div className="relative shrink-0 overflow-hidden bg-black">
+        <ImagenDeFondo velo="bg-black/55" />
+        <div className="relative flex h-[76px] items-center px-5 pt-[var(--safe-top)]">
+          <Wordmark size="sm" tone="light" />
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col px-5 pb-[max(28px,var(--safe-bottom))] pt-7 sm:px-10 lg:justify-center">
+        <div className="mx-auto w-full max-w-[420px]">
+          {hecho ? (
+            <>
+              <h1 className="cifra text-3xl">Contraseña cambiada</h1>
+              <p className="mt-3 text-md leading-relaxed text-ink-600">
+                Ya puedes entrar con la nueva. Guárdala donde guardes las demás.
+              </p>
+              <Button size="lg" block className="mt-7" onClick={onHecho}>
+                Continuar
+              </Button>
+            </>
+          ) : (
+            <form onSubmit={guardar} noValidate>
+              <h1 className="cifra text-3xl">Nueva contraseña</h1>
+              <p className="mt-3 text-md leading-relaxed text-ink-600">
+                Escribe la que quieras usar a partir de ahora. No hace falta la anterior: has
+                llegado desde el enlace de tu correo.
+              </p>
+
+              <div className="mt-7 space-y-4">
+                <Field label="Nueva contraseña" hint="Mínimo 8 caracteres." required>
+                  <Input
+                    type={ver ? 'text' : 'password'}
+                    value={clave}
+                    onChange={(ev) => setClave(ev.target.value)}
+                    autoComplete="new-password"
+                    autoFocus
+                  />
+                </Field>
+                <Field label="Repítela" required>
+                  <Input
+                    type={ver ? 'text' : 'password'}
+                    value={repetida}
+                    onChange={(ev) => setRepetida(ev.target.value)}
+                    autoComplete="new-password"
+                  />
+                </Field>
+                <label className="flex items-center gap-2 text-sm text-ink-600">
+                  <input type="checkbox" checked={ver} onChange={(ev) => setVer(ev.target.checked)} />
+                  Ver lo que escribo
+                </label>
+              </div>
+
+              {error && (
+                <p className="mt-5 rounded-xl border border-bad/25 bg-bad/5 px-4 py-3 text-base text-bad">
+                  {error}
+                </p>
+              )}
+
+              <Button type="submit" size="lg" block loading={guardando} className="mt-7">
+                Guardar la contraseña
+              </Button>
+            </form>
+          )}
         </div>
       </div>
     </div>
