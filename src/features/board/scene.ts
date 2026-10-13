@@ -550,6 +550,25 @@ export function moveObject(scene: Scene, objectId: string, t: number, at: Point)
   if (track.length <= 1 && t === 0) {
     return { ...scene, tracks: { ...scene.tracks, [objectId]: [{ t: 0, x: at.x, y: at.y }] } };
   }
+
+  /* ── ANTES DE SALIR, ARRASTRAR MUEVE DE DÓNDE SALE ──────────────────────
+     Y AQUÍ SE ROMPÍA EL RETRASO. Con una ficha que sale en el segundo 2,
+     bastaba con tocarla con el cabezal en el cero —recolocarla un metro, que
+     es lo primero que hace cualquiera— para que `putKeyframe` le metiera un
+     fotograma NUEVO en el cero. La pista pasaba de [2000, 4000] a
+     [0, 2000, 4000] y la jugadora volvía a arrancar en el segundo cero.
+     Medido.
+
+     Y no había forma de saber qué había pasado: el mando seguía diciendo lo
+     que se había puesto, pero había aparecido un fotograma antes que nadie
+     había pedido. La única salida era borrarlo a mano, sabiendo que estaba.
+
+     Antes de su primer fotograma la ficha está PARADA en su sitio de salida.
+     Así que arrastrarla ahí no es animar nada: es decir dónde espera. Se
+     traslada el recorrido entero, igual que en modo Colocar, y el retraso se
+     queda como estaba. */
+  if (track.length > 0 && t < track[0].t) return colocaObjeto(scene, objectId, t, at);
+
   return putKeyframe(scene, objectId, t, at);
 }
 
