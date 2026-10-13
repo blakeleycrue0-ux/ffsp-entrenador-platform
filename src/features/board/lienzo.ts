@@ -21,7 +21,7 @@
  */
 
 import {
-  PITCHES, sampleScene, trackSegments, type BoardObject, type Drawing, type ObjectKind,
+  PITCHES, RESIZABLE, sampleScene, trackSegments, type BoardObject, type Drawing, type ObjectKind,
   type Point, type Scene, type Surface,
 } from './scene';
 import {
@@ -130,7 +130,13 @@ export function pintaEscena(
     const k = proy.escala(p.x, p.y);
     ctx.save();
     ctx.translate(q.x, q.y);
-    ctx.scale(k, k);
+    /* La escala de la perspectiva por la de la propia ficha. Lo segundo es
+       nuevo y tiene que estar aquí también: si sólo lo hiciera el SVG de la
+       pantalla, el vídeo exportado saldría con otras fichas que la jugada que
+       se acaba de montar. Lo que ya tiene tamaño propio en metros —zonas,
+       porterías, notas— se queda como está: ahí el tamaño ES el dato. */
+    const propia = RESIZABLE.includes(o.kind) ? 1 : (o.escala ?? 1);
+    ctx.scale(k * propia, k * propia);
     pintaObjeto(ctx, o, a, proy);
     ctx.restore();
   }
@@ -528,8 +534,11 @@ function pintaObjeto(ctx: CanvasRenderingContext2D, obj: BoardObject, a: Ajustes
   }
 
   if (obj.kind === 'cono') {
-    const rb = 0.8;
-    const h = 2.4;
+    /* Las mismas medidas que en `piezas.tsx`: lo que se exporta en vídeo tiene
+       que ser lo que se ve en la pantalla. Medía 2,4 de alto —más que un
+       larguero— y tapaba la jugada. */
+    const rb = 0.5;
+    const h = 1.35;
     const cima = -h * al;
     const sombraColor = oscuro(color);
 

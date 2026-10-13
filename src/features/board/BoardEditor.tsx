@@ -551,6 +551,28 @@ export function BoardEditor({
           </Field>
         )}
 
+        {/* ── EL TAMAÑO DE LA FICHA ──────────────────────────────────────────
+            Todo se dibuja en metros sobre un campo de 105 × 68, así que las
+            fichas van exageradas a la fuerza. Cuánto hay que exagerar depende
+            de la jugada: un ataque en campo entero pide fichas pequeñas, y un
+            rondó en veinte metros las pide grandes. Eso no lo puede decidir un
+            número escrito en el código, así que se decide aquí. */}
+        {!RESIZABLE.includes(selectedObject.kind) && (
+          <Field label={`Tamaño · ${Math.round((selectedObject.escala ?? 1) * 100)} %`}>
+            <Input
+              type="range"
+              min={50}
+              max={200}
+              step={5}
+              value={Math.round((selectedObject.escala ?? 1) * 100)}
+              onChange={(e) => commit(patchObject(scene, selectedObject.id, {
+                escala: Number(e.target.value) / 100,
+              }))}
+              className="h-6 px-0"
+            />
+          </Field>
+        )}
+
         <div>
           <div className="mb-1.5 flex items-center justify-between gap-2">
             <p className="eyebrow">Movimiento</p>
@@ -1241,7 +1263,7 @@ function KeyframeRow({
           {formatSeconds(k.t)}
         </button>
         {first ? (
-          <Tag size="sm">Inicio</Tag>
+          <Tag size="sm">Empieza</Tag>
         ) : (
           <button
             onClick={onRemove}
@@ -1253,6 +1275,31 @@ function KeyframeRow({
           </button>
         )}
       </div>
+
+      {/* ── CUÁNDO EMPIEZA A MOVERSE, Y AQUÍ ESTABA EL AGUJERO ───────────────
+          Se podía decir cuándo LLEGA cada movimiento, pero no cuándo SALE: el
+          primer fotograma era «Inicio» a cero y punto. Así todo el mundo
+          arrancaba en el segundo cero a la vez, que es justo lo que no pasa
+          en un circuito: una sale, llega al cono, y entonces sale la
+          siguiente.
+          Moviendo este primer fotograma, la ficha se queda quieta donde está
+          hasta ese instante y entonces arranca. No hace falta nada más: la
+          reproducción ya mantiene la posición antes del primer fotograma. */}
+      {first && (
+        <div className="mt-2">
+          <Field label="Sale en" hint="Hasta entonces se queda quieta donde está.">
+            <Input
+              type="range"
+              min={0}
+              max={max}
+              step={100}
+              value={k.t}
+              onChange={(e) => onPatch({ t: Number(e.target.value) })}
+              className="h-6 px-0"
+            />
+          </Field>
+        </div>
+      )}
 
       {!first && (
         <div className="mt-2 space-y-2">

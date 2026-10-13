@@ -32,7 +32,7 @@
  * porterías, que son lo grande de verdad, sí se proyectan punto a punto.
  */
 
-import type { BoardObject, ObjectKind } from './scene';
+import { RESIZABLE, type BoardObject, type ObjectKind } from './scene';
 import type { Proyeccion } from './camara';
 
 /* ─────────────────────────────── Colores ─────────────────────────────────── */
@@ -111,7 +111,43 @@ const pts = (ps: { x: number; y: number }[]) =>
 
 /* ──────────────────────────────── Fichas ─────────────────────────────────── */
 
+/**
+ * EL TAMAÑO DE LA FICHA, Y POR QUÉ ES UN AJUSTE Y NO UN NÚMERO FIJO.
+ *
+ * Todo esto está dibujado en METROS sobre un campo de 105 × 68. A esa escala,
+ * un cono de verdad —veinte centímetros— sería un punto invisible, así que
+ * todas las fichas van exageradas a propósito. El problema es cuánto: el cono
+ * medía 2,4 metros de alto, más que un larguero, y en un rondó con ocho conos
+ * el campo desaparecía debajo de ellos.
+ *
+ * Se arregla por los dos lados. El cono baja a un tamaño que se ve sin tapar
+ * nada, y además CADA FICHA LLEVA SU ESCALA: una jugada de ataque en campo
+ * entero pide fichas pequeñas, y un rondó en veinte metros las pide grandes.
+ * Eso no lo puede decidir un número escrito aquí; depende de la jugada.
+ *
+ * La escala multiplica la figura entera, no sólo el ancho: una ficha estirada
+ * deja de parecer lo que es.
+ */
 export function ObjectShape({
+  obj,
+  selected,
+  proy,
+}: {
+  obj: BoardObject;
+  selected: boolean;
+  proy: Proyeccion;
+}) {
+  const escala = obj.escala ?? 1;
+  const dentro = (
+    <ObjectShapeSinEscala obj={obj} selected={selected} proy={proy} />
+  );
+  /* Lo que ya tenía tamaño propio en metros —zonas, porterías, notas— no se
+     escala: ahí el tamaño ES el dato y se cambia por sus asas. */
+  if (escala === 1 || RESIZABLE.includes(obj.kind)) return dentro;
+  return <g transform={`scale(${escala})`}>{dentro}</g>;
+}
+
+function ObjectShapeSinEscala({
   obj,
   selected,
   proy,
@@ -210,9 +246,14 @@ export function ObjectShape({
   /* ──────────────────────────────── Cono ──────────────────────────────── */
   if (obj.kind === 'cono') {
     /* Un cono es MÁS ALTO QUE ANCHO. Con la base de antes, casi tan ancha
-       como alta la silueta, salía un sombrero. La proporción manda. */
-    const rb = 0.8; // radio de la base
-    const h = 2.4; // alto
+       como alta la silueta, salía un sombrero. La proporción manda.
+       Y MÁS PEQUEÑO QUE ANTES: medía 2,4 metros de alto, más que un larguero.
+       En un rondó con ocho conos el campo desaparecía debajo de ellos. Sigue
+       exagerado —uno de verdad, veinte centímetros, sería invisible a esta
+       escala— pero ya no tapa la jugada. Quien lo quiera más grande lo tiene
+       en el ajuste de tamaño de la ficha. */
+    const rb = 0.5; // radio de la base
+    const h = 1.35; // alto
     const cima = -h * al;
     const sombraColor = oscuro(color);
 
