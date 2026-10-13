@@ -151,7 +151,7 @@ const respuesta = (hecho: { guias: number; avisos: number; fallos: string[] }) =
     + `${hecho.fallos.length ? `, ${hecho.fallos.length} fallo(s)` : ''}`);
   for (const f of hecho.fallos) console.error(f);
   return new Response(JSON.stringify(hecho), {
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json; charset=utf-8' },
   });
 };
 

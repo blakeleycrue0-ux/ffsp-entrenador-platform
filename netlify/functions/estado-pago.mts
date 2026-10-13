@@ -35,7 +35,7 @@ export default async (): Promise<Response> => {
   return new Response(JSON.stringify({ listo }), {
     status: 200,
     headers: {
-      'content-type': 'application/json',
+      'content-type': 'application/json; charset=utf-8',
       /* Un minuto de caché: la respuesta cambia como mucho una vez en la vida
          del proyecto, y la portada no puede permitirse una ida y vuelta al
          servidor en cada visita para pintar una sección. */

@@ -31,7 +31,13 @@ export const admin = (): SupabaseClient =>
 export const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json' },
+    /* `charset=utf-8` y no `application/json` a secas. Sin él, el navegador
+       que abre la respuesta a pelo adivina la codificación y suele acertar
+       con Latin-1: «1 · La clave» sale como «1 Â· La clave». La aplicación
+       no lo notaba porque `response.json()` decodifica en UTF-8 pase lo que
+       pase, así que esto sólo se veía al abrir una función en una pestaña —
+       que es exactamente para lo que está `estado-correo`. */
+    headers: { 'content-type': 'application/json; charset=utf-8' },
   });
 
 export const error = (mensaje: string, status = 400) => json({ error: mensaje }, status);
