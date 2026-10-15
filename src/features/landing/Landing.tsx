@@ -1006,7 +1006,7 @@ function Clubes() {
  * primero al plan recomendado, que es justo para lo que sirve destacarlo.
  */
 function Precios({ planes }: { planes: Plan[] | null }) {
-  const NOMBRES: Record<string, string> = { free: 'Gratis', pro: 'Pro', max: 'Max' };
+  const NOMBRES: Record<string, string> = { free: 'Gratis', pro: 'Pro', max: 'Max', club: 'Club' };
   /* PARA QUIÉN ES CADA UNO, en una línea.
      No es relleno: las columnas de Pro y Max añaden una o dos funciones, así
      que sin esto quedaban medio vacías y el hueco se leía como «aquí falta
@@ -1017,7 +1017,7 @@ function Precios({ planes }: { planes: Plan[] | null }) {
     pro: 'Para el entrenador que lleva su equipo y quiere la pizarra entera.',
     max: 'Para el club con varios equipos y varias personas en el cuerpo técnico.',
   };
-  const niveles = ['free', 'pro', 'max'] as const;
+  const niveles = ['free', 'pro', 'max', 'club'] as const;
   const seVende = (planes ?? []).some((p) => p.contratable);
   const buscar = (t: string) => (planes ?? []).find((p) => p.tier === t);
 
@@ -1060,7 +1060,7 @@ function Precios({ planes }: { planes: Plan[] | null }) {
         )}
 
         <Revelar delay={200}>
-          <div className="mt-10 overflow-hidden rounded-[26px] border border-black/[0.08] bg-white lg:grid lg:grid-cols-3">
+          <div className="mt-10 overflow-hidden rounded-[26px] border border-black/[0.08] bg-white lg:grid lg:grid-cols-4">
             {niveles.map((tier) => {
               const plan = buscar(tier);
               const destacado = tier === 'pro';

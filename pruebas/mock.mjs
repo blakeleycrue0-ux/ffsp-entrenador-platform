@@ -60,6 +60,10 @@ export const PLANES = [
   { tier:'free', name:'Gratis', max_teams:1, currency:'eur', trial_days:0, price_monthly:0, price_yearly:0, stripe_price_monthly:null, stripe_price_yearly:null },
   { tier:'pro', name:'Pro', max_teams:2, currency:'eur', trial_days:7, price_monthly:599, price_yearly:5999, stripe_price_monthly:null, stripe_price_yearly:null },
   { tier:'max', name:'Max', max_teams:5, currency:'eur', trial_days:7, price_monthly:1299, price_yearly:12999, stripe_price_monthly:null, stripe_price_yearly:null },
+  /* Club va SIN precio anual, igual que en producción: es el caso raro que
+     hay que tener cubierto —un plan con mensual y sin anual— y si el
+     simulacro le inventara uno, las pruebas nunca pasarían por ese camino. */
+  { tier:'club', name:'Club', max_teams:12, currency:'eur', trial_days:7, price_monthly:2499, price_yearly:null, stripe_price_monthly:null, stripe_price_yearly:null },
 ];
 
 export async function mock(page, o = {}) {

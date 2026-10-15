@@ -314,6 +314,15 @@ export default function BillingPage() {
             decide pagar. Ahora es la misma tabla, leyendo de las mismas dos
             fuentes —`plans` y el catálogo de capacidades—, así que las dos no
             pueden contradecirse. */}
+        {/* ── Y NO LAS DOS A LA VEZ ───────────────────────────────────────
+            Desde que «Cambiar de plan» enseña los tres planes enteros —y no
+            tres pestañas—, esta tabla repite exactamente lo mismo unos
+            centímetros más abajo: los mismos tres nombres, los mismos tres
+            precios y las mismas once líneas, dos veces en la misma página.
+            Leerlo así hace dudar de si son dos cosas distintas.
+            Mientras está abierto el selector, esta se quita. Al cerrarlo
+            vuelve, que es cuando sirve: entonces es lo único que hay. */}
+        {!cambiando && (
         <Panel className="lg:col-span-2">
           <PanelHeader title="Qué trae cada plan" />
           <Comparativa planes={planes} nivelActual={per.nivel} />
@@ -330,6 +339,7 @@ export default function BillingPage() {
             <Link to="/app/ajustes" className="underline underline-offset-2">Volver a Ajustes</Link>.
           </p>
         </Panel>
+        )}
       </div>
 
       {hoja}

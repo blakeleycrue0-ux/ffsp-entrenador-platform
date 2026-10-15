@@ -19,7 +19,7 @@
  */
 
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronsUpDown, LogOut, Plus, UserRound } from 'lucide-react';
+import { ChevronsUpDown, LogOut, Plus, Sparkles, UserRound } from 'lucide-react';
 import { ClubCrest } from '@/components/ui/Brand';
 import { Avatar, Dropdown, MenuItem } from '@/components/ui';
 import { CUENTA, SECCIONES, seccionActiva } from './navigation';
@@ -163,6 +163,35 @@ export function MenuSecciones({ onIr }: { onIr?: () => void }) {
           );
         })}
       </ul>
+
+      {/* ── PREMIUM, Y POR QUÉ NO ES LA QUINTA SECCIÓN ────────────────────
+          Las cuatro de arriba contestan una pregunta del trabajo del día:
+          qué toca, qué hay esta semana, con quién cuento, qué hacemos en el
+          campo. El plan no es ninguna de esas. Metido en la lista sería una
+          quinta pregunta que nadie se hace entrenando, y además empujaría la
+          pastilla del móvil de cuatro iconos a cinco.
+
+          Pero escondido detrás del avatar tampoco se encuentra: ahí es donde
+          estaba, y por eso nadie llegaba. Así que va aquí abajo, separado por
+          una línea, con el verde de la casa. Es la misma idea que tiene
+          Spotify con «Premium»: se ve siempre, y no se mezcla con lo demás. */}
+      <div className="mt-3 border-t border-line pt-3">
+        <Link
+          to="/app/ajustes/plan"
+          onClick={onIr}
+          aria-current={pathname.startsWith('/app/ajustes/plan') ? 'page' : undefined}
+          className={cn(
+            'relative flex items-center gap-3 rounded-2xl py-2.5 pl-4 pr-3 text-md font-medium transition-colors',
+            pathname.startsWith('/app/ajustes/plan')
+              ? 'bg-ink-900/[0.08] font-semibold text-ink-900'
+              : 'text-ink-600 hover:bg-panel hover:text-ink-900',
+          )}
+        >
+          <Sparkles size={17} strokeWidth={1.9} aria-hidden className="shrink-0 text-ink-900" />
+          <span className="truncate">Premium</span>
+          <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-lima" aria-hidden />
+        </Link>
+      </div>
     </nav>
   );
 }
