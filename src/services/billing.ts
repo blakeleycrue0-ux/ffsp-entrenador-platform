@@ -11,10 +11,10 @@
 
 import { supabase } from './supabase';
 
-export type PlanTier = 'free' | 'pro' | 'max';
+export type PlanTier = 'free' | 'pro' | 'max' | 'club';
 
 /** De menor a mayor. Sirve para ordenar y para saber qué es «subir de plan». */
-export const NIVELES: PlanTier[] = ['free', 'pro', 'max'];
+export const NIVELES: PlanTier[] = ['free', 'pro', 'max', 'club'];
 
 /** Un nivel que la base de datos conozca y esta versión no, no tumba nada. */
 export const esNivel = (v: unknown): v is PlanTier =>

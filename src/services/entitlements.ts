@@ -120,7 +120,7 @@ export const CAPACIDADES: Record<Capacidad, Ficha> = {
      sería vender algo que el programa no hace. */
 };
 
-const ORDEN: Record<PlanTier, number> = { free: 0, pro: 1, max: 2 };
+const ORDEN: Record<PlanTier, number> = { free: 0, pro: 1, max: 2, club: 3 };
 
 /** ¿El plan `tier` llega a lo que pide `desde`? */
 const alcanza = (tier: PlanTier, desde: PlanTier) => ORDEN[tier] >= ORDEN[desde];

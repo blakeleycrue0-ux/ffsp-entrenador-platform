@@ -65,6 +65,7 @@ export const PARA_QUIEN: Record<PlanTier, string> = {
   free: 'Para empezar con un equipo y ver si esto te sirve.',
   pro: 'Para el entrenador que lleva su equipo y quiere la pizarra entera.',
   max: 'Para el club con varios equipos y varias personas en el cuerpo técnico.',
+  club: 'Para el club entero: todas las categorías y todo el cuerpo técnico.',
 };
 
 /**
@@ -142,7 +143,10 @@ export function SelectorDePlanes({
       {/* Apiladas en el móvil, tres columnas en pantalla ancha. `order` pone
           Pro arriba del todo en el móvil y la devuelve al medio cuando hay
           sitio para las tres de lado, que es donde se compara mejor. */}
-      <div className="grid gap-3 lg:grid-cols-3 lg:items-start">
+      {/* Dos columnas en cuanto hay sitio, cuatro cuando cabe de verdad. A
+          cuatro columnas en un portátil cada tarjeta se queda en doscientos
+          y pico píxeles y los nombres de las funciones empiezan a partirse. */}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:items-start">
         {ordenados.map((p) => (
           <Tarjeta
             key={p.tier}
