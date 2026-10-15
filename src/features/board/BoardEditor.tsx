@@ -1284,10 +1284,15 @@ export function BoardEditor({
             style={{ background: 'rgba(11,11,14,0.88)' }}
           >
             {/* Pegada arriba: el panel se desplaza, y sin esto el título y el
-                botón de cerrar se iban con el desplazamiento. */}
+                botón de cerrar se iban con el desplazamiento.
+                OPACA DEL TODO, y antes era 0,92. Con un 8 % de transparencia
+                sobre un fondo del mismo color casi no se nota... salvo
+                cuando debajo pasa texto: «Césped · Impresión» se leía a
+                través de «La jugada». Una cabecera pegada que deja ver lo
+                que tapa no está pegada, está estorbando. */}
             <div
               className="sticky -top-3 z-fijo -mx-3 mb-2 flex items-center justify-between px-3 py-2"
-              style={{ background: 'rgba(11,11,14,0.92)' }}
+              style={{ background: '#0B0B0E' }}
             >
               <p className="rotulo">{selectedObject || drawing ? 'Selección' : 'La jugada'}</p>
               <button
