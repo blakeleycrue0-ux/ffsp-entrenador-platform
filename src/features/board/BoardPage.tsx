@@ -22,6 +22,7 @@ import { BoardEditor, useBoardHistory } from './BoardEditor';
 import { useCabeElEditor, VisorDeJugada } from './VisorDeJugada';
 import { formatSeconds, usePlayback } from './playback';
 import { escenaNueva, layoutTeam, type Scene } from './scene';
+import { jugadaGuardada, olvidaLaJugada } from './PizarraLibre';
 import { exportSceneImage } from './exportImage';
 import { useAnchura } from '@/components/layout/AppShell';
 
@@ -34,7 +35,15 @@ export default function BoardPage() {
   const { data, userId, teamId } = useClub();
   const teams = visibleTeams(data);
 
-  const [scene, setScene] = useState<Scene>(escenaNueva);
+  /* ── LA JUGADA DE LA PRUEBA, SI LA HAY ──────────────────────────────────
+     Quien llega del anuncio dibuja en `/pizarra` sin cuenta, y eso se guarda
+     en este navegador. Al entrar por primera vez a la pizarra de dentro, se
+     encuentra lo que estaba haciendo en vez de un campo vacío — que es lo
+     que se le prometió al pedirle la cuenta.
+     Sólo cuando se abre la pizarra EN BLANCO: si viene con `playId` está
+     abriendo una jugada concreta y meterle otra encima sería un destrozo. */
+  const [scene, setScene] = useState<Scene>(() => (playId ? escenaNueva() : jugadaGuardada() ?? escenaNueva()));
+  const [veniaDeLaPrueba] = useState(() => !playId && jugadaGuardada() !== null);
   const [list, setList] = useState<PlaySummary[] | null>(null);
   const [current, setCurrent] = useState<SavedPlay | null>(null);
   const [name, setName] = useState('Jugada sin nombre');
@@ -137,6 +146,9 @@ export default function BoardPage() {
       });
       setCurrent(saved);
       setSaveState('saved');
+      /* Ya está en el servidor: el cajón del navegador sobra, y dejarlo haría
+         que reapareciera al abrir una pizarra nueva. */
+      olvidaLaJugada();
       setList((rows) => [saved, ...(rows ?? []).filter((r) => r.id !== saved.id)]);
       if (!playId) navigate(`/app/pizarra/${saved.id}`, { replace: true });
     } catch (e) {
@@ -197,6 +209,12 @@ export default function BoardPage() {
         <span className="hidden lg:contents">
           <SaveIndicator state={saveState} />
         </span>
+        {/* Se dice de dónde ha salido. Encontrarse una jugada a medias sin
+            explicación da más susto que alegría: parece que la aplicación ha
+            hecho algo raro. */}
+        {veniaDeLaPrueba && saveState !== 'saved' && (
+          <Tag size="sm">La que empezaste antes de crear la cuenta</Tag>
+        )}
         <Button size="sm" variant="secondary" onClick={() => setOpenList(true)}>
           Mis jugadas
         </Button>
