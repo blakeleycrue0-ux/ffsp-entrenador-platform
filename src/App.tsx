@@ -40,6 +40,7 @@ const BillingPage = lazy(cargaDiferida(() => import('@/features/billing/BillingP
 const ProfilePage = lazy(cargaDiferida(() => import('@/features/settings/ProfilePage')));
 const LegalPage = lazy(cargaDiferida(() => import('@/features/legal/LegalPage')));
 const Onboarding = lazy(cargaDiferida(() => import('@/features/onboarding/Onboarding')));
+const PizarraLibre = lazy(cargaDiferida(() => import('@/features/board/PizarraLibre')));
 
 /** Pantalla de arranque mientras se comprueba la sesión y se cargan los datos. */
 function Booting() {
@@ -104,6 +105,11 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/entrar" element={<Login />} />
+        {/* LA PIZARRA, SIN CUENTA. Es a donde apunta el anuncio: lo que
+            vende es el campo, y pedir un alta antes de dejar tocarlo es
+            perder a quien venía. Fuera de `/app` a propósito — no pasa por
+            `RequireAuth` ni por el club. */}
+        <Route path="/pizarra" element={<PizarraLibre />} />
         <Route path="/aviso-legal" element={<LegalPage />} />
         <Route path="/privacidad" element={<LegalPage />} />
 
