@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Mapa del sitio de Playoff360.
+
+  POR QUÉ ES UN ARCHIVO Y NO UNA FUNCIÓN. Esto es Vite con React Router, no
+  Next.js: no hay `app/sitemap.ts` ni nada equivalente. Lo que hay es la
+  carpeta `public/`, que Vite copia tal cual a `dist/`, y que Netlify sirve
+  antes de aplicar el comodín `/* → /index.html`. Un archivo estático no puede
+  caerse ni tardar, que para cuatro direcciones es exactamente lo que hace
+  falta.
+
+  QUÉ PASABA ANTES. No existía este archivo. Pedir /sitemap.xml caía en el
+  comodín, Netlify devolvía la PORTADA con un 200, y Search Console recibía
+  HTML donde esperaba XML. No era un 404: era algo peor, porque un 404 se
+  entiende a la primera y una portada disfrazada de sitemap no.
+
+  SÓLO LO PÚBLICO. Están las cuatro direcciones que cualquiera puede abrir sin
+  cuenta. NO está /entrar —una pantalla de acceso no aporta nada en un
+  buscador— ni nada bajo /app, que está detrás de la sesión.
+
+  SIN `lastmod` NI `changefreq`, a propósito. Escritos a mano en un archivo
+  estático envejecen a la primera publicación y pasan a ser mentira; Google
+  descarta el `lastmod` que no se cree y `changefreq` lleva años sin usarlo.
+  Una fecha falsa es peor que ninguna fecha.
+
+  Si se añade o se quita una ruta pública, `pruebas/sitemap.mjs` lo canta:
+  compara esta lista con los <Route> de verdad de src/App.tsx.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://playoff360.site/</loc>
+  </url>
+  <url>
+    <loc>https://playoff360.site/pizarra</loc>
+  </url>
+  <url>
+    <loc>https://playoff360.site/aviso-legal</loc>
+  </url>
+  <url>
+    <loc>https://playoff360.site/privacidad</loc>
+  </url>
+</urlset>
