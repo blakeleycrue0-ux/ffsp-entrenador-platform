@@ -126,6 +126,7 @@ export function MenuCrear({ onCreate }: { onCreate: () => void }) {
 export function MenuSecciones({ onIr }: { onIr?: () => void }) {
   const { pathname } = useLocation();
   return (
+    <>
     <nav aria-label="Secciones" className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 pt-2">
       <ul className="space-y-px">
         {SECCIONES.map((s) => {
@@ -164,6 +165,7 @@ export function MenuSecciones({ onIr }: { onIr?: () => void }) {
         })}
       </ul>
 
+    </nav>
       {/* ── PREMIUM, Y POR QUÉ NO ES LA QUINTA SECCIÓN ────────────────────
           Las cuatro de arriba contestan una pregunta del trabajo del día:
           qué toca, qué hay esta semana, con quién cuento, qué hacemos en el
@@ -174,8 +176,15 @@ export function MenuSecciones({ onIr }: { onIr?: () => void }) {
           Pero escondido detrás del avatar tampoco se encuentra: ahí es donde
           estaba, y por eso nadie llegaba. Así que va aquí abajo, separado por
           una línea, con el verde de la casa. Es la misma idea que tiene
-          Spotify con «Premium»: se ve siempre, y no se mezcla con lo demás. */}
-      <div className="mt-3 border-t border-line pt-3">
+          Spotify con «Premium»: se ve siempre, y no se mezcla con lo demás.
+
+          Y VA FUERA DEL <nav> DE LAS SECCIONES, no sólo debajo. Estaba dentro,
+          y así la barra lateral declaraba cinco destinos donde el móvil tiene
+          cuatro: `pruebas/menu.mjs` lo cazó —«con las mismas cuatro que el
+          móvil: Inicio · Calendario · Equipo · Ejercicios · Premium»—. Que algo
+          se vea aparte no basta si para un lector de pantalla sigue estando en
+          la misma lista. */}
+      <div className="border-t border-line px-3 py-3">
         <Link
           to="/app/ajustes/plan"
           onClick={onIr}
@@ -192,7 +201,7 @@ export function MenuSecciones({ onIr }: { onIr?: () => void }) {
           <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-lima" aria-hidden />
         </Link>
       </div>
-    </nav>
+    </>
   );
 }
 

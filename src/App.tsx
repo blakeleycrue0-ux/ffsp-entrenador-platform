@@ -42,6 +42,7 @@ const ProfilePage = lazy(cargaDiferida(() => import('@/features/settings/Profile
 const LegalPage = lazy(cargaDiferida(() => import('@/features/legal/LegalPage')));
 const Onboarding = lazy(cargaDiferida(() => import('@/features/onboarding/Onboarding')));
 const PizarraLibre = lazy(cargaDiferida(() => import('@/features/board/PizarraLibre')));
+const EntrenadorPage = lazy(cargaDiferida(() => import('@/features/coach/EntrenadorPage')));
 
 /** Pantalla de arranque mientras se comprueba la sesión y se cargan los datos. */
 function Booting() {
@@ -163,6 +164,7 @@ export default function App() {
           <Route path="partidos/:matchId/editar" element={<MatchEditor />} />
 
           <Route path="analiticas" element={<StatsPage />} />
+          <Route path="entrenador" element={<EntrenadorPage />} />
 
           {/* Quien administra el club ve la gestión; el resto, sus equipos. */}
           <Route path="equipo-tecnico" element={<StaffSection />} />
