@@ -6,6 +6,7 @@ import { useClub } from '@/store/store';
 import { isClubAdmin } from '@/store/selectors';
 import { Wordmark } from '@/components/ui/Brand';
 import { RequireCodigo } from '@/features/passcode/RequireCodigo';
+import { Canonico } from '@/components/Canonico';
 import { AvisoDeCookies, Medicion } from '@/features/legal/Medicion';
 
 // Rutas con carga diferida: la primera pantalla llega antes y cada módulo
@@ -101,6 +102,9 @@ export default function App() {
           todo: tienen que enterarse de cada cambio de ruta, y las dos deciden
           por sí mismas que dentro de `/app` no hacen nada. */}
       <Medicion />
+      {/* Mantiene al día la dirección canónica al cambiar de ruta. No pinta
+          nada: sólo dos etiquetas de la cabecera. */}
+      <Canonico />
       <AvisoDeCookies />
       <Routes>
         <Route path="/" element={<Landing />} />

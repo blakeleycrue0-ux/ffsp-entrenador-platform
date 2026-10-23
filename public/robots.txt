@@ -1,0 +1,35 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Playoff360 · qué puede recorrer un buscador
+# ════════════════════════════════════════════════════════════════════════════
+#
+# No había ninguno. Sin este archivo un buscador recorre lo que encuentra y no
+# sabe dónde está el mapa del sitio, así que esto hace dos cosas: señalar el
+# mapa y dejar fuera lo que no pinta nada en un índice.
+#
+# LO QUE SE DEJA FUERA, Y POR QUÉ. Ni /entrar ni /app aportan nada a nadie que
+# busque en Google: la primera es un formulario y la segunda está detrás de la
+# sesión, así que un buscador sólo vería la pantalla de acceso. Indexarlas
+# gasta presupuesto de rastreo y llena los resultados de páginas que no se
+# pueden abrir.
+#
+# ESTO NO ES UNA MEDIDA DE SEGURIDAD, y conviene decirlo claro: `robots.txt`
+# es una petición, no una puerta. Quien protege /app son la sesión y las
+# políticas de acceso de Supabase, igual que antes. Escribir aquí una carpeta
+# no la cierra; sólo pide que no se rastree.
+#
+# Y NO SE TAPA NADA PÚBLICO. La portada, la pizarra sin cuenta y las dos
+# páginas legales se rastrean sin restricción: son las que tienen que salir.
+
+User-agent: *
+Allow: /
+
+# Un formulario de acceso no es un resultado de búsqueda útil.
+Disallow: /entrar
+
+# Detrás de la sesión. Un buscador sólo vería la pantalla de acceso.
+Disallow: /app
+
+# Las funciones del servidor contestan JSON a la aplicación, no a personas.
+Disallow: /.netlify/
+
+Sitemap: https://playoff360.site/sitemap.xml
