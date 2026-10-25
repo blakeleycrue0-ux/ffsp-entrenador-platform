@@ -32,7 +32,7 @@
  * es la pizarra, se puede usar sin cuenta, y para guardarla hace falta una.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui';
@@ -76,12 +76,9 @@ export default function PizarraLibre() {
   const history = useBoardHistory(scene, cambiar);
   const hayAlgo = scene.objects.length > 0;
 
-  /* El título de la pestaña, para quien la deje abierta y vuelva. */
-  useEffect(() => {
-    const antes = document.title;
-    document.title = 'Pizarra táctica · Playoff360';
-    return () => { document.title = antes; };
-  }, []);
+  /* El título de la pestaña lo pone `Canonico`, con el resto de la cabecera.
+     Aquí había un `useEffect` que lo ponía por su cuenta: dos sitios
+     escribiendo lo mismo es una carrera, y gana el que corra después. */
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
@@ -90,9 +87,22 @@ export default function PizarraLibre() {
           <Marca size={24} />
           <span className="text-md font-semibold">Playoff360</span>
         </Link>
-        <p className="hidden text-sm text-ink-500 sm:block">
+        {/* ES UN <h1>, Y SE VE EXACTAMENTE IGUAL — pero sólo porque se le
+            devuelve la letra del cuerpo a mano.
+
+            Era un <p>, así que esta página no tenía NINGÚN encabezado de
+            primer nivel: empezaba directa en H3 y un buscador no encontraba
+            de qué va. Es la página a la que apunta el anuncio.
+
+            `font-sans font-normal` NO SOBRAN, y se midió. `index.css` pone a
+            todos los encabezados `font-display` y `font-weight: 560`, así
+            que al cambiar la etiqueta el texto salía en Space Grotesk y más
+            grueso: 1822 píxeles distintos, concentrados justo en esta línea
+            (143,24)-(418,37). Con estas dos clases la cabecera vuelve a ser
+            idéntica al píxel. Se comprueba en `pruebas/sitemap.mjs`. */}
+        <h1 className="hidden font-sans text-sm font-normal text-ink-500 sm:block">
           Pizarra táctica · sin cuenta, sin instalar nada
-        </p>
+        </h1>
 
         <div className="ml-auto flex items-center gap-2">
           {/* Mientras el campo está vacío no se pide nada: pedir que te

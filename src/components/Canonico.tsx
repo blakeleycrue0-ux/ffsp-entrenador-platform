@@ -41,6 +41,45 @@ export const DOMINIO = 'https://playoff360.site';
 /** Las que existen de verdad, se pueden abrir sin cuenta y queremos indexar. */
 export const PUBLICAS = ['/', '/pizarra', '/aviso-legal', '/privacidad'] as const;
 
+/**
+ * TÍTULO Y DESCRIPCIÓN DE CADA PÁGINA PÚBLICA.
+ *
+ * Antes había UNO SOLO para todo el sitio, escrito en `index.html`: la
+ * portada, las dos legales, la pantalla de acceso y cualquier dirección
+ * inventada salían con «Playoff360 · Sistema para entrenadores» y con la
+ * misma descripción. Para un buscador eso son cinco páginas que dicen ser la
+ * misma, y en los resultados aparecen compitiendo entre ellas.
+ *
+ * La descripción no es un resumen del sitio: es lo que se lee DEBAJO del
+ * enlace en Google, así que cada una cuenta lo que hay en ESA página.
+ *
+ * Nada de esto se ve en la pantalla. Son la pestaña del navegador y el
+ * resultado de búsqueda; el contenido visible no cambia ni una letra.
+ */
+const CABECERAS: Record<string, { titulo: string; descripcion: string }> = {
+  '/': {
+    titulo: 'Playoff360 · Sistema para entrenadores',
+    descripcion:
+      'Plantilla, entrenamientos, partidos, disponibilidad y una pizarra táctica animada. '
+      + 'El sistema de trabajo del cuerpo técnico, para cualquier club.',
+  },
+  '/pizarra': {
+    titulo: 'Pizarra táctica para entrenadores · Playoff360',
+    descripcion:
+      'Dibuja y anima jugadas sobre el campo desde el navegador, sin cuenta y sin instalar nada. '
+      + 'Coloca jugadoras, traza recorridos y reprodúcelo.',
+  },
+  '/aviso-legal': {
+    titulo: 'Aviso legal · Playoff360',
+    descripcion: 'Titular del sitio, datos identificativos y condiciones de uso de Playoff360.',
+  },
+  '/privacidad': {
+    titulo: 'Política de privacidad · Playoff360',
+    descripcion:
+      'Qué datos trata Playoff360, con qué base legal, dónde se guardan y cómo ejercer tus derechos.',
+  },
+};
+
 /** Crea la etiqueta si no está, la actualiza si está, la quita si sobra. */
 function etiqueta(selector: string, crear: () => HTMLElement, valor: string | null) {
   const cabeza = document.head;
@@ -57,6 +96,37 @@ function etiqueta(selector: string, crear: () => HTMLElement, valor: string | nu
   else el.setAttribute('content', valor);
 }
 
+/* El JSON-LD va SÓLO en la portada, que es la página que describe el
+   producto. Ponerlo en el aviso legal sería decirle a Google que esa página
+   es la aplicación, y no lo es.
+
+   SIN VALORACIONES, SIN NÚMERO DE CLIENTES Y SIN PRECIOS. `aggregateRating`
+   es lo que pinta las estrellas en los resultados y es la tentación evidente,
+   pero no hay ni una sola valoración real: inventarla es falsear un resultado
+   de búsqueda, y además Google penaliza los datos estructurados que no se
+   corresponden con la página. Los precios tampoco: viven en la base de datos
+   y aquí se quedarían viejos a la primera que se cambie. */
+const FICHA = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Playoff360',
+  url: `${DOMINIO}/`,
+  applicationCategory: 'SportsApplication',
+  operatingSystem: 'Navegador web',
+  inLanguage: 'es',
+  description:
+    'Herramienta para el cuerpo técnico de un club de fútbol: plantilla, entrenamientos, '
+    + 'partidos, control de asistencia, disponibilidad y una pizarra táctica animada.',
+  featureList: [
+    'Plantilla y fichas de jugadoras',
+    'Control de asistencia a entrenamientos',
+    'Calendario de entrenamientos y partidos',
+    'Disponibilidad y bajas',
+    'Biblioteca de ejercicios',
+    'Pizarra táctica animada',
+  ],
+};
+
 export function Canonico() {
   const { pathname } = useLocation();
 
@@ -66,6 +136,65 @@ export function Canonico() {
     const limpio = pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
     const esPublica = (PUBLICAS as readonly string[]).includes(limpio);
     const url = esPublica ? `${DOMINIO}${limpio === '/' ? '/' : limpio}` : null;
+
+    /* ── TÍTULO Y DESCRIPCIÓN ──────────────────────────────────────────── */
+    const cab = CABECERAS[limpio];
+    if (cab) {
+      document.title = cab.titulo;
+      etiqueta(
+        'meta[name="description"]',
+        () => {
+          const m = document.createElement('meta');
+          m.setAttribute('name', 'description');
+          return m;
+        },
+        cab.descripcion,
+      );
+    }
+
+    /* ── QUÉ SE INDEXA Y QUÉ NO ────────────────────────────────────────────
+       `robots.txt` pide que no se rastree /entrar ni /app, pero eso es sólo
+       una petición y, peor, es contraproducente por sí sola: si Google no
+       rastrea la página, TAMPOCO LEE la instrucción de no indexarla, así que
+       puede acabar en los resultados igualmente —sin descripción, a partir de
+       enlaces de fuera—. La instrucción que de verdad manda es ésta, y para
+       leerla hay que poder entrar.
+
+       Y TODO LO QUE NO SEA UNA RUTA PÚBLICA CONOCIDA. Hoy las direcciones
+       inventadas acaban en la portada —hay un `<Route path="*">` que redirige
+       allí—, así que esta marca no les llega: para cuando se evalúa, la ruta
+       ya es «/». Se deja igualmente porque cubre lo que sí pasa por aquí
+       —/entrar y lo que haya dentro de /app— y porque el día que exista una
+       página de «no encontrada» de verdad, ya estará marcada.
+
+       Lo que NO arregla esto: el servidor sigue devolviendo 200 para una
+       dirección que no existe. Eso sólo se arregla en `netlify.toml`, no se
+       puede comprobar con la vista previa local y su fallo sería tumbar una
+       página pública. Va propuesto, no aplicado. */
+    const seIndexa = esPublica;
+    etiqueta(
+      'meta[name="robots"]',
+      () => {
+        const m = document.createElement('meta');
+        m.setAttribute('name', 'robots');
+        return m;
+      },
+      seIndexa ? null : 'noindex, follow',
+    );
+
+    /* ── LA FICHA DEL PRODUCTO, SÓLO EN LA PORTADA ─────────────────────── */
+    const viejo = document.getElementById('ficha-jsonld');
+    if (limpio === '/') {
+      if (!viejo) {
+        const sc = document.createElement('script');
+        sc.id = 'ficha-jsonld';
+        sc.type = 'application/ld+json';
+        sc.textContent = JSON.stringify(FICHA);
+        document.head.appendChild(sc);
+      }
+    } else {
+      viejo?.remove();
+    }
 
     etiqueta(
       'link[rel="canonical"]',
