@@ -69,34 +69,34 @@ export default {
            lo que su nombre dice. Son grises NEUTROS: ni una gota de azul.
            Un gris azulado sobre un fondo sin color se ve sucio. */
         ink: {
-          0:   '#FFFFFF',  // texto sobre oscuro
-          50:  '#F7F7F8',
-          100: '#EFEFF1',
-          200: '#E2E2E5',  // esqueletos, separadores fuertes
-          300: '#C9C9CE',
-          400: '#9B9BA2',  // iconos apagados
-          500: '#75757C',  // terciario: sellos, marcas de tiempo
-          600: '#5C5C63',
-          700: '#3F3F45',  // secundario: párrafos, descripciones
-          800: '#232327',  // primario
-          900: '#0D0D0F',  // énfasis y lo que se pulsa
+          0:   'rgb(var(--ink-0) / <alpha-value>)',  // texto sobre oscuro
+          50:  'rgb(var(--ink-50) / <alpha-value>)',
+          100: 'rgb(var(--ink-100) / <alpha-value>)',
+          200: 'rgb(var(--ink-200) / <alpha-value>)',  // esqueletos, separadores fuertes
+          300: 'rgb(var(--ink-300) / <alpha-value>)',
+          400: 'rgb(var(--ink-400) / <alpha-value>)',  // iconos apagados
+          500: 'rgb(var(--ink-500) / <alpha-value>)',  // terciario: sellos, marcas de tiempo
+          600: 'rgb(var(--ink-600) / <alpha-value>)',
+          700: 'rgb(var(--ink-700) / <alpha-value>)',  // secundario: párrafos, descripciones
+          800: 'rgb(var(--ink-800) / <alpha-value>)',  // primario
+          900: 'rgb(var(--ink-900) / <alpha-value>)',  // énfasis y lo que se pulsa
         },
 
         /* LAS CUATRO SUPERFICIES, ahora claras y opacas. Siguen numeradas y
            no son transparencias sueltas: dos paneles anidados no se suman y
            acaban más claros que el de al lado. */
-        surface: '#E8E8EB',   // nivel 0 · el gris de la mitad inferior
-        panel: '#F5F5F7',     // nivel 1 · una tarjeta, gris claro
-        raised: '#FFFFFF',    // nivel 2 · algo por encima: menús, hover
-        sunken: '#FFFFFF',    // nivel 3 · un hueco donde se escribe
+        surface: 'rgb(var(--surface) / <alpha-value>)',   // nivel 0 · el gris de la mitad inferior
+        panel: 'rgb(var(--panel) / <alpha-value>)',     // nivel 1 · una tarjeta, gris claro
+        raised: 'rgb(var(--raised) / <alpha-value>)',    // nivel 2 · algo por encima: menús, hover
+        sunken: 'rgb(var(--sunken) / <alpha-value>)',    // nivel 3 · un hueco donde se escribe
 
         /* Tres bordes, en negro translúcido. El sutil agrupa, el normal
            separa, el fuerte marca lo que está seleccionado. */
-        line: 'rgba(13,13,15,0.12)',
+        line: 'rgb(var(--line-rgb) / var(--line-a))',
         'line-sutil': 'rgba(13,13,15,0.07)',
         'line-fuerte': 'rgba(13,13,15,0.26)',
 
-        muted: '#5C5C63',
+        muted: 'rgb(var(--ink-600) / <alpha-value>)',
         night: '#000000',
 
 

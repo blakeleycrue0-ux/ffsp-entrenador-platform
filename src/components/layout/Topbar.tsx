@@ -63,11 +63,22 @@ export function Topbar({
     >
       <div
         aria-hidden
-        className="absolute inset-x-0 top-0 -z-10 lg:hidden"
+        /* DEL COLOR DEL TEMA, Y CON DESENFOQUE.
+           El velo era `rgba(10,10,12,…)` fijo: negro. Venía de cuando el
+           móvil tenía marco oscuro, y sobre el fondo claro de ahora era
+           justo la «franja negra de arriba, detrás de la Dynamic Island».
+           Ahora sale de `--surface`, así que en claro es gris claro y en
+           oscuro es oscuro, sin tocar nada más.
+           Y lleva desenfoque además del degradado: lo que pasa por detrás se
+           difumina en vez de verse nítido asomando bajo la isla. */
+        className="absolute inset-x-0 top-0 -z-10 backdrop-blur-xl lg:hidden"
         style={{
           height: 'calc(var(--header-h) + var(--safe-top) + 20px)',
           background:
-            'linear-gradient(to bottom, rgba(10,10,12,0.78) 0%, rgba(10,10,12,0.46) 55%, rgba(10,10,12,0) 100%)',
+            'linear-gradient(to bottom, rgb(var(--surface) / 0.92) 0%,'
+            + ' rgb(var(--surface) / 0.58) 55%, rgb(var(--surface) / 0) 100%)',
+          maskImage: 'linear-gradient(to bottom, #000 62%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, #000 62%, transparent 100%)',
         }}
       />
       {/* QUIÉN ERES, A LA IZQUIERDA. La hamburguesa estaba aquí y se ha ido

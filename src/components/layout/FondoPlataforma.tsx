@@ -65,8 +65,13 @@ export function ImagenDeFondo({ className, velo = 'bg-black/40' }: { className?:
 
 export function FondoPlataforma() {
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-ink-900 lg:bg-surface">
-      <ImagenDeFondo className="lg:hidden" />
-    </div>
+    /* MISMA SUPERFICIE EN EL MÓVIL Y EN EL ESCRITORIO. Era `bg-ink-900` en
+       el móvil y `lg:bg-surface` arriba: un marco oscuro con tarjetas claras
+       flotando encima, que es lo que se leía como «franjas negras» detrás de
+       la isla y de la barra de Safari. Ahora el tema lo decide el teléfono y
+       el fondo es el mismo de punta a punta.
+       Y se va con él la imagen de fondo del móvil, que existía para dar
+       ambiente a ese marco oscuro y sobre gris claro sólo ensucia. */
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-surface" />
   );
 }

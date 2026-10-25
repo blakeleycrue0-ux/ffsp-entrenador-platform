@@ -56,7 +56,6 @@ export function NavFlotante() {
      claro sobre la imagen la dejaba lavada justo en la franja de abajo, y
      uno oscuro sobre la hoja clara parecía una sombra sucia. Son los dos
      extremos del mismo recurso. */
-  const enInicio = pathname === '/app' || pathname === '/app/';
 
   return (
     <div
@@ -78,9 +77,14 @@ export function NavFlotante() {
         className="absolute inset-x-0 bottom-0 -z-10"
         style={{
           height: 'calc(var(--nav-h) + var(--nav-gap) + var(--safe-bottom) + 28px)',
-          background: enInicio
-            ? 'linear-gradient(to top, rgba(10,10,12,0.72) 0%, rgba(10,10,12,0.42) 45%, rgba(10,10,12,0) 100%)'
-            : 'linear-gradient(to top, #E8E8EB 0%, rgba(232,232,235,0.92) 42%, rgba(232,232,235,0) 100%)',
+          /* UN SOLO VELO, DEL COLOR DEL TEMA. Había dos escritos a mano: uno
+             negro para Inicio —del marco oscuro de antes— y otro gris claro
+             fijo para el resto. El negro era la «franja de abajo» y el gris
+             fijo se quedaba claro en modo oscuro. Los dos salían del mismo
+             sitio: un color escrito en vez de heredado. */
+          background:
+            'linear-gradient(to top, rgb(var(--surface)) 0%,'
+            + ' rgb(var(--surface) / 0.92) 42%, rgb(var(--surface) / 0) 100%)',
         }}
       />
       <nav
@@ -89,7 +93,7 @@ export function NavFlotante() {
            `backdrop-filter` que antes se evitaba aquí por caro vuelve, pero
            sólo el desenfoque corto: la cápsula mide 68 px de alto y se
            compone sobre un gris casi liso, no sobre la lista entera. */
-        className="pointer-events-auto flex items-center gap-0.5 rounded-full border border-line-sutil bg-white/80 p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.14)] backdrop-blur-md"
+        className="pointer-events-auto flex items-center gap-0.5 rounded-full border border-line-sutil bg-raised/80 p-1.5 shadow-[0_10px_30px_rgb(var(--ink-900)/0.14)] backdrop-blur-md"
       >
         {SECCIONES.map((s) => {
           const Icono = s.icono;

@@ -10,20 +10,6 @@
 -- Aquí cada deporte es UNA FILA. Añadir waterpolo es un `insert`, y cambiar la
 -- convocatoria de balonmano es un `update`: sin tocar código y sin publicar.
 --
--- ─────────────────────────────────────────────────────────────────────────────
--- LO QUE ESTA TABLA NO ARREGLA, Y CONVIENE QUE ESTÉ ESCRITO
--- ─────────────────────────────────────────────────────────────────────────────
---
--- LA PIZARRA SIGUE SIENDO DE FÚTBOL. `PitchKind` en `scene.ts` sólo conoce
--- cinco superficies —completo, medio, f7, medio-f7 y vacío— y las cuatro
--- primeras son un campo de fútbol con sus áreas y sus porterías. No hay una
--- cancha de baloncesto, ni una piscina, ni una pista de pádel dibujadas.
---
--- Por eso los deportes que no son fútbol apuntan a `vacio`: un lienzo liso
--- donde se puede colocar y animar fichas, que funciona, en vez de un campo de
--- fútbol de mentira debajo de un partido de voleibol. Cuando se dibujen las
--- canchas de verdad, esto es un `update` de una columna.
---
 -- ADITIVA Y SIN RIESGO. Una tabla nueva y dos columnas con valor por defecto
 -- `futbol`: los cuatro clubes y los cinco equipos que ya existen siguen
 -- exactamente igual, porque hoy todos son de fútbol.
@@ -55,9 +41,6 @@ create table if not exists public.sports (
      jornada de atletismo o una competición de natación duran lo que duran. */
   match_minutes  int,
 
-  /* Qué superficie usa la pizarra. Ver la nota de arriba: todo lo que no es
-     fútbol va a `vacio` a propósito, porque la cancha no está dibujada. */
-  board_pitch    text not null default 'vacio',
 
   orden          int  not null default 100,
   activo         boolean not null default true,
@@ -66,8 +49,6 @@ create table if not exists public.sports (
 
 comment on table public.sports is
   'Configuración por deporte. Añadir un deporte es un insert, no un despliegue.';
-comment on column public.sports.board_pitch is
-  'PitchKind de scene.ts. Sólo hay superficies de fútbol dibujadas; el resto usa «vacio».';
 
 -- ── RLS ─────────────────────────────────────────────────────────────────────
 -- Es configuración del producto, no datos de nadie: se puede leer siempre
@@ -89,47 +70,47 @@ create policy "sports lectura para todos"
 -- base, y donde no tiene sentido se deja nulo en vez de inventarlo.
 
 insert into public.sports
-  (code, name, player_noun, player_noun_pl, match_noun, match_noun_pl, positions, squad_size, on_field, match_minutes, board_pitch, orden)
+  (code, name, player_noun, player_noun_pl, match_noun, match_noun_pl, positions, squad_size, on_field, match_minutes, orden)
 values
   ('futbol', 'Fútbol', 'jugador', 'jugadores', 'partido', 'partidos',
    array['Portero','Central','Lateral derecho','Lateral izquierdo','Pivote','Interior','Mediapunta','Extremo derecho','Extremo izquierdo','Delantero'],
-   18, 11, 90, 'completo', 10),
+   18, 11, 90,  10),
 
   ('futbol-sala', 'Fútbol sala', 'jugador', 'jugadores', 'partido', 'partidos',
    array['Portero','Cierre','Ala derecha','Ala izquierda','Pívot'],
-   12, 5, 40, 'vacio', 20),
+   12, 5, 40,  20),
 
   ('baloncesto', 'Baloncesto', 'jugador', 'jugadores', 'partido', 'partidos',
    array['Base','Escolta','Alero','Ala-pívot','Pívot'],
-   12, 5, 40, 'vacio', 30),
+   12, 5, 40,  30),
 
   ('balonmano', 'Balonmano', 'jugador', 'jugadores', 'partido', 'partidos',
    array['Portero','Extremo izquierdo','Lateral izquierdo','Central','Lateral derecho','Extremo derecho','Pivote'],
-   16, 7, 60, 'vacio', 40),
+   16, 7, 60,  40),
 
   ('voleibol', 'Voleibol', 'jugador', 'jugadores', 'partido', 'partidos',
    array['Colocador','Opuesto','Receptor','Central','Líbero'],
-   14, 6, null, 'vacio', 50),
+   14, 6, null,  50),
 
   ('waterpolo', 'Waterpolo', 'jugador', 'jugadores', 'partido', 'partidos',
    array['Portero','Boya','Defensa','Exterior'],
-   13, 7, 32, 'vacio', 60),
+   13, 7, 32,  60),
 
   ('tenis-padel', 'Tenis / pádel', 'jugador', 'jugadores', 'partido', 'partidos',
    array['Derecha','Revés'],
-   null, 2, null, 'vacio', 70),
+   null, 2, null,  70),
 
   ('atletismo', 'Atletismo', 'atleta', 'atletas', 'competición', 'competiciones',
    array[]::text[],
-   null, null, null, 'vacio', 80),
+   null, null, null,  80),
 
   ('natacion', 'Natación', 'nadador', 'nadadores', 'competición', 'competiciones',
    array[]::text[],
-   null, null, null, 'vacio', 90),
+   null, null, null,  90),
 
   ('otro', 'Otro deporte', 'deportista', 'deportistas', 'competición', 'competiciones',
    array[]::text[],
-   null, null, null, 'vacio', 999)
+   null, null, null,  999)
 on conflict (code) do update
    set name = excluded.name,
        player_noun = excluded.player_noun,
@@ -140,7 +121,6 @@ on conflict (code) do update
        squad_size = excluded.squad_size,
        on_field = excluded.on_field,
        match_minutes = excluded.match_minutes,
-       board_pitch = excluded.board_pitch,
        orden = excluded.orden;
 
 -- ── EL DEPORTE DEL CLUB Y DEL EQUIPO ────────────────────────────────────────
@@ -170,8 +150,7 @@ end $$;
 
 select code, name, coalesce(array_length(positions,1),0) as posiciones,
        coalesce(squad_size::text,'—') as convocatoria,
-       coalesce(match_minutes::text,'—') as minutos,
-       board_pitch as pizarra
+       coalesce(match_minutes::text,'—') as minutos
 from public.sports order by orden;
 
 -- Nada se ha movido: todo lo que había sigue siendo de fútbol.
