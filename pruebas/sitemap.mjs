@@ -160,24 +160,6 @@ comprueba(
   /TAMPOCO LEE/.test(canonico),
 );
 
-console.log('\n  el H1 de la pizarra no cambia el aspecto\n');
-
-/* `src/styles/index.css` pone a TODOS los encabezados `font-display` y
-   `font-weight: 560`. Al convertir el <p> de la cabecera en <h1> —esa página
-   no tenía ningún encabezado de primer nivel— el texto salió en otra letra y
-   más grueso: 1822 píxeles distintos. Las dos clases que lo devuelven a la
-   letra del cuerpo son lo único que mantiene la promesa de no tocar el
-   diseño, así que si alguien las quita, esto lo dice. */
-const pizarra = lee('src/features/board/PizarraLibre.tsx');
-const elH1 = pizarra.match(/<h1 className="([^"]+)"/)?.[1] ?? '';
-comprueba('la pizarra tiene un <h1>', elH1 !== '');
-comprueba('con la letra del cuerpo, no la de titular', elH1.includes('font-sans'), elH1);
-comprueba('y con el grosor normal', elH1.includes('font-normal'));
-comprueba(
-  'la regla que lo haría distinto sigue ahí (si desaparece, sobran las clases)',
-  /h1, h2, h3, h4 \{[\s\S]{0,80}font-display/.test(lee('src/styles/index.css')),
-);
-
 console.log('\n  datos estructurados\n');
 comprueba('hay ficha JSON-LD', /application\/ld\+json/.test(canonico));
 

@@ -85,11 +85,20 @@ const DEL_GRATUITO = [
   'Biblioteca de ejercicios',
   'Partidos y convocatorias',
   'Calendario',
-  'Pizarra táctica',
   'Analíticas',
 ];
-/** Lo que añade Pro. */
-const DE_PRO = ['Trayectorias a mano alzada', 'Exportar jugadas en vídeo'];
+/** Lo que añade Pro.
+ *
+ * VACÍO, Y NO ES UN DESCUIDO. Aquí estaban «Trayectorias a mano alzada» y
+ * «Exportar jugadas en vídeo», las dos de la pizarra. Al quitarse la pizarra
+ * del producto, Pro deja de añadir NINGUNA función sobre Gratis: lo único que
+ * cambia es cuántos equipos caben.
+ *
+ * La pantalla ya lo dice con esas palabras —«Hoy la diferencia es sólo
+ * cuántos equipos caben»— y esa frase sale sola cuando esta lista está vacía.
+ * Se deja la constante en lugar de borrarla para que el día que Pro vuelva a
+ * añadir algo, se note dónde va. */
+const DE_PRO = [];
 /** Lo que añade Max. */
 const DE_MAX = ['Acceso para varios entrenadores'];
 

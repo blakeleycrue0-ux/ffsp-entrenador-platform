@@ -23,55 +23,12 @@ const BASE = 'http://localhost:4173';
    —`DESTINO=presentacion/img`— porque enseña el producto de HOY y las de la
    portada son otra decisión, de otra persona, que no se toca desde aquí. */
 const DESTINO = process.env.DESTINO ?? 'public/producto';
-const JUGADA = '44444444-4444-4444-4444-444444444444';
 
-/* Una jugada para la captura de la pizarra: salida desde atrás, en
-   perspectiva, que es lo que distingue a esta pizarra de un dibujo plano. */
-const JUGADA_DEMO = {
-  version: 1,
-  pitch: 'completo',
-  camara: { giro: 0, inclinacion: 38 },
-  surface: 'cesped',
-  durationMs: 7000,
-  objects: [
-    { id: 'p1', kind: 'portera', label: '1' },
-    { id: 'p4', kind: 'jugadora', label: '4' },
-    { id: 'p6', kind: 'jugadora', label: '6' },
-    { id: 'p8', kind: 'jugadora', label: '8' },
-    { id: 'p10', kind: 'jugadora', label: '10' },
-    { id: 'p11', kind: 'jugadora', label: '11' },
-    { id: 'r2', kind: 'rival', label: '2' },
-    { id: 'r7', kind: 'rival', label: '7' },
-    { id: 'b', kind: 'balon', label: '' },
-    { id: 'c1', kind: 'cono', label: '' },
-    { id: 'c2', kind: 'cono', label: '' },
-  ],
-  tracks: {
-    p1: [{ t: 0, x: 7, y: 34 }, { t: 1400, x: 12, y: 34, move: 'carrera' }],
-    p4: [{ t: 0, x: 22, y: 13 }, { t: 2600, x: 42, y: 9, move: 'carrera' }],
-    p6: [{ t: 0, x: 30, y: 34 }, { t: 2800, x: 44, y: 30, move: 'carrera' }],
-    p8: [{ t: 0, x: 48, y: 46 }, { t: 3200, x: 66, y: 44, move: 'carrera' }],
-    p10: [{ t: 0, x: 62, y: 24 }, { t: 3600, x: 80, y: 20, move: 'desmarque' }],
-    p11: [{ t: 0, x: 40, y: 60 }, { t: 3400, x: 62, y: 62, move: 'carrera' }],
-    r2: [{ t: 0, x: 58, y: 20 }],
-    r7: [{ t: 0, x: 52, y: 48 }],
-    b: [
-      { t: 0, x: 12, y: 34 },
-      { t: 2600, x: 42, y: 11, move: 'pase' },
-      { t: 4200, x: 66, y: 42, cx: 52, cy: 18, move: 'pase' },
-    ],
-    c1: [{ t: 0, x: 88, y: 16 }],
-    c2: [{ t: 0, x: 92, y: 24 }],
-  },
-  drawings: [
-    { id: 'd1', kind: 'flecha', points: [{ x: 68, y: 44 }, { x: 88, y: 34 }], color: '#FFFFFF', width: 0.4 },
-  ],
-};
 
 /** Qué se captura, dónde y con qué tamaño. */
 /* OJO CON EL ANCHO. A 1020 px la aplicación todavía da la maqueta de móvil
    —el corte está en 1024—, así que la primera tanda salió con el dique abajo y
-   el panel de la pizarra tapando el campo. Las de escritorio van a 1280. */
+   Las de escritorio van a 1280. */
 /* CADA PANTALLA, EN LOS DOS TAMAÑOS.
    Antes sólo había versión de móvil de dos de ellas, y la portada acababa
    metiendo la captura de escritorio en 350 px: o se leía un sello de letra de
@@ -79,7 +36,6 @@ const JUGADA_DEMO = {
    parecía una imagen rota. Con la toma vertical hecha de verdad, en el móvil
    se enseña una pantalla de móvil y no hay nada que recortar. */
 const TOMAS = [
-  ['pizarra.png', `/app/pizarra/${JUGADA}`, 1280, 810, 1.6],
   ['plantilla.png', '/app/plantilla', 1280, 810, 1.6],
   ['entrenamientos.png', '/app/entrenamientos', 1280, 810, 1.6],
   ['calendario.png', '/app/calendario', 1280, 810, 1.6],
@@ -88,7 +44,6 @@ const TOMAS = [
   ['entrenamientos-movil.png', '/app/entrenamientos', 390, 780, 2],
   ['analiticas-movil.png', '/app/analiticas', 390, 780, 2],
   ['calendario-movil.png', '/app/calendario', 390, 780, 2],
-  ['pizarra-movil.png', `/app/pizarra/${JUGADA}`, 390, 780, 2],
 ];
 
 mkdirSync(DESTINO, { recursive: true });
@@ -107,8 +62,6 @@ for (const [archivo, ruta, ancho, alto, escala] of TOMAS) {
   await page.addInitScript(([u]) => sessionStorage.setItem('p360.desbloqueado', u), [USER]);
   await page.route(`${SUPA}/rest/v1/plays**`, (route) => {
     const fila = {
-      id: JUGADA, name: 'Salida desde atrás', description: '', team_id: 't1', club_id: CLUB,
-      duration_ms: 7000, scene: JUGADA_DEMO,
       updated_at: new Date().toISOString(), created_at: new Date().toISOString(), created_by: USER,
     };
     const u = new URL(route.request().url());

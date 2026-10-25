@@ -15,7 +15,7 @@
  *
  * Porque ahí sólo cabe UNA, y esto es una sola página que cambia de ruta por
  * dentro. Una canónica fija apuntando a la portada le diría a Google que
- * /pizarra, /aviso-legal y /privacidad SON la portada, y las sacaría del
+ * /aviso-legal y /privacidad SON la portada, y las sacaría del
  * índice. Eso es peor que no tener canónica: no poner ninguna deja que el
  * buscador use la dirección que pidió, que casi siempre es la correcta.
  *
@@ -39,7 +39,7 @@ import { useLocation } from 'react-router-dom';
 export const DOMINIO = 'https://playoff360.site';
 
 /** Las que existen de verdad, se pueden abrir sin cuenta y queremos indexar. */
-export const PUBLICAS = ['/', '/pizarra', '/aviso-legal', '/privacidad'] as const;
+export const PUBLICAS = ['/', '/aviso-legal', '/privacidad'] as const;
 
 /**
  * TÍTULO Y DESCRIPCIÓN DE CADA PÁGINA PÚBLICA.
@@ -60,14 +60,8 @@ const CABECERAS: Record<string, { titulo: string; descripcion: string }> = {
   '/': {
     titulo: 'Playoff360 · Sistema para entrenadores',
     descripcion:
-      'Plantilla, entrenamientos, partidos, disponibilidad y una pizarra táctica animada. '
-      + 'El sistema de trabajo del cuerpo técnico, para cualquier club.',
-  },
-  '/pizarra': {
-    titulo: 'Pizarra táctica para entrenadores · Playoff360',
-    descripcion:
-      'Dibuja y anima jugadas sobre el campo desde el navegador, sin cuenta y sin instalar nada. '
-      + 'Coloca jugadoras, traza recorridos y reprodúcelo.',
+      'Plantilla, asistencia, entrenamientos, partidos y convocatorias en un solo sitio. '
+      + 'El sistema de gestión del club, para cualquier deporte.',
   },
   '/aviso-legal': {
     titulo: 'Aviso legal · Playoff360',
@@ -116,14 +110,14 @@ const FICHA = {
   inLanguage: 'es',
   description:
     'Herramienta para el cuerpo técnico de un club de fútbol: plantilla, entrenamientos, '
-    + 'partidos, control de asistencia, disponibilidad y una pizarra táctica animada.',
+    + 'partidos, control de asistencia, disponibilidad y calendario.',
   featureList: [
     'Plantilla y fichas de jugadoras',
     'Control de asistencia a entrenamientos',
     'Calendario de entrenamientos y partidos',
     'Disponibilidad y bajas',
     'Biblioteca de ejercicios',
-    'Pizarra táctica animada',
+    'Analíticas de asistencia',
   ],
 };
 
@@ -131,7 +125,7 @@ export function Canonico() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    /* La barra final cuenta: «/pizarra» y «/pizarra/» son dos direcciones
+    /* La barra final cuenta: «/privacidad» y «/privacidad/» son dos direcciones
        distintas para un buscador, y la del mapa del sitio es la de sin. */
     const limpio = pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
     const esPublica = (PUBLICAS as readonly string[]).includes(limpio);

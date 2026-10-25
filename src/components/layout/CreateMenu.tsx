@@ -12,7 +12,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import { CalendarRange, ClipboardList, Dumbbell, LayoutGrid, Swords, Users } from 'lucide-react';
+import { CalendarRange, ClipboardList, Dumbbell, Swords, Users } from 'lucide-react';
 import { Modal } from '@/components/ui';
 
 const OPTIONS = [
@@ -20,7 +20,6 @@ const OPTIONS = [
   { icon: CalendarRange, label: 'Varios entrenamientos', hint: 'Marca los días que entrenáis y entran todos', to: '/app/calendario?varios=1' },
   { icon: Swords, label: 'Partido', hint: 'Rival, competición, campo y horario', to: '/app/partidos/nuevo' },
   { icon: Users, label: 'Jugadora', hint: 'Añádela a la plantilla de tu equipo', to: '/app/plantilla/nueva' },
-  { icon: LayoutGrid, label: 'Jugada', hint: 'Dibújala y anímala en la pizarra', to: '/app/pizarra' },
   { icon: Dumbbell, label: 'Ejercicio', hint: 'Añádelo a la biblioteca del club', to: '/app/ejercicios/nuevo' },
 ];
 

@@ -30,22 +30,13 @@
     "app:sin-azul": "node pruebas/sin-azul.mjs",
     "app:alta": "node pruebas/alta.mjs",
     "app:planes": "node pruebas/planes-iguales.mjs",
-    "pizarra:circuito": "node pruebas/circuito.mjs",
-    "pizarra:salidas": "node pruebas/salidas.mjs",
-    "pizarra:encuadre": "node pruebas/encuadre.mjs",
-    "pizarra:estorbo": "node pruebas/estorbo.mjs",
-    "pizarra:libre": "node pruebas/pizarra-libre.mjs",
     "app:correo": "node pruebas/correo.mjs",
     "app:guia-al-entrar": "node pruebas/guia-al-entrar.mjs",
     "guia": "node presentacion/guia-pdf.mjs",
     "marca": "node presentacion/marca-tinta.mjs",
     "seo": "node pruebas/sitemap.mjs",
     "capturas": "node pruebas/capturas.mjs",
-    "maqueta:enteras": "node pruebas/capturas-enteras.mjs",
-    "pizarra:colocar": "node pruebas/colocar.mjs",
-    "pizarra": "node pruebas/camara.mjs && node pruebas/pizarra.mjs",
-    "pizarra:camara": "node pruebas/camara.mjs",
-    "pizarra:video": "node pruebas/video.mjs"
+    "maqueta:enteras": "node pruebas/capturas-enteras.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",

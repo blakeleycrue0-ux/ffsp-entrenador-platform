@@ -10,7 +10,7 @@ import { Canonico } from '@/components/Canonico';
 import { AvisoDeCookies, Medicion } from '@/features/legal/Medicion';
 
 // Rutas con carga diferida: la primera pantalla llega antes y cada módulo
-// (pizarra, analíticas, constructor de sesiones…) se descarga sólo si se usa.
+// (analíticas, constructor de sesiones…) se descarga sólo si se usa.
 const Landing = lazy(cargaDiferida(() => import('@/features/landing/Landing')));
 const Login = lazy(cargaDiferida(() => import('@/features/auth/Login')));
 const Dashboard = lazy(cargaDiferida(() => import('@/features/dashboard/Dashboard')));
@@ -30,7 +30,6 @@ const NuevoEntrenamiento = lazy(cargaDiferida(() => import('@/features/sessions/
 const DrillsPage = lazy(cargaDiferida(() => import('@/features/drills/DrillsPage')));
 const DrillDetail = lazy(cargaDiferida(() => import('@/features/drills/DrillDetail')));
 const DrillEditor = lazy(cargaDiferida(() => import('@/features/drills/DrillEditor')));
-const BoardPage = lazy(cargaDiferida(() => import('@/features/board/BoardPage')));
 const MatchesPage = lazy(cargaDiferida(() => import('@/features/matches/MatchesPage')));
 const MatchDetail = lazy(cargaDiferida(() => import('@/features/matches/MatchDetail')));
 const MatchEditor = lazy(cargaDiferida(() => import('@/features/matches/MatchEditor')));
@@ -41,7 +40,6 @@ const BillingPage = lazy(cargaDiferida(() => import('@/features/billing/BillingP
 const ProfilePage = lazy(cargaDiferida(() => import('@/features/settings/ProfilePage')));
 const LegalPage = lazy(cargaDiferida(() => import('@/features/legal/LegalPage')));
 const Onboarding = lazy(cargaDiferida(() => import('@/features/onboarding/Onboarding')));
-const PizarraLibre = lazy(cargaDiferida(() => import('@/features/board/PizarraLibre')));
 const EntrenadorPage = lazy(cargaDiferida(() => import('@/features/coach/EntrenadorPage')));
 
 /** Pantalla de arranque mientras se comprueba la sesión y se cargan los datos. */
@@ -110,11 +108,6 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/entrar" element={<Login />} />
-        {/* LA PIZARRA, SIN CUENTA. Es a donde apunta el anuncio: lo que
-            vende es el campo, y pedir un alta antes de dejar tocarlo es
-            perder a quien venía. Fuera de `/app` a propósito — no pasa por
-            `RequireAuth` ni por el club. */}
-        <Route path="/pizarra" element={<PizarraLibre />} />
         <Route path="/aviso-legal" element={<LegalPage />} />
         <Route path="/privacidad" element={<LegalPage />} />
 
@@ -155,8 +148,6 @@ export default function App() {
           <Route path="ejercicios/:drillId" element={<DrillDetail />} />
           <Route path="ejercicios/:drillId/editar" element={<DrillEditor />} />
 
-          <Route path="pizarra" element={<BoardPage />} />
-          <Route path="pizarra/:playId" element={<BoardPage />} />
 
           <Route path="partidos" element={<MatchesPage />} />
           <Route path="partidos/nuevo" element={<MatchEditor />} />

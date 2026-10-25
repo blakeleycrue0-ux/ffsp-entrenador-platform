@@ -5,7 +5,6 @@ import { useClub } from '@/store/store';
 import { Button, Desplegable, Panel, Field, Input, PageHeader, Textarea } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { humanError } from '@/services/supabase';
-import { DrillBoardEditor } from '@/features/board/DrillBoard';
 import { cn } from '@/lib/utils';
 import type { Drill, DrillTag } from '@/types';
 import { useAnchura } from '@/components/layout/AppShell';
@@ -126,21 +125,6 @@ export default function DrillEditor() {
           </div>
         </Panel>
 
-        {/* EL ESQUEMA, PLEGADO. Es lo mejor que tiene esta pantalla y también
-            lo más caro: un campo entero con fichas que se arrastran, y el
-            segundo botón que se pintaba como acción principal. Plegado, el
-            ejercicio se puede escribir y guardar en treinta segundos; abierto,
-            está igual que antes. */}
-        <Desplegable
-          titulo="Dibujar el esquema"
-          pista="Coloca a las jugadoras y, si hace falta, muévelas"
-          abierto={!!form.animation}
-        >
-          <DrillBoardEditor
-            value={form.animation}
-            onChange={(scene) => patch({ animation: scene ?? undefined })}
-          />
-        </Desplegable>
 
         <Desplegable titulo="Más opciones" pista="Etiquetas, material, jugadoras, edad y progresiones">
           <Field label="Etiquetas" hint="Determinan en qué filtros aparece.">
