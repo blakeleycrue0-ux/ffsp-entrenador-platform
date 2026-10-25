@@ -584,14 +584,22 @@
      Y SI NO HAY DESENFOQUE, SE PONE MÁS OPACA. `backdrop-filter` no está en
      todos los navegadores; sin él, un 10 % de blanco sobre una foto es texto
      blanco sobre lo que haya. El respaldo es un gris oscuro sólido. */
+  /* EL CRISTAL DE INICIO. Se llamaba así —«de foto»— porque flotaba sobre
+     una fotografía oscura y por eso era blanco al 10 %. Ya no hay foto: el
+     fondo es la superficie del tema, así que el cristal se levanta sobre
+     ella y su tinte sale de la misma escala. En claro aclara, en oscuro
+     aclara también —sobre un fondo casi negro, subir es separarse— y en los
+     dos casos el borde es la línea de siempre. */
   .vidrio-foto {
-    background-color: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background-color: rgb(var(--raised) / 0.72);
+    border: 1px solid rgb(var(--line-rgb) / var(--line-a));
     backdrop-filter: blur(22px) saturate(115%);
     -webkit-backdrop-filter: blur(22px) saturate(115%);
   }
+  /* Sin desenfoque no hay cristal que valga: se vuelve opaco del todo, que
+     es peor de ver pero legible, que es lo que importa. */
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .vidrio-foto { background-color: rgba(20, 20, 23, 0.72); }
+    .vidrio-foto { background-color: rgb(var(--raised)); }
   }
 
   /* ── EL HÉROE DE INICIO, Y LO QUE PASA EN UNA PANTALLA CORTA ──────────────
