@@ -268,7 +268,7 @@ function AssignModal({ teamId, onClose }: { teamId: string | null; onClose: () =
   const { data, actions } = useClub();
   const toast = useToast();
   const [profileId, setProfileId] = useState('');
-  const [role, setRole] = useState<StaffRole>('entrenador');
+  const [role, setRole] = useState<StaffRole>('entrenadora');
   const [busy, setBusy] = useState(false);
 
   if (!teamId) return null;

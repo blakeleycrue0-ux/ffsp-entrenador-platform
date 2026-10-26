@@ -126,7 +126,7 @@ export const auth = {
 
 /** Ver teléfonos y datos de familias de las jugadores. */
 export const canSeePersonalData = (staff: Staff | null): boolean =>
-  !!staff && ['entrenador', 'segunda-entrenador', 'coordinadora', 'directora-deportiva', 'admin-club']
+  !!staff && ['entrenadora', 'segunda-entrenadora', 'coordinadora', 'directora-deportiva', 'admin-club']
     .includes(staff.role);
 
 /* LAS ETIQUETAS SON NEUTRAS; LAS CLAVES NO SE TOCAN.
@@ -140,8 +140,8 @@ export const canSeePersonalData = (staff: Staff | null): boolean =>
    un adjetivo en femenino con un sustantivo en masculino se lee peor que el
    femenino entero. */
 export const ROLE_LABEL: Record<StaffRole, string> = {
-  entrenador: 'Entrenador',
-  'segunda-entrenador': 'Segundo entrenador',
+  entrenadora: 'Entrenador',
+  'segunda-entrenadora': 'Segundo entrenador',
   'preparadora-fisica': 'Preparador físico',
   'directora-deportiva': 'Director deportivo',
   coordinadora: 'Coordinador',
@@ -149,8 +149,8 @@ export const ROLE_LABEL: Record<StaffRole, string> = {
 };
 
 export const ASSIGNABLE_ROLES: StaffRole[] = [
-  'entrenador',
-  'segunda-entrenador',
+  'entrenadora',
+  'segunda-entrenadora',
   'preparadora-fisica',
   'directora-deportiva',
   'coordinadora',

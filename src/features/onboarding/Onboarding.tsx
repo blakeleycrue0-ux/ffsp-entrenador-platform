@@ -44,7 +44,6 @@ import { humanError } from '@/services/supabase';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { Input, Select } from '@/components/ui';
 import { Wordmark } from '@/components/ui/Brand';
-import { ConfigurarCodigo } from '@/features/passcode/ConfigurarCodigo';
 import { PasoPlan } from './PasoPlan';
 import { deportes, apuntaDeporte, FUTBOL, type Deporte } from '@/services/deportes';
 import { cn, dayName, toISODate } from '@/lib/utils';
@@ -63,7 +62,7 @@ const temporadaActual = () => {
    `deporte` entra después del club y antes del equipo, que es cuando ya hay
    dónde apuntarlo y todavía no se ha creado nada que dependa de él. */
 const ORDEN = [
-  'bienvenida', 'codigo', 'nombre', 'cargo', 'club', 'deporte', 'equipo', 'horarios', 'plan', 'listo',
+  'bienvenida', 'nombre', 'cargo', 'club', 'deporte', 'equipo', 'horarios', 'plan', 'listo',
 ] as const;
 type Paso = (typeof ORDEN)[number];
 
@@ -89,11 +88,22 @@ export default function Onboarding() {
   const [categoria, setCategoria] = useState('');
   const [horarios, setHorarios] = useState<TrainingSlot[]>([]);
   const [equipoCreado, setEquipoCreado] = useState(false);
-  const [conCodigo, setConCodigo] = useState(false);
 
   /* Los deportes se piden una vez y pronto: cuando se llegue a ese paso ya
      están, así que no hay un parpadeo de lista vacía a mitad del alta. */
   useEffect(() => { void deportes().then(setLosDeportes); }, []);
+
+  /* ── LA BARRA DEL NAVEGADOR, DEL COLOR DEL CIELO ───────────────────────
+     Safari pinta su barra de abajo con el `theme-color` de la página, que es
+     el gris claro de la aplicación: encima del azul se veía como una franja
+     blanca pegada al borde. Mientras dure el alta se pone el azul del
+     cielo, y al salir se devuelve el que había. */
+  useEffect(() => {
+    const metas = [...document.querySelectorAll('meta[name="theme-color"]')] as HTMLMetaElement[];
+    const antes = metas.map((m) => m.content);
+    metas.forEach((m) => { m.content = '#1E86FB'; });
+    return () => { metas.forEach((m, i) => { m.content = antes[i]; }); };
+  }, []);
 
   const elegido = losDeportes.find((d) => d.code === deporte);
 
@@ -203,7 +213,7 @@ export default function Onboarding() {
   /* Qué hace el botón de abajo en cada paso, en un solo sitio. Repartido por
      el JSX era imposible saber si alguno se había quedado sin acción. */
   const siguiente: Partial<Record<Paso, { texto: string; puede: boolean; hacer: () => void }>> = {
-    bienvenida: { texto: 'Empezar', puede: true, hacer: () => ir('codigo') },
+    bienvenida: { texto: 'Empezar', puede: true, hacer: () => ir('nombre') },
     nombre:     { texto: 'Continuar', puede: nombre.trim().length >= 2, hacer: () => void guardarNombre() },
     cargo:      { texto: 'Continuar', puede: true, hacer: () => void guardarCargo() },
     club:       { texto: 'Crear el club', puede: club.trim().length >= 2, hacer: () => void crearClub() },
@@ -216,7 +226,13 @@ export default function Onboarding() {
   return (
     /* `.portada` trae la tipografía y el aire de la página pública; `.cielo`,
        su azul. Son las clases de verdad, no una copia. */
-    <div className="portada cielo relative flex min-h-dvh flex-col overflow-hidden text-white">
+    /* FIJO A LA VENTANA, y no `min-h-dvh` dentro del flujo. Con
+       `viewport-fit=cover`, lo que queda por encima y por debajo de la página
+       lo pinta el documento, que es gris claro: por eso salían dos franjas
+       blancas, una detrás de la hora y otra detrás de la barra de Safari.
+       Fijo, el azul ocupa la ventana entera y no queda nada del documento a
+       la vista. */
+    <div className="portada cielo fixed inset-0 z-nav flex flex-col overflow-hidden text-white">
       <div aria-hidden className="nubes nubes-mueve pointer-events-none absolute inset-0 opacity-60" />
 
       {/* ── LA BARRA DE PROGRESO, PEGADA ARRIBA DEL TODO ──────────────────
@@ -247,8 +263,16 @@ export default function Onboarding() {
       {/* ── EL PASO ───────────────────────────────────────────────────────
           `key` por paso: al avanzar, el contenido ENTRA en vez de cambiar de
           golpe, que es lo que convierte seis pantallas sueltas en un camino. */}
-      <main className="relative z-10 flex min-h-0 flex-1 flex-col justify-center px-5 py-7">
-        <div key={paso} className="animate-paso mx-auto w-full max-w-[30rem]">
+            {/* El paso se desplaza por DENTRO. Antes la zona era de alto fijo y
+          centrada: lo que no cabía —el teclado, la lista de planes— se salía
+          por abajo en vez de poder subirse. */}
+      <main className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-7">
+        <div key={paso} className="animate-paso mx-auto my-auto w-full max-w-[30rem]">
+          {/* EL CÓDIGO DE ACCESO YA NO ESTÁ AQUÍ. Era un teclado numérico
+              entero metido en una tarjeta en mitad del alta: en un iPhone se
+              salía por abajo —el cero y el «Ahora no» quedaban cortados— y
+              además pedía inventarse un PIN a alguien que todavía no ha visto
+              el producto. Se pone desde Ajustes, cuando se quiera. */}
           {paso === 'bienvenida' && (
             <Pregunta
               rotulo="Bienvenido"
@@ -257,18 +281,6 @@ export default function Onboarding() {
             />
           )}
 
-          {paso === 'codigo' && (
-            <Tarjeta>
-              <ConfigurarCodigo
-                yaTiene={false}
-                tituloNuevo="Protege tu espacio"
-                subtituloNuevo="Cuatro cifras para confirmar acciones importantes. No sustituye a tu contraseña."
-                cancelarEtiqueta="Ahora no"
-                onCancelar={() => ir('nombre')}
-                onHecho={() => { setConCodigo(true); ir('nombre'); }}
-              />
-            </Tarjeta>
-          )}
 
           {paso === 'nombre' && (
             <Pregunta rotulo={`Paso ${numero}`} titulo="¿Cómo te llamas?"
@@ -313,7 +325,7 @@ export default function Onboarding() {
               {losDeportes.length === 0 ? (
                 <p className="text-[15px] text-white/70">Cargando deportes…</p>
               ) : (
-                <div className="-mx-1 grid max-h-[46vh] grid-cols-2 gap-2 overflow-y-auto px-1 py-1">
+                <div className="-mx-1 grid grid-cols-2 gap-2 px-1 py-1">
                   {losDeportes.map((d) => (
                     <Opcion
                       key={d.code} activa={deporte === d.code} onClick={() => setDeporte(d.code)}
@@ -343,7 +355,7 @@ export default function Onboarding() {
           {paso === 'horarios' && (
             <Pregunta rotulo={`Paso ${numero}`} titulo="¿Cuándo entrenáis?"
               ayuda="Lo que pongas aquí se reparte solo en el calendario, tres meses por delante.">
-              <div className="max-h-[42vh] space-y-2 overflow-y-auto py-1">
+              <div className="space-y-2 py-1">
                 {horarios.map((h, i) => (
                   <div key={i} className="flex flex-wrap items-center gap-2 rounded-2xl bg-white/12 p-2">
                     <Select
@@ -416,7 +428,6 @@ export default function Onboarding() {
                     pie={horarios.length === 1 ? 'Ya está en el calendario' : 'Ya están en el calendario'}
                   />
                 )}
-                {conCodigo && <Hecho titulo="Código de acceso" pie="Puesto" />}
               </div>
             </div>
           )}
@@ -558,7 +569,11 @@ function Opcion({
 /** Para los dos pasos que traen una pantalla entera de la plataforma dentro. */
 function Tarjeta({ children }: { children: React.ReactNode }) {
   return (
-    <div className="max-h-[66vh] overflow-y-auto rounded-[26px] bg-white p-5 text-tinta shadow-[0_30px_70px_-30px_rgba(6,12,27,0.55)] sm:p-6">
+    /* SIN ALTO MÁXIMO Y SIN RECORTE PROPIO. Tenía `max-h-[66vh]` con su
+         propio desplazamiento: una caja pequeña con una barra dentro, en
+         mitad del cielo, con el contenido cortado por los dos lados. Ahora
+         crece lo que necesite y quien se desplaza es la pantalla. */
+      <div className="rounded-[26px] bg-white p-5 text-tinta shadow-[0_30px_70px_-30px_rgba(6,12,27,0.55)] sm:p-6">
       {children}
     </div>
   );

@@ -192,7 +192,13 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
           </>
         ) : (
           <>
-            <p className="cifra mx-auto mt-4 max-w-[22ch] text-2xl text-ink-900">
+            {/* AQUÍ NO VA `.cifra`, Y POR ESO SE SOLAPABA. Esa clase lleva
+                `line-height: 0.98`, que es lo correcto para «18:30» —una sola
+                línea de números— y un desastre para una frase: al partirse en
+                dos, la segunda línea se montaba encima de la primera.
+                Esto no es una cifra, es una frase, así que lleva el interlineado
+                de una frase. */}
+            <p className="mx-auto mt-4 max-w-[22ch] font-display text-2xl font-[540] leading-[1.1] tracking-[-0.015em] text-ink-900">
               {d.teams.length === 0 ? 'Monta tu equipo' : 'Tu semana está vacía'}
             </p>
             <p className="mt-3 text-base text-ink-600">{longDate(toISODate(today()))}</p>
