@@ -171,7 +171,7 @@ const visibles = (d: ClubData): Paso[] =>
  * información es la misma; lo que cambia es que ya no está toda a la vez
  * delante de la cara.
  */
-export function PrimerosPasos({ sobreFoto = false }: { sobreFoto?: boolean }) {
+export function PrimerosPasos() {
   const { data, actions } = useClub();
   const toast = useToast();
   const yo = currentStaff(data);
@@ -216,21 +216,19 @@ export function PrimerosPasos({ sobreFoto = false }: { sobreFoto?: boolean }) {
            hay hoja clara debajo que sostenga un texto oscuro. */
         className={cn(
           'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
-          sobreFoto
-            ? 'vidrio-foto active:bg-white/15'
-            : 'hover:bg-ink-900/[0.04] active:bg-ink-900/[0.07]',
+          'hover:bg-ink-900/[0.04] active:bg-ink-900/[0.07]',
         )}
       >
-        <Aro hechos={hechos} total={total} sobreFoto={sobreFoto} />
+        <Aro hechos={hechos} total={total} />
         <span className="min-w-0 flex-1">
-          <span className={cn('block truncate text-base', sobreFoto ? 'text-white' : 'text-ink-800')}>
+          <span className={cn('block truncate text-base', 'text-ink-800')}>
             {siguiente ? siguiente.titulo : 'Pon tu equipo en marcha'}
           </span>
         </span>
-        <span className={cn('shrink-0 text-sm tabular-nums', sobreFoto ? 'text-white/60' : 'text-ink-500')}>
+        <span className={cn('shrink-0 text-sm tabular-nums', 'text-ink-500')}>
           {hechos}/{total}
         </span>
-        <ChevronRight size={17} className={cn('shrink-0', sobreFoto ? 'text-white/60' : 'text-ink-500')} aria-hidden />
+        <ChevronRight size={17} className={cn('shrink-0', 'text-ink-500')} aria-hidden />
       </button>
 
       {/* La lista entera, cuando se pide. Es la hoja de siempre del producto:
@@ -277,7 +275,7 @@ export function PrimerosPasos({ sobreFoto = false }: { sobreFoto?: boolean }) {
                     className={cn(
                       'grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors',
                       p.ok
-                        ? 'border-transparent bg-ink-900 text-white'
+                        ? 'border-transparent bg-ink-900 text-ink-0'
                         : 'border-line-fuerte text-transparent',
                     )}
                   >
@@ -307,7 +305,7 @@ export function PrimerosPasos({ sobreFoto = false }: { sobreFoto?: boolean }) {
                     <Link
                       to={destino(p)!}
                       onClick={() => setAbierta(false)}
-                      className="metal-claro col-start-2 inline-flex h-9 w-fit items-center gap-1.5 rounded-xl px-3.5 text-sm font-medium text-white transition-colors sm:col-start-3 sm:justify-self-end"
+                      className="metal-claro col-start-2 inline-flex h-9 w-fit items-center gap-1.5 rounded-xl px-3.5 text-sm font-medium text-ink-0 transition-colors sm:col-start-3 sm:justify-self-end"
                     >
                       {p.accion}
                       <ArrowRight size={14} />
@@ -330,7 +328,7 @@ export function PrimerosPasos({ sobreFoto = false }: { sobreFoto?: boolean }) {
  * del texto y dice lo mismo. Dentro va la cuenta —«5/6»— porque el ángulo
  * solo se estima mal y la cuenta no se estima.
  */
-function Aro({ hechos, total, sobreFoto = false }: { hechos: number; total: number; sobreFoto?: boolean }) {
+function Aro({ hechos, total }: { hechos: number; total: number }) {
   const tamano = 28;
   const grosor = 3;
   const r = (tamano - grosor) / 2;
@@ -351,7 +349,7 @@ function Aro({ hechos, total, sobreFoto = false }: { hechos: number; total: numb
           cy={tamano / 2}
           r={r}
           fill="none"
-          stroke={sobreFoto ? 'rgba(255,255,255,0.22)' : 'rgba(13,13,15,0.14)'}
+          stroke={'rgba(13,13,15,0.14)'}
           strokeWidth={grosor}
         />
         <circle
@@ -359,7 +357,7 @@ function Aro({ hechos, total, sobreFoto = false }: { hechos: number; total: numb
           cy={tamano / 2}
           r={r}
           fill="none"
-          stroke={sobreFoto ? '#FFFFFF' : '#0D0D0F'}
+          stroke={'#0D0D0F'}
           strokeWidth={grosor}
           strokeLinecap="round"
           strokeDasharray={c}

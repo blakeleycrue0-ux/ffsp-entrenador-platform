@@ -108,7 +108,7 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
              equipo, y un club recién creado —justo quien la necesita— se
              quedaba con una pantalla sin una sola cosa que hacer. Aquí va
              arriba porque no hay tarjeta debajo de la que ponerse. */
-          hayGuia(d.data) ? <PrimerosPasos sobreFoto /> : (
+          hayGuia(d.data) ? <PrimerosPasos /> : (
             <div data-vacio="fila" className="vidrio-foto rounded-2xl px-4 py-5 text-center">
               <h2 className="text-md font-semibold text-ink-900">
                 {d.admin ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
@@ -134,8 +134,8 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
             {/* DEBAJO DE LA TARJETA DEL ENTRENAMIENTO, y como fila. Estaba
                 encima y en forma de tarjeta, compitiendo con lo único que de
                 verdad se viene a ver aquí. */}
-            <PrimerosPasos sobreFoto />
-            <Pendientes d={d} sobreFoto className="pt-1" />
+            <PrimerosPasos />
+            <Pendientes d={d} className="pt-1" />
           </>
         )}
       </div>
