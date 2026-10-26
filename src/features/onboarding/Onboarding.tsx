@@ -43,7 +43,7 @@ import { db } from '@/services/db';
 import { humanError } from '@/services/supabase';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { Input, Select } from '@/components/ui';
-import { CampoCielo, OpcionCielo, BotonCielo } from '@/components/ui/Cielo';
+import { Cielo, CampoCielo, OpcionCielo, BotonCielo, AvisoCielo } from '@/components/ui/Cielo';
 import { Wordmark } from '@/components/ui/Brand';
 import { PasoPlan } from './PasoPlan';
 import { deportes, apuntaDeporte, FUTBOL, type Deporte } from '@/services/deportes';
@@ -227,18 +227,11 @@ export default function Onboarding() {
   return (
     /* `.portada` trae la tipografía y el aire de la página pública; `.cielo`,
        su azul. Son las clases de verdad, no una copia. */
-    /* FIJO A LA VENTANA, y no `min-h-dvh` dentro del flujo. Con
-       `viewport-fit=cover`, lo que queda por encima y por debajo de la página
-       lo pinta el documento, que es gris claro: por eso salían dos franjas
-       blancas, una detrás de la hora y otra detrás de la barra de Safari.
-       Fijo, el azul ocupa la ventana entera y no queda nada del documento a
-       la vista. */
-    <div className="portada cielo fixed inset-0 z-nav flex flex-col overflow-hidden text-white">
-      <div aria-hidden className="nubes nubes-mueve pointer-events-none absolute inset-0 opacity-60" />
-
-      {/* ── LA BARRA DE PROGRESO, PEGADA ARRIBA DEL TODO ──────────────────
-          Debajo de la isla, no detrás: el relleno lo pone el área segura. */}
-      <div className="relative z-10 px-5 pt-[max(14px,var(--safe-top))]">
+    <Cielo
+      cabecera={
+        /* La barra de progreso, pegada arriba del todo: debajo de la isla y
+           no detrás, que el relleno del área segura lo pone `Cielo`. */
+        <>
         <div className="flex items-center justify-between gap-3">
           <button
             onClick={paso === 'bienvenida' ? () => void signOut() : atras}
@@ -259,16 +252,40 @@ export default function Onboarding() {
             style={{ width: `${avance}%` }}
           />
         </div>
-      </div>
+      </>
+      }
+      pie={
+        <div className="mx-auto w-full max-w-[30rem]">
+          {error && <div className="mb-3"><AvisoCielo>{error}</AvisoCielo></div>}
 
-      {/* ── EL PASO ───────────────────────────────────────────────────────
-          `key` por paso: al avanzar, el contenido ENTRA en vez de cambiar de
-          golpe, que es lo que convierte seis pantallas sueltas en un camino. */}
-            {/* El paso se desplaza por DENTRO. Antes la zona era de alto fijo y
-          centrada: lo que no cabía —el teclado, la lista de planes— se salía
-          por abajo en vez de poder subirse. */}
-      <main className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-7">
-        <div key={paso} className="animate-paso mx-auto my-auto w-full max-w-[30rem]">
+          {paso === 'listo' ? (
+            <BotonCielo
+              cargando={ocupado}
+              onClick={() => void avanzar(() => actions.refresh())}
+            >
+              Entrar en Playoff360
+            </BotonCielo>
+          ) : boton ? (
+            <>
+              <BotonCielo cargando={ocupado} puede={boton.puede} onClick={boton.hacer}>
+                {boton.texto}
+                <ArrowRight size={17} />
+              </BotonCielo>
+              {/* Lo que se puede saltar, se dice. */}
+              {(paso === 'equipo' || paso === 'horarios') && (
+                <button
+                  onClick={() => (paso === 'equipo' ? ir('plan') : void crearEquipo())}
+                  className="mt-3 block w-full py-2 text-center text-[14px] font-medium text-white/65 transition-colors active:text-white"
+                >
+                  {paso === 'equipo' ? 'Lo hago luego' : 'Sin horario fijo'}
+                </button>
+              )}
+            </>
+          ) : null}
+        </div>
+      }
+    >
+      <div key={paso} className="animate-paso mx-auto w-full max-w-[30rem]">
           {/* EL CÓDIGO DE ACCESO YA NO ESTÁ AQUÍ. Era un teclado numérico
               entero metido en una tarjeta en mitad del alta: en un iPhone se
               salía por abajo —el cero y el «Ahora no» quedaban cortados— y
@@ -433,47 +450,7 @@ export default function Onboarding() {
             </div>
           )}
         </div>
-      </main>
-
-      {/* ── EL BOTÓN, SIEMPRE EN EL MISMO SITIO ───────────────────────────
-          Fuera del paso y pegado abajo. Antes vivía dentro de cada paso y
-          subía o bajaba según cuántas líneas tuviera: al avanzar había que
-          volver a buscarlo con la vista. */}
-      <footer className="relative z-10 px-5 pb-[max(20px,var(--safe-bottom))] pt-2">
-        <div className="mx-auto w-full max-w-[30rem]">
-          {error && (
-            <p role="alert" className="mb-3 rounded-2xl bg-white/15 px-4 py-2.5 text-[14px] leading-snug text-white">
-              {error}
-            </p>
-          )}
-
-          {paso === 'listo' ? (
-            <BotonCielo
-              cargando={ocupado}
-              onClick={() => void avanzar(() => actions.refresh())}
-            >
-              Entrar en Playoff360
-            </BotonCielo>
-          ) : boton ? (
-            <>
-              <BotonCielo cargando={ocupado} puede={boton.puede} onClick={boton.hacer}>
-                {boton.texto}
-                <ArrowRight size={17} />
-              </BotonCielo>
-              {/* Lo que se puede saltar, se dice. */}
-              {(paso === 'equipo' || paso === 'horarios') && (
-                <button
-                  onClick={() => (paso === 'equipo' ? ir('plan') : void crearEquipo())}
-                  className="mt-3 block w-full py-2 text-center text-[14px] font-medium text-white/65 transition-colors active:text-white"
-                >
-                  {paso === 'equipo' ? 'Lo hago luego' : 'Sin horario fijo'}
-                </button>
-              )}
-            </>
-          ) : null}
-        </div>
-      </footer>
-    </div>
+    </Cielo>
   );
 }
 

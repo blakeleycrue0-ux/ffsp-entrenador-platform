@@ -55,11 +55,22 @@ export function Cielo({
         <div className="relative z-10 px-5 pt-[max(14px,var(--safe-top))]">{cabecera}</div>
       )}
 
-      {/* El contenido se desplaza por DENTRO. Si la zona fuera de alto fijo,
-          lo que no cupiera —un formulario con el teclado abierto— se saldría
-          por abajo en vez de poder subirse. */}
-      <main className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-7">
-        {children}
+      {/* ── CENTRADO CUANDO CABE, DESDE ARRIBA CUANDO NO ──────────────────
+          El contenido iba con `my-auto` dentro de este mismo contenedor que
+          se desplaza, y eso CORTA. Un margen automático reparte el hueco
+          sobrante arriba y abajo; cuando no sobra —contenido más alto que la
+          pantalla, o el teclado abierto— reparte un hueco NEGATIVO, así que
+          el principio se queda por encima del borde y no hay forma de subir
+          hasta él. Se veía cortado arriba y abajo a la vez.
+
+          La forma correcta son dos cajas: ésta se desplaza y la de dentro
+          mide al menos lo que la ventana y centra con `justify-center`. Si
+          cabe, queda centrado; si no cabe, empieza arriba y se puede
+          desplazar entero. */}
+      <main className="relative z-10 min-h-0 flex-1 overflow-y-auto">
+        <div className="flex min-h-full flex-col justify-center px-5 py-7">
+          {children}
+        </div>
       </main>
 
       {pie && (
