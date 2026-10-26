@@ -113,7 +113,7 @@ await page.goto(`${BASE}/app`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(1200);
 
 /* ── 1 · Sin club, al alta ─────────────────────────────────────────────── */
-const hayAlta = await page.getByText('Vamos a dejar tu club montado').count();
+const hayAlta = await page.getByText('Vamos a montar tu club').count();
 comprueba('sin club, la aplicación lleva al alta', hayAlta > 0);
 if (hayAlta === 0) {
   console.log('\n  El alta no sale: no se puede seguir.\n');
@@ -144,11 +144,11 @@ await page.waitForTimeout(500);
 /* El cargo son botones, uno por cargo: hay que elegir antes de seguir. */
 comprueba('pregunta el cargo', (await page.getByText('¿Qué haces en el club?').count()) > 0,
   await dondeEstoy());
-await pulsa('Coordinadora', 300);
+await pulsa('Coordinador', 300);
 await pulsa('Continuar', 1000);
 
 /* ── 4 · El club ───────────────────────────────────────────────────────── */
-const hayClub = await page.getByText('Nombre del club').count();
+const hayClub = await page.getByLabel('Nombre del club').count();
 comprueba('pregunta el club', hayClub > 0, await dondeEstoy());
 if (hayClub > 0) {
   await page.getByRole('textbox').first().fill('CE Prueba');
@@ -162,9 +162,17 @@ comprueba('el club se crea con su nombre',
   escrito.clubs.some((f) => f.name === 'CE Prueba'),
   JSON.stringify(escrito.clubs.map((f) => f.name)));
 
-/* ── 5 · El equipo y su horario ────────────────────────────────────────── */
+/* ── 5 · El deporte ────────────────────────────────────────────────────────
+   Paso nuevo: sale entre el club y el equipo, lee la tabla `sports` y decide
+   cómo se llaman las cosas a partir de aquí. Se deja en fútbol, que es el
+   valor por defecto, y se sigue. */
+const hayDeporte = (await page.getByText('¿A qué jugáis?').count()) > 0;
+comprueba('pregunta el deporte', hayDeporte, await dondeEstoy());
+if (hayDeporte) await pulsa('Continuar', 600);
+
+/* ── 6 · El equipo y su horario ────────────────────────────────────────── */
 const hayEquipo = await page.getByText('equipo', { exact: false }).count() > 0
-  && (await page.locator('main').innerText()).includes('PASO 5');
+  && (await page.locator('main').innerText()).includes('PASO 6');
 comprueba('pregunta el equipo', hayEquipo, await dondeEstoy());
 
 if (hayEquipo) {
@@ -176,7 +184,7 @@ if (hayEquipo) {
   comprueba('pregunta cuándo entrenáis', (await page.getByText('¿Cuándo entrenáis?').count()) > 0);
 
   /* Un horario: se añade la fila y se rellenan día, inicio y fin. */
-  await pulsa('Añadir un horario');
+  await pulsa('Añadir un día');
   await page.waitForTimeout(400);
 
   const horas = page.locator('input[type="time"]');

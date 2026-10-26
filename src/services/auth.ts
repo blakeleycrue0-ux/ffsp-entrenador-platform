@@ -129,12 +129,22 @@ export const canSeePersonalData = (staff: Staff | null): boolean =>
   !!staff && ['entrenador', 'segunda-entrenador', 'coordinadora', 'directora-deportiva', 'admin-club']
     .includes(staff.role);
 
+/* LAS ETIQUETAS SON NEUTRAS; LAS CLAVES NO SE TOCAN.
+   `segunda-entrenador`, `preparadora-fisica`, `directora-deportiva` y
+   `coordinadora` están escritas así en la columna `role` de miles de filas y
+   en las políticas de acceso: cambiarlas sería una migración de datos para
+   arreglar un texto. Lo que se lee es esto de la derecha.
+
+   Y SE CAMBIAN LAS DOS PALABRAS, no sólo el sustantivo. El barrido de
+   lenguaje neutro dejó «Segunda entrenador» y «Preparadora física» a medias:
+   un adjetivo en femenino con un sustantivo en masculino se lee peor que el
+   femenino entero. */
 export const ROLE_LABEL: Record<StaffRole, string> = {
   entrenador: 'Entrenador',
-  'segunda-entrenador': 'Segunda entrenador',
-  'preparadora-fisica': 'Preparadora física',
-  'directora-deportiva': 'Directora deportiva',
-  coordinadora: 'Coordinadora',
+  'segunda-entrenador': 'Segundo entrenador',
+  'preparadora-fisica': 'Preparador físico',
+  'directora-deportiva': 'Director deportivo',
+  coordinadora: 'Coordinador',
   'admin-club': 'Administración del club',
 };
 
