@@ -246,7 +246,7 @@ export default function Login() {
         </div>
       }
     >
-      <div className="mx-auto my-auto w-full max-w-[26rem]">
+      <div className="mx-auto w-full max-w-[26rem]">
         <h1 className="t-l text-white">{t.title}</h1>
         <p className="entradilla mt-3 text-white/70">{t.sub}</p>
 
@@ -429,7 +429,7 @@ function NuevaContrasena({ onHecho }: { onHecho: () => void }) {
         )
       }
     >
-      <div className="mx-auto my-auto w-full max-w-[26rem]">
+      <div className="mx-auto w-full max-w-[26rem]">
         {hecho ? (
           <>
             <h1 className="t-l text-white">Contraseña cambiada.</h1>
