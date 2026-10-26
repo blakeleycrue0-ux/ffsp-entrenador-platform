@@ -63,7 +63,7 @@ export const limiteDeEquipos = (plan: Plan): string =>
    forma más rápida de que no se crea ninguna. */
 export const PARA_QUIEN: Record<PlanTier, string> = {
   free: 'Para empezar con un equipo y ver si esto te sirve.',
-  pro: 'Para el entrenador que lleva su equipo y quiere la pizarra entera.',
+  pro: 'Para el entrenador que lleva su equipo y quiere más de uno.',
   max: 'Para el club con varios equipos y varias personas en el cuerpo técnico.',
   club: 'Para el club entero: todas las categorías y todo el cuerpo técnico.',
 };
@@ -181,7 +181,7 @@ function Tarjeta({
   onElegir: () => void;
 }) {
   /* El destacado es el mismo que en la portada y por el mismo motivo: es el
-     que lleva la pizarra entera por menos de seis euros. */
+     que lleva más de un equipo por menos de seis euros. */
   const destacado = plan.tier === 'pro';
   const precio = importe(periodo === 'anual' ? plan.priceYearly : plan.priceMonthly, plan.currency);
   const nuevasAqui = plan.tier === 'free' ? [] : loQueFalta(plan.tier, seVende);

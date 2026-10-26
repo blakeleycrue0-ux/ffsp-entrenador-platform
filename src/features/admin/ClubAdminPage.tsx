@@ -1,7 +1,7 @@
 /**
  * Club — panel de coordinación.
  * ---------------------------------------------------------------------------
- * Aquí se crean los equipos y se asigna a cada entrenadora el suyo. Es la
+ * Aquí se crean los equipos y se asigna a cada entrenador el suyo. Es la
  * única pantalla que ve el club entero; el resto de perfiles ni siquiera
  * pueden abrir la ruta (lo impide el guardián de rutas y, sobre todo, RLS).
  */
@@ -80,7 +80,7 @@ export default function ClubAdminPage() {
             <EmptyState size="pleno"
              
               title="Todavía no hay equipos"
-              description="Crea el primer equipo de la temporada. Después podrás asignarle entrenadoras y ellas empezarán a meter sus jugadoras."
+              description="Crea el primer equipo de la temporada. Después podrás asignarle entrenadores y ellas empezarán a meter sus jugadores."
               action={
                 <LinkButton to="/app/equipo-tecnico/nuevo-equipo" size="sm">
                   Crear el primer equipo
@@ -111,7 +111,7 @@ export default function ClubAdminPage() {
                           {[team.category, team.competition, team.season].filter(Boolean).join(' · ') || 'Sin detalles'}
                         </p>
                         <p className="mt-1 text-xs text-ink-400">
-                          {squadOf(data, team.id).length} jugadoras
+                          {squadOf(data, team.id).length} jugadores
                         </p>
                       </div>
                     </div>
@@ -183,7 +183,7 @@ export default function ClubAdminPage() {
           )}
 
           <Panel className="p-4">
-            <h3 className="text-base font-semibold">Cómo se da de alta a una entrenadora</h3>
+            <h3 className="text-base font-semibold">Cómo se da de alta a una entrenador</h3>
             <ol className="mt-2 space-y-1.5 text-sm leading-relaxed text-ink-700">
               <li>1. Le creas una invitación desde la pestaña «Invitaciones».</li>
               <li>2. Le pasas el enlace por donde habléis habitualmente.</li>
@@ -268,7 +268,7 @@ function AssignModal({ teamId, onClose }: { teamId: string | null; onClose: () =
   const { data, actions } = useClub();
   const toast = useToast();
   const [profileId, setProfileId] = useState('');
-  const [role, setRole] = useState<StaffRole>('entrenadora');
+  const [role, setRole] = useState<StaffRole>('entrenador');
   const [busy, setBusy] = useState(false);
 
   if (!teamId) return null;
@@ -359,7 +359,7 @@ function InvitationsTab() {
   const [error, setError] = useState<string | null>(null);
 
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<ClubRole>('entrenadora');
+  const [role, setRole] = useState<ClubRole>('entrenador');
   const [teamId, setTeamId] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -455,7 +455,7 @@ function InvitationsTab() {
           </Field>
           <Field label="Rol en el club">
             <Select value={role} onChange={(e) => setRole(e.target.value as ClubRole)}>
-              {(['entrenadora', 'asistente', 'admin'] as ClubRole[]).map((r) => (
+              {(['entrenador', 'asistente', 'admin'] as ClubRole[]).map((r) => (
                 <option key={r} value={r}>
                   {CLUB_ROLE_LABEL[r]}
                 </option>

@@ -148,7 +148,7 @@ export default function LegalPage() {
                 <p className="mt-2">
                   La plataforma almacena los datos que el cuerpo técnico introduce para gestionar los
                   equipos: nombre, dorsal, posición, fecha de nacimiento, teléfono y correo de la
-                  jugadora o de sus tutores legales, disponibilidad, asistencia a entrenamientos,
+                  jugador o de sus tutores legales, disponibilidad, asistencia a entrenamientos,
                   convocatorias, minutos y anotaciones del cuerpo técnico, incluidos los partes de
                   lesión.
                 </p>
@@ -162,7 +162,7 @@ export default function LegalPage() {
               <section>
                 <h2>Datos de menores</h2>
                 <p className="mt-2">
-                  Cuando la jugadora es menor de edad, los datos de contacto corresponden a sus
+                  Cuando la jugador es menor de edad, los datos de contacto corresponden a sus
                   tutores legales y su tratamiento requiere el consentimiento de estos.{' '}
                   <Pendiente>procedimiento de recogida del consentimiento</Pendiente>
                 </p>
@@ -182,7 +182,7 @@ export default function LegalPage() {
                 </p>
                 {/* ── ESTO HAY QUE DECIRLO, Y HAY QUE DECIRLO SEPARADO ───────
                     Arriba pone que los datos no se usan con fines comerciales,
-                    y de los datos de las jugadoras sigue siendo verdad. Del
+                    y de los datos de las jugadores sigue siendo verdad. Del
                     correo de quien tiene la cuenta ya no lo sería si no se
                     dijera aquí: desde que existen las novedades, esa dirección
                     sí se usa para escribirle. Son dos cosas distintas y por eso
@@ -194,7 +194,7 @@ export default function LegalPage() {
                   permiso expreso</strong>, novedades del producto y algún recordatorio por
                   inactividad. Ese permiso se pide sin marcar al crear la cuenta, se puede retirar
                   en Ajustes o con el enlace de baja de cualquiera de esos correos, y retirarlo no
-                  afecta a los avisos del servicio. <strong>Los datos de las jugadoras no se usan
+                  afecta a los avisos del servicio. <strong>Los datos de las jugadores no se usan
                   nunca para esto</strong>, ni para ninguna otra comunicación comercial.
                 </p>
               </section>
@@ -224,7 +224,7 @@ export default function LegalPage() {
               <section>
                 <h2>Cuánto tiempo se conservan</h2>
                 <p className="mt-2">
-                  <Pendiente>plazos de conservación que fije el club</Pendiente> Una jugadora que deja
+                  <Pendiente>plazos de conservación que fije el club</Pendiente> Una jugador que deja
                   el equipo se archiva para conservar el historial deportivo de la temporada; su
                   supresión definitiva se realiza a petición.
                 </p>
@@ -232,7 +232,7 @@ export default function LegalPage() {
 
               {/* ── LO QUE SÍ SALE DE AQUÍ ────────────────────────────────
                   Arriba dice que los datos no se ceden a terceros, y eso es
-                  cierto de los datos de las jugadoras. Pero hay dos terceros
+                  cierto de los datos de las jugadores. Pero hay dos terceros
                   que intervienen en la web pública y en el cobro, y no
                   nombrarlos dejaría esa frase incompleta. */}
               <section>
@@ -303,7 +303,7 @@ export default function LegalPage() {
                 <p className="mt-2">
                   Cada cuenta es personal e intransferible. Quien accede se compromete a usar la
                   plataforma para la gestión deportiva del club y a tratar con confidencialidad los
-                  datos de jugadoras y familias a los que tenga acceso.
+                  datos de jugadores y familias a los que tenga acceso.
                 </p>
               </section>
 

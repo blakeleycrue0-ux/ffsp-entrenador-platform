@@ -42,7 +42,7 @@ export default function SettingsPage() {
    *
    * OCHO CARACTERES, NO SEIS. Seis es el mínimo que acepta Supabase, no una
    * recomendación. Con lo que hay detrás de esta cuenta —los datos de las
-   * jugadoras de un club, varias de ellas menores— seis es poco.
+   * jugadores de un club, varias de ellas menores— seis es poco.
    */
   const cambiarContrasena = async () => {
     if (!currentPassword) {
@@ -201,7 +201,7 @@ export default function SettingsPage() {
             <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3">
               {[
                 ['Equipos', data.teams.length],
-                ['Jugadoras', data.players.filter((p) => !p.archivedAt).length],
+                ['Jugadores', data.players.filter((p) => !p.archivedAt).length],
                 ['Ejercicios', data.drills.length],
                 ['Entrenamientos', data.sessions.length],
                 ['Partidos', data.matches.length],
@@ -299,11 +299,11 @@ export default function SettingsPage() {
                     'Crear equipos y asignar al cuerpo técnico',
                     'Ver todos los equipos del club',
                     'Gestionar plantillas, entrenamientos y partidos',
-                    'Ver los datos personales y de contacto de las jugadoras',
+                    'Ver los datos personales y de contacto de las jugadores',
                   ]
                 : [
                     'Trabajar en los equipos que tienes asignados',
-                    'Dar de alta y editar jugadoras',
+                    'Dar de alta y editar jugadores',
                     'Planificar entrenamientos y partidos',
                     'Registrar asistencia y convocatorias',
                   ]
@@ -323,12 +323,12 @@ export default function SettingsPage() {
             <div className="space-y-3 p-4 text-base leading-relaxed text-ink-700">
               <p>
                 Los permisos no dependen de lo que se ve en pantalla: los aplica el servidor. Cada
-                consulta pasa por las políticas de acceso de la base de datos, así que una entrenadora
+                consulta pasa por las políticas de acceso de la base de datos, así que una entrenador
                 no puede leer ni escribir en un equipo que no tiene asignado aunque manipule la
                 aplicación en su navegador.
               </p>
               <p>
-                Los datos de contacto de jugadoras y familias sólo aparecen dentro de la ficha
+                Los datos de contacto de jugadores y familias sólo aparecen dentro de la ficha
                 individual, nunca en listados ni exportaciones.
               </p>
               <p className="text-sm text-muted">
@@ -382,7 +382,7 @@ export default function SettingsPage() {
                   'No. Prepara las listas y los textos, y tú los compartes por donde ya habléis con el equipo.',
                 ],
                 [
-                  '¿Qué pasa si una jugadora deja el equipo?',
+                  '¿Qué pasa si una jugador deja el equipo?',
                   'Se archiva, no se borra: su historial de asistencia y de partidos se conserva.',
                 ],
                 [

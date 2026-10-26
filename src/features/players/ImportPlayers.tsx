@@ -1,5 +1,5 @@
 /**
- * Importar jugadoras desde un archivo.
+ * Importar jugadores desde un archivo.
  * ---------------------------------------------------------------------------
  * Nada se escribe en la base de datos hasta que se ve lo que va a entrar. El
  * recorrido es: pegar o subir el archivo → decir qué columna es cada cosa →
@@ -33,7 +33,7 @@ interface Campo {
 type CampoId = 'name' | 'number' | 'position' | 'birthDate' | 'phone' | 'email' | 'guardian';
 
 const CAMPOS: Campo[] = [
-  { id: 'name', label: 'Nombre y apellidos', required: true, pistas: ['nombre', 'jugadora', 'apellidos', 'name'] },
+  { id: 'name', label: 'Nombre y apellidos', required: true, pistas: ['nombre', 'jugador', 'apellidos', 'name'] },
   { id: 'number', label: 'Dorsal', pistas: ['dorsal', 'numero', 'número', 'num', 'number'] },
   { id: 'position', label: 'Posición', pistas: ['posicion', 'posición', 'puesto', 'position'] },
   { id: 'birthDate', label: 'Fecha de nacimiento', pistas: ['nacimiento', 'fecha', 'nacida', 'birth'] },
@@ -121,7 +121,7 @@ export function ImportPlayers({
 
   const revisar = () => {
     if (mapa.name === undefined) {
-      toast.error('Falta el nombre', 'Indica qué columna contiene el nombre de la jugadora.');
+      toast.error('Falta el nombre', 'Indica qué columna contiene el nombre de la jugador.');
       return;
     }
     const usados = new Set(squad.map((p) => p.number));
@@ -241,7 +241,7 @@ export function ImportPlayers({
       open={open}
       onClose={cerrar}
       size="xl"
-      title="Importar jugadoras"
+      title="Importar jugadores"
       description={
         paso === 'pegar'
           ? 'Sube un archivo .csv o pega el contenido de tu hoja de cálculo.'
@@ -274,7 +274,7 @@ export function ImportPlayers({
               Atrás
             </Button>
             <Button loading={busy} onClick={importar} disabled={marcadas === 0}>
-              Importar {marcadas} {marcadas === 1 ? 'jugadora' : 'jugadoras'}
+              Importar {marcadas} {marcadas === 1 ? 'jugador' : 'jugadores'}
             </Button>
           </>
         )
@@ -284,7 +284,7 @@ export function ImportPlayers({
         <div className="space-y-3">
           <p className="text-base leading-relaxed text-ink-800">
             Se han añadido <strong>{resultado.ok}</strong>{' '}
-            {resultado.ok === 1 ? 'jugadora' : 'jugadoras'} a la plantilla.
+            {resultado.ok === 1 ? 'jugador' : 'jugadores'} a la plantilla.
           </p>
           {resultado.fallos.length > 0 && (
             <Panel className="border-bad/30 p-3">
@@ -414,7 +414,7 @@ export function ImportPlayers({
           </div>
 
           <p className="text-xs leading-relaxed text-muted">
-            Las jugadoras que ya están en la plantilla vienen desmarcadas para no duplicarlas, pero
+            Las jugadores que ya están en la plantilla vienen desmarcadas para no duplicarlas, pero
             puedes marcarlas si de verdad son personas distintas. Un dorsal ocupado se sustituye por
             el primero libre.
           </p>

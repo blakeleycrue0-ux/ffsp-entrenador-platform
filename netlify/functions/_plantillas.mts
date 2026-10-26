@@ -127,7 +127,7 @@ export interface Carta { asunto: string; html: string; texto: string }
 
    SE ESCRIBIÓ MIRANDO LO QUE PASA DE VERDAD. Los dos clubes que se dieron de
    alta esta semana hicieron lo mismo: crearon el club, crearon el equipo y se
-   pararon ahí, con cero jugadoras. Así que esta carta no dice «bienvenido a
+   pararon ahí, con cero jugadores. Así que esta carta no dice «bienvenido a
    la familia»: dice cuál es el siguiente paso y cuánto cuesta darlo. */
 export function bienvenida(nombre: string | null, guiaUrl: string): Carta {
   const cuerpo = `
@@ -136,8 +136,8 @@ export function bienvenida(nombre: string | null, guiaUrl: string): Carta {
                  font-weight:700; color:${TINTA};">Ya tienes tu club montado</h1>
       ${parrafo(saludo(nombre))}
       ${parrafo('Te adjunto la guía en PDF: lo que hace la herramienta y cómo se hace cada cosa. Está pensada para leerla de una sentada o para tenerla abierta al lado la primera semana.')}
-      ${parrafo('<strong>Lo siguiente son tus jugadoras.</strong> Hasta que estén, el resto de la aplicación no tiene a quién convocar, a quién pasar lista ni a quién puntuar. Se añaden una a una con el nombre y el dorsal, y una plantilla entera son diez minutos.')}
-      ${boton(`${SITIO}/app/equipo`, 'Añadir a mis jugadoras')}
+      ${parrafo('<strong>Lo siguiente son tus jugadores.</strong> Hasta que estén, el resto de la aplicación no tiene a quién convocar, a quién pasar lista ni a quién puntuar. Se añaden una a una con el nombre y el dorsal, y una plantilla entera son diez minutos.')}
+      ${boton(`${SITIO}/app/equipo`, 'Añadir a mis jugadores')}
       ${parrafo(`Si prefieres leer la guía en el navegador, está <a href="${guiaUrl}" style="color:${TINTA}; font-weight:600;">aquí</a>.`)}
       ${parrafo(`¿Algo no funciona o no se entiende? Responde a este correo y lo leo yo.`)}
     </td></tr>`;
@@ -149,7 +149,7 @@ export function bienvenida(nombre: string | null, guiaUrl: string): Carta {
       '',
       'Te adjunto la guía en PDF: lo que hace la herramienta y cómo se hace cada cosa.',
       '',
-      'Lo siguiente son tus jugadoras. Hasta que estén, el resto de la aplicación',
+      'Lo siguiente son tus jugadores. Hasta que estén, el resto de la aplicación',
       'no tiene a quién convocar, a quién pasar lista ni a quién puntuar.',
       '',
       `Añadirlas: ${SITIO}/app/equipo`,

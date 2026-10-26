@@ -189,9 +189,9 @@ export function Dot({ tone = 'neutral', className }: { tone?: Tone; className?: 
 /**
  * Seis tonos de avatar, y ninguno con color.
  * ---------------------------------------------------------------------------
- * Una lista de jugadoras con dieciséis círculos idénticos no se lee: hay que ir
+ * Una lista de jugadores con dieciséis círculos idénticos no se lee: hay que ir
  * letra a letra. Hace falta que cada persona tenga su tono estable, para que la
- * vista distinga filas antes de leer y para reconocer a la misma jugadora en la
+ * vista distinga filas antes de leer y para reconocer a la misma jugador en la
  * plantilla, en la convocatoria y en la asistencia.
  *
  * Antes eso se hacía con ocho colores —azul, verde, naranja, morado…—, y ocho
@@ -369,7 +369,7 @@ export function Select({
  * estado, y la casilla se queda como estaba.
  *
  * No era teórico. Las tareas de Inicio no se podían marcar, y en la
- * importación de jugadoras no se podía quitar ninguna fila: las dos casillas
+ * importación de jugadores no se podía quitar ninguna fila: las dos casillas
  * van sin texto al lado, así que el único sitio donde se podía pulsar era
  * justo el que no funcionaba. Lo cazó `pruebas/crear.mjs` al intentar
  * desmarcar un entrenamiento de la lista de importar.
@@ -702,7 +702,7 @@ export function ConfirmDialog({
  *           móvil la acción debajo. Alto: el de dos renglones. Es lo que va
  *           dentro de un módulo del inicio o de un panel.
  *   `pleno` Centrado y con aire. SÓLO cuando el vacío ES la pantalla: una
- *           plantilla sin jugadoras, una biblioteca sin ejercicios. Ahí el
+ *           plantilla sin jugadores, una biblioteca sin ejercicios. Ahí el
  *           hueco no sobra, porque no hay nada más.
  *
  * En los dos casos el texto dice qué va a aparecer ahí y la acción lleva a
@@ -722,7 +722,7 @@ export function EmptyState({
       <div data-vacio="pleno" className={cn('px-6 py-10 text-center', className)}>
         <h3 className="text-md font-semibold text-ink-900">{title}</h3>
         {description && <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-muted">{description}</p>}
-        {/* `flex-wrap`: dos acciones con etiqueta larga —«Añadir jugadora» e
+        {/* `flex-wrap`: dos acciones con etiqueta larga —«Añadir jugador» e
             «Importar desde un archivo»— no caben en 320 px, y como los botones
             no parten su texto a propósito, lo que tiene que partir es la fila. */}
         {action && <div className="mt-5 flex flex-wrap justify-center gap-2">{action}</div>}
@@ -1058,7 +1058,7 @@ export function MenuItem({
  * EL TÍTULO ES OPCIONAL, y en las pantallas de sección no se pone. Ahí el
  * título lo dice la pestaña encendida, que está dos dedos más arriba: ponerlo
  * otra vez en grande es decir «Plantilla» dos veces seguidas y gastar en ello
- * el sitio de la primera jugadora. Sin título, esto es sólo la fila de
+ * el sitio de la primera jugador. Sin título, esto es sólo la fila de
  * acciones, y la pantalla empieza por su contenido.
  */
 export function PageHeader({

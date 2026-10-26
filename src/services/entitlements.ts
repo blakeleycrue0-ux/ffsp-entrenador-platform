@@ -75,12 +75,12 @@ export const CAPACIDADES: Record<Capacidad, Ficha> = {
   analiticas: { nombre: 'Analíticas', desde: 'free', lista: true },
 
   /* LA TABLA EXISTE Y LA PANTALLA NO. `session_player_ratings` está creada,
-     con su clave única por sesión y jugadora y su `check (rating between 1
+     con su clave única por sesión y jugador y su `check (rating between 1
      and 10)`, pero NINGUNA línea del código de la aplicación la lee ni la
      escribe: buscado «rating» en todo `src/` y no aparece una sola vez. Así
      que esto todavía no se puede usar, y por eso va a `lista: false`. Se
      pondrá a `true` el día que haya dónde meter la nota, no antes. */
-  valoraciones: { nombre: 'Evaluaciones de jugadoras (1–10)', desde: 'free', lista: false },
+  valoraciones: { nombre: 'Evaluaciones de jugadores (1–10)', desde: 'free', lista: false },
 
   /* ── LO QUE SE QUITÓ AL DEJAR DE SER UNA HERRAMIENTA DE ENTRENOS ───────
      Aquí vivían «Pizarra táctica», «Trayectorias a mano alzada» y «Exportar

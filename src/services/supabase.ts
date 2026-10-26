@@ -61,7 +61,7 @@ export const MENSAJE_SIN_CONEXION =
   'es correcta.';
 
 /**
- * Convierte el error técnico de Supabase en algo que una entrenadora pueda
+ * Convierte el error técnico de Supabase en algo que una entrenador pueda
  * entender. Regla del producto: nunca mostrar códigos crudos.
  */
 export function humanError(error: unknown): string {
@@ -113,7 +113,7 @@ export function humanError(error: unknown): string {
    *   insert or update on table "clubs" violates foreign key constraint
    *   "clubs_created_by_fkey"
    *
-   * Eso no le dice nada a una entrenadora y encima parece culpa suya. Se
+   * Eso no le dice nada a una entrenador y encima parece culpa suya. Se
    * traduce, se apunta a la salida que sí existe —recargar, porque al cargar
    * el espacio de trabajo se recompone el perfil— y se deja el detalle en la
    * consola para quien tenga que arreglarlo.

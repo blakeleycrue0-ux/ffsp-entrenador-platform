@@ -118,7 +118,7 @@ export default function DrillEditor() {
               <Textarea
                 value={form.description}
                 onChange={(e) => patch({ description: e.target.value })}
-                placeholder="Espacio, número de jugadoras, reglas, puntuación, rotaciones…"
+                placeholder="Espacio, número de jugadores, reglas, puntuación, rotaciones…"
                 className="min-h-[120px]"
               />
             </Field>
@@ -126,7 +126,7 @@ export default function DrillEditor() {
         </Panel>
 
 
-        <Desplegable titulo="Más opciones" pista="Etiquetas, material, jugadoras, edad y progresiones">
+        <Desplegable titulo="Más opciones" pista="Etiquetas, material, jugadores, edad y progresiones">
           <Field label="Etiquetas" hint="Determinan en qué filtros aparece.">
             <div className="flex flex-wrap gap-1.5">
               {TAGS.map((t) => (
@@ -149,7 +149,7 @@ export default function DrillEditor() {
           </Field>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Jugadoras">
+            <Field label="Jugadores">
               <Input value={form.players} onChange={(e) => patch({ players: e.target.value })} placeholder="12 – 18" />
             </Field>
             <Field label="Edad recomendada">

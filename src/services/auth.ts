@@ -124,14 +124,14 @@ export const auth = {
  * el cargo es descriptivo y no concede nada.
  */
 
-/** Ver teléfonos y datos de familias de las jugadoras. */
+/** Ver teléfonos y datos de familias de las jugadores. */
 export const canSeePersonalData = (staff: Staff | null): boolean =>
-  !!staff && ['entrenadora', 'segunda-entrenadora', 'coordinadora', 'directora-deportiva', 'admin-club']
+  !!staff && ['entrenador', 'segunda-entrenador', 'coordinadora', 'directora-deportiva', 'admin-club']
     .includes(staff.role);
 
 export const ROLE_LABEL: Record<StaffRole, string> = {
-  entrenadora: 'Entrenadora',
-  'segunda-entrenadora': 'Segunda entrenadora',
+  entrenador: 'Entrenador',
+  'segunda-entrenador': 'Segunda entrenador',
   'preparadora-fisica': 'Preparadora física',
   'directora-deportiva': 'Directora deportiva',
   coordinadora: 'Coordinadora',
@@ -139,8 +139,8 @@ export const ROLE_LABEL: Record<StaffRole, string> = {
 };
 
 export const ASSIGNABLE_ROLES: StaffRole[] = [
-  'entrenadora',
-  'segunda-entrenadora',
+  'entrenador',
+  'segunda-entrenador',
   'preparadora-fisica',
   'directora-deportiva',
   'coordinadora',

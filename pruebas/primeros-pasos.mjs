@@ -26,7 +26,7 @@ mkdirSync('salida/primeros-pasos', { recursive: true });
 
 const PASOS = [
   'Crea tu equipo',
-  'Mete a tus jugadoras',
+  'Mete a tus jugadores',
   'Pon el horario de entrenamiento',
   'Prepara tu primer entrenamiento',
   'Pasa tu primera lista',
@@ -156,7 +156,7 @@ async function leeGuia(page) {
 {
   console.log('\n  cada marca mira su dato');
   const casos = [
-    ['sin jugadoras', { players: [] }, 'Mete a tus jugadoras'],
+    ['sin jugadores', { players: [] }, 'Mete a tus jugadores'],
     ['sin sesiones', { sessions: [] }, 'Prepara tu primer entrenamiento'],
     ['sin listas', { attendance: [] }, 'Pasa tu primera lista'],
     ['sin partidos', { matches: [] }, 'Apunta el primer partido'],

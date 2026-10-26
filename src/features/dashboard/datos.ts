@@ -25,7 +25,7 @@ import type { CoachTask, Match, TrainingSession } from '@/types';
  * Una cosa que está sin hacer.
  *
  * TODAS SALEN DE UN DATO, nunca de una suposición: una sesión pasada sin
- * ninguna lista guardada, un partido sin convocatoria, una jugadora con el
+ * ninguna lista guardada, un partido sin convocatoria, una jugador con el
  * parte abierto. Si no hay dato, no hay pendiente —y entonces Inicio dice que
  * no hay nada pendiente, que también es una respuesta—.
  */
@@ -163,7 +163,7 @@ export function useInicio() {
     if (fuera > 0) {
       lista.push({
         clave: 'disponibilidad',
-        texto: fuera === 1 ? '1 jugadora no está disponible' : `${fuera} jugadoras no están disponibles`,
+        texto: fuera === 1 ? '1 jugador no está disponible' : `${fuera} jugadores no están disponibles`,
         a: '/app/disponibilidad',
       });
     }

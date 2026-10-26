@@ -112,7 +112,7 @@ const FICHA = {
     'Herramienta para el cuerpo técnico de un club de fútbol: plantilla, entrenamientos, '
     + 'partidos, control de asistencia, disponibilidad y calendario.',
   featureList: [
-    'Plantilla y fichas de jugadoras',
+    'Plantilla y fichas de jugadores',
     'Control de asistencia a entrenamientos',
     'Calendario de entrenamientos y partidos',
     'Disponibilidad y bajas',

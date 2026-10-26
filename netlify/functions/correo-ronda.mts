@@ -24,7 +24,7 @@
  *     lo que mantiene el canal abierto.
  *
  * QUÉ DICE EL AVISO depende de por dónde se quedó cada uno, que es lo único
- * que lo hace útil: al que no tiene jugadoras le habla de las jugadoras, no
+ * que lo hace útil: al que no tiene jugadores le habla de las jugadores, no
  * de «todo lo que te estás perdiendo».
  */
 
@@ -43,13 +43,13 @@ const BIENVENIDA_TARDE = 7;
  * Por dónde se ha quedado, dicho en una frase.
  *
  * Los dos clubes que se dieron de alta esta semana hicieron exactamente lo
- * mismo: club, equipo, y parados con cero jugadoras. Así que el primer caso
+ * mismo: club, equipo, y parados con cero jugadores. Así que el primer caso
  * de esta lista no es una suposición.
  */
-function loQueFalta(equipos: number, jugadoras: number, sesiones: number): string {
+function loQueFalta(equipos: number, jugadores: number, sesiones: number): string {
   if (equipos === 0) return 'Te quedaste sin crear el equipo, que son dos campos y treinta segundos.';
-  if (jugadoras === 0) {
-    return 'Te quedaste justo antes de añadir a las jugadoras. Es lo que desbloquea '
+  if (jugadores === 0) {
+    return 'Te quedaste justo antes de añadir a las jugadores. Es lo que desbloquea '
       + 'el resto: sin ellas no hay a quién convocar ni a quién pasar lista. Una '
       + 'plantilla entera son diez minutos.';
   }
@@ -111,9 +111,9 @@ export default async (): Promise<Response> => {
     const dias = Math.floor((ahora - new Date(visto!).getTime()) / DIA);
 
     try {
-      const { equipos, jugadoras, sesiones } = await porDondeVa(db, p.id);
+      const { equipos, jugadores, sesiones } = await porDondeVa(db, p.id);
       const carta = teEchamosDeMenos(
-        p.full_name, p.unsubscribe_token, dias, loQueFalta(equipos, jugadoras, sesiones),
+        p.full_name, p.unsubscribe_token, dias, loQueFalta(equipos, jugadores, sesiones),
       );
       const r = await unaVez(db, p.id, 'inactividad', () => envia({
         a: p.email, nombre: p.full_name, asunto: carta.asunto,
@@ -133,17 +133,17 @@ async function porDondeVa(db: ReturnType<typeof admin>, profileId: string) {
   const { data: miembro } = await db
     .from('club_members').select('club_id').eq('profile_id', profileId);
   const clubes = (miembro ?? []).map((m) => m.club_id);
-  if (clubes.length === 0) return { equipos: 0, jugadoras: 0, sesiones: 0 };
+  if (clubes.length === 0) return { equipos: 0, jugadores: 0, sesiones: 0 };
 
   const { data: equipos } = await db.from('teams').select('id').in('club_id', clubes);
   const ids = (equipos ?? []).map((t) => t.id);
-  if (ids.length === 0) return { equipos: 0, jugadoras: 0, sesiones: 0 };
+  if (ids.length === 0) return { equipos: 0, jugadores: 0, sesiones: 0 };
 
-  const [{ count: jugadoras }, { count: sesiones }] = await Promise.all([
+  const [{ count: jugadores }, { count: sesiones }] = await Promise.all([
     db.from('players').select('id', { count: 'exact', head: true }).in('team_id', ids),
     db.from('sessions').select('id', { count: 'exact', head: true }).in('team_id', ids),
   ]);
-  return { equipos: ids.length, jugadoras: jugadoras ?? 0, sesiones: sesiones ?? 0 };
+  return { equipos: ids.length, jugadores: jugadores ?? 0, sesiones: sesiones ?? 0 };
 }
 
 const respuesta = (hecho: { guias: number; avisos: number; fallos: string[] }) => {

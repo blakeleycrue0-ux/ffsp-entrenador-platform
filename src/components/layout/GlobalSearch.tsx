@@ -1,6 +1,6 @@
 /**
  * Búsqueda global (⌘K / Ctrl+K).
- * Busca jugadoras, equipos, entrenamientos, ejercicios, partidos y mensajes,
+ * Busca jugadores, equipos, entrenamientos, ejercicios, partidos y mensajes,
  * y muestra contexto útil en el propio resultado (asistencia, dorsal, fecha).
  */
 
@@ -12,7 +12,7 @@ import { globalSearch, playerAttendance, type SearchHit } from '@/store/selector
 import { cn } from '@/lib/utils';
 
 const ICONS: Record<SearchHit['kind'], typeof User> = {
-  jugadora: User,
+  jugador: User,
   equipo: Shield,
   entrenamiento: UserSquare2,
   ejercicio: Dumbbell,
@@ -21,7 +21,7 @@ const ICONS: Record<SearchHit['kind'], typeof User> = {
 };
 
 const KIND_LABEL: Record<SearchHit['kind'], string> = {
-  jugadora: 'Jugadora',
+  jugador: 'Jugador',
   equipo: 'Equipo',
   entrenamiento: 'Entrenamiento',
   ejercicio: 'Ejercicio',
@@ -69,7 +69,7 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
     }
   };
 
-  /** Contexto extra: al buscar una jugadora interesa su asistencia. */
+  /** Contexto extra: al buscar una jugador interesa su asistencia. */
   const playerMeta = (id: string) => {
     const player = data.players.find((p) => p.id === id);
     if (!player) return null;
@@ -88,7 +88,7 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Buscar jugadora, equipo, entrenamiento, ejercicio, partido…"
+            placeholder="Buscar jugador, equipo, entrenamiento, ejercicio, partido…"
             className="h-14 flex-1 bg-transparent text-base text-ink-900 outline-none placeholder:text-ink-400"
           />
           <kbd className="hidden rounded-md border border-line px-1.5 py-0.5 text-2xs font-medium text-ink-400 sm:block">
@@ -115,12 +115,12 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
           ) : hits.length === 0 ? (
             <div className="px-4 py-10 text-center">
               <p className="text-sm font-medium text-ink-700">Sin resultados para «{query}»</p>
-              <p className="mt-1 text-sm text-muted">Prueba con el nombre de una jugadora, un rival o una etiqueta.</p>
+              <p className="mt-1 text-sm text-muted">Prueba con el nombre de una jugador, un rival o una etiqueta.</p>
             </div>
           ) : (
             hits.map((hit, i) => {
               const Icon = ICONS[hit.kind];
-              const meta = hit.kind === 'jugadora' ? playerMeta(hit.id) : hit.meta;
+              const meta = hit.kind === 'jugador' ? playerMeta(hit.id) : hit.meta;
               return (
                 <button
                   key={`${hit.kind}-${hit.id}`}

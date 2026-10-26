@@ -4,9 +4,9 @@
  *
  * SUSTITUYEN AL TÍTULO DE LA PANTALLA, no lo acompañan. Antes, en Plantilla,
  * lo primero eran dos líneas: «Plantilla» en grande y «Gestiona las fichas,
- * posiciones y disponibilidad de tus jugadoras» debajo. Eso es un cartel que
+ * posiciones y disponibilidad de tus jugadores» debajo. Eso es un cartel que
  * dice dónde estás a alguien que acaba de pulsar para llegar ahí —y que ocupa
- * el sitio de la primera jugadora—. La pestaña encendida dice lo mismo en una
+ * el sitio de la primera jugador—. La pestaña encendida dice lo mismo en una
  * palabra, y de paso enseña a dónde más se puede ir desde aquí.
  *
  * SE PINTAN SOLAS, desde el armazón. Una pantalla no tiene que acordarse de
@@ -15,7 +15,7 @@
  *
  * NO LLEVAN CONTADORES. Se probó: «Plantilla 16 · Disponibilidad 3 · Datos».
  * Un número al lado de una palabra se lee como un aviso —«tres cosas que
- * atender»— y aquí no lo era: eran tres jugadoras tocadas, que es información,
+ * atender»— y aquí no lo era: eran tres jugadores tocadas, que es información,
  * no una tarea. Los números van dentro, donde significan algo.
  */
 

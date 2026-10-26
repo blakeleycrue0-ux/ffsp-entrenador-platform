@@ -256,7 +256,7 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
           como un grupo. Con tope quedan juntos y centrados, como en el
           teléfono. */}
       {/* LAS CUATRO ACCIONES. Las etiquetas dicen lo que hacen: «Asistencia»
-          en vez de «Lista» —que podía ser la lista de jugadoras— y «Entreno»
+          en vez de «Lista» —que podía ser la lista de jugadores— y «Entreno»
           en vez de «Sesión», que es una palabra de software. Y los iconos
           explican la acción: una pizarra con marca para pasar asistencia, un
           calendario con un más para apuntar un entreno, un balón para el
@@ -371,7 +371,7 @@ function Detalle({ d }: { d: DatosDeInicio }) {
           )}
           <span className="flex items-center gap-1.5">
             <Users size={14} className="text-ink-500" />
-            {ses.expectedPlayers} jugadoras
+            {ses.expectedPlayers} jugadores
           </span>
         </div>
 

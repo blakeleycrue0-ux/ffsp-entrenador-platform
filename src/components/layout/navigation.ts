@@ -65,7 +65,7 @@ export interface Seccion {
   /**
    * Prefijos que pertenecen a la sección sin ser pestaña: fichas, formularios
    * y pantallas de detalle. Sirven para que la navegación siga marcando dónde
-   * estás cuando entras en una jugadora o editas un partido.
+   * estás cuando entras en una jugador o editas un partido.
    */
   tambien?: string[];
 }

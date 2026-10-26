@@ -25,7 +25,7 @@
  * `/app` no se mide, y el motivo no es la privacidad en abstracto:
  *
  *   · Las direcciones de dentro llevan identificadores: `/app/plantilla/<id>`
- *     es una jugadora, `/app/entrenamientos/<id>` es una sesión. Mandar esas
+ *     es una jugador, `/app/entrenamientos/<id>` es una sesión. Mandar esas
  *     rutas a un tercero es mandarle la forma de la base de datos y el
  *     identificador de la ficha de una menor de edad.
  *   · El título de la pestaña lleva nombres propios en varias pantallas, y

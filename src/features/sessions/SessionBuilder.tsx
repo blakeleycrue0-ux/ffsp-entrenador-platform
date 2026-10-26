@@ -115,7 +115,7 @@ export default function SessionBuilder() {
   }, [existing]);
 
   /* Equipo y campo salen de los datos del club, no de un texto inventado: el
-     campo del equipo es el campo donde entrena, y las jugadoras esperadas son
+     campo del equipo es el campo donde entrena, y las jugadores esperadas son
      las que hay en la plantilla. Si alguien los cambia, no se vuelven a tocar.
      Sólo para una sesión nueva: editar una existente no pisa lo guardado. */
   useEffect(() => {
@@ -312,7 +312,7 @@ export default function SessionBuilder() {
                   placeholder="¿Qué quieres que mejoren hoy?"
                 />
               </Field>
-              <Field label="Número de jugadoras">
+              <Field label="Número de jugadores">
                 <Input
                   type="number"
                   value={draft.expectedPlayers}
@@ -354,7 +354,7 @@ export default function SessionBuilder() {
                 <Textarea
                   value={draft.notes ?? ''}
                   onChange={(e) => update({ notes: e.target.value })}
-                  placeholder="Notas para el cuerpo técnico, cargas individuales, jugadoras al margen…"
+                  placeholder="Notas para el cuerpo técnico, cargas individuales, jugadores al margen…"
                   className="min-h-[72px]"
                 />
               </Field>

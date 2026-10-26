@@ -73,7 +73,7 @@ export default function Onboarding() {
      nombre, y entonces bastaba con pulsar «Continuar» para guardar la
      dirección como nombre real. */
   const [nombre, setNombre] = useState(nombreReal(data.profile) ?? '');
-  const [cargo, setCargo] = useState<Staff['role']>(data.profile?.role ?? 'entrenadora');
+  const [cargo, setCargo] = useState<Staff['role']>(data.profile?.role ?? 'entrenador');
   const [club, setClub] = useState('');
   const [clubCorto, setClubCorto] = useState('');
   /** El club recién creado, hasta que se recarga todo al terminar. */

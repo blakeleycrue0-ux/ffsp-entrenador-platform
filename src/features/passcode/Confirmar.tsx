@@ -8,7 +8,7 @@
  *
  * CUÁNDO SE PIDE. Sólo para lo que de verdad importa: tocar el pago, cancelar
  * o bajar de plan, cambiar el propio código, borrar un club o una cuenta,
- * sacar datos fuera. NO al abrir la ficha de una jugadora: un candado que
+ * sacar datos fuera. NO al abrir la ficha de una jugador: un candado que
  * salta cada dos pantallas se convierte en un trámite que se teclea sin mirar,
  * y entonces ya no protege nada.
  *

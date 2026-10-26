@@ -1,5 +1,5 @@
 /**
- * PASAR LISTA. Un toque por jugadora que falta.
+ * PASAR LISTA. Un toque por jugador que falta.
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * ERA LA PEOR PANTALLA DE LA APLICACIÓN, y con diferencia:
@@ -7,7 +7,7 @@
  * sin una sola acción pintada como la principal. Y es la pantalla que se usa
  * dos veces por semana, de pie en el campo, con el móvil en una mano.
  *
- * Las 99 salían de una cuenta muy simple: dieciséis jugadoras × cinco botones
+ * Las 99 salían de una cuenta muy simple: dieciséis jugadores × cinco botones
  * de estado = ochenta, más dieciséis nombres enlazados a su ficha, más los
  * desplegables. Ochenta botones para decir que faltaron dos.
  *
@@ -95,10 +95,10 @@ export default function AttendancePage() {
   /** De quién se está eligiendo el motivo. */
   const [porQue, setPorQue] = useState<Player | null>(null);
 
-  /** El estado de partida de una jugadora: lo guardado, o su parte médico. */
+  /** El estado de partida de una jugador: lo guardado, o su parte médico. */
   const dePartida = (p: Player): { mark: AttendanceMark; reason?: string } =>
     existing?.marks[p.id] ?? {
-      /* Una jugadora con parte médico abierto entra ya como justificada: es un
+      /* Una jugador con parte médico abierto entra ya como justificada: es un
          dato que ya está en la base, no una suposición. */
       mark: p.availability.status === 'lesionada'
         ? 'lesionada'
@@ -219,13 +219,13 @@ export default function AttendancePage() {
   }
 
   /* QUEDA GENTE SIN MARCAR, Y ESO ES LO QUE DECIDE SI SE OFRECE EL ATAJO.
-     Antes la condición era «no hay NADIE marcado», y bastaba con una jugadora
+     Antes la condición era «no hay NADIE marcado», y bastaba con una jugador
      lesionada —que entra ya justificada, porque es un dato guardado— para que
      el botón de «Vinieron todas» no apareciera nunca. Lo cazó la auditoría:
      esta pantalla se quedaba con cero acciones principales. */
   const quedanPorMarcar = cuenta.sinMarcar > 0;
   /* «Sin empezar» ES QUE LA ENTRENADORA NO HAYA TOCADO NADA, no que no haya
-     ninguna marca: una jugadora con parte médico abierto llega ya justificada
+     ninguna marca: una jugador con parte médico abierto llega ya justificada
      —es un dato de la base— y eso no significa que la lista esté empezada. Con
      la otra definición, el botón decía «Las otras 15 vinieron» antes de que
      nadie hubiera hecho nada. */
@@ -302,7 +302,7 @@ export default function AttendancePage() {
           </Button>
           {sinEmpezar && (
             <p className="mt-2.5 text-base leading-relaxed text-ink-500">
-              Y luego toca sólo a las que faltaron. {squad.length} jugadoras en la plantilla.
+              Y luego toca sólo a las que faltaron. {squad.length} jugadores en la plantilla.
             </p>
           )}
         </div>

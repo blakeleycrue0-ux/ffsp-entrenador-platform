@@ -429,7 +429,7 @@ function EventModal({ event, onClose }: { event: CalendarEvent | null; onClose: 
       <dl className="space-y-3.5">
         {[
           [<Clock key="c" size={16} />, 'Horario', event.end ? `${event.start} – ${event.end}` : event.start],
-          [<Users key="u" size={16} />, 'Equipo', `${team?.name ?? '—'} · ${squad} jugadoras`],
+          [<Users key="u" size={16} />, 'Equipo', `${team?.name ?? '—'} · ${squad} jugadores`],
           [<MapPin key="m" size={16} />, 'Ubicación', event.venue ?? 'Sin definir'],
         ].map(([icon, label, value], i) => (
           <div key={i} className="flex items-start gap-3">

@@ -17,7 +17,7 @@ export interface Turno {
 export interface Respuesta {
   texto: string;
   /** Qué miró para contestar, para poder enseñarlo. */
-  miro: { jugadoras: number; sesiones: number; partidos: number };
+  miro: { jugadores: number; sesiones: number; partidos: number };
 }
 
 export async function pregunta(teamId: string, mensajes: Turno[]): Promise<Respuesta> {
@@ -38,5 +38,5 @@ export async function pregunta(teamId: string, mensajes: Turno[]): Promise<Respu
   if (!r.ok || !cuerpo?.texto) {
     throw new Error(cuerpo?.error ?? 'El asistente no ha podido contestar.');
   }
-  return { texto: cuerpo.texto, miro: cuerpo.miro ?? { jugadoras: 0, sesiones: 0, partidos: 0 } };
+  return { texto: cuerpo.texto, miro: cuerpo.miro ?? { jugadores: 0, sesiones: 0, partidos: 0 } };
 }

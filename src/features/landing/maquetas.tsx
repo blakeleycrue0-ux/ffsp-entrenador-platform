@@ -3,7 +3,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * QUÉ SON. Trozos de interfaz dibujados a mano que se parecen a los de verdad:
- * el panel de inicio, la ficha de una jugadora, la asistencia y la pizarra.
+ * el panel de inicio, la ficha de una jugador, la asistencia y la pizarra.
  * Sirven para que alguien que llega entienda en dos segundos qué es esto, sin
  * tener que registrarse para verlo.
  *
@@ -156,7 +156,7 @@ export function MaquetaPanel({ className = '' }: { className?: string }) {
   );
 }
 
-/* ═════════════════════════ 2 · Ficha de jugadora ═════════════════════════ */
+/* ═════════════════════════ 2 · Ficha de jugador ═════════════════════════ */
 
 /**
  * AQUÍ HABÍA UNA «VALORACIÓN POR SESIÓN» QUE NO EXISTE.
@@ -171,7 +171,7 @@ export function MaquetaPanel({ className = '' }: { className?: string }) {
  * sí está construido y es `attendance`, que la aplicación lee y guarda todos
  * los días.
  */
-export function MaquetaJugadora({ className = '' }: { className?: string }) {
+export function MaquetaJugador({ className = '' }: { className?: string }) {
   /* Siete sesiones: vino, vino, faltó, vino… */
   const sesiones = [true, true, false, true, true, true, false];
   return (

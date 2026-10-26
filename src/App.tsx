@@ -190,7 +190,7 @@ export default function App() {
           <Route path="perfil" element={<ProfilePage />} />
 
           {/* Direcciones anteriores */}
-          <Route path="jugadoras/*" element={<Navigate to="/app/plantilla" replace />} />
+          <Route path="jugadores/*" element={<Navigate to="/app/plantilla" replace />} />
           <Route path="jugadores/*" element={<Navigate to="/app/plantilla" replace />} />
           <Route path="planificaciones/*" element={<Navigate to="/app/entrenamientos" replace />} />
           <Route path="equipos/*" element={<Navigate to="/app/equipo-tecnico" replace />} />

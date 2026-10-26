@@ -12,11 +12,11 @@
 
 import { supabase } from './supabase';
 
-export type ClubRole = 'admin' | 'entrenadora' | 'asistente';
+export type ClubRole = 'admin' | 'entrenador' | 'asistente';
 
 export const CLUB_ROLE_LABEL: Record<ClubRole, string> = {
   admin: 'Administración del club',
-  entrenadora: 'Entrenadora',
+  entrenador: 'Entrenador',
   asistente: 'Asistente técnico',
 };
 

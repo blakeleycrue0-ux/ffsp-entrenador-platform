@@ -1,7 +1,7 @@
 /**
  * Servicio de calendario.
  * ---------------------------------------------------------------------------
- * Construye la agenda unificada de la entrenadora (entrenamientos + partidos +
+ * Construye la agenda unificada de la entrenador (entrenamientos + partidos +
  * convocatorias) y exporta a iCalendar. La sincronización bidireccional con
  * Google Calendar / Apple Calendar se conectará sobre `subscribeUrl()`.
  */

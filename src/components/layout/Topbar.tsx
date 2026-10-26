@@ -151,7 +151,7 @@ export function Topbar({
         <Search size={17} className="shrink-0 lg:hidden" />
         <Search size={15} className="hidden shrink-0 lg:block" />
         <span className="truncate lg:hidden">Buscar</span>
-        <span className="hidden lg:inline">Buscar jugadora, sesión, partido…</span>
+        <span className="hidden lg:inline">Buscar jugador, sesión, partido…</span>
         <kbd className="ml-auto hidden rounded border border-line px-1 py-px text-2xs font-medium lg:block">⌘K</kbd>
       </button>
 

@@ -118,7 +118,7 @@ export default function SessionDetail() {
           /* Un dato que no está se dice que no está: no se rellena con una
              raya que parezca un valor ni se convierte en cero. */
           [<MapPin key="2" size={16} />, 'Campo', s.venue || 'Sin definir', team?.name ?? ''],
-          [<Users key="3" size={16} />, 'Jugadoras', s.expectedPlayers > 0 ? `${s.expectedPlayers}` : 'Sin definir', 'convocadas a la sesión'],
+          [<Users key="3" size={16} />, 'Jugadores', s.expectedPlayers > 0 ? `${s.expectedPlayers}` : 'Sin definir', 'convocadas a la sesión'],
           [<Target key="4" size={16} />, 'Bloques', `${s.blocks.length}`, s.material.length === 1 ? '1 material' : `${s.material.length} materiales`],
         ].map(([icon, label, value, hint], i) => (
           <Panel key={i} className="flex items-start gap-3.5 p-4">

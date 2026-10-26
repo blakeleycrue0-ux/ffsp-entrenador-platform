@@ -91,7 +91,7 @@ export default function TeamDetail() {
           />
         </Panel>
         <Panel className="p-5">
-          <Figure label="Jugadoras" value={squad.length} hint={`${unavailable.length} no disponibles`} />
+          <Figure label="Jugadores" value={squad.length} hint={`${unavailable.length} no disponibles`} />
         </Panel>
         <Panel className="p-5">
           <Figure
@@ -163,7 +163,7 @@ export default function TeamDetail() {
 
             <Panel className="p-5 lg:col-span-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold">Jugadoras con menor asistencia</h3>
+                <h3 className="text-base font-semibold">Jugadores con menor asistencia</h3>
                 <Link to="/app/analiticas" className="text-xs font-medium text-ink-900 hover:text-ink-900">
                   Ver analíticas
                 </Link>
