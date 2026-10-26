@@ -63,7 +63,7 @@ import { ArrowRight, Check, Menu, Minus, Plus, X } from 'lucide-react';
 import { Wordmark } from '@/components/ui/Brand';
 import { billing, importe, type Plan } from '@/services/billing';
 import { loQueFalta, todoLoQueTrae } from '@/services/entitlements';
-import { MaquetaAsistencia, MaquetaJugadora, MaquetaPanel } from './maquetas';
+import { MaquetaAsistencia, MaquetaJugador, MaquetaPanel } from './maquetas';
 import { cn } from '@/lib/utils';
 
 /* ─────────────────────────── Aparecer al llegar ──────────────────────────── */
@@ -131,7 +131,7 @@ const NAV: [string, string][] = [
 
 /** Lo que pasa en la tira. Son los módulos que existen, uno por uno. */
 const MODULOS = [
-  'Plantilla', 'Asistencia', 'Entrenamientos', 'Pizarra táctica', 'Partidos',
+  'Plantilla', 'Asistencia', 'Entrenamientos', 'Convocatorias', 'Partidos',
   'Convocatorias', 'Calendario', 'Disponibilidad y lesiones', 'Biblioteca de ejercicios',
   'Analíticas', 'Cuerpo técnico',
 ];
@@ -146,7 +146,7 @@ const CLUB: [string, string, string][] = [
 const NO_HACE: [string, string][] = [
   ['No manda mensajes a las familias', 'Preparas la convocatoria y la copias donde ya habléis.'],
   ['No valora lesiones', 'Guarda lo que anota el cuerpo técnico. El criterio médico es del club.'],
-  ['No analiza vídeo de partidos', 'La pizarra es para dibujar jugadas, no para leer un partido grabado.'],
+  ['No analiza vídeo de partidos', 'Esto gestiona el club: plantilla, asistencia y calendario, no el análisis técnico.'],
 ];
 
 const FAQ: [string, string][] = [
@@ -512,7 +512,7 @@ function Portada() {
 
           <Revelar delay={170}>
             <p className="mx-auto mt-6 max-w-[34rem] text-[16.5px] leading-[1.55] text-white/80 sm:text-[18px]">
-              Plantilla, entrenamientos, asistencia, partidos y pizarra táctica.
+              Plantilla, asistencia, entrenamientos, partidos y convocatorias.
               Menos gestión. Más fútbol.
             </p>
           </Revelar>
@@ -550,7 +550,7 @@ function Portada() {
                 <div className="flota-b">
                   <Movil
                     src="/producto/plantilla-movil.png"
-                    alt="La plantilla del equipo en el móvil, con la asistencia de cada jugadora."
+                    alt="La plantilla del equipo en el móvil, con la asistencia de cada jugador."
                     className="!rounded-[1.5rem] !border-[5px]"
                   />
                 </div>
@@ -575,7 +575,7 @@ function Portada() {
                     escritorio="/producto/calendario.png"
                     movil="/producto/plantilla-movil.png"
                     alt="El calendario de Playoff360: entrenamientos, partidos y convocatorias de todos los equipos en una sola agenda."
-                    altMovil="La plantilla del equipo en el móvil: dieciséis jugadoras con su posición y su asistencia."
+                    altMovil="La plantilla del equipo en el móvil: dieciséis jugadores con su posición y su asistencia."
                     titulo="Calendario del club"
                     prioridad
                   />
@@ -587,7 +587,7 @@ function Portada() {
               </div>
 
               <div className="ala-2-der hidden w-[17%] shrink-0 lg:block">
-                <div className="flota-b"><MaquetaJugadora /></div>
+                <div className="flota-b"><MaquetaJugador /></div>
               </div>
             </div>
           </div>
@@ -691,7 +691,7 @@ function Declaracion() {
             <Pantalla
               escritorio="/producto/plantilla.png"
               movil="/producto/calendario-movil.png"
-              alt="La pantalla de plantilla, con las dieciséis jugadoras, su posición, su asistencia y su estado."
+              alt="La pantalla de plantilla, con las dieciséis jugadores, su posición, su asistencia y su estado."
               altMovil="El calendario del equipo en el móvil, con los entrenamientos y el partido de la semana."
               titulo="Plantilla · Cadete A"
             />
@@ -709,7 +709,7 @@ function Declaracion() {
 
         <div className="mt-20 grid gap-px overflow-hidden rounded-2xl bg-black/[0.07] sm:grid-cols-3 lg:mt-24">
           {([
-            ['Once módulos', 'Plantilla, asistencia, entrenamientos, ejercicios, partidos, convocatorias, calendario, disponibilidad, pizarra, analíticas y cuerpo técnico.'],
+            ['Diez módulos', 'Plantilla, asistencia, entrenamientos, ejercicios, partidos, convocatorias, calendario, disponibilidad, analíticas y cuerpo técnico.'],
             ['Un solo sitio', 'Nada de una hoja de cálculo para la asistencia y un grupo de mensajería para todo lo demás.'],
             ['Cero instalación', 'Se abre en el navegador. En el campo, desde el móvil; en casa, desde el ordenador.'],
           ] as [string, string][]).map(([t, d], i) => (
@@ -822,7 +822,7 @@ function Historias() {
                 <Pantalla
                   escritorio="/producto/analiticas.png"
                   movil="/producto/analiticas-movil.png"
-                  alt="El panel de analíticas, con la asistencia por jugadora y por sesión."
+                  alt="El panel de analíticas, con la asistencia por jugador y por sesión."
                   titulo="Analíticas · Cadete A"
                 />
               </div>
@@ -943,7 +943,7 @@ function Precios({ planes }: { planes: Plan[] | null }) {
      tabla de precios, que no es «qué trae» sino «cuál es el mío». */
   const PARA_QUIEN: Record<string, string> = {
     free: 'Para empezar con un equipo y ver si esto te sirve.',
-    pro: 'Para el entrenador que lleva su equipo y quiere la pizarra entera.',
+    pro: 'Para el entrenador que lleva su equipo y quiere más de uno.',
     max: 'Para el club con varios equipos y varias personas en el cuerpo técnico.',
   };
   const niveles = ['free', 'pro', 'max', 'club'] as const;

@@ -59,7 +59,7 @@ export default function AvailabilityPage() {
   const closed = (rows ?? []).filter((r) => r.resolvedOn);
   const visible = tab === 'abiertos' ? open : closed;
 
-  const playerName = (id: string) => squad.find((p) => p.id === id)?.name ?? 'Jugadora dada de baja';
+  const playerName = (id: string) => squad.find((p) => p.id === id)?.name ?? 'Jugador dada de baja';
 
   const openDetail = async (injury: Injury) => {
     setDetail(injury);
@@ -74,7 +74,7 @@ export default function AvailabilityPage() {
 
   const saveInjury = async () => {
     if (!editing?.playerId || !teamId || !userId) {
-      toast.error('Falta la jugadora', 'Elige a quién corresponde el parte.');
+      toast.error('Falta la jugador', 'Elige a quién corresponde el parte.');
       return;
     }
     setBusy(true);
@@ -215,7 +215,7 @@ export default function AvailabilityPage() {
               title={tab === 'abiertos' ? 'No hay ningún parte abierto' : 'No hay partes cerrados'}
               description={
                 tab === 'abiertos'
-                  ? 'Cuando una jugadora se lesione o tenga molestias, anótalo aquí para que quede constancia del seguimiento.'
+                  ? 'Cuando una jugador se lesione o tenga molestias, anótalo aquí para que quede constancia del seguimiento.'
                   : 'Aquí se guardan los partes ya resueltos, con su historial.'
               }
               /* EL BOTÓN DE LA CABECERA Y ÉSTE SON LA MISMA ACCIÓN, y estaban
@@ -290,7 +290,7 @@ export default function AvailabilityPage() {
       >
         {editing && (
           <div className="space-y-3">
-            <Field label="Jugadora" required>
+            <Field label="Jugador" required>
               <Select
                 value={editing.playerId ?? ''}
                 onChange={(e) => setEditing({ ...editing, playerId: e.target.value })}

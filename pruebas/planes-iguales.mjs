@@ -72,7 +72,7 @@ const PLANES = [
 /** Las frases de «para quién es cada plan». Tienen que estar en los dos sitios. */
 const PARA_QUIEN = {
   free: 'Para empezar con un equipo y ver si esto te sirve.',
-  pro: 'Para el entrenador que lleva su equipo y quiere la pizarra entera.',
+  pro: 'Para el entrenador que lleva su equipo y quiere más de uno.',
   max: 'Para el club con varios equipos y varias personas en el cuerpo técnico.',
 };
 

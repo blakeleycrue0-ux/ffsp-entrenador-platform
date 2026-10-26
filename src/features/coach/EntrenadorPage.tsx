@@ -8,7 +8,7 @@
  * venderlo mejor de lo que es:
  *
  *  · QUÉ HA MIRADO. Debajo de cada respuesta va lo que tenía delante —tantas
- *    jugadoras, tantas sesiones, tantos partidos—. Una respuesta sobre un
+ *    jugadores, tantas sesiones, tantos partidos—. Una respuesta sobre un
  *    equipo con cero listas pasadas vale menos que una sobre cuarenta, y
  *    quien lee tiene derecho a saber cuál de las dos está leyendo.
  *
@@ -34,7 +34,7 @@ const PARA_EMPEZAR = [
   '¿Quién está faltando más a los entrenamientos?',
   '¿Qué tengo esta semana?',
   'Móntame un calentamiento de 15 minutos',
-  '¿Con cuántas jugadoras cuento para el próximo partido?',
+  '¿Con cuántas jugadores cuento para el próximo partido?',
 ];
 
 export default function EntrenadorPage() {
@@ -43,7 +43,7 @@ export default function EntrenadorPage() {
   const equipos = visibleTeams(data);
 
   const [turnos, setTurnos] = useState<Turno[]>([]);
-  const [miro, setMiro] = useState<{ jugadoras: number; sesiones: number; partidos: number } | null>(null);
+  const [miro, setMiro] = useState<{ jugadores: number; sesiones: number; partidos: number } | null>(null);
   const [texto, setTexto] = useState('');
   const [pensando, setPensando] = useState(false);
   const [fallo, setFallo] = useState<string | null>(null);
@@ -163,7 +163,7 @@ export default function EntrenadorPage() {
               una sobre cuarenta, y eso tiene que verse. */}
           {miro && !pensando && (
             <p className="pt-1 text-xs text-ink-400">
-              Ha mirado {miro.jugadoras} jugadora{miro.jugadoras === 1 ? '' : 's'},{' '}
+              Ha mirado {miro.jugadores} jugador{miro.jugadores === 1 ? '' : 's'},{' '}
               {miro.sesiones} entrenamiento{miro.sesiones === 1 ? '' : 's'} y{' '}
               {miro.partidos} partido{miro.partidos === 1 ? '' : 's'} de este equipo.
             </p>

@@ -75,10 +75,10 @@ const PASOS: Paso[] = [
   },
   {
     id: 'plantilla',
-    titulo: 'Mete a tus jugadoras',
+    titulo: 'Mete a tus jugadores',
     porque: 'Sin plantilla no hay lista que pasar ni convocatoria que preparar.',
     a: () => '/app/plantilla/nueva',
-    accion: 'Añadir jugadoras',
+    accion: 'Añadir jugadores',
     hecho: (d) => d.players.some((p) => !p.archivedAt),
   },
   {
@@ -149,7 +149,7 @@ export function hayGuia(d: ClubData): boolean {
  * Los pasos que esta persona puede dar.
  *
  * Crear el equipo sólo lo puede hacer la administración del club: a una
- * entrenadora a la que todavía no le han asignado equipo, poner «Crea tu
+ * entrenador a la que todavía no le han asignado equipo, poner «Crea tu
  * equipo» con su botón es mandarla a una pantalla que le va a decir que no.
  * Para ella la guía empieza cuando tiene equipo.
  */

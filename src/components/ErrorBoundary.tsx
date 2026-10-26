@@ -3,7 +3,7 @@
  * ---------------------------------------------------------------------------
  * Sin esto, un solo fallo al pintar cualquier pantalla deja a React sin árbol y
  * el navegador se queda EN BLANCO: ni mensaje, ni menú, ni forma de volver.
- * Pasó de verdad — una jugadora con un estado de disponibilidad que el código
+ * Pasó de verdad — una jugador con un estado de disponibilidad que el código
  * no conocía tumbaba la plantilla entera — y desde fuera es indistinguible de
  * «la aplicación no carga».
  *

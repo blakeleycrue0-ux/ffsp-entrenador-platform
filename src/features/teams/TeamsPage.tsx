@@ -71,7 +71,7 @@ export default function TeamsPage() {
                     <p className="mt-1 text-sm text-muted">{o.team.competition}</p>
                     <div className="mt-2.5 flex flex-wrap gap-1.5">
                       <Tag tone="neutral" size="sm">
-                        <Users size={11} /> {o.squadSize} jugadoras
+                        <Users size={11} /> {o.squadSize} jugadores
                       </Tag>
                       {o.unavailable > 0 && (
                         <Tag tone="warn" size="sm">

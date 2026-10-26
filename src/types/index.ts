@@ -11,8 +11,8 @@ import type { Plan, Subscription } from '@/services/billing';
 /* ────────────────────────────── Identidad y accesos ───────────────────────── */
 
 export type StaffRole =
-  | 'entrenadora'
-  | 'segunda-entrenadora'
+  | 'entrenador'
+  | 'segunda-entrenador'
   | 'preparadora-fisica'
   | 'directora-deportiva'
   | 'coordinadora'
@@ -58,11 +58,11 @@ export interface Staff {
  * pertenece a un club no ve nada, y el servidor lo impone con sus políticas de
  * acceso, no la interfaz.
  */
-export type ClubRole = 'admin' | 'entrenadora' | 'asistente';
+export type ClubRole = 'admin' | 'entrenador' | 'asistente';
 
 export const CLUB_ROLE_LABEL: Record<ClubRole, string> = {
   admin: 'Administración del club',
-  entrenadora: 'Entrenadora',
+  entrenador: 'Entrenador',
   asistente: 'Asistente técnico',
 };
 
@@ -110,19 +110,19 @@ export interface TeamStaffLink {
   role: StaffRole;
 }
 
-/* ───────────────────────────────── Jugadoras ──────────────────────────────── */
+/* ───────────────────────────────── Jugadores ──────────────────────────────── */
 
 export const POSITIONS = [
-  'Portera',
+  'Portero',
   'Central',
-  'Lateral derecha',
-  'Lateral izquierda',
+  'Lateral derecho',
+  'Lateral izquierdo',
   'Pivote',
   'Interior',
   'Mediapunta',
-  'Extremo derecha',
-  'Extremo izquierda',
-  'Delantera',
+  'Extremo derecho',
+  'Extremo izquierdo',
+  'Delantero',
 ] as const;
 
 export type PlayerPosition = (typeof POSITIONS)[number];
@@ -177,7 +177,7 @@ export interface Player {
   notes?: string;
   joinedAt: string;
   /**
-   * Una jugadora que deja el equipo se archiva, no se borra: su historial de
+   * Una jugador que deja el equipo se archiva, no se borra: su historial de
    * asistencia, partidos y minutos sigue siendo válido.
    */
   archivedAt?: string;
@@ -430,7 +430,7 @@ export interface ActivityItem {
   text: string;
   at: string;
   teamId?: string;
-  kind: 'sesion' | 'asistencia' | 'convocatoria' | 'mensaje' | 'jugadora' | 'equipo';
+  kind: 'sesion' | 'asistencia' | 'convocatoria' | 'mensaje' | 'jugador' | 'equipo';
   link?: string;
 }
 

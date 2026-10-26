@@ -37,7 +37,7 @@
  * ninguna lista. Aquí eso se enseña como «—», no como 0 %. Es importante:
  * un club que acaba de empezar no tiene una asistencia del cero por ciento,
  * tiene una asistencia que nadie ha medido, y pintarle un cero es decirle
- * que sus jugadoras no van a entrenar.
+ * que sus jugadores no van a entrenar.
  */
 
 import { useState } from 'react';
@@ -271,7 +271,7 @@ export default function Dashboard() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-base font-medium text-ink-900">{t.name}</p>
                       <p className="mt-0.5 truncate text-xs text-ink-500">
-                        {o.squadSize} {o.squadSize === 1 ? 'jugadora' : 'jugadoras'}
+                        {o.squadSize} {o.squadSize === 1 ? 'jugador' : 'jugadores'}
                         {o.nextSession ? ` · entrena ${relativeDay(o.nextSession.date).toLowerCase()}` : ''}
                         {o.unavailable > 0 ? ` · ${o.unavailable} no disponibles` : ''}
                       </p>
@@ -474,7 +474,7 @@ function SesionGrande({ sesion, equipo }: { sesion: TrainingSession; equipo?: st
         )}
         <span className="flex items-center gap-1.5">
           <Users size={14} className="text-ink-400" />
-          {sesion.expectedPlayers} jugadoras
+          {sesion.expectedPlayers} jugadores
         </span>
       </div>
 

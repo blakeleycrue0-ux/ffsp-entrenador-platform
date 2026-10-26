@@ -18,7 +18,7 @@
  *    archivo no está haciendo su trabajo.
  *  · Lo único que una página elige es CUÁNTO ANCHO necesita, porque eso
  *    depende de la tarea: un formulario se lee mal a mil píxeles y una
- *    plantilla de veintidós jugadoras se lee mal a setecientos.
+ *    plantilla de veintidós jugadores se lee mal a setecientos.
  */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';

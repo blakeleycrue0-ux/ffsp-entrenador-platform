@@ -9,7 +9,7 @@
  *
  * ── POR QUÉ IMPORTA MÁS QUE DE COSTUMBRE ───────────────────────────────────
  *
- * Las jugadoras son MENORES. En `players` hay teléfono, correo, tutores,
+ * Las jugadores son MENORES. En `players` hay teléfono, correo, tutores,
  * fecha de nacimiento y notas libres; en `attendance` cada falta puede llevar
  * un motivo escrito a mano, que es donde la gente escribe «tiene el tobillo
  * fatal». Nada de eso sale de la base de datos. Lo que se manda es:
@@ -50,7 +50,7 @@ const enCastellano = (iso: string): string => {
 export interface Contexto {
   texto: string;
   /** Para poder decir en la pantalla qué ha mirado, sin tener que fiarse. */
-  resumen: { jugadoras: number; sesiones: number; partidos: number };
+  resumen: { jugadores: number; sesiones: number; partidos: number };
 }
 
 /**
@@ -64,7 +64,7 @@ export async function contextoDelEquipo(teamId: string): Promise<Contexto> {
   const db = admin();
   const hoy = new Date().toISOString().slice(0, 10);
 
-  const [equipo, jugadoras, sesiones, asistencias, partidos] = await Promise.all([
+  const [equipo, jugadores, sesiones, asistencias, partidos] = await Promise.all([
     db.from('teams').select('name, category, season, competition, modality').eq('id', teamId).maybeSingle(),
     db.from('players').select('id, name, short_name, number, position, availability_status')
       .eq('team_id', teamId).is('archived_at', null),
@@ -76,7 +76,7 @@ export async function contextoDelEquipo(teamId: string): Promise<Contexto> {
   ]);
 
   const eq = equipo.data;
-  const plantilla = jugadoras.data ?? [];
+  const plantilla = jugadores.data ?? [];
   const ses = sesiones.data ?? [];
   const asis = asistencias.data ?? [];
   const par = partidos.data ?? [];
@@ -94,13 +94,13 @@ export async function contextoDelEquipo(teamId: string): Promise<Contexto> {
 
   /* ── PLANTILLA: nombre de pila, dorsal, puesto y su asistencia ──────────
      El porcentaje se calcula aquí, sobre las sesiones en las que se pasó
-     lista de verdad. Una jugadora que entró en enero no arrastra las faltas
+     lista de verdad. Una jugador que entró en enero no arrastra las faltas
      de septiembre, porque sólo cuentan las listas donde aparece. */
   const pasadas = asis.filter((a) => a.date <= hoy);
-  lineas.push(`PLANTILLA (${plantilla.length} jugadoras). Asistencia sobre ${pasadas.length} sesiones con lista pasada:`);
+  lineas.push(`PLANTILLA (${plantilla.length} jugadores). Asistencia sobre ${pasadas.length} sesiones con lista pasada:`);
 
   if (plantilla.length === 0) {
-    lineas.push('  (todavía no hay ninguna jugadora dada de alta)');
+    lineas.push('  (todavía no hay ninguna jugador dada de alta)');
   }
 
   for (const p of plantilla) {
@@ -159,6 +159,6 @@ export async function contextoDelEquipo(teamId: string): Promise<Contexto> {
 
   return {
     texto: lineas.join('\n'),
-    resumen: { jugadoras: plantilla.length, sesiones: ses.length, partidos: par.length },
+    resumen: { jugadores: plantilla.length, sesiones: ses.length, partidos: par.length },
   };
 }

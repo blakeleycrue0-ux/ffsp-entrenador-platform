@@ -681,7 +681,7 @@ export const db = {
     if (error) throw error;
   },
 
-  /* Jugadoras */
+  /* Jugadores */
   savePlayer: (p: Player) => one(supabase.from('players').upsert(fromPlayer(p)).select().single(), toPlayer),
 
   deletePlayer: async (id: string) => {

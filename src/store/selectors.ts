@@ -79,7 +79,7 @@ export const callupOfMatch = (data: ClubData, matchId?: string): Callup | undefi
 
 /**
  * Regla de la casa: el porcentaje de asistencia se calcula **sólo sobre las
- * sesiones en las que la jugadora podía estar y se pasó lista**. Una falta
+ * sesiones en las que la jugador podía estar y se pasó lista**. Una falta
  * justificada, una lesión o una sesión sin registrar no cuentan como cero: no
  * hay dato, y así se dice. Por eso el porcentaje puede ser `null`.
  */
@@ -106,7 +106,7 @@ export const summarizeRecord = (record: AttendanceRecord | undefined, squadSize:
     justified,
     injured,
     absent,
-    /** Jugadoras de las que nadie ha dicho nada todavía. */
+    /** Jugadores de las que nadie ha dicho nada todavía. */
     unregistered: Math.max(0, squadSize - registered),
     /** `null` cuando no hay ninguna marca sobre la que calcular. */
     rate: computable === 0 ? null : pct(present + late, computable),
@@ -232,7 +232,7 @@ export const teamOverview = (data: ClubData, team: Team): TeamOverview => {
 
 export interface SearchHit {
   id: string;
-  kind: 'jugadora' | 'equipo' | 'entrenamiento' | 'ejercicio' | 'partido' | 'mensaje';
+  kind: 'jugador' | 'equipo' | 'entrenamiento' | 'ejercicio' | 'partido' | 'mensaje';
   title: string;
   subtitle: string;
   meta?: string;
@@ -251,11 +251,11 @@ export function globalSearch(data: ClubData, query: string): SearchHit[] {
     .forEach((p) =>
       hits.push({
         id: p.id,
-        kind: 'jugadora',
+        kind: 'jugador',
         title: p.name,
         subtitle: `${teamName(p.teamId)}${p.position ? ` · ${p.position}` : ''}`,
         meta: `Dorsal ${p.number}`,
-        to: `/app/jugadoras/${p.id}`,
+        to: `/app/jugadores/${p.id}`,
       }),
     );
 

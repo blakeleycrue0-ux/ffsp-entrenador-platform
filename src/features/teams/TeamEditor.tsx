@@ -75,7 +75,7 @@ export default function TeamEditor() {
         text: existing ? `Has actualizado el equipo ${saved.name}.` : `Has creado el equipo ${saved.name}.`,
         link: `/app/equipo-tecnico/${saved.id}`,
       });
-      toast.success(existing ? 'Equipo actualizado' : 'Equipo creado', 'Ya puedes asignarle cuerpo técnico y jugadoras.');
+      toast.success(existing ? 'Equipo actualizado' : 'Equipo creado', 'Ya puedes asignarle cuerpo técnico y jugadores.');
       navigate(`/app/equipo-tecnico/${saved.id}`);
     } catch (e) {
       toast.error('No hemos podido guardar el equipo', humanError(e));
@@ -224,7 +224,7 @@ export default function TeamEditor() {
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         title={`¿Eliminar ${existing?.name}?`}
-        description="Se borrarán también sus jugadoras, entrenamientos, partidos y asistencia."
+        description="Se borrarán también sus jugadores, entrenamientos, partidos y asistencia."
         footer={
           <>
             <Button variant="ghost" onClick={() => setConfirmDelete(false)}>

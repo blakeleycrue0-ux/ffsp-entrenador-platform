@@ -98,7 +98,7 @@ export default function ProfilePage() {
               <Ring value={o.attendanceRate} size={54} stroke={5} />
               <div className="min-w-0">
                 <p className="truncate text-base font-semibold text-ink-900">{t.name}</p>
-                <p className="mt-0.5 text-xs text-muted">{o.squadSize} jugadoras</p>
+                <p className="mt-0.5 text-xs text-muted">{o.squadSize} jugadores</p>
                 <p className="mt-1 truncate text-xs text-ink-400">
                   {o.nextSession ? `Entrena ${relativeDay(o.nextSession.date).toLowerCase()}` : 'Sin sesión planificada'}
                 </p>

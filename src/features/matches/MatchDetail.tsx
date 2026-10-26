@@ -2,7 +2,7 @@
  * Detalle de partido + gestor de convocatoria.
  * ---------------------------------------------------------------------------
  * Flujo objetivo (menos clics): Partido → Crear convocatoria → Seleccionar
- * jugadoras y se comparte la lista. Todo ocurre en esta pantalla.
+ * jugadores y se comparte la lista. Todo ocurre en esta pantalla.
  */
 
 import { useMemo, useState } from 'react';
@@ -177,7 +177,7 @@ export default function MatchDetail() {
                 </span>
                 <h3 className="text-md font-semibold text-ink-800">Todavía no hay convocatoria</h3>
                 <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">
-                  Parte de las jugadoras disponibles, ajusta la selección y copia la lista para
+                  Parte de las jugadores disponibles, ajusta la selección y copia la lista para
                   compartirla. Las respuestas las registras tú según te vayan contestando.
                 </p>
                 <div className="mt-6 flex justify-center">
@@ -189,11 +189,11 @@ export default function MatchDetail() {
             </Panel>
           ) : (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
-              {/* Lista de jugadoras */}
+              {/* Lista de jugadores */}
               <Panel className="overflow-hidden">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
                   <div>
-                    <h2 className="text-base font-semibold">Selección de jugadoras</h2>
+                    <h2 className="text-base font-semibold">Selección de jugadores</h2>
                     <p className="mt-0.5 text-xs text-muted">
                       {selected.length} de {callup.slots} plazas · {unavailable.length} no disponibles
                     </p>
@@ -393,7 +393,7 @@ export default function MatchDetail() {
             </Panel>
 
             <Panel className="p-5">
-              <h2 className="text-base font-semibold">Notas de la entrenadora</h2>
+              <h2 className="text-base font-semibold">Notas de la entrenador</h2>
               {match.notes ? (
                 <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink-600">{match.notes}</p>
               ) : (

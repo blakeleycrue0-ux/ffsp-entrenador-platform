@@ -49,7 +49,7 @@ export default function PlayerDetail() {
         to="/app/plantilla"
         className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-900"
       >
-        <ArrowLeft size={15} /> Jugadoras
+        <ArrowLeft size={15} /> Jugadores
       </Link>
 
       {/* Encabezado de ficha */}
@@ -254,7 +254,7 @@ export default function PlayerDetail() {
             {canSeeContact ? (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <p className="eyebrow">Datos de la jugadora</p>
+                  <p className="eyebrow">Datos de la jugador</p>
                   <dl className="mt-3 space-y-2.5 text-sm">
                     <div className="flex justify-between gap-4">
                       <dt className="text-muted">Fecha de nacimiento</dt>
@@ -281,7 +281,7 @@ export default function PlayerDetail() {
                   <p className="eyebrow">Familia / tutores</p>
                   {player.guardians.length === 0 ? (
                     <p className="mt-3 text-sm text-muted">
-                      Jugadora mayor de edad: la comunicación se hace directamente con ella.
+                      Jugador mayor de edad: la comunicación se hace directamente con ella.
                     </p>
                   ) : (
                     <ul className="mt-3 space-y-3">
@@ -308,7 +308,7 @@ export default function PlayerDetail() {
                 <User size={26} className="mx-auto text-ink-300" />
                 <p className="mt-3 text-sm font-medium text-ink-700">Datos de contacto restringidos</p>
                 <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted">
-                  Tu rol no tiene permiso para ver la información personal de las jugadoras ni la de sus familias.
+                  Tu rol no tiene permiso para ver la información personal de las jugadores ni la de sus familias.
                 </p>
               </div>
             )}

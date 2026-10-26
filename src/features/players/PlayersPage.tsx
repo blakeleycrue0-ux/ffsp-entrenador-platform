@@ -14,10 +14,10 @@ import { useAnchura } from '@/components/layout/AppShell';
 
 const POSITION_GROUPS: { id: string; label: string; positions: PlayerPosition[] }[] = [
   { id: 'todas', label: 'Todas', positions: [] },
-  { id: 'por', label: 'Porteras', positions: ['Portera'] },
-  { id: 'def', label: 'Defensas', positions: ['Central', 'Lateral derecha', 'Lateral izquierda'] },
+  { id: 'por', label: 'Porteras', positions: ['Portero'] },
+  { id: 'def', label: 'Defensas', positions: ['Central', 'Lateral derecho', 'Lateral izquierdo'] },
   { id: 'med', label: 'Medios', positions: ['Pivote', 'Interior', 'Mediapunta'] },
-  { id: 'del', label: 'Delanteras', positions: ['Extremo derecha', 'Extremo izquierda', 'Delantera'] },
+  { id: 'del', label: 'Delanteras', positions: ['Extremo derecho', 'Extremo izquierdo', 'Delantero'] },
 ];
 
 export default function PlayersPage() {
@@ -70,7 +70,7 @@ export default function PlayersPage() {
               Importar
             </Button>
             <LinkButton to="/app/plantilla/nueva" size="sm" icon={<Plus size={16} />}>
-              Añadir jugadora
+              Añadir jugador
             </LinkButton>
           </>
         }
@@ -81,7 +81,7 @@ export default function PlayersPage() {
       {/* UNA FILA DE FILTROS, NO DOS.
           Había un buscador, dos desplegables, y debajo —tras una línea
           divisoria— cinco botones de demarcación con su icono de embudo: once
-          cosas que atender antes de ver a la primera jugadora. Y la
+          cosas que atender antes de ver a la primera jugador. Y la
           demarcación y el estado son la misma clase de pregunta —«enséñame
           sólo las que…»—, así que no hay motivo para que una sea un
           desplegable y la otra cinco botones.
@@ -95,12 +95,12 @@ export default function PlayersPage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar jugadora por nombre…"
+              placeholder="Buscar jugador por nombre…"
               className="pl-10"
             />
           </div>
           {/* Los filtros se deslizan si no caben: partirlos en dos renglones
-              dejaba la cuenta de jugadoras pegada a un desplegable. */}
+              dejaba la cuenta de jugadores pegada a un desplegable. */}
           <div className="-mx-[var(--pagina-x)] flex gap-2.5 overflow-x-auto px-[var(--pagina-x)] no-scrollbar sm:mx-0 sm:px-0">
             {/* El equipo sólo se pregunta cuando hay más de uno. */}
             {teams.length > 1 && (
@@ -131,11 +131,11 @@ export default function PlayersPage() {
         </div>
 
         {/* La cuenta, sólo cuando un filtro está escondiendo a alguien: con la
-            plantilla entera a la vista, «16 de 16 jugadoras» es una línea para
+            plantilla entera a la vista, «16 de 16 jugadores» es una línea para
             decir que no falta nadie. */}
         {players.length !== data.players.filter((p) => p.teamId === teamId).length && (
           <p className="mt-2.5 text-sm text-ink-500">
-            {players.length} de {data.players.filter((p) => p.teamId === teamId).length} jugadoras
+            {players.length} de {data.players.filter((p) => p.teamId === teamId).length} jugadores
           </p>
         )}
       </div>
@@ -147,17 +147,17 @@ export default function PlayersPage() {
             title={
               data.players.filter((p) => p.teamId === teamId).length === 0
                 ? 'Tu plantilla todavía está vacía'
-                : 'Ninguna jugadora coincide con el filtro'
+                : 'Ninguna jugador coincide con el filtro'
             }
             description={
               data.players.filter((p) => p.teamId === teamId).length === 0
-                ? 'Añade a tus jugadoras una a una. Con el nombre y el dorsal ya puedes empezar a pasar asistencia y a convocar.'
+                ? 'Añade a tus jugadores una a una. Con el nombre y el dorsal ya puedes empezar a pasar asistencia y a convocar.'
                 : 'Prueba a limpiar la búsqueda o a seleccionar otra demarcación.'
             }
             action={
               <>
                 <LinkButton to="/app/plantilla/nueva" size="sm">
-                  Añadir jugadora
+                  Añadir jugador
                 </LinkButton>
                 <Button variant="secondary" size="sm" onClick={() => setImporting(true)} disabled={!teamId}>
                   Importar desde un archivo
@@ -169,7 +169,7 @@ export default function PlayersPage() {
       ) : view === 'lista' ? (
         <Panel className="overflow-hidden">
           <div className="hidden border-b border-ink-100 bg-ink-50/50 px-5 py-2.5 text-2xs font-medium uppercase tracking-wide text-ink-400 sm:flex">
-            <span className="flex-1">Jugadora</span>
+            <span className="flex-1">Jugador</span>
             <span className="w-40">Posición</span>
             <span className="w-24 text-right">Asistencia</span>
             <span className="w-32 pl-4">Estado</span>
@@ -252,7 +252,7 @@ export default function PlayersPage() {
       )}
 
       <p className="mt-5 text-xs text-ink-400">
-        {team?.name} · Los datos de contacto de las jugadoras y sus familias son privados y sólo se muestran en la
+        {team?.name} · Los datos de contacto de las jugadores y sus familias son privados y sólo se muestran en la
         ficha individual.
       </p>
     </>

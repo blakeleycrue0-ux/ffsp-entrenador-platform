@@ -1,5 +1,5 @@
 /**
- * Alta y edición de jugadoras.
+ * Alta y edición de jugadores.
  * Sólo se piden los datos imprescindibles para empezar: nombre, dorsal y
  * posición. Todo lo demás es opcional y se puede completar más adelante.
  */
@@ -59,12 +59,12 @@ export default function PlayerEditor() {
    * EL DORSAL SE AJUSTA CUANDO LLEGA LA PLANTILLA, Y ESTO ERA UN FALLO REAL.
    *
    * `nextNumber` busca el primer número libre, pero el formulario se monta
-   * con el valor que hubiera en ESE instante, y al abrir «Nueva jugadora»
+   * con el valor que hubiera en ESE instante, y al abrir «Nueva jugador»
    * con la página recién cargada la plantilla todavía no ha llegado: la
    * lista está vacía, el primer libre es el 1, y cuando los datos aparecen
    * el formulario se queda con el 1 puesto. Resultado: un formulario en
    * blanco que ya trae un error en rojo —«ese dorsal ya lo lleva otra
-   * jugadora»— sin que nadie haya escrito nada. Medido abriendo la ruta
+   * jugador»— sin que nadie haya escrito nada. Medido abriendo la ruta
    * directamente, que es justo lo que hace un enlace compartido.
    *
    * Mientras el dorsal no lo haya tocado una persona, sigue al primer libre.
@@ -92,7 +92,7 @@ export default function PlayerEditor() {
 
   const save = async () => {
     if (!form.name.trim()) {
-      toast.error('Falta el nombre', 'Escribe al menos el nombre de la jugadora.');
+      toast.error('Falta el nombre', 'Escribe al menos el nombre de la jugador.');
       return;
     }
     if (!form.teamId) {
@@ -104,14 +104,14 @@ export default function PlayerEditor() {
       const short = form.shortName.trim() || form.name.trim().split(' ').slice(0, 2).join(' ');
       const saved = await actions.savePlayer({ ...form, shortName: short });
       await actions.log({
-        kind: 'jugadora',
+        kind: 'jugador',
         teamId: saved.teamId,
         text: existing
           ? `Has actualizado la ficha de ${saved.shortName}.`
           : `Has dado de alta a ${saved.shortName} en la plantilla.`,
         link: `/app/plantilla/${saved.id}`,
       });
-      toast.success(existing ? 'Ficha actualizada' : 'Jugadora añadida');
+      toast.success(existing ? 'Ficha actualizada' : 'Jugador añadida');
       navigate(`/app/plantilla/${saved.id}`);
     } catch (e) {
       toast.error('No hemos podido guardar la ficha', humanError(e));
@@ -125,7 +125,7 @@ export default function PlayerEditor() {
     setBusy(true);
     try {
       await actions.deletePlayer(existing.id);
-      toast.success('Jugadora eliminada');
+      toast.success('Jugador eliminada');
       navigate('/app/plantilla');
     } catch (e) {
       toast.error('No hemos podido eliminarla', humanError(e));
@@ -141,7 +141,7 @@ export default function PlayerEditor() {
   if (teams.length === 0) {
     return (
       <>
-        <PageHeader title="Nueva jugadora" />
+        <PageHeader title="Nueva jugador" />
         <Panel className="p-8 text-center">
           <p className="text-sm text-ink-600">
             Todavía no tienes ningún equipo asignado. Pídeselo a quien administra el club.
@@ -157,11 +157,11 @@ export default function PlayerEditor() {
         to={existing ? `/app/plantilla/${existing.id}` : '/app/plantilla'}
         className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-900"
       >
-        <ArrowLeft size={15} /> {existing ? existing.shortName : 'Jugadoras'}
+        <ArrowLeft size={15} /> {existing ? existing.shortName : 'Jugadores'}
       </Link>
 
       <PageHeader
-        title={existing ? 'Editar ficha' : 'Nueva jugadora'}
+        title={existing ? 'Editar ficha' : 'Nueva jugador'}
         actions={
           <>
             {existing && (
@@ -186,7 +186,7 @@ export default function PlayerEditor() {
               de formulario; de los catorce, uno solo es obligatorio para
               guardar y los otros trece estaban ahí por si acaso. El pie
               dominante y la posición secundaria no se saben el día que llega
-              una jugadora nueva: se saben en noviembre, y para entonces esta
+              una jugador nueva: se saben en noviembre, y para entonces esta
               misma ficha se abre y se completa. */}
           <Panel className="p-4 sm:p-5">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -195,7 +195,7 @@ export default function PlayerEditor() {
               </Field>
               <Field
                 label="Dorsal"
-                error={duplicateNumber ? 'Ese dorsal ya lo lleva otra jugadora del equipo.' : undefined}
+                error={duplicateNumber ? 'Ese dorsal ya lo lleva otra jugador del equipo.' : undefined}
               >
                 <Input
                   type="number"
@@ -278,7 +278,7 @@ export default function PlayerEditor() {
               pista="Datos personales. Sólo los ven los perfiles con permiso"
             >
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Teléfono de la jugadora">
+                <Field label="Teléfono de la jugador">
                   <Input value={form.phone ?? ''} onChange={(e) => patch({ phone: e.target.value })} placeholder="+34 …" />
                 </Field>
                 <Field label="Correo electrónico">
@@ -303,7 +303,7 @@ export default function PlayerEditor() {
 
                 {form.guardians.length === 0 ? (
                   <p className="mt-3 text-sm text-muted">
-                    Sin contactos registrados. Si la jugadora es menor, añade al menos uno para poder enviar
+                    Sin contactos registrados. Si la jugador es menor, añade al menos uno para poder enviar
                     convocatorias.
                   </p>
                 ) : (
@@ -343,9 +343,9 @@ export default function PlayerEditor() {
           )}
         </div>
 
-        {/* DAR DE ALTA NO ES EDITAR. Una jugadora que acaba de llegar está
+        {/* DAR DE ALTA NO ES EDITAR. Una jugador que acaba de llegar está
             disponible y no tiene notas: preguntar por su lesión y por las
-            observaciones de la entrenadora el día que entra es pedir dos
+            observaciones de la entrenador el día que entra es pedir dos
             cosas que todavía no existen. Al editar su ficha sí están, que es
             cuando hacen falta. */}
         {existing && (
@@ -389,7 +389,7 @@ export default function PlayerEditor() {
           </Panel>
 
           <Panel className="p-5">
-            <h2 className="text-base font-semibold">Notas de la entrenadora</h2>
+            <h2 className="text-base font-semibold">Notas de la entrenador</h2>
             <Textarea
               value={form.notes ?? ''}
               onChange={(e) => patch({ notes: e.target.value })}
@@ -412,7 +412,7 @@ export default function PlayerEditor() {
               Cancelar
             </Button>
             <Button variant="danger" loading={busy} onClick={remove}>
-              Eliminar jugadora
+              Eliminar jugador
             </Button>
           </>
         }

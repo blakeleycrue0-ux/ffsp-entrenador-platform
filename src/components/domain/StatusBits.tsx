@@ -30,7 +30,7 @@ export const AVAILABILITY: Record<
   AvailabilityStatus,
   { label: string; tone: 'ok' | 'warn' | 'bad' | 'neutral'; dot: string }
 > = {
-  /* Neutro a propósito. Una plantilla de veinte jugadoras con dieciocho
+  /* Neutro a propósito. Una plantilla de veinte jugadores con dieciocho
      etiquetas verdes no informa de nada: lo que hay que ver de un vistazo son
      las dos que NO están disponibles. El color marca la excepción. */
   disponible: { label: 'Disponible', tone: 'neutral', dot: 'bg-ink-600' },
@@ -84,13 +84,13 @@ export type Linea = 'porteria' | 'defensa' | 'medio' | 'ataque';
 const LINEA_DE: Record<string, Linea> = {
   Portera: 'porteria',
   Central: 'defensa',
-  'Lateral derecha': 'defensa',
-  'Lateral izquierda': 'defensa',
+  'Lateral derecho': 'defensa',
+  'Lateral izquierdo': 'defensa',
   Pivote: 'medio',
   Interior: 'medio',
   Mediapunta: 'medio',
-  'Extremo derecha': 'ataque',
-  'Extremo izquierda': 'ataque',
+  'Extremo derecho': 'ataque',
+  'Extremo izquierdo': 'ataque',
   Delantera: 'ataque',
 };
 

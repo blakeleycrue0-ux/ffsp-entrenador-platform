@@ -17,7 +17,7 @@
  *  · RESERVA SU SITIO. El alto está en `--nav-h` y todo lo que se coloca por
  *    encima de lo que haya abajo lo lee de ahí. Nada se queda debajo.
  *  · SIEMPRE MARCA DÓNDE ESTÁS, también dentro de una ficha: `seccionDe` sabe
- *    que la ficha de una jugadora es Equipo y que editar un partido es
+ *    que la ficha de una jugador es Equipo y que editar un partido es
  *    Calendario. Antes, en ocho de las once secciones, aquí abajo no se
  *    encendía nada.
  *

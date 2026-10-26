@@ -152,7 +152,7 @@ export default function SessionsPage() {
                 <span className="min-w-0 truncate text-xs text-ink-400">
                   {s.blocks.length === 0
                     ? 'Sin ejercicios: ábrelo para montarlo'
-                    : `${s.blocks.length} ${s.blocks.length === 1 ? 'bloque' : 'bloques'}${s.expectedPlayers > 0 ? ` · ${s.expectedPlayers} jugadoras` : ''}`}
+                    : `${s.blocks.length} ${s.blocks.length === 1 ? 'bloque' : 'bloques'}${s.expectedPlayers > 0 ? ` · ${s.expectedPlayers} jugadores` : ''}`}
                 </span>
                 <ChevronRight size={15} className="shrink-0 text-ink-300" />
               </div>

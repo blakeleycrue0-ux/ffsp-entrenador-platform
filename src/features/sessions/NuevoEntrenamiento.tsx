@@ -102,7 +102,7 @@ export default function NuevoEntrenamiento() {
   const [titulo, setTitulo] = useState('');
   const [campo, setCampo] = useState('');
   const [objetivo, setObjetivo] = useState('');
-  const [jugadoras, setJugadoras] = useState('');
+  const [jugadores, setJugadores] = useState('');
   const [notas, setNotas] = useState('');
 
   const elEquipo = teams.find((t) => t.id === equipo);
@@ -175,7 +175,7 @@ export default function NuevoEntrenamiento() {
           duration: duracion,
           venue: campo.trim() || elEquipo?.venue || '',
           objective: objetivo.trim(),
-          expectedPlayers: Number(jugadoras) || data.players.filter((p) => p.teamId === equipo && !p.archivedAt).length,
+          expectedPlayers: Number(jugadores) || data.players.filter((p) => p.teamId === equipo && !p.archivedAt).length,
           material: [],
           notes: notas.trim() || undefined,
           blocks: [],
@@ -285,7 +285,7 @@ export default function NuevoEntrenamiento() {
       <Desplegable
         className="mt-4"
         titulo="Más opciones"
-        pista="Título, campo, objetivo, jugadoras y notas"
+        pista="Título, campo, objetivo, jugadores y notas"
       >
         <Field label="Título" hint={`Si lo dejas vacío: «${tituloDe(fecha)}».`}>
           <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder={tituloDe(fecha)} />
@@ -296,17 +296,17 @@ export default function NuevoEntrenamiento() {
         <Field label="Objetivo">
           <Input value={objetivo} onChange={(e) => setObjetivo(e.target.value)} placeholder="¿Qué quieres que mejoren?" />
         </Field>
-        <Field label="Número de jugadoras">
+        <Field label="Número de jugadores">
           <Input
             type="number"
             inputMode="numeric"
-            value={jugadoras}
-            onChange={(e) => setJugadoras(e.target.value)}
+            value={jugadores}
+            onChange={(e) => setJugadores(e.target.value)}
             placeholder={String(data.players.filter((p) => p.teamId === equipo && !p.archivedAt).length)}
           />
         </Field>
         <Field label="Observaciones">
-          <Textarea value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Cargas individuales, jugadoras al margen…" />
+          <Textarea value={notas} onChange={(e) => setNotas(e.target.value)} placeholder="Cargas individuales, jugadores al margen…" />
         </Field>
       </Desplegable>
     </>

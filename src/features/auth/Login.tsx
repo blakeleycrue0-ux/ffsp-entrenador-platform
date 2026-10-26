@@ -221,7 +221,7 @@ export default function Login() {
             La herramienta de tu club, en un mismo sitio.
           </p>
           <p className="mt-5 max-w-[46ch] text-md text-white/65">
-            Plantilla, entrenamientos, partidos y pizarra táctica. Menos gestión y más tiempo para
+            Plantilla, asistencia, entrenamientos y partidos. Menos gestión y más tiempo para
             entrenar.
           </p>
         </div>

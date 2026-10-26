@@ -45,7 +45,7 @@ export function Medicion() {
        permiso guardado, también dentro de la aplicación. No mandaba ninguna
        visita, pero pedía el script a Google —y una petición lleva su propia
        cabecera `Referer` con la dirección entera, que ahí dentro es la ficha
-       de una jugadora—. Lo cazó `pruebas/cookies.mjs`. */
+       de una jugador—. Lo cazó `pruebas/cookies.mjs`. */
     if (medicionActiva() && esPublica(pathname)) visita(pathname);
   }, [pathname]);
 

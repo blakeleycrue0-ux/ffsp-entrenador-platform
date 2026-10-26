@@ -91,7 +91,7 @@ export default function DrillDetail() {
             <dl className="mt-3.5 space-y-3">
               {[
                 [<Clock key="a" size={15} />, 'Duración', `${d.duration} minutos`],
-                [<Users key="b" size={15} />, 'Jugadoras', d.players],
+                [<Users key="b" size={15} />, 'Jugadores', d.players],
                 [<Target key="c" size={15} />, 'Edad recomendada', d.ageRange],
               ].map(([icon, label, value], i) => (
                 <div key={i} className="flex items-center gap-3">
