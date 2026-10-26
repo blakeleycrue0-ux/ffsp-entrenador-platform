@@ -78,7 +78,7 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
 
   if (d.loadError) {
     return (
-      <div className="vidrio-foto rounded-2xl p-5">
+      <div className="vidrio-foto rounded-[26px] p-5">
         <h2 className="text-md font-semibold text-ink-900">No hemos podido cargar tus datos</h2>
         <p className="mt-2 text-base leading-relaxed text-ink-700">{d.loadError}</p>
         <button
@@ -109,7 +109,7 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
              quedaba con una pantalla sin una sola cosa que hacer. Aquí va
              arriba porque no hay tarjeta debajo de la que ponerse. */
           hayGuia(d.data) ? <PrimerosPasos /> : (
-            <div data-vacio="fila" className="vidrio-foto rounded-2xl px-4 py-5 text-center">
+            <div data-vacio="fila" className="vidrio-foto rounded-[26px] px-4 py-5 text-center">
               <h2 className="text-md font-semibold text-ink-900">
                 {d.admin ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
               </h2>
@@ -167,7 +167,11 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
       style={{ paddingTop: 'var(--pagina-top)' }}
     >
       <div className="heroe relative px-[var(--pagina-x)] pb-2 text-center">
-        <p className="text-sm font-medium text-ink-500">{rotulo}</p>
+        {/* EL RÓTULO DE LA PORTADA, no un párrafo pequeño. Mayúsculas
+            cortas muy separadas: la señal de «empieza algo» que allí abre
+            cada sección, y que aquí hace que la hora de debajo se lea como
+            el dato principal y no como un número suelto. */}
+        <p className="rotulo text-ink-500">{rotulo}</p>
 
         {s ? (
           <>
@@ -181,11 +185,11 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
                 datos: uno importante y otro apagado. Son la misma hora. Los
                 minutos siguen siendo algo menores, que es lo que hace que
                 «18» se lea primero, pero del mismo color: una unidad. */}
-            <p className="cifra mt-3 flex items-baseline justify-center text-[64px] text-ink-900">
+            <p className="cifra mt-4 flex items-baseline justify-center text-[68px] tracking-[-0.04em] text-ink-900">
               <span>{horas}</span>
-              <span className="text-[40px]">:{minutos}</span>
+              <span className="text-[42px] tracking-[-0.03em]">:{minutos}</span>
             </p>
-            <p className="mt-3 text-base text-ink-600">
+            <p className="mt-3.5 text-base text-ink-600">
               {relativeDay(s.dato.date)}
               {d.teams.length === 1 && d.equipo ? ` · ${d.equipo.name}` : ''}
             </p>
@@ -198,7 +202,7 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
                 dos, la segunda línea se montaba encima de la primera.
                 Esto no es una cifra, es una frase, así que lleva el interlineado
                 de una frase. */}
-            <p className="mx-auto mt-4 max-w-[22ch] font-display text-2xl font-[540] leading-[1.1] tracking-[-0.015em] text-ink-900">
+            <p className="t-m mx-auto mt-4 max-w-[18ch] text-ink-900">
               {d.teams.length === 0 ? 'Monta tu equipo' : 'Tu semana está vacía'}
             </p>
             <p className="mt-3 text-base text-ink-600">{longDate(toISODate(today()))}</p>
@@ -342,7 +346,7 @@ function Detalle({ d }: { d: DatosDeInicio }) {
   const s = d.siguiente;
   if (!s) {
     return (
-      <div data-vacio="fila" className="vidrio-foto rounded-2xl px-4 py-5 text-center">
+      <div data-vacio="fila" className="vidrio-foto rounded-[26px] px-4 py-5 text-center">
         <h2 className="text-md font-semibold text-ink-900">No tienes nada programado</h2>
         <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-ink-700">
           El próximo entrenamiento o partido aparecerá aquí.
@@ -360,7 +364,7 @@ function Detalle({ d }: { d: DatosDeInicio }) {
   if (s.tipo === 'sesion') {
     const ses = s.dato;
     return (
-      <div className="vidrio-foto rounded-2xl p-5">
+      <div className="vidrio-foto rounded-[26px] p-5">
         <div className="flex items-start justify-between gap-3">
           <p className="min-w-0 text-md font-semibold leading-snug text-ink-900">{ses.title}</p>
           <span className="shrink-0 rounded-full border border-line bg-ink-900/[0.05] px-2 py-0.5 text-2xs font-medium text-ink-800">
@@ -423,7 +427,7 @@ function Detalle({ d }: { d: DatosDeInicio }) {
 
   const p = s.dato;
   return (
-    <div className="vidrio-foto rounded-2xl p-5">
+    <div className="vidrio-foto rounded-[26px] p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="min-w-0 text-md font-semibold leading-snug text-ink-900">
           {p.home ? `${d.nombreClub} · ${p.opponent}` : `${p.opponent} · ${d.nombreClub}`}

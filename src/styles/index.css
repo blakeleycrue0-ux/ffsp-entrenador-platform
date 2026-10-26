@@ -372,8 +372,12 @@
               en un rectángulo gris.
      Un cristal que no deja ver nada detrás no es cristal, es una caja opaca
      con un nombre bonito. */
+  /* EL RADIO DE LA PORTADA: 26 y no 16. Allí las tarjetas van a 26 px y
+     aquí iban a 16; puestas una al lado de otra se notaba que eran de dos
+     diseños distintos. Y el borde se va: en la portada las tarjetas se
+     separan del fondo por el color, no por una línea alrededor. */
   .panel {
-    @apply relative rounded-2xl border border-line-sutil bg-panel;
+    @apply relative rounded-[26px] bg-panel;
   }
 
   @media (min-width: 1024px) {
