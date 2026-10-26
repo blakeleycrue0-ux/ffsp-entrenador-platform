@@ -50,7 +50,7 @@ export default function DrillsPage() {
 
       <Panel className="mb-5 p-4">
         <div className="relative">
-          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-500" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -96,7 +96,7 @@ export default function DrillsPage() {
               Limpiar filtros
             </button>
           )}
-          <span className="ml-auto text-xs text-ink-400">{drills.length} ejercicios</span>
+          <span className="ml-auto text-xs text-ink-500">{drills.length} ejercicios</span>
         </div>
       </Panel>
 
@@ -152,7 +152,7 @@ export default function DrillsPage() {
 
               <div className="mt-4 flex items-center gap-4 border-t border-ink-100 pt-3 text-xs text-muted">
                 <span className="flex items-center gap-1.5">
-                  <Users size={13} className="text-ink-400" /> {d.players}
+                  <Users size={13} className="text-ink-500" /> {d.players}
                 </span>
                 <span className="tabular-nums">{d.duration}′</span>
                 <span className="truncate">{d.ageRange}</span>

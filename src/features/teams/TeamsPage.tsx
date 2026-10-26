@@ -86,31 +86,31 @@ export default function TeamsPage() {
 
               <div className="grid grid-cols-3 divide-x divide-ink-100">
                 <div className="p-4">
-                  <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-ink-400">
+                  <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-ink-500">
                     <CalendarClock size={12} /> Entrenamiento
                   </p>
                   <p className="mt-1.5 text-sm font-medium text-ink-800">
                     {o.nextSession ? relativeDay(o.nextSession.date) : '—'}
                   </p>
-                  <p className="text-xs text-ink-400">{o.nextSession?.start ?? 'sin planificar'}</p>
+                  <p className="text-xs text-ink-500">{o.nextSession?.start ?? 'sin planificar'}</p>
                 </div>
                 <div className="p-4">
-                  <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-ink-400">
+                  <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-ink-500">
                     <Swords size={12} /> Partido
                   </p>
                   <p className="mt-1.5 truncate text-sm font-medium text-ink-800">
                     {o.nextMatch ? relativeDay(o.nextMatch.date) : '—'}
                   </p>
-                  <p className="truncate text-xs text-ink-400">{o.nextMatch?.opponent ?? 'sin programar'}</p>
+                  <p className="truncate text-xs text-ink-500">{o.nextMatch?.opponent ?? 'sin programar'}</p>
                 </div>
                 <div className="p-4">
-                  <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-ink-400">
+                  <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-ink-500">
                     <Users size={12} /> Convocatoria
                   </p>
                   <p className="mt-1.5 text-sm font-medium text-ink-800">
                     {o.callup ? `${o.confirmed} / ${o.callup.slots}` : '—'}
                   </p>
-                  <p className="text-xs text-ink-400">
+                  <p className="text-xs text-ink-500">
                     {o.callup ? `${o.pending} pendientes` : 'sin crear'}
                   </p>
                 </div>

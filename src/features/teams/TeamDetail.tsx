@@ -53,14 +53,14 @@ export default function TeamDetail() {
         eyebrow={
           <>
             <span>{team.competition}</span>
-            <span className="text-ink-300">·</span>
+            <span className="text-ink-500">·</span>
             <span>{team.season}</span>
           </>
         }
         title={team.name}
         description={
           <span className="flex items-center gap-1.5">
-            <MapPin size={14} className="text-ink-400" /> {team.venue}
+            <MapPin size={14} className="text-ink-500" /> {team.venue}
           </span>
         }
         actions={
@@ -151,7 +151,7 @@ export default function TeamDetail() {
                             {p.availability.until && ` · vuelve ${shortDate(p.availability.until)}`}
                           </p>
                           {p.availability.note && (
-                            <p className="mt-0.5 truncate text-xs text-ink-400">{p.availability.note}</p>
+                            <p className="mt-0.5 truncate text-xs text-ink-500">{p.availability.note}</p>
                           )}
                         </div>
                       </Link>
@@ -182,7 +182,7 @@ export default function TeamDetail() {
                       <Avatar name={r.player.name} size={34} badge={r.player.number} />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-ink-800">{r.player.shortName}</p>
-                        <p className="text-xs text-ink-400">{r.player.position}</p>
+                        <p className="text-xs text-ink-500">{r.player.position}</p>
                       </div>
                       <span
                         className={cn(
@@ -220,7 +220,7 @@ export default function TeamDetail() {
                     </div>
                     <div className="hidden w-24 text-right sm:block">
                       <p className="text-sm font-medium text-ink-700 tabular-nums">{row?.rate ?? 0}%</p>
-                      <p className="text-2xs text-ink-400">asistencia</p>
+                      <p className="text-2xs text-ink-500">asistencia</p>
                     </div>
                     <div className="hidden w-28 sm:block">
                       <Tag tone={disponibilidad(p.availability.status).tone} size="sm" dot>
@@ -258,11 +258,11 @@ export default function TeamDetail() {
                       <Link to={`/app/entrenamientos/${s.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-ink-50/40">
                         <span className="w-16 shrink-0">
                           <span className="block text-sm font-semibold text-ink-900">{relativeDay(s.date)}</span>
-                          <span className="block text-2xs text-ink-400">{s.start}</span>
+                          <span className="block text-2xs text-ink-500">{s.start}</span>
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium text-ink-800">{s.title}</span>
-                          <span className="block text-xs text-ink-400">
+                          <span className="block text-xs text-ink-500">
                             {minutesToLabel(s.duration)} · {s.blocks.length} bloques
                           </span>
                         </span>
@@ -295,13 +295,13 @@ export default function TeamDetail() {
                       <Link to={`/app/partidos/${m.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-ink-50/40">
                         <span className="w-16 shrink-0">
                           <span className="block text-sm font-semibold text-ink-900">{relativeDay(m.date)}</span>
-                          <span className="block text-2xs text-ink-400">{m.start}</span>
+                          <span className="block text-2xs text-ink-500">{m.start}</span>
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium text-ink-800">
                             {m.home ? 'vs' : 'en'} {m.opponent}
                           </span>
-                          <span className="block truncate text-xs text-ink-400">{m.venue}</span>
+                          <span className="block truncate text-xs text-ink-500">{m.venue}</span>
                         </span>
                         <Tag tone={m.home ? 'solid' : 'neutral'} size="sm">
                           {m.home ? 'Local' : 'Visitante'}

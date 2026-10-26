@@ -128,6 +128,7 @@ function HojaDeConfirmacion({
       <button
         aria-label="Cancelar"
         onClick={onCerrar}
+        /* escala-ok: un velo oscurece lo de detrás en los dos temas */
         className="absolute inset-0 animate-fade-in bg-black/70 lg:backdrop-blur-md"
       />
       <div
@@ -136,7 +137,10 @@ function HojaDeConfirmacion({
         aria-labelledby="titulo-confirmar"
         className="cristal relative w-full max-w-[400px] animate-sheet-in rounded-t-4xl px-5 pb-7 pt-6 text-center sm:rounded-4xl sm:pb-6"
       >
-        <span aria-hidden className="absolute left-1/2 top-2.5 h-1 w-10 -translate-x-1/2 rounded-full bg-white/25 sm:hidden" />
+        {/* El tirador de la hoja. Iba en blanco al 25 %, que sobre un
+            cristal casi blanco no se veía: en claro la hoja no enseñaba por
+            dónde se agarra. */}
+        <span aria-hidden className="absolute left-1/2 top-2.5 h-1 w-10 -translate-x-1/2 rounded-full bg-ink-900/25 sm:hidden" />
 
         <p className="rotulo">Confirmar acción</p>
         <h2 id="titulo-confirmar" className="cifra mt-1.5 text-xl">{peticion.titulo}</h2>

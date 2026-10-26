@@ -122,13 +122,13 @@ export default function SessionsPage() {
 
               <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted">
                 <span className="flex items-center gap-1.5">
-                  <CalendarClock size={13} className="text-ink-400" /> {relativeDay(s.date)}
+                  <CalendarClock size={13} className="text-ink-500" /> {relativeDay(s.date)}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock size={13} className="text-ink-400" /> {s.start} · {minutesToLabel(s.duration)}
+                  <Clock size={13} className="text-ink-500" /> {s.start} · {minutesToLabel(s.duration)}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <MapPin size={13} className="text-ink-400" /> {s.venue}
+                  <MapPin size={13} className="text-ink-500" /> {s.venue}
                 </span>
               </div>
 
@@ -149,7 +149,7 @@ export default function SessionsPage() {
               )}
 
               <div className="mt-3 flex items-center justify-between gap-3">
-                <span className="min-w-0 truncate text-xs text-ink-400">
+                <span className="min-w-0 truncate text-xs text-ink-500">
                   {s.blocks.length === 0
                     ? 'Sin ejercicios: ábrelo para montarlo'
                     : `${s.blocks.length} ${s.blocks.length === 1 ? 'bloque' : 'bloques'}${s.expectedPlayers > 0 ? ` · ${s.expectedPlayers} jugadores` : ''}`}

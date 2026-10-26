@@ -278,7 +278,7 @@ function Marco({
              Nunca un escudo prestado que no es de nadie. */
           <span
             aria-hidden
-            className="grid h-[72px] w-[72px] place-items-center rounded-full bg-white/[0.08] font-display text-xl font-medium tracking-[-0.02em] text-ink-800"
+            className="grid h-[72px] w-[72px] place-items-center rounded-full bg-ink-900/[0.08] font-display text-xl font-medium tracking-[-0.02em] text-ink-800"
           >
             {iniciales(club?.name)}
           </span>

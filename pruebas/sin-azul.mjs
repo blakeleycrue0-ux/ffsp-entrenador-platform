@@ -51,9 +51,19 @@ const RUTAS = [
    —su barra de herramientas, sus botones— sí se repintó, y eso se ve en el
    resto de las pruebas de la pizarra. */
 
-/* Las de acceso van sin sesión: son la puerta de entrada y también tienen
-   que estar en blanco y negro. */
-const SIN_SESION = ['/entrar'];
+/* ── `/entrar` CAMBIÓ DE BANDO, Y ESTO ES LO QUE HAY QUE SABER ────────────
+   Aquí ponía que el acceso «también tiene que estar en blanco y negro»,
+   porque cuando se escribió esta prueba lo estaba. Ya no: el acceso y el
+   alta se pintan sobre el cielo azul de la portada, con sus mismas clases
+   —`.cielo`, `.btn-claro`, `.t-l`—, porque son el último paso de la página
+   pública y no el primero de la herramienta. Se llega desde un anuncio, se
+   contesta y se entra; un corte a gris en mitad de ese camino se lee como
+   haber aterrizado en otro sitio.
+
+   Así que `/entrar` pasa al otro lado de la prueba: en vez de exigirle que
+   NO tenga azul, se le exige que lo TENGA, igual que a la portada. Que una
+   limpieza de color no se la lleve por delante sin que nadie se entere. */
+const AZULES_A_PROPOSITO = ['/', '/entrar'];
 
 let fallos = 0;
 const comprueba = (nombre, bien, detalle) => {
@@ -146,29 +156,26 @@ for (const { nombre, ...opciones } of TAMANOS) {
   await recorre(page, RUTAS);
   await ctx.close();
 
-  /* LA ENTRADA, SIN SESIÓN Y EN SU PROPIO CONTEXTO. Con la sesión puesta,
-     `/entrar` manda a `/app`: la prueba decía «✓ /entrar» y lo que había
-     medido era Inicio por segunda vez. Una pantalla que no se ha mirado no
-     puede salir en verde. */
-  const fuera = await navegador.newContext(opciones);
-  const p = await fuera.newPage();
-  await recorre(p, SIN_SESION);
-  await fuera.close();
 }
 
-/* ── Y lo contrario: la portada SIGUE siendo azul ─────────────────────────── */
-console.log('\n  y la portada sigue siendo azul\n');
+/* ── Y lo contrario: lo que es azul SIGUE siéndolo ────────────────────────
+   SIN SESIÓN, los dos. `/entrar` con la sesión puesta manda a `/app`, así
+   que medirlo desde el contexto de arriba habría sido medir Inicio por
+   segunda vez y cantar un verde que no es de esa pantalla. */
+console.log('\n  y lo que es azul sigue siendo azul\n');
 {
   const limpio = await navegador.newContext({ viewport: { width: 390, height: 844 } });
   const p2 = await limpio.newPage();
-  await p2.goto(BASE + '/', { waitUntil: 'networkidle' });
-  await p2.waitForTimeout(900);
-  const azules = await p2.evaluate(BUSCAR_AZUL);
-  comprueba(
-    'la página pública conserva su azul',
-    azules.length > 0,
-    azules.length > 0 ? `${azules.length} sitios, p. ej. ${azules[0].color}` : 'NO QUEDA NINGUNO',
-  );
+  for (const ruta of AZULES_A_PROPOSITO) {
+    await p2.goto(BASE + ruta, { waitUntil: 'networkidle' });
+    await p2.waitForTimeout(900);
+    const azules = await p2.evaluate(BUSCAR_AZUL);
+    comprueba(
+      ruta === '/' ? 'la página pública conserva su azul' : 'el acceso conserva el azul de la portada',
+      azules.length > 0,
+      azules.length > 0 ? `${azules.length} sitios, p. ej. ${azules[0].color}` : 'NO QUEDA NINGUNO',
+    );
+  }
   await limpio.close();
 }
 

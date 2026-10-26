@@ -67,17 +67,17 @@ export default function PlayerDetail() {
 
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted">
               <span className="flex items-center gap-1.5">
-                <Shield size={14} className="text-ink-400" /> {team?.name}
+                <Shield size={14} className="text-ink-500" /> {team?.name}
               </span>
               <span className="flex items-center gap-1.5">
-                <Target size={14} className="text-ink-400" /> {player.position}
-                {player.secondaryPosition && <span className="text-ink-400">· {player.secondaryPosition}</span>}
+                <Target size={14} className="text-ink-500" /> {player.position}
+                {player.secondaryPosition && <span className="text-ink-500">· {player.secondaryPosition}</span>}
               </span>
               <span className="flex items-center gap-1.5">
-                <Cake size={14} className="text-ink-400" /> {player.birthDate ? `${age(player.birthDate)} años` : 'Edad sin registrar'}
+                <Cake size={14} className="text-ink-500" /> {player.birthDate ? `${age(player.birthDate)} años` : 'Edad sin registrar'}
               </span>
               <span className="flex items-center gap-1.5">
-                <Footprints size={14} className="text-ink-400" /> {player.foot}
+                <Footprints size={14} className="text-ink-500" /> {player.foot}
               </span>
             </div>
 
@@ -125,7 +125,7 @@ export default function PlayerDetail() {
           ].map(([label, value]) => (
             <div key={label as string} className="px-4 py-3.5 text-center">
               <p className="text-lg font-semibold text-ink-900 tabular-nums">{value as number}</p>
-              <p className="mt-0.5 text-2xs text-ink-400">{label as string}</p>
+              <p className="mt-0.5 text-2xs text-ink-500">{label as string}</p>
             </div>
           ))}
         </div>
@@ -187,10 +187,10 @@ export default function PlayerDetail() {
                     <div key={r.id} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-ink-50">
                       <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', m.bg)} />
                       <span className="w-24 shrink-0 text-sm font-medium text-ink-700">{shortDate(r.date)}</span>
-                      <span className="w-10 shrink-0 text-xs text-ink-400">{dayShort(r.date)}</span>
+                      <span className="w-10 shrink-0 text-xs text-ink-500">{dayShort(r.date)}</span>
                       <span className="flex-1 text-sm text-ink-600">{m.label}</span>
                       {r.marks[player.id]?.reason && (
-                        <span className="truncate text-xs text-ink-400">{r.marks[player.id]!.reason}</span>
+                        <span className="truncate text-xs text-ink-500">{r.marks[player.id]!.reason}</span>
                       )}
                     </div>
                   );
@@ -242,7 +242,7 @@ export default function PlayerDetail() {
                   </div>
                 ))}
               </div>
-              <p className="mt-5 text-xs leading-relaxed text-ink-400">
+              <p className="mt-5 text-xs leading-relaxed text-ink-500">
                 Las métricas se limitan a lo que el club registra de verdad. Evitamos gráficos que no ayuden a decidir.
               </p>
             </Panel>
@@ -290,7 +290,7 @@ export default function PlayerDetail() {
                           <p className="text-sm font-medium text-ink-800">{g.name}</p>
                           <p className="mt-0.5 text-xs text-muted">{g.relation}</p>
                           <p className="mt-2 flex items-center gap-1.5 text-sm text-ink-700">
-                            <Phone size={13} className="text-ink-400" /> {g.phone}
+                            <Phone size={13} className="text-ink-500" /> {g.phone}
                           </p>
                         </li>
                       ))}
@@ -298,7 +298,7 @@ export default function PlayerDetail() {
                   )}
                 </div>
 
-                <p className="text-xs leading-relaxed text-ink-400 sm:col-span-2">
+                <p className="text-xs leading-relaxed text-ink-500 sm:col-span-2">
                   Estos datos son personales y están sujetos a la política de protección de datos del club. Sólo los ven los
                   perfiles con permiso explícito y nunca aparecen en listados ni exportaciones.
                 </p>

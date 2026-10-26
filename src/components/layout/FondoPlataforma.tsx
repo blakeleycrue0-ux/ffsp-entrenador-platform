@@ -51,6 +51,8 @@ import { cn } from '@/lib/utils';
  * plataforma. Comparten este componente para que la imagen sea la misma en
  * los tres sitios: si cambia, cambia a la vez.
  */
+// El velo oscurece la foto para que el texto se lea; eso es lo que tiene que
+// hacer con el teléfono en claro y en oscuro. escala-ok: velo sobre la foto
 export function ImagenDeFondo({ className, velo = 'bg-black/40' }: { className?: string; velo?: string }) {
   return (
     <div aria-hidden className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}>

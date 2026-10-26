@@ -216,7 +216,7 @@ export default function MatchEditor() {
               <p className="mt-3 text-center text-xs text-muted">
                 {form.date} · {form.start}
               </p>
-              <p className="mt-0.5 text-center text-xs text-ink-400">{form.venue}</p>
+              <p className="mt-0.5 text-center text-xs text-ink-500">{form.venue}</p>
             </div>
           </Panel>
 

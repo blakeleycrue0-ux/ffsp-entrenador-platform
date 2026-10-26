@@ -253,7 +253,7 @@ export default function AttendancePage() {
         <p className="text-base leading-relaxed text-ink-600">
           {longDate(session?.date ?? '')} · {session?.start}
           {session?.venue ? ` · ${session.venue}` : ''}
-          {existing?.savedAt && <span className="text-ink-400"> · ya la pasaste, puedes corregirla</span>}
+          {existing?.savedAt && <span className="text-ink-500"> · ya la pasaste, puedes corregirla</span>}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -427,7 +427,7 @@ export default function AttendancePage() {
               >
                 <span
                   aria-hidden
-                  className={cn('h-2 w-2 shrink-0 rounded-full', elegido ? 'bg-white' : info.bg)}
+                  className={cn('h-2 w-2 shrink-0 rounded-full', elegido ? 'bg-ink-0' : info.bg)}
                 />
                 {m === 'ausente' ? 'No avisó' : info.label}
               </button>

@@ -47,7 +47,9 @@ export function Puntos({ valor, fase }: { valor: string; fase: Fase }) {
                   ? 'border-bad bg-bad'
                   : lleno
                     ? 'scale-110 border-transparent bg-ink-900'
-                    : 'border-white/22 bg-transparent',
+                    /* Los huecos que faltan por teclear. En blanco al 22 %
+                       no existían con el teléfono en claro. */
+                    : 'border-ink-900/22 bg-transparent',
               )}
             />
           );
@@ -161,7 +163,7 @@ export function Teclado({
         className={cn(
           'mx-auto grid h-[68px] w-[68px] place-items-center rounded-full transition-all active:scale-[0.95]',
           valor.length === 0
-            ? 'text-ink-400/35'
+            ? 'text-ink-500/35'
             : 'text-ink-600 hover:bg-ink-900/[0.05] hover:text-ink-900',
         )}
       >
@@ -206,7 +208,7 @@ function Tecla({
         'bg-ink-900/[0.06] font-display text-2xl font-medium text-ink-900',
         'tabular-nums transition-[transform,background-color] duration-120',
         'hover:bg-ink-900/[0.09] active:scale-[0.93] active:bg-ink-900/[0.12]',
-        'disabled:text-ink-400 disabled:hover:bg-ink-900/[0.06]',
+        'disabled:text-ink-500 disabled:hover:bg-ink-900/[0.06]',
       )}
     >
       {children}

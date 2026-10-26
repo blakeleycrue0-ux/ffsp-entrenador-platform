@@ -110,7 +110,7 @@ export default function ClubAdminPage() {
                         <p className="mt-0.5 text-xs text-muted">
                           {[team.category, team.competition, team.season].filter(Boolean).join(' · ') || 'Sin detalles'}
                         </p>
-                        <p className="mt-1 text-xs text-ink-400">
+                        <p className="mt-1 text-xs text-ink-500">
                           {squadOf(data, team.id).length} jugadores
                         </p>
                       </div>
@@ -146,7 +146,7 @@ export default function ClubAdminPage() {
                           >
                             <Avatar name={staff!.name} size={26} />
                             <span className="text-sm text-ink-700">{staff!.name}</span>
-                            <span className="text-2xs text-ink-400">{ROLE_LABEL[role]}</span>
+                            <span className="text-2xs text-ink-500">{ROLE_LABEL[role]}</span>
                             <button
                               onClick={async () => {
                                 try {

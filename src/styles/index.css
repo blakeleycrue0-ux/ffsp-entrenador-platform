@@ -111,6 +111,14 @@
      `tinta`, `cielo`, `lima`— y NO usa ni una sola de estas clases:
      comprobado, cero ocurrencias en `src/features/landing/`. Por eso se
      puede dar la vuelta a esta sin rozar aquélla. */
+  /* DÓNDE ACABA EL TEXTO Y EMPIEZA EL ADORNO.
+     `ink-500` es el escalón MÁS TENUE que puede llevar letra: por debajo no
+     se llega al 4,5:1 de la WCAG sobre ninguno de los tres fondos, y eso no
+     se arregla con otro número porque un gris que pase el listón ya no es
+     tenue. Del 400 para abajo son líneas, iconos de adorno y bordes.
+     Esto llegó a estar al revés: había 124 sitios pidiendo `text-ink-400`
+     para las etiquetas de debajo de las cifras, las fechas y los pies de
+     las filas, todas entre 2,3:1 y 4,1:1. */
   :root {
     color-scheme: light;
 
@@ -120,7 +128,13 @@
     --ink-200: 226 226 229;
     --ink-300: 201 201 206;
     --ink-400: 155 155 162;
-    --ink-500: 117 117 124;
+    /* 104 Y NO 117. Medido: a 117 este gris daba 3,74:1 sobre `surface`,
+       por debajo del 4,5:1 que pide la WCAG para texto normal, y éste es el
+       gris de TODA la letra secundaria: las etiquetas bajo las cifras, las
+       fechas, los pies de las filas. A 104 da 4,50 sobre `surface`, 5,05
+       sobre `panel` y 5,50 sobre `raised`, que son los tres fondos donde
+       cae. El tema oscuro ya pasaba —5,39 en el peor caso— y no se toca. */
+    --ink-500: 104 104 111;
     --ink-600:  92  92  99;
     --ink-700:  63  63  69;
     --ink-800:  35  35  39;
@@ -133,6 +147,28 @@
 
     --line-rgb: 13 13 15;
     --line-a: 0.12;
+
+    /* ── VERDE, ÁMBAR Y ROJO, TAMBIÉN POR TEMA ────────────────────────────
+       Eran tres hexadecimales fijos y servían para los dos temas, lo que
+       quiere decir que no servían para ninguno: medido, el rojo de «Cerrar
+       sesión» y de «Eliminar» daba 3,6:1 con el teléfono en claro y 3,7:1
+       en oscuro. Un color de medio tono no puede leerse sobre papel blanco
+       y sobre papel negro a la vez; hay que dar uno de cada.
+       Mismo tono y misma saturación, distinta luminosidad: en claro bajan
+       hasta pasar el 4,8:1 sobre `surface`, en oscuro suben hasta pasarlo
+       sobre `raised`. El oscuro queda casi donde estaba —#4D9A75 frente al
+       #4F9E78 de antes—, así que lo que cambia de verdad es el tema claro,
+       que es donde no se leían.
+
+       Y EL LISTÓN SE PONE SOBRE EL DISTINTIVO, no sobre el panel. Estos
+       colores casi nunca salen sobre el fondo a secas: salen dentro de una
+       píldora rellena con un 15 % de ellos mismos, y ese relleno acerca el
+       fondo al texto. Elegidos contra el panel pelado daban 4,8:1 allí y
+       4,3:1 donde de verdad se leen. Los de aquí pasan el 4,7:1 en el peor
+       de los seis casos —tres fondos por dos temas— CON la píldora puesta. */
+    --ok:    49  97  74;
+    --warn: 110  84  28;
+    --bad:  149  57  49;
   }
 
   /* EL TEMA LO MANDA EL MÓVIL, no un interruptor dentro de la aplicación.
@@ -171,6 +207,10 @@
 
       --line-rgb: 250 250 252;
       --line-a: 0.14;
+
+      --ok:    91 173 134;
+      --warn: 197 151  50;
+      --bad:  214 138 131;
     }
   }
 
@@ -348,8 +388,11 @@
     box-shadow: 0 0 0 1px #060C1B, 0 0 0 3px rgba(54, 200, 255, 0.75);
     border-radius: 12px;
   }
+  /* En canales: el aro de dentro es el color del fondo y el de fuera el que
+     más contrasta, así que con el teléfono en oscuro se dan la vuelta los dos
+     y el foco sigue siendo un aro claro sobre uno oscuro, no al revés. */
   .plataforma :focus-visible {
-    box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px rgba(13, 13, 15, 0.85);
+    box-shadow: 0 0 0 2px rgb(var(--ink-0)), 0 0 0 4px rgb(var(--ink-900) / 0.85);
   }
 
   /* Los campos nativos heredan la tipografía de la interfaz */
@@ -410,15 +453,20 @@
     cursor: default;
     opacity: 0.4;
   }
+  /* EL CARRIL Y LA BOLITA, EN CANALES. Estaban al revés el uno del otro: el
+     carril en negro al 18 % —invisible de noche— y la bolita en blanco
+     sólido —invisible de día, que es blanca sobre un panel casi blanco—. Con
+     la escala, los dos son «lo que más contraste con el fondo» y la barra se
+     ve entera en los dos temas. */
   .barra::-webkit-slider-runnable-track {
     height: 2px;
     border-radius: 2px;
-    background: rgba(13, 13, 15, 0.18);
+    background: rgb(var(--ink-900) / 0.18);
   }
   .barra::-moz-range-track {
     height: 2px;
     border-radius: 2px;
-    background: rgba(13, 13, 15, 0.18);
+    background: rgb(var(--ink-900) / 0.18);
   }
   .barra::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -427,21 +475,21 @@
     height: 14px;
     margin-top: -6px;
     border-radius: 9999px;
-    background: #ffffff;
+    background: rgb(var(--ink-900));
     border: none;
   }
   .barra::-moz-range-thumb {
     width: 14px;
     height: 14px;
     border-radius: 9999px;
-    background: #ffffff;
+    background: rgb(var(--ink-900));
     border: none;
   }
   .barra:focus-visible::-webkit-slider-thumb {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 3px rgb(var(--ink-900) / 0.25);
   }
   .barra:focus-visible::-moz-range-thumb {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 3px rgb(var(--ink-900) / 0.25);
   }
 
   /* Más tapado y menos saturado que antes. Al 60 % se leía el texto de la
@@ -460,9 +508,11 @@
      profundidad la dan la sombra y el borde, que no cuestan nada. A partir
      de 1024 px, donde hay GPU de sobra y las hojas son más pequeñas que la
      ventana, vuelve el cristal de verdad. */
+  /* El color de reserva, para cuando no hay desenfoque. En canales, porque
+     si no el cristal se quedaba gris claro con el teléfono en oscuro. */
   .cristal {
-    background: #F7F7F9;
-    border: 1px solid rgba(13, 13, 15, 0.08);
+    background: rgb(var(--panel));
+    border: 1px solid rgb(var(--ink-900) / 0.08);
     box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
   }
 
@@ -477,16 +527,16 @@
      que sirve el cristal, pero ya no deja leer nada a través. Un cristal que
      deja ver el texto de detrás no es elegante, es un error. */
   .cristal-firme {
-    background: #FAFAFB;
-    border: 1px solid rgba(13, 13, 15, 0.10);
+    background: rgb(var(--raised));
+    border: 1px solid rgb(var(--ink-900) / 0.10);
     box-shadow: 0 14px 40px rgba(0, 0, 0, 0.26);
   }
 
   /* Cuando el navegador no sabe desenfocar, el cristal se vuelve opaco: más
      vale una superficie sólida legible que una transparente ilegible. */
   @supports not (backdrop-filter: blur(1px)) {
-    .cristal { background: #F7F7F9; }
-    .cristal-firme { background: #FAFAFB; }
+    .cristal { background: rgb(var(--panel)); }
+    .cristal-firme { background: rgb(var(--raised)); }
   }
 
   /* ── METAL ────────────────────────────────────────────────────────────────
@@ -499,34 +549,49 @@
      negro para el principal. Un botón secundario tiene que leerse como «esto
      también se puede pulsar, pero no es lo importante», y eso lo hace el
      contraste, no un reflejo. */
+  /* EN CANALES Y NO EN `rgba(13,13,15,…)`, y es la diferencia entre que el
+     botón secundario exista de noche o no. Una veladura de NEGRO al 6 %
+     sobre un panel que ya es casi negro no se ve: el botón quedaba un
+     rectángulo de nada con una letra flotando. Pedido a la escala, la
+     veladura es negra en claro y blanca en oscuro, que es lo mismo dicho
+     bien: «un seis por ciento de lo que más contraste con el fondo». */
   .metal {
     position: relative;
-    background-color: rgba(13, 13, 15, 0.06);
-    border: 1px solid rgba(13, 13, 15, 0.10);
+    background-color: rgb(var(--ink-900) / 0.06);
+    border: 1px solid rgb(var(--ink-900) / 0.10);
     transition: background-color .2s ease, border-color .2s ease;
   }
   .metal:hover {
-    background-color: rgba(13, 13, 15, 0.10);
-    border-color: rgba(13, 13, 15, 0.18);
+    background-color: rgb(var(--ink-900) / 0.10);
+    border-color: rgb(var(--ink-900) / 0.18);
   }
 
-  /* LA ACCIÓN PRINCIPAL: NEGRO SÓLIDO, TEXTO BLANCO.
+  /* LA ACCIÓN PRINCIPAL: EL EXTREMO DE LA ESCALA, Y EL OTRO EXTREMO DENTRO.
      Pasó por las tres: blanca sobre negro, después un degradado azul con filo
-     de luz y halo —el mismo botón de la portada—, y ahora negro plano. Sin
-     azul en la paleta, lo que más contrasta sobre una tarjeta gris clara es
-     el negro, y eso es exactamente lo que tiene que hacer la acción
-     principal: destacar sin pedir un color. Sin degradado, sin halo y sin
-     sombra de color: en una herramienta hay un botón principal en cada
-     formulario, cada tarjeta y cada estado vacío, y veinte halos son una
-     pantalla llena de luces.
+     de luz y halo —el mismo botón de la portada—, y ahora plano. Sin azul en
+     la paleta, lo que destaca sobre una tarjeta es el extremo opuesto del
+     fondo, y eso es exactamente lo que tiene que hacer la acción principal:
+     destacar sin pedir un color. Sin degradado, sin halo y sin sombra de
+     color: en una herramienta hay un botón principal en cada formulario,
+     cada tarjeta y cada estado vacío, y veinte halos son una pantalla llena
+     de luces.
+
+     ESTO ERA UN `#0D0D0F` FIJO Y ERA EL FALLO MÁS GORDO DEL TEMA OSCURO. El
+     botón se quedaba en casi negro sobre un fondo casi negro —rgb(13,13,15)
+     encima de rgb(24,24,27)— y el texto, que sí pide a la escala su
+     `ink-0`, se volvía casi negro con él: letra invisible sobre fondo
+     invisible, en el botón de guardar de TODOS los formularios. En claro no
+     se notaba, porque ahí `ink-900` vale exactamente ese `#0D0D0F`: el
+     cambio no mueve un píxel de día y devuelve el botón de noche.
+
      La portada no se toca: usa `.btn-azul`, que conserva el suyo. */
   .metal-claro {
-    background-color: #0D0D0F;
-    border: 1px solid #0D0D0F;
+    background-color: rgb(var(--ink-900));
+    border: 1px solid rgb(var(--ink-900));
     transition: background-color .2s ease;
   }
-  .metal-claro:hover { background-color: #26262B; }
-  .metal-claro:disabled { background-color: rgba(13,13,15,0.14); border-color: transparent; }
+  .metal-claro:hover { background-color: rgb(var(--ink-800)); }
+  .metal-claro:disabled { background-color: rgb(var(--ink-900) / 0.14); border-color: transparent; }
 
   @media (prefers-reduced-motion: reduce) {
     .metal, .metal-claro { transition: none; }
@@ -566,7 +631,14 @@
        final del contenido y la navegación: el pliego se cortaba y debajo
        reaparecía el degradado. */
     padding-bottom: var(--hueco-inferior);
-    background-color: #E8E8EB;
+    /* `--surface` Y NO EL `#E8E8EB` QUE HABÍA AQUÍ. Este es el papel sobre el
+       que se apoya TODO el contenido de la plataforma, así que un gris claro
+       clavado a mano se llevaba por delante el tema oscuro entero: el texto
+       se volvía casi blanco, obediente, y el papel de debajo se quedaba
+       claro. Resultado medido: el titular de cada pantalla a 1,2:1 con el
+       teléfono en oscuro, es decir, invisible. No era un fallo de una
+       pantalla; eran las trece. */
+    background-color: rgb(var(--surface));
   }
 
   .pliego::before {
@@ -578,10 +650,10 @@
     pointer-events: none;
     background: linear-gradient(
       to bottom,
-      rgba(232, 232, 235, 0) 0%,
-      rgba(232, 232, 235, 0.35) 45%,
-      rgba(232, 232, 235, 0.78) 75%,
-      #E8E8EB 100%
+      rgb(var(--surface) / 0) 0%,
+      rgb(var(--surface) / 0.35) 45%,
+      rgb(var(--surface) / 0.78) 75%,
+      rgb(var(--surface)) 100%
     );
   }
 
@@ -711,7 +783,7 @@
   .field:focus,
   .field:focus-visible {
     @apply border-ink-900;
-    box-shadow: 0 0 0 3px rgba(13, 13, 15, 0.10);
+    box-shadow: 0 0 0 3px rgb(var(--ink-900) / 0.10);
   }
 
   /* ── CIFRAS ───────────────────────────────────────────────────────────────
@@ -781,7 +853,10 @@
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09), transparent);
+    /* El barrido del esqueleto de carga. En canales: un destello blanco
+       sobre un bloque casi blanco no se ve, y la carga parecía congelada
+       con el teléfono en claro. */
+    background-image: linear-gradient(90deg, transparent, rgb(var(--ink-900) / 0.09), transparent);
     animation: sweep 1.4s infinite;
   }
   @keyframes sweep {

@@ -119,7 +119,7 @@ export default function MatchDetail() {
         eyebrow={
           <>
             <span className="font-medium text-ink-900">{team.name}</span>
-            <span className="text-ink-300">·</span>
+            <span className="text-ink-500">·</span>
             <span>
               {match.competition}
               {match.matchday && ` · Jornada ${match.matchday}`}
@@ -149,9 +149,9 @@ export default function MatchDetail() {
               {icon as React.ReactNode}
             </span>
             <div className="min-w-0">
-              <p className="text-2xs uppercase tracking-wide text-ink-400">{label as string}</p>
+              <p className="text-2xs uppercase tracking-wide text-ink-500">{label as string}</p>
               <p className="mt-0.5 truncate text-base font-semibold text-ink-900">{value as string}</p>
-              <p className="truncate text-xs text-ink-400">{hint as string}</p>
+              <p className="truncate text-xs text-ink-500">{hint as string}</p>
             </div>
           </Panel>
         ))}
@@ -172,7 +172,7 @@ export default function MatchDetail() {
           (!callup ? (
             <Panel>
               <div className="flex flex-col items-center py-14 text-center">
-                <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-ink-50 text-ink-400">
+                <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-ink-50 text-ink-500">
                   <Users size={26} />
                 </span>
                 <h3 className="text-md font-semibold text-ink-800">Todavía no hay convocatoria</h3>
@@ -263,7 +263,7 @@ export default function MatchDetail() {
                             </span>
                           </span>
 
-                          <span className="hidden w-16 text-right text-xs text-ink-400 tabular-nums sm:block">
+                          <span className="hidden w-16 text-right text-xs text-ink-500 tabular-nums sm:block">
                             {rate}%
                           </span>
 
@@ -277,7 +277,7 @@ export default function MatchDetail() {
                                 {respuesta(entry.response).label}
                               </Tag>
                             ) : (
-                              <span className="text-xs text-ink-400">No convocada</span>
+                              <span className="text-xs text-ink-500">No convocada</span>
                             )}
                           </span>
                         </button>
@@ -336,7 +336,7 @@ export default function MatchDetail() {
                   </div>
 
                   {callup.sentAt && (
-                    <p className="mt-3 text-center text-xs text-ink-400">
+                    <p className="mt-3 text-center text-xs text-ink-500">
                       Última convocatoria enviada {relativeTime(callup.sentAt)}
                     </p>
                   )}

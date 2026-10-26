@@ -61,7 +61,7 @@ export function MenuCabecera({ accion }: { accion?: React.ReactNode }) {
                   {activeTeam?.season || 'Pendiente de asignación'}
                 </span>
               </span>
-              <ChevronsUpDown size={14} className="shrink-0 text-ink-400" />
+              <ChevronsUpDown size={14} className="shrink-0 text-ink-500" />
             </button>
           }
         >
@@ -86,7 +86,7 @@ export function MenuCabecera({ accion }: { accion?: React.ReactNode }) {
                   )}
                 >
                   <span className="truncate">{t.name}</span>
-                  <span className="text-xs tabular-nums text-ink-400">
+                  <span className="text-xs tabular-nums text-ink-500">
                     {data.players.filter((p) => p.teamId === t.id && !p.archivedAt).length}
                   </span>
                 </button>
@@ -105,7 +105,7 @@ export function MenuCrear({ onCreate }: { onCreate: () => void }) {
     <div className="px-3 pb-2">
       <button
         onClick={onCreate}
-        className="metal-claro flex h-11 w-full items-center justify-center gap-2 rounded-xl px-3 text-base font-medium text-white"
+        className="metal-claro flex h-11 w-full items-center justify-center gap-2 rounded-xl px-3 text-base font-medium text-ink-0"
       >
         <Plus size={16} strokeWidth={2.2} />
         Crear
@@ -222,7 +222,7 @@ export function MenuPie({ onIr }: { onIr?: () => void }) {
               <span className="block truncate text-sm font-semibold text-ink-900">{staff?.name}</span>
               <span className="block truncate text-xs text-ink-500">{staff ? ROLE_LABEL[staff.role] : ''}</span>
             </span>
-            <ChevronsUpDown size={14} className="shrink-0 text-ink-400" />
+            <ChevronsUpDown size={14} className="shrink-0 text-ink-500" />
           </button>
         }
       >

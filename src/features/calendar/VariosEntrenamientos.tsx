@@ -306,7 +306,7 @@ export function VariosEntrenamientos({ abierto, onCerrar }: { abierto: boolean; 
                     className={cn(
                       'h-11 flex-1 rounded-xl border text-base font-semibold transition-colors',
                       puesto
-                        ? 'border-ink-900 bg-ink-900 text-white'
+                        ? 'border-ink-900 bg-ink-900 text-ink-0'
                         : 'border-line text-ink-600 hover:border-line-fuerte',
                     )}
                   >
@@ -398,7 +398,7 @@ function Repaso({
     <div>
       {repetidas > 0 && (
         <p className="mb-3 flex items-start gap-2 rounded-xl border border-line bg-raised px-3.5 py-3 text-sm leading-relaxed text-ink-600">
-          <Info size={14} className="mt-0.5 shrink-0 text-ink-400" aria-hidden />
+          <Info size={14} className="mt-0.5 shrink-0 text-ink-500" aria-hidden />
           <span>
             {repetidas === 1
               ? 'Uno ya estaba en el calendario a esa hora: va desmarcado.'
@@ -429,9 +429,9 @@ function Repaso({
                         <span className="block truncate text-base text-ink-900">
                           {c.inicio} – {addMinutes(c.inicio, c.minutos)}
                         </span>
-                        {c.lugar && <span className="block truncate text-xs text-ink-400">{c.lugar}</span>}
+                        {c.lugar && <span className="block truncate text-xs text-ink-500">{c.lugar}</span>}
                       </span>
-                      {c.repetida && <span className="shrink-0 text-xs text-ink-400">Ya está</span>}
+                      {c.repetida && <span className="shrink-0 text-xs text-ink-500">Ya está</span>}
                     </span>
                   }
                 />

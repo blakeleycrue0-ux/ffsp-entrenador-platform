@@ -162,7 +162,7 @@ export default function EntrenadorPage() {
           {/* QUÉ MIRÓ. Una respuesta sobre un equipo sin listas vale menos que
               una sobre cuarenta, y eso tiene que verse. */}
           {miro && !pensando && (
-            <p className="pt-1 text-xs text-ink-400">
+            <p className="pt-1 text-xs text-ink-500">
               Ha mirado {miro.jugadores} jugador{miro.jugadores === 1 ? '' : 's'},{' '}
               {miro.sesiones} entrenamiento{miro.sesiones === 1 ? '' : 's'} y{' '}
               {miro.partidos} partido{miro.partidos === 1 ? '' : 's'} de este equipo.

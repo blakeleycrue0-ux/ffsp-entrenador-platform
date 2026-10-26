@@ -309,7 +309,7 @@ export default function SettingsPage() {
                   ]
               ).map((p) => (
                 <li key={p} className="flex gap-2">
-                  <span aria-hidden className="text-ink-300">
+                  <span aria-hidden className="text-ink-500">
                     ·
                   </span>
                   {p}

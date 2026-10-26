@@ -263,7 +263,7 @@ function Tarjeta({
           El ahorro se RESTA, no se escribe, así que no puede quedarse viejo
           respecto a los dos importes que tiene al lado. */}
       {otro && (
-        <p className={cn('mt-1 text-sm', destacado ? 'text-ink-0/50' : 'text-ink-500')}>
+        <p className={cn('mt-1 text-sm', destacado ? 'text-ink-0/60' : 'text-ink-500')}>
           {otro}
         </p>
       )}
@@ -285,7 +285,7 @@ function Tarjeta({
       {/* Si hoy un plan de pago no añade ninguna capacidad más, se dice.
           Callarlo dejaría creer que trae cosas que todavía no existen. */}
       {plan.tier !== 'free' && nuevasAqui.length === 0 && (
-        <p className={cn('mt-3 text-sm leading-relaxed', destacado ? 'text-ink-0/50' : 'text-ink-500')}>
+        <p className={cn('mt-3 text-sm leading-relaxed', destacado ? 'text-ink-0/60' : 'text-ink-500')}>
           Hoy la diferencia es sólo cuántos equipos caben. Las herramientas avanzadas se irán
           añadiendo a este plan; no las cobramos por adelantado.
         </p>

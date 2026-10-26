@@ -157,9 +157,9 @@ export default {
         /* Color SÓLO donde significa algo, y apagado. Un verde chillón de
            «disponible» al lado de un rojo de «lesionada» convierte una
            plantilla en un árbol de Navidad. */
-        ok: '#4F9E78',
-        warn: '#B48A2E',
-        bad: '#C4564C',
+        ok: 'rgb(var(--ok) / <alpha-value>)',
+        warn: 'rgb(var(--warn) / <alpha-value>)',
+        bad: 'rgb(var(--bad) / <alpha-value>)',
       },
       boxShadow: {
         card: 'none',

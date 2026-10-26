@@ -65,7 +65,7 @@ export function RequireCodigo({ children }: { children: React.ReactNode }) {
 function Esperando() {
   return (
     <div className="grid min-h-[100dvh] place-items-center bg-surface">
-      <Marca size={32} className="animate-fade-in text-ink-400" />
+      <Marca size={32} className="animate-fade-in text-ink-500" />
     </div>
   );
 }

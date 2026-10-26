@@ -91,7 +91,7 @@ export default function PlayersPage() {
       <div className="mb-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" />
+            <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-500" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -168,7 +168,7 @@ export default function PlayersPage() {
         </Panel>
       ) : view === 'lista' ? (
         <Panel className="overflow-hidden">
-          <div className="hidden border-b border-ink-100 bg-ink-50/50 px-5 py-2.5 text-2xs font-medium uppercase tracking-wide text-ink-400 sm:flex">
+          <div className="hidden border-b border-ink-100 bg-ink-50/50 px-5 py-2.5 text-2xs font-medium uppercase tracking-wide text-ink-500 sm:flex">
             <span className="flex-1">Jugador</span>
             <span className="w-40">Posición</span>
             <span className="w-24 text-right">Asistencia</span>
@@ -188,13 +188,13 @@ export default function PlayersPage() {
                   <p className="mt-0.5 text-xs text-muted sm:hidden">
                     {p.position} · {rate(p.id)}%
                   </p>
-                  <p className="mt-0.5 hidden text-xs text-ink-400 sm:block">
+                  <p className="mt-0.5 hidden text-xs text-ink-500 sm:block">
                     {p.birthDate ? `${age(p.birthDate)} años · ` : ''}{p.foot}
                   </p>
                 </div>
                 <div className="hidden w-40 sm:block">
                   <PosicionEtiqueta position={p.position} />
-                  {p.secondaryPosition && <p className="mt-0.5 truncate text-xs text-ink-400">{p.secondaryPosition}</p>}
+                  {p.secondaryPosition && <p className="mt-0.5 truncate text-xs text-ink-500">{p.secondaryPosition}</p>}
                 </div>
                 <div className="hidden w-24 text-right sm:block">
                   <span
@@ -235,15 +235,15 @@ export default function PlayersPage() {
               <div className="mt-3.5 grid grid-cols-3 gap-2 border-t border-ink-100 pt-3 text-center">
                 <div>
                   <p className="text-sm font-semibold text-ink-800 tabular-nums">{rate(p.id)}%</p>
-                  <p className="text-2xs text-ink-400">asistencia</p>
+                  <p className="text-2xs text-ink-500">asistencia</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-ink-800 tabular-nums">{p.stats.matches}</p>
-                  <p className="text-2xs text-ink-400">partidos</p>
+                  <p className="text-2xs text-ink-500">partidos</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-ink-800 tabular-nums">{p.stats.goals}</p>
-                  <p className="text-2xs text-ink-400">goles</p>
+                  <p className="text-2xs text-ink-500">goles</p>
                 </div>
               </div>
             </Link>
@@ -251,7 +251,7 @@ export default function PlayersPage() {
         </div>
       )}
 
-      <p className="mt-5 text-xs text-ink-400">
+      <p className="mt-5 text-xs text-ink-500">
         {team?.name} · Los datos de contacto de las jugadores y sus familias son privados y sólo se muestran en la
         ficha individual.
       </p>
@@ -269,7 +269,7 @@ export default function PlayersPage() {
  */
 function PosicionEtiqueta({ position }: { position: string }) {
   const linea = lineaDe(position);
-  if (!position) return <p className="truncate text-sm text-ink-400">Sin posición</p>;
+  if (!position) return <p className="truncate text-sm text-ink-500">Sin posición</p>;
   if (!linea) return <p className="truncate text-sm text-ink-700">{position}</p>;
   return (
     <span
