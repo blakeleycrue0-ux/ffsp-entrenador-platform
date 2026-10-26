@@ -1082,9 +1082,17 @@ export function PageHeader({
         {conTitulo && (
           <div className="min-w-0 flex-1 basis-[15rem]">
             {eyebrow && (
-              <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2 text-sm text-ink-500">{eyebrow}</div>
+              <div className="rotulo mb-2 flex min-w-0 flex-wrap items-center gap-2 text-ink-500">{eyebrow}</div>
             )}
-            <h1 className="break-words text-xl font-semibold leading-tight sm:text-2xl">{title}</h1>
+            {/* LA ESCALA DE LA PORTADA, Y NO UNA PROPIA. Era
+                `text-xl font-semibold` con el interletraje por defecto: una
+                grotesca a ese tamaño deja huecos entre letras que a 15 px no
+                se ven, y por eso los titulares de dentro parecían de otro
+                producto que los de fuera. `.t-m` es literalmente el
+                subtitular de la página pública —familia, peso 600 e
+                interletraje apretado—, así que las dos caras del producto
+                componen igual. Cambiarlo allí lo cambia aquí. */}
+            <h1 className="t-m break-words text-ink-900">{title}</h1>
             {description && (
               <p className="mt-2 hidden max-w-[62ch] text-base leading-relaxed text-ink-500 sm:block">
                 {description}
@@ -1094,13 +1102,23 @@ export function PageHeader({
         )}
         {/* En el móvil, una sola fila que se desliza; a partir de `sm`, lo de
             siempre. Los márgenes negativos hacen que el deslizamiento llegue
-            hasta el borde de la pantalla en vez de cortarse en el margen. */}
+            hasta el borde de la pantalla en vez de cortarse en el margen.
+
+            Y SE DESVANECE POR LA DERECHA. La fila ya se deslizaba, pero con
+            la barra oculta no había NADA que lo dijera: el último botón
+            aparecía partido por el borde y se leía como un fallo de
+            maquetación, no como «hay más a la derecha». El degradado del
+            final es la única señal de que se puede arrastrar.
+
+            Es una máscara, no una caja encima: así se desvanece sobre
+            cualquier fondo y sirve igual en claro que en oscuro. */}
         {actions && (
           <div
             className={cn(
               'flex min-w-0 items-center gap-2 max-sm:-mx-[var(--pagina-x)] max-sm:w-[100vw]',
               'max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-[var(--pagina-x)] max-sm:pb-0.5',
-              'max-sm:no-scrollbar sm:flex-wrap',
+              'max-sm:no-scrollbar max-sm:[mask-image:linear-gradient(to_right,#000_calc(100%-28px),transparent)]',
+              'sm:flex-wrap',
             )}
           >
             {actions}
