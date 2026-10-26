@@ -15,11 +15,9 @@ import { marcarDesbloqueado } from '@/services/passcode';
 import {
   ACCEPT_ERROR, CLUB_ROLE_LABEL, invitations, type InvitationPeek,
 } from '@/services/invitations';
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { Button, Field, Input, Tag } from '@/components/ui';
-import { ImagenDeFondo } from '@/components/layout/FondoPlataforma';
+import { ArrowLeft, ArrowRight, Check, Eye, EyeOff } from 'lucide-react';
 import { Wordmark } from '@/components/ui/Brand';
-import { cn } from '@/lib/utils';
+import { Cielo, CampoCielo, BotonCielo, AvisoCielo } from '@/components/ui/Cielo';
 
 type Mode = 'entrar' | 'registro' | 'recuperar';
 
@@ -179,323 +177,182 @@ export default function Login() {
   const inviteBlocked =
     invite?.found && (invite.expired || invite.revoked || invite.accepted);
 
-  /* Los tres pasos del camino completo. Sólo se enseñan al crear cuenta: en
-     «entrar» no hay camino que recorrer, y pintar un progreso que no avanza es
-     peor que no pintar nada. */
-  const PASOS = [
-    ['01', 'Cuenta'],
-    ['02', 'Club'],
-    ['03', 'Equipo'],
-  ] as const;
 
   return (
-    /* `plataforma`: la entrada ya es el producto, no la página pública. De
-       aquí para dentro no hay azul. */
-    <div className="plataforma min-h-[100svh] bg-surface lg:grid lg:grid-cols-[minmax(0,1.04fr)_minmax(0,1fr)] lg:gap-0 lg:p-3">
-      {/* ── El panel visual ──────────────────────────────────────────────────
-          En escritorio es una superficie de grafito redondeada con el ambiente
-          dentro. En el móvil no se apila debajo —eso es lo que hace una
-          maqueta que sólo «responde»— sino que se convierte en la cabecera:
-          una franja de ambiente detrás de la marca, y el formulario debajo. */}
-      {/* EL PANEL VISUAL, CON LA MISMA IMAGEN QUE INICIO. Tuvo dentro el
-          «cielo» —un degradado azul con partículas, que es el ambiente de la
-          página pública— y después unas ondas dibujadas. Ahora es la misma
-          foto en blanco y negro que hay detrás de Inicio: lo que se ve antes
-          de entrar es lo que se encuentra al entrar. */}
-      <div className="relative hidden overflow-hidden rounded-3xl bg-black lg:flex lg:flex-col lg:justify-between">
-        <ImagenDeFondo velo="bg-black/55" />
-
-        <div className="relative p-10">
+    <Cielo
+      cabecera={
+        <div className="flex items-center justify-between gap-3">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm text-white/60 transition-colors duration-250 ease-suave hover:text-white"
+            aria-label="Volver a la portada"
+            className="-ml-1.5 grid h-9 w-9 shrink-0 place-items-center rounded-full text-white/70 transition-colors active:bg-white/15 active:text-white"
           >
-            <ArrowLeft size={14} />
-            Volver a la página principal
+            <ArrowLeft size={18} />
           </Link>
+          <Wordmark tone="light" size="sm" className="shrink-0 opacity-90" />
+          <span className="w-9 shrink-0" />
         </div>
+      }
+      pie={
+        <div className="mx-auto w-full max-w-[26rem] space-y-3">
+          {sinConexion && !error && <AvisoCielo>{sinConexion}</AvisoCielo>}
+          {error && <AvisoCielo>{error}</AvisoCielo>}
+          {notice && <AvisoCielo tono="bien">{notice}</AvisoCielo>}
 
-        <div className="relative px-10">
-          <Wordmark size="lg" tone="light" />
-          <p className="mt-8 max-w-[22ch] text-4xl text-white" style={{ fontWeight: 520 }}>
-            La herramienta de tu club, en un mismo sitio.
-          </p>
-          <p className="mt-5 max-w-[46ch] text-md text-white/65">
-            Plantilla, asistencia, entrenamientos y partidos. Menos gestión y más tiempo para
-            entrenar.
-          </p>
-        </div>
+          {/* EL BOTÓN VA FUERA DEL FORMULARIO, pegado abajo, y lo enlaza
+              `form`: así está siempre en el mismo sitio aunque el formulario
+              tenga dos campos o cuatro, y la tecla Intro sigue enviando. */}
+          <BotonCielo type="submit" form="acceso" cargando={busy} puede={!inviteBlocked}>
+            {t.cta}
+            <ArrowRight size={17} />
+          </BotonCielo>
 
-        <div className="relative p-10">
-          {mode === 'registro' ? (
-            <ol className="flex flex-wrap gap-2">
-              {PASOS.map(([n, texto], i) => (
-                <li
-                  key={n}
-                  className={cn(
-                    'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-250 ease-suave',
-                    i === 0
-                      ? 'bg-white text-ink-900'
-                      : 'border border-white/15 text-white/70',
-                  )}
+          <div className="pt-1 text-center text-[14px] text-white/70">
+            {mode === 'entrar' ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => { setMode('recuperar'); setError(null); setNotice(null); }}
+                  className="py-2 font-medium text-white/80 underline underline-offset-4 active:text-white"
                 >
-                  <span className="tabular-nums opacity-60">{n}</span>
-                  <span className="font-medium">{texto}</span>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="text-sm text-white/60">
-              Cada club, con sus datos separados de los demás. El permiso lo aplica el servidor, no
-              la pantalla.
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* ── El formulario ───────────────────────────────────────────────── */}
-      <div className="relative flex min-h-[100svh] flex-col lg:min-h-0">
-        {/* ── LA CABECERA DEL MÓVIL ───────────────────────────────────────
-            MEDÍA EL 30 % DE LA PANTALLA Y NO HACÍA NADA. Era una franja de
-            cielo de 30 svh con un mínimo de 180 px: en un iPhone SE eso son
-            200 px de los 667 que hay, y el primer campo empezaba por debajo
-            de la mitad de la pantalla. Para entrar en una herramienta de
-            trabajo, con el teclado abierto y el pulgar en la pantalla, eso es
-            desplazarse antes de poder escribir nada.
-
-            Ahora es una barra: la marca, el enlace de volver y el cielo
-            detrás, 76 px en total. El cielo sigue ahí —se reconoce el
-            producto— pero como fondo de la cabecera, no como un cartel.
-            Medido en 375×667: el primer campo pasa de empezar en y=404 a
-            empezar en y=250. */}
-        <div className="relative shrink-0 overflow-hidden bg-black lg:hidden">
-          <ImagenDeFondo velo="bg-black/55" />
-          <div className="relative flex h-[76px] items-center justify-between gap-3 px-5 pt-[var(--safe-top)]">
-            <Wordmark size="sm" tone="light" />
-            <Link
-              to="/"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-white/70 transition-colors hover:text-white"
-            >
-              <ArrowLeft size={14} />
-              Volver
-            </Link>
-          </div>
-        </div>
-
-        {/* `justify-start` en el móvil y `justify-center` a partir de `lg`.
-            Centrado verticalmente en una pantalla de móvil, el formulario
-            baila: con tres campos empieza más arriba que con dos, y al salir
-            un error se mueve entero. Arriba, empieza siempre en el mismo
-            sitio. */}
-        <div className="flex flex-1 flex-col px-5 pb-[max(28px,var(--safe-bottom))] pt-7 sm:px-10 lg:justify-center lg:px-14 lg:py-12">
-          <div className="mx-auto w-full max-w-[420px]">
-            {/* Invitación */}
-            {token && (
-              <div className="mb-7 rounded-xl border border-line-sutil bg-panel p-4">
-                {invite === null ? (
-                  <p className="text-base text-ink-600">Comprobando la invitación…</p>
-                ) : !invite.found ? (
-                  <p className="text-base leading-relaxed text-ink-800">
-                    Ese enlace de invitación no existe. Pide uno nuevo a quien administra el club.
-                  </p>
-                ) : (
-                  <>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-base font-medium text-ink-900">
-                        Invitación {invite.clubName ? `de ${invite.clubName}` : 'al club'}
-                      </p>
-                      {invite.accepted && <Tag tone="neutral" size="sm">Ya aceptada</Tag>}
-                      {invite.revoked && <Tag tone="bad" size="sm">Anulada</Tag>}
-                      {invite.expired && !invite.accepted && <Tag tone="warn" size="sm">Caducada</Tag>}
-                    </div>
-                    <p className="mt-1.5 text-sm leading-relaxed text-ink-700">
-                      Para <strong className="text-ink-900">{invite.email}</strong>
-                      {invite.role && ` · ${CLUB_ROLE_LABEL[invite.role]}`}
-                      {invite.teamName && ` · ${invite.teamName}`}
-                    </p>
-                    {inviteBlocked && (
-                      <p className="mt-2 text-sm leading-relaxed text-ink-600">
-                        Esta invitación ya no se puede usar. Pide una nueva al club.
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-
-            <h1 className="text-3xl text-ink-900 sm:text-4xl" style={{ fontWeight: 520 }}>
-              {t.title}
-            </h1>
-            <p className="mt-2.5 text-base leading-relaxed text-ink-700 sm:text-md">{t.sub}</p>
-
-            <form onSubmit={submit} className="mt-7 space-y-4">
-              {mode === 'registro' && (
-                <Field label="Nombre y apellidos" required>
-                  <Input
-                    className="field-grande"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    autoComplete="name"
-                    /* `words`, no la mayúscula de toda la frase: un apellido
-                       compuesto se escribe con dos mayúsculas y el teclado
-                       del móvil, por defecto, sólo pone la primera. */
-                    autoCapitalize="words"
-                  />
-                </Field>
-              )}
-
-              {/* ── EL PERMISO, Y VA SIN MARCAR ────────────────────────────
-                  Una casilla premarcada no es consentimiento: el RGPD pide un
-                  acto, y marcarla de antemano es justo lo contrario de un
-                  acto. La guía del alta no depende de esto —es un correo de
-                  servicio y sale igual—; esto es sólo para las novedades y
-                  los avisos. Quien no la marque no recibe ninguno, y se puede
-                  cambiar de idea en Ajustes o desde el pie de cualquiera. */}
-              {mode === 'registro' && (
-                <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-line bg-panel/60 p-3 text-sm leading-relaxed text-ink-700">
-                  <input
-                    type="checkbox"
-                    className="mt-0.5"
-                    checked={novedades}
-                    onChange={(e) => setNovedades(e.target.checked)}
-                  />
-                  <span>
-                    Quiero recibir novedades de Playoff360 y algún aviso si dejo la cuenta
-                    parada. Puedes darte de baja de un clic en cualquier momento.
-                  </span>
-                </label>
-              )}
-
-              <Field label="Correo electrónico" required>
-                <Input
-                  className="field-grande"
-                  type="email"
-                  /* `inputMode` saca el teclado con la arroba a la vista, y
-                     las dos correcciones apagadas evitan que el móvil
-                     convierta un correo en una frase con mayúscula. */
-                  inputMode="email"
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nombre@correo.com"
-                  autoComplete="email"
-                  readOnly={!!(token && invite?.found && invite.email)}
-                />
-              </Field>
-
-              {mode !== 'recuperar' && (
-                <Field
-                  label="Contraseña"
-                  hint={mode === 'registro' ? 'Mínimo 6 caracteres.' : undefined}
-                  required
-                >
-                  {/* VER LO QUE SE ESCRIBE. En un móvil, escribir una
-                      contraseña a ciegas con el teclado tapando media
-                      pantalla es la primera causa de «no me deja entrar».
-                      El ojo no guarda nada ni cambia el `autoComplete`: sólo
-                      cambia el `type`, así que el gestor de contraseñas
-                      sigue funcionando igual. */}
-                  <div className="relative">
-                    <Input
-                      className="field-grande pr-12"
-                      type={verClave ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
-                    />
+                  No me acuerdo de la contraseña
+                </button>
+                {!token && (
+                  <p className="mt-1">
+                    ¿No tienes cuenta?{' '}
                     <button
                       type="button"
-                      onClick={() => setVerClave((v) => !v)}
-                      aria-label={verClave ? 'Ocultar la contraseña' : 'Ver la contraseña'}
-                      className="absolute right-1.5 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-lg text-ink-500 transition-colors hover:text-ink-900"
+                      onClick={() => { setMode('registro'); setError(null); setNotice(null); }}
+                      className="font-semibold text-white underline underline-offset-4"
                     >
-                      {verClave ? <EyeOff size={17} /> : <Eye size={17} />}
-                    </button>
-                  </div>
-                </Field>
-              )}
-
-              {sinConexion && !error && (
-                <p className="rounded-lg border border-warn/35 bg-warn/8 px-3.5 py-2.5 text-sm leading-relaxed text-warn">
-                  {sinConexion}
-                </p>
-              )}
-              {error && (
-                <p className="rounded-lg border border-bad/30 bg-bad/8 px-3.5 py-2.5 text-sm leading-relaxed text-bad">
-                  {error}
-                </p>
-              )}
-              {notice && (
-                <p className="rounded-lg border border-ok/30 bg-ok/8 px-3.5 py-2.5 text-sm leading-relaxed text-ok">
-                  {notice}
-                </p>
-              )}
-
-              <Button type="submit" block size="lg" loading={busy} className="!mt-7">
-                {t.cta}
-              </Button>
-            </form>
-
-            <div className="mt-6 space-y-2 text-sm">
-              {mode === 'entrar' && (
-                <>
-                  <p className="text-ink-600">
-                    ¿Has olvidado la contraseña?{' '}
-                    <button
-                      onClick={() => {
-                        setMode('recuperar');
-                        setError(null);
-                      }}
-                      className="font-medium text-ink-900 underline underline-offset-4 decoration-ink-400 transition-colors hover:decoration-ink-900"
-                    >
-                      Recupérala
+                      Crear una
                     </button>
                   </p>
-                  {!token && (
-                    <p className="text-ink-600">
-                      ¿Aún no tienes cuenta?{' '}
-                      <button
-                        onClick={() => {
-                          setMode('registro');
-                          setError(null);
-                        }}
-                        className="font-medium text-ink-900 underline underline-offset-4 decoration-ink-400 transition-colors hover:decoration-ink-900"
-                      >
-                        Crear cuenta
-                      </button>
-                    </p>
-                  )}
-                </>
-              )}
-              {mode !== 'entrar' && (
-                <p className="text-ink-600">
-                  ¿Ya tienes cuenta?{' '}
-                  <button
-                    onClick={() => {
-                      setMode('entrar');
-                      setError(null);
-                    }}
-                    className="font-medium text-ink-900 underline underline-offset-4 decoration-ink-400 transition-colors hover:decoration-ink-900"
-                  >
-                    Iniciar sesión
-                  </button>
-                </p>
-              )}
-            </div>
-
-            {!token && (
-              <p className="mt-9 border-t border-line-sutil pt-6 text-xs leading-relaxed text-ink-500">
-                Al entrar por primera vez creas tu club y quedas como su administración: desde ahí
-                creas los equipos e invitas al resto del cuerpo técnico. Los datos de cada club
-                están separados de los de cualquier otro.
+                )}
+              </>
+            ) : (
+              <p>
+                ¿Ya tienes cuenta?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setMode('entrar'); setError(null); setNotice(null); }}
+                  className="font-semibold text-white underline underline-offset-4"
+                >
+                  Entrar
+                </button>
               </p>
             )}
           </div>
         </div>
+      }
+    >
+      <div className="mx-auto my-auto w-full max-w-[26rem]">
+        <h1 className="t-l text-white">{t.title}</h1>
+        <p className="entradilla mt-3 text-white/70">{t.sub}</p>
+
+        {/* ── La invitación, si se ha llegado por un enlace ─────────────── */}
+        {token && (
+          <div className="mt-6 rounded-2xl border border-white/22 bg-white/10 p-4">
+            {invite === null ? (
+              <p className="text-[14px] text-white/75">Comprobando la invitación…</p>
+            ) : !invite.found ? (
+              <p className="text-[14px] leading-relaxed text-white">
+                Ese enlace de invitación no existe. Pide uno nuevo a quien administra el club.
+              </p>
+            ) : (
+              <>
+                <p className="text-[15px] font-semibold text-white">
+                  Invitación {invite.clubName ? `de ${invite.clubName}` : 'al club'}
+                  {invite.accepted && ' · ya aceptada'}
+                  {invite.revoked && ' · anulada'}
+                  {invite.expired && !invite.accepted && ' · caducada'}
+                </p>
+                <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/70">
+                  Para <strong className="text-white">{invite.email}</strong>
+                  {invite.role && ` · ${CLUB_ROLE_LABEL[invite.role]}`}
+                  {invite.teamName && ` · ${invite.teamName}`}
+                </p>
+                {inviteBlocked && (
+                  <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">
+                    Esta invitación ya no se puede usar. Pide una nueva al club.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        <form id="acceso" onSubmit={submit} className="mt-7 space-y-2.5">
+          {mode === 'registro' && (
+            <CampoCielo
+              etiqueta="Nombre y apellidos"
+              value={fullName}
+              onChange={setFullName}
+              placeholder="Nombre y apellidos"
+              autoComplete="name"
+            />
+          )}
+
+          <CampoCielo
+            etiqueta="Correo electrónico"
+            tipo="email"
+            value={email}
+            onChange={setEmail}
+            placeholder="tu@correo.com"
+            autoComplete="email"
+          />
+
+          {mode !== 'recuperar' && (
+            <>
+              <CampoCielo
+                etiqueta="Contraseña"
+                tipo={verClave ? 'text' : 'password'}
+                value={password}
+                onChange={setPassword}
+                placeholder="Contraseña"
+                autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
+                /* VER LO QUE SE ESCRIBE. En un móvil, escribir a ciegas con
+                   el teclado tapando media pantalla es la primera causa de
+                   «no me deja entrar». El ojo sólo cambia el `type`: el
+                   gestor de contraseñas sigue funcionando igual. */
+                derecha={
+                  <button
+                    type="button"
+                    onClick={() => setVerClave((v) => !v)}
+                    aria-label={verClave ? 'Ocultar la contraseña' : 'Ver la contraseña'}
+                    className="grid h-10 w-10 place-items-center rounded-full text-white/70 transition-colors active:bg-white/15 active:text-white"
+                  >
+                    {verClave ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                }
+              />
+              {mode === 'registro' && (
+                <p className="px-1 pt-0.5 text-[13px] text-white/60">
+                  Mínimo 6 caracteres.
+                </p>
+              )}
+            </>
+          )}
+
+          {mode === 'registro' && (
+            <label className="mt-1 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/22 bg-white/10 p-3.5 text-[13.5px] leading-relaxed text-white/80">
+              <input
+                type="checkbox"
+                checked={novedades}
+                onChange={(e) => setNovedades(e.target.checked)}
+                /* EL ESQUEMA EN CLARO, A MANO. La portada declara
+                   `color-scheme: dark` para sus controles nativos y esta
+                   pantalla lleva su clase: la casilla salía como un cuadrado
+                   negro en mitad del cielo. */
+                style={{ colorScheme: 'light', accentColor: '#ffffff' }}
+                className="mt-0.5 h-[18px] w-[18px] shrink-0"
+              />
+              Quiero recibir novedades del producto por correo. Puedes darte de baja cuando quieras.
+            </label>
+          )}
+        </form>
       </div>
-    </div>
+    </Cielo>
   );
 }
 
@@ -540,72 +397,112 @@ function NuevaContrasena({ onHecho }: { onHecho: () => void }) {
     }
   };
 
+  /* Lo que de verdad se exige, dicho antes de escribir y no después de
+     fallar. Son las dos únicas reglas que comprueba `guardar`. */
+  const bastanteLarga = clave.length >= 8;
+  const coinciden = clave.length > 0 && clave === repetida;
+
   return (
-    <div className="plataforma relative flex min-h-[100svh] flex-col bg-surface">
-      <div className="relative shrink-0 overflow-hidden bg-black">
-        <ImagenDeFondo velo="bg-black/55" />
-        <div className="relative flex h-[76px] items-center px-5 pt-[var(--safe-top)]">
-          <Wordmark size="sm" tone="light" />
+    <Cielo
+      cabecera={
+        <div className="flex items-center justify-center">
+          <Wordmark tone="light" size="sm" className="opacity-90" />
         </div>
-      </div>
+      }
+      pie={
+        hecho ? (
+          <div className="mx-auto w-full max-w-[26rem]">
+            <BotonCielo onClick={onHecho}>Entrar con la nueva</BotonCielo>
+          </div>
+        ) : (
+          <div className="mx-auto w-full max-w-[26rem] space-y-3">
+            {error && <AvisoCielo>{error}</AvisoCielo>}
+            <BotonCielo
+              type="submit"
+              form="clave-nueva"
+              cargando={guardando}
+              puede={bastanteLarga && coinciden}
+            >
+              Guardar la contraseña
+            </BotonCielo>
+          </div>
+        )
+      }
+    >
+      <div className="mx-auto my-auto w-full max-w-[26rem]">
+        {hecho ? (
+          <>
+            <h1 className="t-l text-white">Contraseña cambiada.</h1>
+            <p className="entradilla mt-3 text-white/70">
+              Ya puedes entrar con la nueva. Guárdala donde guardes las demás.
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className="t-l text-white">Elige una contraseña.</h1>
+            <p className="entradilla mt-3 text-white/70">
+              La anterior deja de funcionar en cuanto guardes ésta.
+            </p>
 
-      <div className="flex flex-1 flex-col px-5 pb-[max(28px,var(--safe-bottom))] pt-7 sm:px-10 lg:justify-center">
-        <div className="mx-auto w-full max-w-[420px]">
-          {hecho ? (
-            <>
-              <h1 className="cifra text-3xl">Contraseña cambiada</h1>
-              <p className="mt-3 text-md leading-relaxed text-ink-600">
-                Ya puedes entrar con la nueva. Guárdala donde guardes las demás.
-              </p>
-              <Button size="lg" block className="mt-7" onClick={onHecho}>
-                Continuar
-              </Button>
-            </>
-          ) : (
-            <form onSubmit={guardar} noValidate>
-              <h1 className="cifra text-3xl">Nueva contraseña</h1>
-              <p className="mt-3 text-md leading-relaxed text-ink-600">
-                Escribe la que quieras usar a partir de ahora. No hace falta la anterior: has
-                llegado desde el enlace de tu correo.
-              </p>
-
-              <div className="mt-7 space-y-4">
-                <Field label="Nueva contraseña" hint="Mínimo 8 caracteres." required>
-                  <Input
-                    type={ver ? 'text' : 'password'}
-                    value={clave}
-                    onChange={(ev) => setClave(ev.target.value)}
-                    autoComplete="new-password"
-                    autoFocus
-                  />
-                </Field>
-                <Field label="Repítela" required>
-                  <Input
-                    type={ver ? 'text' : 'password'}
-                    value={repetida}
-                    onChange={(ev) => setRepetida(ev.target.value)}
-                    autoComplete="new-password"
-                  />
-                </Field>
-                <label className="flex items-center gap-2 text-sm text-ink-600">
-                  <input type="checkbox" checked={ver} onChange={(ev) => setVer(ev.target.checked)} />
-                  Ver lo que escribo
-                </label>
-              </div>
-
-              {error && (
-                <p className="mt-5 rounded-xl border border-bad/25 bg-bad/5 px-4 py-3 text-base text-bad">
-                  {error}
-                </p>
-              )}
-
-              <Button type="submit" size="lg" block loading={guardando} className="mt-7">
-                Guardar la contraseña
-              </Button>
+            <form id="clave-nueva" onSubmit={guardar} className="mt-7 space-y-2.5">
+              <CampoCielo
+                etiqueta="Nueva contraseña"
+                tipo={ver ? 'text' : 'password'}
+                value={clave}
+                onChange={setClave}
+                placeholder="Nueva contraseña"
+                autoComplete="new-password"
+                autoFocus
+              />
+              <CampoCielo
+                etiqueta="Repite la contraseña"
+                tipo={ver ? 'text' : 'password'}
+                value={repetida}
+                onChange={setRepetida}
+                placeholder="Repítela"
+                autoComplete="new-password"
+              />
+              <label className="flex cursor-pointer items-center gap-2.5 px-1 pt-1 text-[14px] text-white/75">
+                <input
+                  type="checkbox"
+                  checked={ver}
+                  onChange={(ev) => setVer(ev.target.checked)}
+                  style={{ colorScheme: 'light', accentColor: '#ffffff' }}
+                  className="h-[18px] w-[18px]"
+                />
+                Ver lo que escribo
+              </label>
             </form>
-          )}
-        </div>
+
+            {/* ── LOS REQUISITOS, MIENTRAS SE ESCRIBE ───────────────────────
+                Antes sólo se sabía lo que fallaba DESPUÉS de pulsar guardar,
+                y de uno en uno: primero que era corta, luego que no
+                coincidían. Aquí están los dos a la vista y se van marcando
+                solos. Son exactamente las dos reglas que comprueba el
+                guardado; ni una más, para que no prometan nada falso. */}
+            <ul className="mt-5 space-y-1.5">
+              <Requisito cumplido={bastanteLarga}>Al menos 8 caracteres</Requisito>
+              <Requisito cumplido={coinciden}>Las dos iguales</Requisito>
+            </ul>
+          </>
+        )}
       </div>
-    </div>
+    </Cielo>
+  );
+}
+
+function Requisito({ cumplido, children }: { cumplido: boolean; children: React.ReactNode }) {
+  return (
+    <li className={`flex items-center gap-2.5 text-[14px] ${cumplido ? 'text-white' : 'text-white/55'}`}>
+      <span
+        aria-hidden
+        className={`grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full border ${
+          cumplido ? 'border-white bg-white text-marca-700' : 'border-white/35'
+        }`}
+      >
+        {cumplido && <Check size={11} strokeWidth={3} />}
+      </span>
+      {children}
+    </li>
   );
 }

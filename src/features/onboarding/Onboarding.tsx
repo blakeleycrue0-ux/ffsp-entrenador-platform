@@ -43,10 +43,11 @@ import { db } from '@/services/db';
 import { humanError } from '@/services/supabase';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
 import { Input, Select } from '@/components/ui';
+import { CampoCielo, OpcionCielo, BotonCielo } from '@/components/ui/Cielo';
 import { Wordmark } from '@/components/ui/Brand';
 import { PasoPlan } from './PasoPlan';
 import { deportes, apuntaDeporte, FUTBOL, type Deporte } from '@/services/deportes';
-import { cn, dayName, toISODate } from '@/lib/utils';
+import { dayName, toISODate } from '@/lib/utils';
 import { citasDelHorario } from '@/lib/horario';
 import type { Staff, TrainingSlot } from '@/types';
 
@@ -285,7 +286,7 @@ export default function Onboarding() {
           {paso === 'nombre' && (
             <Pregunta rotulo={`Paso ${numero}`} titulo="¿Cómo te llamas?"
               ayuda="Para que la plataforma no te llame por tu correo, y para que tu equipo sepa quién eres.">
-              <CampoClaro
+              <CampoCielo
                 etiqueta="Nombre y apellidos" autoFocus value={nombre} onChange={setNombre}
                 placeholder="Tu nombre y apellidos" autoComplete="name"
                 onEnter={() => boton?.puede && boton.hacer()}
@@ -298,7 +299,7 @@ export default function Onboarding() {
               ayuda="Decide lo que ves al entrar. Se puede cambiar cuando quieras.">
               <div className="space-y-2">
                 {CARGOS.map((r) => (
-                  <Opcion key={r} activa={cargo === r} onClick={() => setCargo(r)} titulo={ROLE_LABEL[r]} />
+                  <OpcionCielo key={r} activa={cargo === r} onClick={() => setCargo(r)} titulo={ROLE_LABEL[r]} />
                 ))}
               </div>
             </Pregunta>
@@ -307,12 +308,12 @@ export default function Onboarding() {
           {paso === 'club' && (
             <Pregunta rotulo={`Paso ${numero}`} titulo="¿Cómo se llama tu club?"
               ayuda="El nombre con el que lo conoce todo el mundo.">
-              <CampoClaro
+              <CampoCielo
                 etiqueta="Nombre del club" autoFocus value={club} onChange={setClub}
                 placeholder="Club Deportivo Ejemplo" autoComplete="organization"
                 onEnter={() => boton?.puede && boton.hacer()}
               />
-              <CampoClaro
+              <CampoCielo
                 etiqueta="Abreviatura del club" value={clubCorto} onChange={setClubCorto}
                 placeholder="Abreviatura (opcional)" className="mt-2.5"
               />
@@ -327,7 +328,7 @@ export default function Onboarding() {
               ) : (
                 <div className="-mx-1 grid grid-cols-2 gap-2 px-1 py-1">
                   {losDeportes.map((d) => (
-                    <Opcion
+                    <OpcionCielo
                       key={d.code} activa={deporte === d.code} onClick={() => setDeporte(d.code)}
                       titulo={d.name}
                       pie={d.posiciones.length > 0 ? `${d.posiciones.length} posiciones` : 'Sin posiciones'}
@@ -341,11 +342,11 @@ export default function Onboarding() {
           {paso === 'equipo' && (
             <Pregunta rotulo={`Paso ${numero}`} titulo="¿Y tu primer equipo?"
               ayuda={elegido ? `Donde van ${elegido.jugadores}, ${elegido.partidos} y asistencia.` : undefined}>
-              <CampoClaro
+              <CampoCielo
                 etiqueta="Nombre del equipo" autoFocus value={equipo} onChange={setEquipo}
                 placeholder="Cadete A" onEnter={() => boton?.puede && boton.hacer()}
               />
-              <CampoClaro
+              <CampoCielo
                 etiqueta="Categoría" value={categoria} onChange={setCategoria}
                 placeholder="Categoría (opcional)" className="mt-2.5"
               />
@@ -447,18 +448,18 @@ export default function Onboarding() {
           )}
 
           {paso === 'listo' ? (
-            <BotonGrande
+            <BotonCielo
               cargando={ocupado}
               onClick={() => void avanzar(() => actions.refresh())}
             >
               Entrar en Playoff360
-            </BotonGrande>
+            </BotonCielo>
           ) : boton ? (
             <>
-              <BotonGrande cargando={ocupado} puede={boton.puede} onClick={boton.hacer}>
+              <BotonCielo cargando={ocupado} puede={boton.puede} onClick={boton.hacer}>
                 {boton.texto}
                 <ArrowRight size={17} />
-              </BotonGrande>
+              </BotonCielo>
               {/* Lo que se puede saltar, se dice. */}
               {(paso === 'equipo' || paso === 'horarios') && (
                 <button
@@ -492,79 +493,7 @@ function Pregunta({
   );
 }
 
-/**
- * Un campo sobre el cielo.
- *
- * NO ES EL `Input` DE LA PLATAFORMA, a propósito: aquél es tinta sobre blanco
- * y aquí el fondo es azul. Mismo tamaño de toque y mismo radio, otro color.
- */
-function CampoClaro({
-  etiqueta, value, onChange, placeholder, autoFocus, autoComplete, className, onEnter,
-}: {
-  /* OBLIGATORIA. Un campo cuyo único nombre es el texto de dentro deja de
-     tener nombre en cuanto se escribe algo: quien use un lector de pantalla
-     oye «cuadro de edición» y nada más. */
-  etiqueta: string;
-  value: string; onChange: (v: string) => void; placeholder?: string;
-  autoFocus?: boolean; autoComplete?: string; className?: string; onEnter?: () => void;
-}) {
-  return (
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onEnter?.(); } }}
-      aria-label={etiqueta}
-      placeholder={placeholder}
-      autoFocus={autoFocus}
-      autoComplete={autoComplete ?? 'off'}
-      /* EL ESQUEMA DE COLOR, EN CLARO Y A MANO. La portada declara
-         `color-scheme: dark` para sus controles nativos, y esta pantalla
-         lleva su misma clase: el navegador pintaba el campo con su fondo
-         oscuro por debajo del blanco al 12 %, y salía una caja gris en mitad
-         del cielo. Con el esquema en claro, el fondo lo decide la clase. */
-      /* EL FONDO, EN LÍNEA Y NO POR CLASE. Un campo sin `autocomplete`
-         declarado lo rellena el navegador por su cuenta, y al hacerlo pinta
-         un fondo sólido que gana a cualquier clase: salía una caja blanca
-         opaca en mitad del cielo. Con `autocomplete` explícito en todos y el
-         color en línea, el fondo lo decide esta pantalla y nadie más. */
-      style={{ backgroundColor: 'rgba(255,255,255,0.14)', colorScheme: 'light' }}
-      className={cn(
-        'h-[52px] w-full rounded-2xl border border-white/25 px-4 text-[17px] text-white',
-        'placeholder:text-white/45 outline-none transition-colors',
-        'focus:border-white/60',
-        className,
-      )}
-    />
-  );
-}
 
-/** Una opción que se toca. Cuarenta y ocho píxeles de alto, mínimo. */
-function Opcion({
-  activa, onClick, titulo, pie,
-}: { activa: boolean; onClick: () => void; titulo: string; pie?: string }) {
-  return (
-    <button
-      onClick={onClick}
-      aria-pressed={activa}
-      className={cn(
-        'flex min-h-[52px] w-full items-center justify-between gap-2 rounded-2xl border px-4 py-2.5 text-left transition-all duration-150 active:scale-[0.985]',
-        activa
-          ? 'border-white bg-white text-marca-700'
-          : 'border-white/22 bg-white/10 text-white active:bg-white/[0.16]',
-      )}
-    >
-      <span className="min-w-0">
-        <span className="block truncate text-[15.5px] font-semibold">{titulo}</span>
-        {pie && (
-          <span className={cn('block truncate text-[12.5px]', activa ? 'text-marca-700/65' : 'text-white/55')}>
-            {pie}
-          </span>
-        )}
-      </span>
-      {activa && <Check size={17} strokeWidth={2.6} className="shrink-0" />}
-    </button>
-  );
-}
 
 /** Para los dos pasos que traen una pantalla entera de la plataforma dentro. */
 function Tarjeta({ children }: { children: React.ReactNode }) {
@@ -591,25 +520,3 @@ function Hecho({ titulo, pie }: { titulo: string; pie: string }) {
   );
 }
 
-/** El botón de la portada, a lo ancho. */
-function BotonGrande({
-  children, onClick, cargando, puede = true,
-}: { children: React.ReactNode; onClick: () => void; cargando?: boolean; puede?: boolean }) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={!puede || cargando}
-      className={cn(
-        /* INACTIVO SE VE, no se desvanece. Al 45 % sobre el azul parecía un
-           fallo de pintado; así se lee que el botón está ahí y que espera a
-           que se conteste la pregunta. */
-        'btn h-[54px] w-full text-[16px]',
-        puede && !cargando
-          ? 'btn-claro'
-          : 'pointer-events-none border border-white/25 bg-white/15 text-white/60',
-      )}
-    >
-      {cargando ? 'Un momento…' : children}
-    </button>
-  );
-}
