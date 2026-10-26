@@ -530,11 +530,16 @@ export function Tabs({
             onClick={() => onChange(t.id)}
             className={cn(
               'relative shrink-0 px-3 py-2 text-base font-medium transition-colors',
-              active ? 'text-ink-900' : 'text-muted hover:text-ink-800',
+              /* `ink-600` en vez del alias `muted`, que es EL MISMO COLOR.
+                 No cambia nada de lo que se ve; se escribe así para que al
+                 leerlo se sepa dónde cae en la escala sin ir a buscar a qué
+                 apunta el alias. La pestaña inactiva ya se lee bien: contra
+                 el fondo da unos 9:1 en los dos temas. */
+              active ? 'text-ink-900' : 'text-ink-600 hover:text-ink-900',
             )}
           >
             {t.label}
-            {t.count !== undefined && <span className="ml-1.5 text-sm text-ink-400 tabular-nums">{t.count}</span>}
+            {t.count !== undefined && <span className="ml-1.5 text-sm text-ink-500 tabular-nums">{t.count}</span>}
             {active && <span className="absolute inset-x-1.5 -bottom-px h-0.5 bg-ink-900" />}
           </button>
         );

@@ -121,7 +121,7 @@ export function SelectorDePlanes({
                 aria-pressed={periodo === p}
                 className={cn(
                   'rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all',
-                  periodo === p ? 'bg-white/12 text-ink-900' : 'text-ink-500 hover:text-ink-800',
+                  periodo === p ? 'bg-ink-900/[0.07] text-ink-900' : 'text-ink-500 hover:text-ink-800',
                 )}
               >
                 {p === 'mensual' ? 'Mensual' : 'Anual'}
@@ -206,7 +206,7 @@ function Tarjeta({
         'flex w-full flex-col rounded-2xl border p-5 text-left transition-all duration-200',
         destacado ? 'order-first lg:order-none' : '',
         destacado
-          ? 'border-transparent bg-abismo text-white'
+          ? 'border-transparent bg-ink-900 text-ink-0'
           : 'border-line bg-panel hover:border-ink-300',
         /* Elegida: un aro, no un color distinto. Cambiar el fondo al elegir
            haría que la tarjeta destacada dejara de verse destacada. */
@@ -214,7 +214,7 @@ function Tarjeta({
       )}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className={cn('text-md font-semibold', destacado ? 'text-white' : 'text-ink-900')}>
+        <h3 className={cn('text-md font-semibold', destacado ? 'text-ink-0' : 'text-ink-900')}>
           {plan.name}
         </h3>
         {destacado && (
@@ -225,7 +225,7 @@ function Tarjeta({
         {esElActual && (
           <span className={cn(
             'rounded-full px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.08em]',
-            destacado ? 'bg-white/15 text-white' : 'bg-ink-900/10 text-ink-700',
+            destacado ? 'bg-ink-0/15 text-ink-0' : 'bg-ink-900/10 text-ink-700',
           )}>
             El tuyo
           </span>
@@ -235,21 +235,21 @@ function Tarjeta({
       <div className="mt-3 flex items-end gap-2">
         {plan.tier === 'free' ? (
           <>
-            <span className={cn('cifra text-4xl', destacado ? 'text-white' : 'text-ink-900')}>0 €</span>
-            <span className={cn('pb-1 text-sm', destacado ? 'text-white/55' : 'text-ink-500')}>
+            <span className={cn('cifra text-4xl', destacado ? 'text-ink-0' : 'text-ink-900')}>0 €</span>
+            <span className={cn('pb-1 text-sm', destacado ? 'text-ink-0/55' : 'text-ink-500')}>
               para siempre
             </span>
           </>
         ) : precio ? (
           <>
-            <span className={cn('cifra text-4xl', destacado ? 'text-white' : 'text-ink-900')}>{precio}</span>
-            <span className={cn('pb-1 text-sm', destacado ? 'text-white/55' : 'text-ink-500')}>
+            <span className={cn('cifra text-4xl', destacado ? 'text-ink-0' : 'text-ink-900')}>{precio}</span>
+            <span className={cn('pb-1 text-sm', destacado ? 'text-ink-0/55' : 'text-ink-500')}>
               {periodo === 'anual' ? 'al año' : 'al mes'}
             </span>
           </>
         ) : (
           /* Sin precio decidido no se enseña una cifra falsa. */
-          <span className={cn('cifra text-2xl', destacado ? 'text-white/70' : 'text-ink-500')}>
+          <span className={cn('cifra text-2xl', destacado ? 'text-ink-0/70' : 'text-ink-500')}>
             Sin precio todavía
           </span>
         )}
@@ -263,19 +263,19 @@ function Tarjeta({
           El ahorro se RESTA, no se escribe, así que no puede quedarse viejo
           respecto a los dos importes que tiene al lado. */}
       {otro && (
-        <p className={cn('mt-1 text-sm', destacado ? 'text-white/50' : 'text-ink-500')}>
+        <p className={cn('mt-1 text-sm', destacado ? 'text-ink-0/50' : 'text-ink-500')}>
           {otro}
         </p>
       )}
 
-      <p className={cn('mt-2 text-sm leading-relaxed', destacado ? 'text-white/60' : 'text-ink-600')}>
+      <p className={cn('mt-2 text-sm leading-relaxed', destacado ? 'text-ink-0/60' : 'text-ink-600')}>
         {PARA_QUIEN[plan.tier]}
       </p>
 
       {/* TODO LO QUE TRAE, no sólo lo que añade. Aunque ahora las tres estén a
           la vista, en el móvil están una debajo de otra y la de al lado no se
           ve: «Todo lo de Gratis» obligaría a subir a buscarlo. */}
-      <div className={cn('mt-4 divide-y', destacado ? 'divide-white/10' : 'divide-line')}>
+      <div className={cn('mt-4 divide-y', destacado ? 'divide-ink-0/10' : 'divide-line')}>
         <Linea texto={limiteDeEquipos(plan)} fuerte oscuro={destacado} />
         {todoLoQueTrae(plan.tier, seVende).map((t) => (
           <Linea key={t} texto={t} nuevo={nuevasAqui.includes(t)} oscuro={destacado} />
@@ -285,7 +285,7 @@ function Tarjeta({
       {/* Si hoy un plan de pago no añade ninguna capacidad más, se dice.
           Callarlo dejaría creer que trae cosas que todavía no existen. */}
       {plan.tier !== 'free' && nuevasAqui.length === 0 && (
-        <p className={cn('mt-3 text-sm leading-relaxed', destacado ? 'text-white/50' : 'text-ink-500')}>
+        <p className={cn('mt-3 text-sm leading-relaxed', destacado ? 'text-ink-0/50' : 'text-ink-500')}>
           Hoy la diferencia es sólo cuántos equipos caben. Las herramientas avanzadas se irán
           añadiendo a este plan; no las cobramos por adelantado.
         </p>
@@ -302,7 +302,7 @@ function Linea({
       className={cn(
         'flex flex-wrap items-center gap-2 py-2 text-sm',
         fuerte && 'font-semibold',
-        oscuro ? (fuerte ? 'text-white' : 'text-white/70') : (fuerte ? 'text-ink-900' : 'text-ink-600'),
+        oscuro ? (fuerte ? 'text-ink-0' : 'text-ink-0/70') : (fuerte ? 'text-ink-900' : 'text-ink-600'),
       )}
     >
       {texto}
