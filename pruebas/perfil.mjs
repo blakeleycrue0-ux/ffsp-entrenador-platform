@@ -58,8 +58,7 @@ console.log('1. al cargar se pide el perfil:', llamadas.includes('asegurar_perfi
 
 await page.getByRole('button', { name: 'Empezar' }).click();
 await page.waitForTimeout(400);
-await page.getByRole('button', { name: 'Ahora no' }).click();
-await page.waitForTimeout(400);
+/* Ya no hay paso de código de acceso en el alta: se pone desde Ajustes. */
 await page.locator('input').first().fill('Marta Vives');
 await page.getByRole('button', { name: 'Continuar' }).click();
 await page.waitForTimeout(400);

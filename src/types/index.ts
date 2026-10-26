@@ -11,8 +11,8 @@ import type { Plan, Subscription } from '@/services/billing';
 /* ────────────────────────────── Identidad y accesos ───────────────────────── */
 
 export type StaffRole =
-  | 'entrenador'
-  | 'segunda-entrenador'
+  | 'entrenadora'
+  | 'segunda-entrenadora'
   | 'preparadora-fisica'
   | 'directora-deportiva'
   | 'coordinadora'
@@ -58,11 +58,11 @@ export interface Staff {
  * pertenece a un club no ve nada, y el servidor lo impone con sus políticas de
  * acceso, no la interfaz.
  */
-export type ClubRole = 'admin' | 'entrenador' | 'asistente';
+export type ClubRole = 'admin' | 'entrenadora' | 'asistente';
 
 export const CLUB_ROLE_LABEL: Record<ClubRole, string> = {
   admin: 'Administración del club',
-  entrenador: 'Entrenador',
+  entrenadora: 'Entrenador',
   asistente: 'Asistente técnico',
 };
 

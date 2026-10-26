@@ -131,9 +131,10 @@ const dondeEstoy = async () => (await page.locator('main').innerText()).replace(
 
 /* ── 2 · Empezar, saltarse el código ───────────────────────────────────── */
 await pulsa('Empezar');
-comprueba('el segundo paso es el código de acceso',
-  (await page.getByText('Protege tu espacio').count()) > 0);
-await pulsa('Ahora no');
+/* EL CÓDIGO DE ACCESO YA NO ESTÁ EN EL ALTA. Era un teclado numérico entero
+   dentro de una tarjeta: en un iPhone el cero y el «Ahora no» quedaban
+   cortados por abajo, y además pedía inventarse un PIN a alguien que todavía
+   no ha visto el producto. Se pone desde Ajustes. */
 
 /* ── 3 · Nombre y cargo ────────────────────────────────────────────────── */
 comprueba('pregunta el nombre', (await page.getByText('¿Cómo te llamas?').count()) > 0);
@@ -162,7 +163,7 @@ comprueba('el club se crea con su nombre',
   escrito.clubs.some((f) => f.name === 'CE Prueba'),
   JSON.stringify(escrito.clubs.map((f) => f.name)));
 
-/* ── 5 · El deporte ────────────────────────────────────────────────────────
+/* ── 4 · El deporte ────────────────────────────────────────────────────────
    Paso nuevo: sale entre el club y el equipo, lee la tabla `sports` y decide
    cómo se llaman las cosas a partir de aquí. Se deja en fútbol, que es el
    valor por defecto, y se sigue. */
@@ -170,9 +171,9 @@ const hayDeporte = (await page.getByText('¿A qué jugáis?').count()) > 0;
 comprueba('pregunta el deporte', hayDeporte, await dondeEstoy());
 if (hayDeporte) await pulsa('Continuar', 600);
 
-/* ── 6 · El equipo y su horario ────────────────────────────────────────── */
+/* ── 5 · El equipo y su horario ────────────────────────────────────────── */
 const hayEquipo = await page.getByText('equipo', { exact: false }).count() > 0
-  && (await page.locator('main').innerText()).includes('PASO 6');
+  && (await page.locator('main').innerText()).includes('PASO 5');
 comprueba('pregunta el equipo', hayEquipo, await dondeEstoy());
 
 if (hayEquipo) {
