@@ -79,19 +79,20 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
 
   return (
     <div className="fixed inset-0 z-hoja flex items-start justify-center p-4 pt-[12vh]">
+      {/* escala-ok: un velo oscurece lo de detrás en los dos temas */}
       <div className="absolute inset-0 animate-fade-in bg-black/68 lg:bg-black/60 lg:backdrop-blur-sm" onClick={onClose} />
       <div className="cristal relative z-fijo w-full max-w-2xl animate-fade-up overflow-hidden rounded-3xl">
         <div className="flex items-center gap-3 border-b border-line/80 px-4">
-          <Search size={18} className="shrink-0 text-ink-400" />
+          <Search size={18} className="shrink-0 text-ink-500" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Buscar jugador, equipo, entrenamiento, ejercicio, partido…"
-            className="h-14 flex-1 bg-transparent text-base text-ink-900 outline-none placeholder:text-ink-400"
+            className="h-14 flex-1 bg-transparent text-base text-ink-900 outline-none placeholder:text-ink-500"
           />
-          <kbd className="hidden rounded-md border border-line px-1.5 py-0.5 text-2xs font-medium text-ink-400 sm:block">
+          <kbd className="hidden rounded-md border border-line px-1.5 py-0.5 text-2xs font-medium text-ink-500 sm:block">
             ESC
           </kbd>
         </div>
@@ -99,7 +100,7 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
         <div className="max-h-[52vh] overflow-y-auto p-2">
           {query.trim().length < 2 ? (
             <div className="px-3 py-6">
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-400">Sugerencias</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-500">Sugerencias</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {['Sub-17', 'Presión', 'Rondo', 'Posesión'].map((s) => (
                   <button
@@ -143,8 +144,8 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
                     <span className="block truncate text-sm font-medium text-ink-900">{hit.title}</span>
                     <span className="block truncate text-xs text-muted">{hit.subtitle}</span>
                   </span>
-                  {meta && <span className="shrink-0 text-xs font-medium text-ink-400">{meta}</span>}
-                  <span className="shrink-0 rounded-md bg-panel px-1.5 py-0.5 text-2xs font-medium uppercase tracking-wide text-ink-400 ring-1 ring-line">
+                  {meta && <span className="shrink-0 text-xs font-medium text-ink-500">{meta}</span>}
+                  <span className="shrink-0 rounded-md bg-panel px-1.5 py-0.5 text-2xs font-medium uppercase tracking-wide text-ink-500 ring-1 ring-line">
                     {KIND_LABEL[hit.kind]}
                   </span>
                 </button>
@@ -153,7 +154,7 @@ export function GlobalSearch({ open, onClose }: { open: boolean; onClose: () => 
           )}
         </div>
 
-        <div className="flex items-center justify-between border-t border-line/80 bg-ink-50/60 px-4 py-2.5 text-2xs text-ink-400">
+        <div className="flex items-center justify-between border-t border-line/80 bg-ink-50/60 px-4 py-2.5 text-2xs text-ink-500">
           <span className="flex items-center gap-3">
             <span className="flex items-center gap-1">↑↓ navegar</span>
             <span className="flex items-center gap-1">

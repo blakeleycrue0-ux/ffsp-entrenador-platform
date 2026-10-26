@@ -167,7 +167,7 @@ export default function DrillEditor() {
                   {m}
                   <button
                     onClick={() => patch({ material: form.material.filter((x) => x !== m) })}
-                    className="-mr-1.5 grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-400 transition-colors hover:bg-raised hover:text-bad"
+                    className="-mr-1.5 grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-500 transition-colors hover:bg-raised hover:text-bad"
                     aria-label={`Quitar ${m}`}
                   >
                     <X size={13} />
@@ -208,7 +208,7 @@ export default function DrillEditor() {
                   />
                   <button
                     onClick={() => patch({ progressions: (form.progressions ?? []).filter((_, k) => k !== i) })}
-                    className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-400 transition-colors hover:bg-raised hover:text-bad"
+                    className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl text-ink-500 transition-colors hover:bg-raised hover:text-bad"
                     aria-label="Quitar progresión"
                   >
                     <X size={14} />

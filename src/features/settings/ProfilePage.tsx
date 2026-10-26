@@ -40,17 +40,17 @@ export default function ProfilePage() {
 
               <dl className="mt-5 space-y-2.5 text-sm">
                 <div className="flex items-center gap-2.5">
-                  <Mail size={15} className="shrink-0 text-ink-400" />
+                  <Mail size={15} className="shrink-0 text-ink-500" />
                   <dd className="text-ink-700">{staff.email}</dd>
                 </div>
                 {staff.phone && (
                   <div className="flex items-center gap-2.5">
-                    <Phone size={15} className="shrink-0 text-ink-400" />
+                    <Phone size={15} className="shrink-0 text-ink-500" />
                     <dd className="text-ink-700">{staff.phone}</dd>
                   </div>
                 )}
                 <div className="flex items-center gap-2.5">
-                  <Shield size={15} className="shrink-0 text-ink-400" />
+                  <Shield size={15} className="shrink-0 text-ink-500" />
                   <dd className="text-ink-700">
                     {teams.length === 0
                       ? 'Sin equipos asignados todavía'
@@ -99,7 +99,7 @@ export default function ProfilePage() {
               <div className="min-w-0">
                 <p className="truncate text-base font-semibold text-ink-900">{t.name}</p>
                 <p className="mt-0.5 text-xs text-muted">{o.squadSize} jugadores</p>
-                <p className="mt-1 truncate text-xs text-ink-400">
+                <p className="mt-1 truncate text-xs text-ink-500">
                   {o.nextSession ? `Entrena ${relativeDay(o.nextSession.date).toLowerCase()}` : 'Sin sesión planificada'}
                 </p>
               </div>

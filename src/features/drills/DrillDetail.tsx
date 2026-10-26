@@ -95,7 +95,7 @@ export default function DrillDetail() {
                 [<Target key="c" size={15} />, 'Edad recomendada', d.ageRange],
               ].map(([icon, label, value], i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <span className="text-ink-400">{icon as React.ReactNode}</span>
+                  <span className="text-ink-500">{icon as React.ReactNode}</span>
                   <dt className="flex-1 text-sm text-muted">{label as string}</dt>
                   <dd className="text-sm font-medium text-ink-800">{value as string}</dd>
                 </div>
@@ -131,7 +131,7 @@ export default function DrillDetail() {
                     >
                       {s.title}
                     </Link>
-                    <span className="text-xs text-ink-400">
+                    <span className="text-xs text-ink-500">
                       {data.teams.find((t) => t.id === s.teamId)?.name} · {shortDate(s.date)}
                     </span>
                   </li>

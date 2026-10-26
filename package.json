@@ -30,6 +30,8 @@
     "app:sin-azul": "node pruebas/sin-azul.mjs",
     "app:alta": "node pruebas/alta.mjs",
     "app:planes": "node pruebas/planes-iguales.mjs",
+    "app:escala": "node pruebas/escala.mjs",
+    "app:contraste": "node pruebas/contraste.mjs",
     "app:correo": "node pruebas/correo.mjs",
     "app:guia-al-entrar": "node pruebas/guia-al-entrar.mjs",
     "guia": "node presentacion/guia-pdf.mjs",

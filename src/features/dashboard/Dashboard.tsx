@@ -279,7 +279,7 @@ export default function Dashboard() {
                     <span className="shrink-0 font-display text-base font-semibold tabular-nums text-ink-700">
                       {o.attendanceRate === null ? '—' : `${o.attendanceRate} %`}
                     </span>
-                    <ChevronRight size={15} className="shrink-0 text-ink-400" />
+                    <ChevronRight size={15} className="shrink-0 text-ink-500" />
                   </Link>
                 </li>
               );
@@ -330,7 +330,7 @@ function Saludo({
           trigger={
             <button className="flex h-9 max-w-[62vw] items-center gap-2 rounded-xl border border-line bg-panel px-3 text-sm font-medium text-ink-800 transition-colors hover:bg-raised">
               <span className="truncate">{equipo ?? 'Equipo'}</span>
-              <ChevronsUpDown size={14} className="shrink-0 text-ink-400" />
+              <ChevronsUpDown size={14} className="shrink-0 text-ink-500" />
             </button>
           }
         >
@@ -438,7 +438,7 @@ function Secundario({
       <span className="eyebrow shrink-0">{rotulo}</span>
       <span className="min-w-0 flex-1 truncate text-base text-ink-800">{texto}</span>
       <span className="shrink-0 text-sm tabular-nums text-ink-500">{cuando}</span>
-      <ChevronRight size={15} className="shrink-0 text-ink-400" />
+      <ChevronRight size={15} className="shrink-0 text-ink-500" />
     </Link>
   );
 }
@@ -463,17 +463,17 @@ function SesionGrande({ sesion, equipo }: { sesion: TrainingSession; equipo?: st
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-600">
         <span className="flex items-center gap-1.5">
-          <Clock size={14} className="text-ink-400" />
+          <Clock size={14} className="text-ink-500" />
           {minutesToLabel(sesion.duration)}
         </span>
         {sesion.venue && (
           <span className="flex min-w-0 items-center gap-1.5">
-            <MapPin size={14} className="shrink-0 text-ink-400" />
+            <MapPin size={14} className="shrink-0 text-ink-500" />
             <span className="truncate">{sesion.venue}</span>
           </span>
         )}
         <span className="flex items-center gap-1.5">
-          <Users size={14} className="text-ink-400" />
+          <Users size={14} className="text-ink-500" />
           {sesion.expectedPlayers} jugadores
         </span>
       </div>
@@ -531,12 +531,12 @@ function PartidoGrande({
 
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-600">
         <span className="flex items-center gap-1.5">
-          <Clock size={14} className="text-ink-400" />
+          <Clock size={14} className="text-ink-500" />
           {longDate(partido.date)}
         </span>
         {partido.venue && (
           <span className="flex min-w-0 items-center gap-1.5">
-            <MapPin size={14} className="shrink-0 text-ink-400" />
+            <MapPin size={14} className="shrink-0 text-ink-500" />
             <span className="truncate">{partido.venue}</span>
           </span>
         )}

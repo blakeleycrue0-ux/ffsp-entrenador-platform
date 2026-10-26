@@ -209,7 +209,7 @@ export default function TeamEditor() {
                   />
                   <button
                     onClick={() => patch({ trainingSlots: form.trainingSlots.filter((_, k) => k !== i) })}
-                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-ink-400 transition-colors hover:text-bad"
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-ink-500 transition-colors hover:text-bad"
                   >
                     <X size={13} /> Quitar horario
                   </button>

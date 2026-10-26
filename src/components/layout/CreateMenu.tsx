@@ -40,7 +40,7 @@ export function CreateMenu({ open, onClose }: { open: boolean; onClose: () => vo
               }}
               className="flex items-start gap-2.5 rounded-md border border-line p-3 text-left transition-colors hover:border-ink-400"
             >
-              <Icon size={16} className="mt-0.5 shrink-0 text-ink-400" />
+              <Icon size={16} className="mt-0.5 shrink-0 text-ink-500" />
               <span className="min-w-0">
                 <span className="block text-base font-medium text-ink-900">{o.label}</span>
                 <span className="mt-0.5 block text-sm leading-snug text-muted">{o.hint}</span>

@@ -94,7 +94,7 @@ export function Pendientes({
                 <span className={cn('min-w-0 flex-1 text-base leading-snug', texto)}>{p.texto}</span>
                 <ChevronRight
                   size={16}
-                  className={cn('shrink-0', 'text-ink-400')}
+                  className={cn('shrink-0', 'text-ink-500')}
                   aria-hidden
                 />
               </Link>

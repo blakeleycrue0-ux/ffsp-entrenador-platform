@@ -393,18 +393,18 @@ export function ImportPlayers({
                         }
                       />
                     </td>
-                    <td className="font-medium text-ink-900">{f.name || <span className="text-ink-300">—</span>}</td>
+                    <td className="font-medium text-ink-900">{f.name || <span className="text-ink-500">—</span>}</td>
                     <td className="text-right tabular-nums">
-                      {f.number ?? <span className="text-ink-300">auto</span>}
+                      {f.number ?? <span className="text-ink-500">auto</span>}
                     </td>
-                    <td>{f.position || <span className="text-ink-300">—</span>}</td>
+                    <td>{f.position || <span className="text-ink-500">—</span>}</td>
                     <td className="text-sm">
                       {f.error ? (
                         <span className="text-bad">{f.error}</span>
                       ) : f.avisos.length > 0 ? (
                         <span className="text-warn">{f.avisos.join(' · ')}</span>
                       ) : (
-                        <span className="text-ink-300">Todo correcto</span>
+                        <span className="text-ink-500">Todo correcto</span>
                       )}
                     </td>
                   </tr>

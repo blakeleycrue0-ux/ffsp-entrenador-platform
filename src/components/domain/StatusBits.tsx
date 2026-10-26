@@ -122,7 +122,7 @@ export const ATTENDANCE: Record<
   justificada: { label: 'Justificada', short: 'Just.', tone: 'warn', bg: 'bg-warn', text: 'text-warn' },
   lesionada: { label: 'Lesionada', short: 'Lesión', tone: 'bad', bg: 'bg-bad', text: 'text-bad' },
   ausente: { label: 'Ausente', short: 'No', tone: 'bad', bg: 'bg-bad', text: 'text-bad' },
-  sin_registrar: { label: 'Sin registrar', short: '—', tone: 'neutral', bg: 'bg-ink-300', text: 'text-ink-400' },
+  sin_registrar: { label: 'Sin registrar', short: '—', tone: 'neutral', bg: 'bg-ink-300', text: 'text-ink-500' },
 };
 
 /** Orden en el que se ofrecen las marcas al pasar lista. */

@@ -82,7 +82,7 @@ export default function SessionDetail() {
         eyebrow={
           <>
             <span className="font-medium text-ink-900">{team?.name}</span>
-            <span className="text-ink-300">·</span>
+            <span className="text-ink-500">·</span>
             <span>{longDate(s.date)}</span>
             <Tag tone={relativeDay(s.date) === 'Hoy' ? 'solid' : 'neutral'} size="sm">
               {relativeDay(s.date)}
@@ -126,9 +126,9 @@ export default function SessionDetail() {
               {icon as React.ReactNode}
             </span>
             <div className="min-w-0">
-              <p className="text-2xs uppercase tracking-wide text-ink-400">{label as string}</p>
+              <p className="text-2xs uppercase tracking-wide text-ink-500">{label as string}</p>
               <p className="mt-0.5 truncate text-base font-semibold text-ink-900">{value as string}</p>
-              <p className="truncate text-xs text-ink-400">{hint as string}</p>
+              <p className="truncate text-xs text-ink-500">{hint as string}</p>
             </div>
           </Panel>
         ))}
@@ -146,7 +146,7 @@ export default function SessionDetail() {
                   : `${minutesToLabel(s.duration)} en ${s.blocks.length} ${s.blocks.length === 1 ? 'bloque' : 'bloques'}`}
               </p>
             </div>
-            <span className="text-sm font-medium text-ink-400 tabular-nums">
+            <span className="text-sm font-medium text-ink-500 tabular-nums">
               {s.start} – {addMinutes(s.start, s.duration)}
             </span>
           </div>
@@ -185,7 +185,7 @@ export default function SessionDetail() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <h3 className="text-base font-medium text-ink-900">{block.title}</h3>
-                      <span className="text-xs text-ink-400 tabular-nums">
+                      <span className="text-xs text-ink-500 tabular-nums">
                         {start} – {end}
                       </span>
                     </div>
@@ -239,7 +239,7 @@ export default function SessionDetail() {
                   />
                 ))}
               </div>
-              <p className="mt-2 text-xs text-ink-400">
+              <p className="mt-2 text-xs text-ink-500">
                 Calentamiento y vuelta a la calma en tono claro; parte principal en tono intenso.
               </p>
             </div>

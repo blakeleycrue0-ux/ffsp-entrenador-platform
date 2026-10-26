@@ -239,13 +239,13 @@ function DayView({
           <span className="flex flex-1 items-center gap-4 p-4">
             <span className="w-16 shrink-0 text-center">
               <span className="block text-lg font-semibold text-ink-900 tabular-nums">{e.start}</span>
-              {e.end && <span className="block text-xs text-ink-400 tabular-nums">{e.end}</span>}
+              {e.end && <span className="block text-xs text-ink-500 tabular-nums">{e.end}</span>}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-base font-medium text-ink-900">{e.title}</span>
               <span className="mt-0.5 block truncate text-sm text-muted">{e.subtitle}</span>
               {e.venue && (
-                <span className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-400">
+                <span className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-500">
                   <MapPin size={12} /> {e.venue}
                 </span>
               )}
@@ -284,10 +284,10 @@ function WeekView({ cursor, events, onOpen }: { cursor: Date; events: CalendarEv
             )}
           >
             <div className="flex items-baseline justify-between gap-3">
-              <span className={cn('text-xs font-medium', isToday ? 'text-ink-900' : 'text-ink-400')}>
+              <span className={cn('text-xs font-medium', isToday ? 'text-ink-900' : 'text-ink-500')}>
                 {DAY_LABELS[i]}
               </span>
-              {list.length === 0 && <span className="flex-1 text-xs text-ink-400 lg:hidden">Libre</span>}
+              {list.length === 0 && <span className="flex-1 text-xs text-ink-500 lg:hidden">Libre</span>}
               <span className={cn('text-md font-semibold tabular-nums', isToday ? 'text-ink-900' : 'text-ink-700')}>
                 {d.getDate()}
               </span>
@@ -295,7 +295,7 @@ function WeekView({ cursor, events, onOpen }: { cursor: Date; events: CalendarEv
 
             <div className={cn(list.length === 0 ? '' : 'mt-3', 'space-y-1.5')}>
               {list.length === 0 ? (
-                <p className="hidden py-3 text-center text-2xs text-ink-300 lg:block">Libre</p>
+                <p className="hidden py-3 text-center text-2xs text-ink-500 lg:block">Libre</p>
               ) : (
                 list.map((e) => (
                   <button
@@ -338,7 +338,7 @@ function MonthView({
     <Panel className="overflow-hidden">
       <div className="grid grid-cols-7 border-b border-ink-100 bg-ink-50/60">
         {DAY_LABELS.map((d) => (
-          <div key={d} className="py-2.5 text-center text-2xs font-medium uppercase tracking-wide text-ink-400">
+          <div key={d} className="py-2.5 text-center text-2xs font-medium uppercase tracking-wide text-ink-500">
             {d}
           </div>
         ))}
@@ -361,7 +361,7 @@ function MonthView({
                 onClick={() => onPickDay(d)}
                 className={cn(
                   'grid h-6 w-6 place-items-center rounded-full text-xs font-medium tabular-nums transition-colors',
-                  isToday ? 'bg-ink-900 text-ink-0' : other ? 'text-ink-300' : 'text-ink-600 hover:bg-ink-100',
+                  isToday ? 'bg-ink-900 text-ink-0' : other ? 'text-ink-500' : 'text-ink-600 hover:bg-ink-100',
                 )}
               >
                 {d.getDate()}
@@ -377,7 +377,7 @@ function MonthView({
                   </button>
                 ))}
                 {list.length > 2 && (
-                  <button onClick={() => onPickDay(d)} className="px-1.5 text-2xs text-ink-400 hover:text-ink-900">
+                  <button onClick={() => onPickDay(d)} className="px-1.5 text-2xs text-ink-500 hover:text-ink-900">
                     +{list.length - 2} más
                   </button>
                 )}
@@ -433,9 +433,9 @@ function EventModal({ event, onClose }: { event: CalendarEvent | null; onClose: 
           [<MapPin key="m" size={16} />, 'Ubicación', event.venue ?? 'Sin definir'],
         ].map(([icon, label, value], i) => (
           <div key={i} className="flex items-start gap-3">
-            <span className="mt-0.5 text-ink-400">{icon as React.ReactNode}</span>
+            <span className="mt-0.5 text-ink-500">{icon as React.ReactNode}</span>
             <div>
-              <dt className="text-xs uppercase tracking-wide text-ink-400">{label as string}</dt>
+              <dt className="text-xs uppercase tracking-wide text-ink-500">{label as string}</dt>
               <dd className="mt-0.5 text-sm text-ink-800">{value as string}</dd>
             </div>
           </div>

@@ -350,7 +350,7 @@ export function Select({
       <ChevronDown
         size={filtro ? 14 : 15}
         className={cn(
-          'pointer-events-none absolute top-1/2 -translate-y-1/2 text-ink-400',
+          'pointer-events-none absolute top-1/2 -translate-y-1/2 text-ink-500',
           filtro ? 'right-3' : 'right-2.5',
         )}
         aria-hidden
@@ -498,7 +498,7 @@ export function ScoreInput({
 /** Muestra una valoración ya registrada. */
 export function Score({ value, className }: { value: number | null | undefined; className?: string }) {
   if (value === null || value === undefined) {
-    return <span className={cn('text-sm text-ink-400', className)}>Sin valorar</span>;
+    return <span className={cn('text-sm text-ink-500', className)}>Sin valorar</span>;
   }
   return (
     <span className={cn('inline-flex items-baseline gap-0.5 tabular-nums', className)}>
@@ -616,6 +616,7 @@ export function Modal({
             entera y se compone mientras la hoja sube. Un negro al 68 % tapa
             igual de bien y no cuesta nada. */}
       <div
+        /* escala-ok: un velo oscurece lo de detrás en los dos temas */
         className="absolute inset-0 animate-fade-in bg-black/68 lg:bg-black/60 lg:backdrop-blur-sm"
         onClick={onClose}
       />
@@ -636,7 +637,7 @@ export function Modal({
             </div>
             <button
               onClick={onClose}
-              className="-mr-1 -mt-0.5 rounded p-1.5 text-ink-400 transition-colors hover:bg-surface hover:text-ink-800"
+              className="-mr-1 -mt-0.5 rounded p-1.5 text-ink-500 transition-colors hover:bg-surface hover:text-ink-800"
               aria-label="Cerrar"
             >
               <X size={16} />
@@ -855,7 +856,7 @@ export function Desplegable({
           <span className="block">{titulo}</span>
           {pista && <span className="mt-0.5 block truncate text-sm font-normal text-muted">{pista}</span>}
         </span>
-        <ChevronDown size={17} className="shrink-0 text-ink-400 transition-transform group-open:rotate-180" aria-hidden />
+        <ChevronDown size={17} className="shrink-0 text-ink-500 transition-transform group-open:rotate-180" aria-hidden />
       </summary>
       <div className="space-y-4 border-t border-line px-4 py-4">{children}</div>
     </details>
@@ -1015,7 +1016,7 @@ export function MenuItem({
   );
   const inner = (
     <>
-      {icon && <span className="text-ink-400">{icon}</span>}
+      {icon && <span className="text-ink-500">{icon}</span>}
       {children}
     </>
   );

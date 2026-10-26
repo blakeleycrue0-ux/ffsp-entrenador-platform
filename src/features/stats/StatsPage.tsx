@@ -27,7 +27,7 @@ import { useAnchura } from '@/components/layout/AppShell';
 /** Un porcentaje que puede no existir. Nunca se dibuja como 0 %. */
 const Pct = ({ value, className }: { value: number | null; className?: string }) =>
   value === null ? (
-    <span className={cn('text-ink-400', className)}>Sin datos</span>
+    <span className={cn('text-ink-500', className)}>Sin datos</span>
   ) : (
     <span className={cn('tabular-nums', className)}>{value}%</span>
   );
@@ -307,13 +307,13 @@ export default function StatsPage() {
                 return (
                   <tr key={r.id}>
                     <td className="text-ink-700">
-                      {shortDate(r.date)} <span className="text-ink-400">· {dayShort(r.date)}</span>
+                      {shortDate(r.date)} <span className="text-ink-500">· {dayShort(r.date)}</span>
                     </td>
                     <td className="text-right tabular-nums text-ok">{s.present}</td>
-                    <td className="text-right tabular-nums">{s.late || <span className="text-ink-300">—</span>}</td>
-                    <td className="text-right tabular-nums">{s.justified || <span className="text-ink-300">—</span>}</td>
+                    <td className="text-right tabular-nums">{s.late || <span className="text-ink-500">—</span>}</td>
+                    <td className="text-right tabular-nums">{s.justified || <span className="text-ink-500">—</span>}</td>
                     <td className="text-right tabular-nums text-bad">{s.absent}</td>
-                    <td className="text-right tabular-nums text-ink-400">{s.unregistered}</td>
+                    <td className="text-right tabular-nums text-ink-500">{s.unregistered}</td>
                     <td className="text-right font-semibold">
                       <Pct value={s.rate} />
                     </td>
@@ -345,7 +345,7 @@ function RankingPanel({
                 to={`/app/plantilla/${r.player.id}`}
                 className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-surface"
               >
-                <span className="w-4 text-center text-sm font-semibold tabular-nums text-ink-400">{i + 1}</span>
+                <span className="w-4 text-center text-sm font-semibold tabular-nums text-ink-500">{i + 1}</span>
                 <Avatar name={r.player.name} size={30} badge={r.player.number} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-base font-medium text-ink-900">

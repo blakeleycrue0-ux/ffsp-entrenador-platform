@@ -329,7 +329,7 @@ export default function SessionBuilder() {
                     <span className="text-base font-semibold text-ink-900 tabular-nums">
                       {minutesToLabel(totalDuration)}
                     </span>
-                    <span className="text-xs text-ink-400">
+                    <span className="text-xs text-ink-500">
                       {draft.start} – {addMinutes(draft.start, totalDuration)}
                     </span>
                   </div>
@@ -465,7 +465,7 @@ export default function SessionBuilder() {
                           value={block.series ?? ''}
                           onChange={(e) => patchBlock(block.id, { series: e.target.value })}
                           placeholder="Series y descansos (ej.: 4 x 4′ / 90″)"
-                          className="mt-0.5 w-full rounded-md bg-transparent px-1 py-0.5 text-xs text-muted outline-none transition-colors placeholder:text-ink-300 hover:bg-ink-50 focus:bg-ink-50"
+                          className="mt-0.5 w-full rounded-md bg-transparent px-1 py-0.5 text-xs text-muted outline-none transition-colors placeholder:text-ink-500 hover:bg-ink-50 focus:bg-ink-50"
                         />
                         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 px-1">
                           {block.tags.slice(0, 3).map((t) => (
@@ -473,7 +473,7 @@ export default function SessionBuilder() {
                               {t}
                             </Tag>
                           ))}
-                          <span className="text-2xs text-ink-400 tabular-nums">
+                          <span className="text-2xs text-ink-500 tabular-nums">
                             {cursor} – {addMinutes(cursor, block.duration)}
                           </span>
                         </div>
@@ -483,7 +483,7 @@ export default function SessionBuilder() {
                         <div className="flex items-center rounded-lg border border-line">
                           <button
                             onClick={() => patchBlock(block.id, { duration: Math.max(5, block.duration - 5) })}
-                            className="px-2 py-1.5 text-ink-400 transition-colors hover:text-ink-900"
+                            className="px-2 py-1.5 text-ink-500 transition-colors hover:text-ink-900"
                             aria-label="Menos tiempo"
                           >
                             −
@@ -493,7 +493,7 @@ export default function SessionBuilder() {
                           </span>
                           <button
                             onClick={() => patchBlock(block.id, { duration: block.duration + 5 })}
-                            className="px-2 py-1.5 text-ink-400 transition-colors hover:text-ink-900"
+                            className="px-2 py-1.5 text-ink-500 transition-colors hover:text-ink-900"
                             aria-label="Más tiempo"
                           >
                             +
@@ -560,7 +560,7 @@ export default function SessionBuilder() {
                       es lo que hace que se pueda quitar a la primera. */}
                   <button
                     onClick={() => update({ material: draft.material.filter((x) => x !== m) })}
-                    className="-mr-1.5 grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-400 transition-colors hover:bg-raised hover:text-bad"
+                    className="-mr-1.5 grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-500 transition-colors hover:bg-raised hover:text-bad"
                     aria-label={`Quitar ${m}`}
                   >
                     <X size={13} />
@@ -590,7 +590,7 @@ export default function SessionBuilder() {
             <h2 className="text-base font-semibold">Biblioteca de ejercicios</h2>
             <p className="mt-0.5 text-xs text-muted">Arrástralos a la línea o pulsa para añadir al final.</p>
             <div className="relative mt-3">
-              <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+              <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-500" />
               <Input
                 value={libraryQuery}
                 onChange={(e) => setLibraryQuery(e.target.value)}
@@ -637,7 +637,7 @@ export default function SessionBuilder() {
                   onClick={() => addDrill(d)}
                   className="group flex w-full cursor-grab items-start gap-2.5 rounded-xl p-2.5 text-left transition-colors hover:bg-ink-50/60 active:cursor-grabbing"
                 >
-                  <GripVertical size={15} className="mt-0.5 shrink-0 text-ink-300 group-hover:text-ink-400" />
+                  <GripVertical size={15} className="mt-0.5 shrink-0 text-ink-300 group-hover:text-ink-500" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-ink-800">{d.name}</span>
                     <span className="mt-0.5 block truncate text-xs text-muted">{d.tags.join(' · ')}</span>

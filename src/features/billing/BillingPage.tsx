@@ -174,7 +174,10 @@ export default function BillingPage() {
             </div>
 
             {per.limiteDeEquipos !== null && (
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              /* El carril, al 10 % de lo que más contraste. Iba en blanco al
+                 10 %, que sobre un panel casi blanco no se veía: en claro la
+                 barra no tenía por dónde avanzar. */
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-900/10">
                 <div
                   className={cn(
                     'h-full rounded-full transition-[width] duration-500',

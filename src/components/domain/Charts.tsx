@@ -35,7 +35,7 @@ export function BarTrend({
             style={{ height: `${Math.max(6, ((d.value - floor) / (max - floor || 1)) * track)}px` }}
             title={`${d.label}: ${d.value}${suffix}`}
           />
-          <span className="text-2xs text-ink-400">{d.label}</span>
+          <span className="text-2xs text-ink-500">{d.label}</span>
         </div>
       ))}
     </div>
@@ -47,7 +47,7 @@ export function LineTrend({
 }: { points: { date: string; rate: number }[]; height?: number; className?: string }) {
   if (points.length < 2) {
     return (
-      <div className={cn('grid place-items-center text-sm text-ink-400', className)} style={{ height }}>
+      <div className={cn('grid place-items-center text-sm text-ink-500', className)} style={{ height }}>
         Aún no hay datos suficientes para dibujar la evolución.
       </div>
     );
@@ -82,7 +82,7 @@ export function LineTrend({
           <circle key={i} cx={x(i)} cy={y(p.rate)} r="2.6" fill="#FFFFFF" stroke="#0D0D0F" strokeWidth="1.8" />
         ))}
       </svg>
-      <div className="mt-1 flex justify-between px-1 text-2xs text-ink-400">
+      <div className="mt-1 flex justify-between px-1 text-2xs text-ink-500">
         <span>{shortDate(points[0].date)}</span>
         <span>{shortDate(points[points.length - 1].date)}</span>
       </div>
@@ -122,7 +122,7 @@ export function Ring({
         <span className="block text-sm font-semibold leading-none tabular-nums text-ink-900">
           {value === null ? '—' : `${value}%`}
         </span>
-        {label && value !== null && <span className="mt-0.5 block text-2xs text-ink-400">{label}</span>}
+        {label && value !== null && <span className="mt-0.5 block text-2xs text-ink-500">{label}</span>}
       </div>
     </div>
   );

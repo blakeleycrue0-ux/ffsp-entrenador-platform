@@ -130,7 +130,7 @@ export function Comparativa({
               {limiteDeEquipos(plan)}
             </p>
 
-            <p className={cn('mt-5 rotulo', destacado ? 'text-ink-0/50' : 'text-ink-500')}>
+            <p className={cn('mt-5 rotulo', destacado ? 'text-ink-0/60' : 'text-ink-500')}>
               {plan.tier === 'free' ? 'Incluye' : `Todo lo de ${anterior}, y`}
             </p>
 

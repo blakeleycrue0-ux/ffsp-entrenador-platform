@@ -94,10 +94,14 @@ export function AvisoDeCookies() {
         className={
           'mx-auto flex max-w-[48rem] flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-5 '
           + (enPortada
+            /* escala-ok: sobre el azul de la portada, que no tiene temas */
             ? 'border border-white/10 bg-[#070D1C] text-white shadow-[0_24px_60px_-24px_rgba(6,12,27,0.75)]'
-            : 'border border-line bg-white text-ink-800 shadow-[0_24px_60px_-24px_rgba(13,13,15,0.35)]')
+            /* `raised` y no blanco: dentro de la plataforma el aviso es una
+               tarjeta más y tiene que seguir al tema del teléfono. */
+            : 'border border-line bg-raised text-ink-800 shadow-[0_24px_60px_-24px_rgba(13,13,15,0.35)]')
         }
       >
+        {/* escala-ok: la rama de portada va sobre el azul */}
         <p className={'min-w-0 flex-1 text-base leading-relaxed ' + (enPortada ? 'text-white/75' : 'text-ink-700')}>
           Usamos una cookie de Google Analytics para saber cuánta gente entra. Nada más: no
           medimos nada de lo que pasa dentro de la aplicación y no hacemos publicidad.{' '}
@@ -105,6 +109,7 @@ export function AvisoDeCookies() {
             to="/privacidad"
             className={
               enPortada
+                /* escala-ok: sobre el azul de la portada */
                 ? 'font-medium text-white underline decoration-white/35 underline-offset-2 hover:decoration-white'
                 : 'font-medium text-ink-900 underline decoration-ink-400 underline-offset-2 hover:decoration-ink-900'
             }
@@ -134,7 +139,7 @@ export function AvisoDeCookies() {
             className={
               enPortada
                 ? 'btn btn-claro h-11 px-5 text-base'
-                : 'btn metal-claro h-11 px-5 text-base text-white'
+                : 'btn metal-claro h-11 px-5 text-base text-ink-0'
             }
           >
             Aceptar
