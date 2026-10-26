@@ -125,7 +125,60 @@ comprueba(
   `${enCanonico.join(' ')} contra ${enElMapa.join(' ')}`,
 );
 
-/* ── 2 · QUE EL SERVIDOR LO SIRVA COMO XML ─────────────────────────────── */
+/* ── 2 · CADA PÁGINA CUENTA LO SUYO ────────────────────────────────────────
+   Había UN título y UNA descripción para todo el sitio, en `index.html`: la
+   portada, las dos legales, la pantalla de acceso y cualquier dirección
+   inventada salían iguales. Para un buscador son páginas que dicen ser la
+   misma, y compiten entre ellas en los resultados. */
+console.log('\n  cada página pública tiene título y descripción propios\n');
+
+const cabeceras = [...canonico.matchAll(/'(\/[^']*)': \{\s*titulo:\s*\n?\s*'([^']+)',\s*\n?\s*descripcion:\s*\n?\s*([\s\S]*?),\n  \}/g)]
+  .map((m) => ({ ruta: m[1], titulo: m[2] }));
+
+comprueba('hay cabeceras definidas', cabeceras.length > 0, `${cabeceras.length}`);
+for (const r of enElMapa) {
+  comprueba(`«${r}» tiene título propio`, cabeceras.some((c) => c.ruta === r));
+}
+const titulos = cabeceras.map((c) => c.titulo);
+comprueba(
+  'y ningún título se repite',
+  new Set(titulos).size === titulos.length,
+  titulos.length ? `${titulos.length} títulos` : 'ninguno',
+);
+for (const t of titulos) {
+  /* Entre 15 y 65: por debajo no dice nada y por encima Google lo corta. */
+  comprueba(`«${t.slice(0, 44)}…» mide bien`, t.length >= 15 && t.length <= 65, `${t.length} caracteres`);
+}
+
+console.log('\n  lo privado se marca, no sólo se pide que no se mire\n');
+comprueba(
+  'hay una instrucción noindex para lo que no es público',
+  /name="robots"/.test(canonico) && /noindex/.test(canonico),
+);
+comprueba(
+  'y robots.txt no es la única defensa: lo dice el propio código',
+  /TAMPOCO LEE/.test(canonico),
+);
+
+console.log('\n  datos estructurados\n');
+comprueba('hay ficha JSON-LD', /application\/ld\+json/.test(canonico));
+
+/* SE MIRA EL DATO, NO LA PROSA. Esto comprobaba el archivo entero y fallaba
+   por su propio comentario, que explica por qué NO se ponen estrellas: la
+   palabra estaba escrita, pero en una explicación, no en la ficha. Una prueba
+   que no distingue el código de lo que se dice sobre el código acusa en
+   falso, y a la tercera vez que acusa en falso deja de creerse. */
+const laFicha = canonico.slice(canonico.indexOf('const FICHA = {'), canonico.indexOf('};', canonico.indexOf('const FICHA = {')));
+comprueba('la ficha se ha podido aislar', laFicha.length > 50);
+comprueba(
+  'sin valoraciones inventadas: no hay ni una sola valoración real',
+  !/aggregateRating|ratingValue|reviewCount/.test(laFicha),
+);
+comprueba('sin número de usuarios inventado', !/userInteractionCount|interactionStatistic/.test(laFicha));
+comprueba('sin precios, que viven en la base de datos', !/price|offers/.test(laFicha));
+comprueba('y sólo en la portada', /limpio === '\/'/.test(canonico));
+
+/* ── 3 · QUE EL SERVIDOR LO SIRVA COMO XML ─────────────────────────────── */
 console.log('\n  lo que devuelve el servidor\n');
 
 let vivo = true;

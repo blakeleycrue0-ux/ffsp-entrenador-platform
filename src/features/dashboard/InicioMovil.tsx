@@ -26,7 +26,21 @@
  * tendría que competir con las tarjetas de abajo, y acabarían pesando lo
  * mismo. Sin caja, el fondo es el héroe: no hay dos jerarquías, hay una.
  *
- * TODO VA SOBRE LA IMAGEN, SIN PLIEGO.
+ * YA NO VA SOBRE UNA IMAGEN, Y POR ESO SE DIO LA VUELTA AL COLOR.
+ * ───────────────────────────────────────────────────────────────────────────
+ * Todo esto estaba escrito en blanco —texto, bordes y cristales— porque el
+ * fondo del móvil era una foto oscura. Al pasar la aplicación a tema claro y
+ * oscuro según el teléfono, esa foto se fue y el blanco se quedó: en claro,
+ * texto blanco sobre gris claro, ilegible.
+ *
+ * Ahora no hay ni un color escrito a mano. Todo sale de la escala, que se
+ * invierte con el tema, así que la misma clase vale en los dos: `ink-900` es
+ * «lo que más contrasta con el fondo», no «negro».
+ *
+ * LA COMPOSICIÓN NO SE HA TOCADO: el héroe sin caja, los cuatro discos y las
+ * fichas siguen donde estaban. Lo que cambia es de qué color son.
+ *
+ * ── Lo que decía antes, que explica por qué no hay pliego ─────────────────
  * ───────────────────────────────────────────────────────────────────────────
  * Aquí había una hoja gris clara —el pliego— que empezaba justo debajo de los
  * accesos y partía la pantalla en dos mitades con un canto redondeado: negro
@@ -65,11 +79,11 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
   if (d.loadError) {
     return (
       <div className="vidrio-foto rounded-2xl p-5">
-        <h2 className="text-md font-semibold text-white">No hemos podido cargar tus datos</h2>
-        <p className="mt-2 text-base leading-relaxed text-white/75">{d.loadError}</p>
+        <h2 className="text-md font-semibold text-ink-900">No hemos podido cargar tus datos</h2>
+        <p className="mt-2 text-base leading-relaxed text-ink-700">{d.loadError}</p>
         <button
           onClick={() => void d.actions.refresh()}
-          className="mt-4 h-9 rounded-lg bg-white px-3.5 text-sm font-medium text-ink-900"
+          className="mt-4 h-9 rounded-lg bg-ink-900 px-3.5 text-sm font-medium text-ink-0"
         >
           Reintentar
         </button>
@@ -96,10 +110,10 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
              arriba porque no hay tarjeta debajo de la que ponerse. */
           hayGuia(d.data) ? <PrimerosPasos sobreFoto /> : (
             <div data-vacio="fila" className="vidrio-foto rounded-2xl px-4 py-5 text-center">
-              <h2 className="text-md font-semibold text-white">
+              <h2 className="text-md font-semibold text-ink-900">
                 {d.admin ? 'Empieza creando el primer equipo' : 'Todavía no tienes ningún equipo asignado'}
               </h2>
-              <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-white/70">
+              <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-ink-700">
                 {d.admin
                   ? 'Todo lo demás cuelga de un equipo: la plantilla, el calendario y las sesiones.'
                   : 'La administración del club tiene que asignarte el tuyo.'}
@@ -107,7 +121,7 @@ export function InicioMovil({ d, onCrear }: { d: DatosDeInicio; onCrear: () => v
               {d.admin && (
                 <Link
                   to="/app/equipo-tecnico/nuevo-equipo"
-                  className="mt-5 inline-flex h-9 items-center rounded-lg bg-white px-3.5 text-sm font-medium text-ink-900"
+                  className="mt-5 inline-flex h-9 items-center rounded-lg bg-ink-900 px-3.5 text-sm font-medium text-ink-0"
                 >
                   Crear equipo
                 </Link>
@@ -153,7 +167,7 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
       style={{ paddingTop: 'var(--pagina-top)' }}
     >
       <div className="heroe relative px-[var(--pagina-x)] pb-2 text-center">
-        <p className="text-sm font-medium text-white/55">{rotulo}</p>
+        <p className="text-sm font-medium text-ink-500">{rotulo}</p>
 
         {s ? (
           <>
@@ -167,21 +181,21 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
                 datos: uno importante y otro apagado. Son la misma hora. Los
                 minutos siguen siendo algo menores, que es lo que hace que
                 «18» se lea primero, pero del mismo color: una unidad. */}
-            <p className="cifra mt-3 flex items-baseline justify-center text-[64px] text-white">
+            <p className="cifra mt-3 flex items-baseline justify-center text-[64px] text-ink-900">
               <span>{horas}</span>
               <span className="text-[40px]">:{minutos}</span>
             </p>
-            <p className="mt-3 text-base text-white/60">
+            <p className="mt-3 text-base text-ink-600">
               {relativeDay(s.dato.date)}
               {d.teams.length === 1 && d.equipo ? ` · ${d.equipo.name}` : ''}
             </p>
           </>
         ) : (
           <>
-            <p className="cifra mx-auto mt-4 max-w-[22ch] text-2xl text-white">
+            <p className="cifra mx-auto mt-4 max-w-[22ch] text-2xl text-ink-900">
               {d.teams.length === 0 ? 'Monta tu equipo' : 'Tu semana está vacía'}
             </p>
-            <p className="mt-3 text-base text-white/60">{longDate(toISODate(today()))}</p>
+            <p className="mt-3 text-base text-ink-600">{longDate(toISODate(today()))}</p>
           </>
         )}
 
@@ -197,9 +211,9 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
               className="w-[220px] max-w-[calc(100vw-2rem)]"
               align="left"
               trigger={
-                <button className="flex h-9 max-w-[70vw] items-center gap-1.5 rounded-full bg-white/12 px-4 text-sm font-medium text-white transition-colors active:bg-white/20">
+                <button className="flex h-9 max-w-[70vw] items-center gap-1.5 rounded-full bg-ink-900/[0.06] px-4 text-sm font-medium text-ink-900 transition-colors active:bg-ink-900/[0.10]">
                   <span className="truncate">{d.equipo?.name ?? 'Equipos'}</span>
-                  <ChevronsUpDown size={13} className="shrink-0 text-white/60" />
+                  <ChevronsUpDown size={13} className="shrink-0 text-ink-600" />
                 </button>
               }
             >
@@ -213,7 +227,7 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
                       className={cn(
                         'block w-full truncate rounded px-2.5 py-2 text-left text-base transition-colors',
                         t.id === d.equipo?.id
-                          ? 'bg-ink-900 font-medium text-white'
+                          ? 'bg-ink-900 font-medium text-ink-900'
                           : 'text-ink-700 hover:bg-surface',
                       )}
                     >
@@ -280,10 +294,10 @@ function Disco({
 }) {
   const dentro = (
     <>
-      <span className="grid h-[58px] w-[58px] place-items-center rounded-full bg-white/[0.12] text-white transition-[transform,background-color] duration-120 group-active:scale-95 group-active:bg-white/20">
+      <span className="grid h-[58px] w-[58px] place-items-center rounded-full bg-ink-900/[0.06] text-ink-900 transition-[transform,background-color] duration-120 group-active:scale-95 group-active:bg-ink-900/[0.10]">
         {icono}
       </span>
-      <span className="text-xs font-medium leading-none text-white">{children}</span>
+      <span className="text-xs font-medium leading-none text-ink-900">{children}</span>
     </>
   );
   const clases = 'group flex flex-col items-center gap-2.5 py-1';
@@ -311,11 +325,11 @@ function Disco({
  * contrasta con lo que tiene debajo.
  */
 const PRINCIPAL =
-  'flex h-11 w-full items-center justify-center rounded-xl bg-white text-base font-semibold'
-  + ' text-ink-900 transition-colors active:bg-white/85';
+  'flex h-11 w-full items-center justify-center rounded-xl bg-ink-900 text-base font-semibold'
+  + ' text-ink-0 transition-colors active:bg-ink-800';
 const SECUNDARIO =
-  'flex h-11 w-full items-center justify-center rounded-xl border border-white/25 bg-white/10'
-  + ' text-base font-medium text-white transition-colors active:bg-white/20';
+  'flex h-11 w-full items-center justify-center rounded-xl border border-line bg-ink-900/[0.05]'
+  + ' text-base font-medium text-ink-900 transition-colors active:bg-ink-900/[0.10]';
 
 /** Lo siguiente, con su contenido. La hora ya está arriba y no se repite. */
 function Detalle({ d }: { d: DatosDeInicio }) {
@@ -323,13 +337,13 @@ function Detalle({ d }: { d: DatosDeInicio }) {
   if (!s) {
     return (
       <div data-vacio="fila" className="vidrio-foto rounded-2xl px-4 py-5 text-center">
-        <h2 className="text-md font-semibold text-white">No tienes nada programado</h2>
-        <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-white/70">
+        <h2 className="text-md font-semibold text-ink-900">No tienes nada programado</h2>
+        <p className="mx-auto mt-1.5 max-w-md text-base leading-relaxed text-ink-700">
           El próximo entrenamiento o partido aparecerá aquí.
         </p>
         <Link
           to="/app/entrenamientos/nuevo"
-          className="mt-5 inline-flex h-9 items-center rounded-lg bg-white px-3.5 text-sm font-medium text-ink-900"
+          className="mt-5 inline-flex h-9 items-center rounded-lg bg-ink-900 px-3.5 text-sm font-medium text-ink-0"
         >
           Crear entrenamiento
         </Link>
@@ -342,21 +356,21 @@ function Detalle({ d }: { d: DatosDeInicio }) {
     return (
       <div className="vidrio-foto rounded-2xl p-5">
         <div className="flex items-start justify-between gap-3">
-          <p className="min-w-0 text-md font-semibold leading-snug text-white">{ses.title}</p>
-          <span className="shrink-0 rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-2xs font-medium text-white/85">
+          <p className="min-w-0 text-md font-semibold leading-snug text-ink-900">{ses.title}</p>
+          <span className="shrink-0 rounded-full border border-line bg-ink-900/[0.05] px-2 py-0.5 text-2xs font-medium text-ink-800">
             {minutesToLabel(ses.duration)}
           </span>
         </div>
 
-        <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70">
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-700">
           {ses.venue && (
             <span className="flex min-w-0 items-center gap-1.5">
-              <MapPin size={14} className="shrink-0 text-white/55" />
+              <MapPin size={14} className="shrink-0 text-ink-500" />
               <span className="truncate">{ses.venue}</span>
             </span>
           )}
           <span className="flex items-center gap-1.5">
-            <Users size={14} className="text-white/55" />
+            <Users size={14} className="text-ink-500" />
             {ses.expectedPlayers} jugadoras
           </span>
         </div>
@@ -370,12 +384,12 @@ function Detalle({ d }: { d: DatosDeInicio }) {
                 <div
                   key={b.id}
                   title={`${b.title} · ${b.duration}′`}
-                  className="h-1.5 rounded-full bg-white/30"
+                  className="h-1.5 rounded-full bg-ink-900/[0.14]"
                   style={{ flex: b.duration }}
                 />
               ))}
             </div>
-            <p className="mt-2 truncate text-xs text-white/55">
+            <p className="mt-2 truncate text-xs text-ink-500">
               {ses.blocks.length} bloques{ses.objective ? ` · ${ses.objective}` : ''}
             </p>
           </div>
@@ -405,22 +419,22 @@ function Detalle({ d }: { d: DatosDeInicio }) {
   return (
     <div className="vidrio-foto rounded-2xl p-5">
       <div className="flex items-start justify-between gap-3">
-        <p className="min-w-0 text-md font-semibold leading-snug text-white">
+        <p className="min-w-0 text-md font-semibold leading-snug text-ink-900">
           {p.home ? `${d.nombreClub} · ${p.opponent}` : `${p.opponent} · ${d.nombreClub}`}
         </p>
-        <span className="shrink-0 rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-2xs font-medium text-white/85">
+        <span className="shrink-0 rounded-full border border-line bg-ink-900/[0.05] px-2 py-0.5 text-2xs font-medium text-ink-800">
           {p.home ? 'En casa' : 'Fuera'}
         </span>
       </div>
 
-      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70">
+      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-ink-700">
         <span className="flex items-center gap-1.5">
-          <Clock size={14} className="text-white/55" />
+          <Clock size={14} className="text-ink-500" />
           {longDate(p.date)}
         </span>
         {p.venue && (
           <span className="flex min-w-0 items-center gap-1.5">
-            <MapPin size={14} className="shrink-0 text-white/55" />
+            <MapPin size={14} className="shrink-0 text-ink-500" />
             <span className="truncate">{p.venue}</span>
           </span>
         )}
@@ -447,12 +461,12 @@ function Siguiente({ a, texto, cuando }: { a: string; texto: string; cuando: str
   return (
     <Link
       to={a}
-      className="-mx-5 -mb-5 mt-5 flex items-center gap-2.5 border-t border-white/12 px-5 py-3 transition-colors active:bg-white/10"
+      className="-mx-5 -mb-5 mt-5 flex items-center gap-2.5 border-t border-line px-5 py-3 transition-colors active:bg-ink-900/[0.05]"
     >
-      <span className="shrink-0 text-2xs font-semibold uppercase tracking-[0.09em] text-white/50">Después</span>
-      <span className="min-w-0 flex-1 truncate text-base text-white/85">{texto}</span>
-      <span className="shrink-0 text-sm tabular-nums text-white/60">{cuando}</span>
-      <ChevronRight size={15} className="shrink-0 text-white/50" />
+      <span className="shrink-0 text-2xs font-semibold uppercase tracking-[0.09em] text-ink-500">Después</span>
+      <span className="min-w-0 flex-1 truncate text-base text-ink-800">{texto}</span>
+      <span className="shrink-0 text-sm tabular-nums text-ink-600">{cuando}</span>
+      <ChevronRight size={15} className="shrink-0 text-ink-500" />
     </Link>
   );
 }

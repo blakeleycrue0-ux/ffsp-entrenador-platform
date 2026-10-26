@@ -43,7 +43,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  CalendarPlus, ChevronRight, ChevronsUpDown, ClipboardList, Clock, LayoutGrid,
+  CalendarPlus, ChevronRight, ChevronsUpDown, ClipboardList, Clock,
   MapPin, Users,
 } from 'lucide-react';
 import { teamOverview } from '@/store/selectors';
@@ -213,9 +213,6 @@ export default function Dashboard() {
               </ActionTile>
               <ActionTile to="/app/plantilla" icon={<Users size={16} />}>
                 Ver plantilla
-              </ActionTile>
-              <ActionTile to="/app/pizarra" icon={<LayoutGrid size={16} />}>
-                Pizarra táctica
               </ActionTile>
             </div>
           </section>

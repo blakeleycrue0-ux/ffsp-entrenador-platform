@@ -28,7 +28,6 @@
  * la composición.
  */
 
-import { BoardDemo } from '@/features/board/BoardDemo';
 
 /* ─────────────────────────── Piezas compartidas ──────────────────────────── */
 
@@ -291,26 +290,6 @@ export function MaquetaAsistencia({ className = '' }: { className?: string }) {
 }
 
 /* ═══════════════════════════ 4 · Pizarra ═════════════════════════════════ */
-
-/**
- * La pizarra NO es una maqueta: es el componente de verdad.
- *
- * `BoardDemo` es el mismo motor que hay dentro de la aplicación, con la misma
- * cámara y las mismas piezas. Aquí no hace falta fingir nada, y además lo que
- * se ve se mueve: es la mejor demostración que tiene este producto.
- */
-export function MaquetaPizarra({ className = '' }: { className?: string }) {
-  return (
-    <Marco className={className}>
-      <Barra titulo="Pizarra táctica · Salida desde atrás" />
-      {/* `text-base` devuelve el tamaño normal: dentro va el componente de
-          verdad, que no debe encoger con la escala de las maquetas. */}
-      <div className="p-[0.571em] text-base">
-        <BoardDemo />
-      </div>
-    </Marco>
-  );
-}
 
 /* ═══════════════════════ 5 · Analíticas, en fila ═════════════════════════ */
 

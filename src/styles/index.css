@@ -90,6 +90,90 @@
      distintos para la misma distancia, así que en cuanto uno cambiaba, los
      otros cuatro se quedaban mal y algo acababa tapando a algo.
      Ahora se cambia el número aquí y se mueve todo a la vez. */
+
+  /* ══════════════════════════════════════════════════════════════════════
+     LOS DOS TEMAS, Y POR QUÉ VIVEN AQUÍ Y NO EN EL CONFIG DE TAILWIND
+     ══════════════════════════════════════════════════════════════════════
+
+     La paleta de la plataforma estaba escrita como once hexadecimales fijos
+     en `tailwind.config.js`. Con eso no hay modo oscuro posible sin tocar los
+     ochenta y dos componentes uno a uno y sembrarlos de `dark:`.
+
+     Aquí son variables, y el config apunta a ellas. Cambiar de tema es
+     redefinir once números; ni un componente se entera.
+
+     EN CANALES, NO EN HEXADECIMAL, y es obligatorio: media interfaz usa
+     `bg-ink-900/[0.08]` o `border-ink-900/10`. Para que Tailwind pueda
+     meterle la opacidad necesita los canales sueltos y `<alpha-value>` en el
+     config. Con `--ink-900: #0D0D0F` esas clases dejarían de pintar.
+
+     LA PORTADA NO SE ENTERA. Tiene su propia paleta —`marca`, `abismo`,
+     `tinta`, `cielo`, `lima`— y NO usa ni una sola de estas clases:
+     comprobado, cero ocurrencias en `src/features/landing/`. Por eso se
+     puede dar la vuelta a esta sin rozar aquélla. */
+  :root {
+    color-scheme: light;
+
+    --ink-0:   255 255 255;
+    --ink-50:  247 247 248;
+    --ink-100: 239 239 241;
+    --ink-200: 226 226 229;
+    --ink-300: 201 201 206;
+    --ink-400: 155 155 162;
+    --ink-500: 117 117 124;
+    --ink-600:  92  92  99;
+    --ink-700:  63  63  69;
+    --ink-800:  35  35  39;
+    --ink-900:  13  13  15;
+
+    --surface: 232 232 235;
+    --panel:   245 245 247;
+    --raised:  255 255 255;
+    --sunken:  255 255 255;
+
+    --line-rgb: 13 13 15;
+    --line-a: 0.12;
+  }
+
+  /* EL TEMA LO MANDA EL MÓVIL, no un interruptor dentro de la aplicación.
+     Quien pone el teléfono en oscuro a las once de la noche lo hace para
+     TODO, y una aplicación que se queda en blanco a esa hora es la que se
+     cierra.
+
+     LA ESCALA SE INVIERTE, no se «oscurece». `ink-900` es «lo que más
+     contrasta con el fondo», no «casi negro»: en oscuro es casi blanco. Esa
+     es la razón de que los componentes no necesiten cambiar — siguen pidiendo
+     el mismo papel, y el papel cambia de color.
+
+     NO ES NEGRO PURO. Un #000 con texto #FFF encima deslumbra y vibra en
+     OLED; los grises muy oscuros se leen mejor y es lo que hacen las
+     aplicaciones que se usan de noche. */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+
+      --ink-0:    10  10  12;
+      --ink-50:   24  24  27;
+      --ink-100:  32  32  36;
+      --ink-200:  44  44  49;
+      --ink-300:  72  72  79;
+      --ink-400: 113 113 122;
+      --ink-500: 148 148 156;
+      --ink-600: 176 176 184;
+      --ink-700: 206 206 212;
+      --ink-800: 232 232 236;
+      --ink-900: 250 250 252;
+
+      --surface:  10  10  12;
+      --panel:    24  24  27;
+      --raised:   32  32  36;
+      --sunken:   24  24  27;
+
+      --line-rgb: 250 250 252;
+      --line-a: 0.14;
+    }
+  }
+
   :root {
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -156,11 +240,24 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* NEGRO PURO. Es el color del que arranca la plataforma por arriba, y
-     también lo que se ve al estirar la página más allá de su final. La
-     portada pinta sus propios fondos encima y no se entera. */
+  /* ── DE BORDE A BORDE, Y AQUÍ ESTABA LA FRANJA NEGRA ──────────────────
+     Esto era `bg-black`, de cuando la plataforma era oscura por arriba. La
+     aplicación pasó a ser clara y esto se quedó, así que en un iPhone con
+     `viewport-fit=cover` lo que se veía detrás de la Dynamic Island y detrás
+     de la barra de Safari era el NEGRO DEL DOCUMENTO: las dos franjas.
+
+     No faltaban áreas seguras —ya estaban puestas en la cabecera, el menú,
+     el login y el bloqueo— ni faltaba `100dvh`, que no se usa en ningún
+     sitio. Era el color del papel.
+
+     EN `html` TAMBIÉN, y no sólo en `body`: al estirar más allá del final,
+     Safari pinta el fondo del elemento raíz, no el del cuerpo. */
+  html {
+    @apply bg-surface;
+  }
+
   body {
-    @apply bg-black text-ink-800 font-sans antialiased;
+    @apply bg-surface text-ink-800 font-sans antialiased;
     font-size: 15px;
     /* Las cifras de ancho constante son media interfaz aquí: una hora, un
        porcentaje, un dorsal. Sin esto, «18:30» baila al actualizarse. */
@@ -203,29 +300,44 @@
     @apply bg-ink-900 text-white;
   }
 
-  /* La portada sigue siendo oscura y pide controles nativos oscuros. La
-     plataforma ya no: sus campos son blancos, así que el selector de fecha y
-     el de hora tienen que salir en claro o aparecen dos recuadros negros en
-     medio de un formulario blanco. */
-  :root { color-scheme: dark; }
-  .plataforma { color-scheme: light; }
+  /* LOS CONTROLES NATIVOS, CON EL TEMA. Esto era `:root { color-scheme:
+     dark }` con `.plataforma { color-scheme: light }` encima: dos valores
+     fijos de cuando la portada era oscura y la plataforma clara siempre. Con
+     el tema del teléfono mandando, esa pareja ganaba a la declaración de
+     arriba y dejaba el selector de fecha en claro dentro de una aplicación
+     en oscuro — dos recuadros blancos en mitad de un formulario negro, que
+     es justo lo que el comentario original quería evitar, del revés.
+     El `color-scheme` real lo pone el bloque de temas de arriba. Aquí sólo
+     queda la portada, que sí es oscura siempre. */
+  .portada, .portada * { color-scheme: dark; }
 
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #2B3A56 transparent;
+  /* ── LA BARRA DE DESPLAZAMIENTO, SÓLO DONDE HAY RATÓN ──────────────────
+     Esto se aplicaba a TODO, sin condición, y ahí estaba la barra gris que
+     salía a la derecha en el móvil. En WebKit, en cuanto se declara un
+     `::-webkit-scrollbar` con ancho, el navegador deja de usar la barra
+     flotante que se autooculta y pinta una FIJA de ese ancho: 10 px de gris
+     permanentes al lado del contenido, y además robados al ancho útil.
+     En un móvil no hay nada que apuntar con un ratón, así que la barra no
+     tiene para qué estar: el dedo ya sabe dónde está.
+     `pointer: fine` es la pregunta correcta —«¿hay un puntero preciso?»— y
+     no el ancho de la ventana: un portátil con pantalla táctil tiene ratón
+     y un móvil en horizontal no deja de ser un móvil.
+     Y el color ya no es `#2B3A56`, que era el azul noche de hace dos
+     rediseños: sale de la escala y se da la vuelta con el tema. */
+  @media (pointer: fine) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgb(var(--ink-900) / 0.28) transparent;
+    }
+    *::-webkit-scrollbar { width: 10px; height: 10px; }
+    *::-webkit-scrollbar-thumb {
+      background-color: rgb(var(--ink-900) / 0.28);
+      border-radius: 999px;
+      border: 3px solid transparent;
+      background-clip: content-box;
+    }
+    *::-webkit-scrollbar-thumb:hover { background-color: rgb(var(--ink-900) / 0.45); }
   }
-  *::-webkit-scrollbar { width: 10px; height: 10px; }
-  *::-webkit-scrollbar-thumb {
-    background-color: #2B3A56;
-    border-radius: 999px;
-    border: 3px solid transparent;
-    background-clip: content-box;
-  }
-  *::-webkit-scrollbar-thumb:hover { background-color: #3C5076; }
-
-  .plataforma * { scrollbar-color: rgba(13,13,15,0.28) transparent; }
-  .plataforma *::-webkit-scrollbar-thumb { background-color: rgba(13,13,15,0.28); }
-  .plataforma *::-webkit-scrollbar-thumb:hover { background-color: rgba(13,13,15,0.45); }
 
   /* El foco. En la portada sigue siendo azul; dentro de la plataforma es un
      aro NEGRO con un halo blanco debajo, que se ve igual sobre una tarjeta
@@ -266,12 +378,12 @@
 
   @media (min-width: 1024px) {
     .cristal {
-      background: rgba(247, 247, 249, 0.86);
+      background: rgb(var(--panel) / 0.86);
       backdrop-filter: blur(20px) saturate(115%);
       -webkit-backdrop-filter: blur(20px) saturate(115%);
     }
     .cristal-firme {
-      background: rgba(250, 250, 251, 0.94);
+      background: rgb(var(--raised) / 0.94);
       backdrop-filter: blur(24px) saturate(110%);
       -webkit-backdrop-filter: blur(24px) saturate(110%);
     }
@@ -487,14 +599,22 @@
      Y SI NO HAY DESENFOQUE, SE PONE MÁS OPACA. `backdrop-filter` no está en
      todos los navegadores; sin él, un 10 % de blanco sobre una foto es texto
      blanco sobre lo que haya. El respaldo es un gris oscuro sólido. */
+  /* EL CRISTAL DE INICIO. Se llamaba así —«de foto»— porque flotaba sobre
+     una fotografía oscura y por eso era blanco al 10 %. Ya no hay foto: el
+     fondo es la superficie del tema, así que el cristal se levanta sobre
+     ella y su tinte sale de la misma escala. En claro aclara, en oscuro
+     aclara también —sobre un fondo casi negro, subir es separarse— y en los
+     dos casos el borde es la línea de siempre. */
   .vidrio-foto {
-    background-color: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background-color: rgb(var(--raised) / 0.72);
+    border: 1px solid rgb(var(--line-rgb) / var(--line-a));
     backdrop-filter: blur(22px) saturate(115%);
     -webkit-backdrop-filter: blur(22px) saturate(115%);
   }
+  /* Sin desenfoque no hay cristal que valga: se vuelve opaco del todo, que
+     es peor de ver pero legible, que es lo que importa. */
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .vidrio-foto { background-color: rgba(20, 20, 23, 0.72); }
+    .vidrio-foto { background-color: rgb(var(--raised)); }
   }
 
   /* ── EL HÉROE DE INICIO, Y LO QUE PASA EN UNA PANTALLA CORTA ──────────────

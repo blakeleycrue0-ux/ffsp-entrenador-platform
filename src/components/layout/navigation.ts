@@ -21,7 +21,7 @@
  *   CALENDARIO   ¿qué hay esta semana?        · agenda, entrenos, partidos
  *   EQUIPO       ¿con quién cuento?           · plantilla, disponibilidad,
  *                                               datos, equipos
- *   EJERCICIOS   ¿qué hacemos en el campo?    · biblioteca, pizarra
+ *   EJERCICIOS   ¿qué hacemos en el campo?    · biblioteca
  *
  * Y la cuenta —perfil, ajustes, plan— no es una sección: es quien eres, y vive
  * detrás de tu avatar, como en cualquier aplicación del teléfono.
@@ -102,10 +102,12 @@ export const SECCIONES: Seccion[] = [
     to: '/app/ejercicios',
     label: 'Ejercicios',
     icono: Dumbbell,
-    paginas: [
-      { to: '/app/ejercicios', label: 'Biblioteca' },
-      { to: '/app/pizarra', label: 'Pizarra' },
-    ],
+    /* UNA SOLA PANTALLA, así que sin pestañas: aquí había «Biblioteca» y
+       «Pizarra», y al irse la pizarra una pestaña suelta no es una elección.
+       `PestañasDeSeccion` ya no pinta nada con menos de dos, y dejar la lista
+       con un elemento haría que la prueba del menú esperase una barra que no
+       aparece. */
+    paginas: [],
   },
 ];
 

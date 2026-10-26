@@ -3,8 +3,6 @@ import { ArrowLeft, Bookmark, Clock, PencilLine, Plus, Target, Users } from 'luc
 import { useClub } from '@/store/store';
 import { Tag, Button, Panel, LinkButton, PageHeader } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { DrillBoardViewer } from '@/features/board/DrillBoard';
-import { TacticBoard } from './TacticBoard';
 import { cn, shortDate } from '@/lib/utils';
 import { useAnchura } from '@/components/layout/AppShell';
 
@@ -65,31 +63,6 @@ export default function DrillDetail() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
-          {/* Pizarra */}
-          <Panel className="p-5">
-            <h2 className="text-md font-semibold">Esquema</h2>
-            {d.animation ? (
-              <div className="mt-4">
-                <DrillBoardViewer value={d.animation} />
-              </div>
-            ) : d.tactic && d.tactic.length > 0 ? (
-              <div className="mt-4">
-                <TacticBoard shapes={d.tactic} readOnly />
-              </div>
-            ) : (
-              <div className="mt-4 rounded-2xl border-2 border-dashed border-line py-12 text-center">
-                <p className="text-sm font-medium text-ink-700">Este ejercicio aún no tiene esquema</p>
-                <p className="mx-auto mt-1.5 max-w-sm text-sm leading-relaxed text-muted">
-                  Dibuja la situación en la pizarra táctica para que cualquier entrenador del club entienda el ejercicio
-                  de un vistazo.
-                </p>
-                <LinkButton to={`/app/ejercicios/${d.id}/editar`} size="sm" variant="secondary" className="mt-4">
-                  Dibujar esquema
-                </LinkButton>
-              </div>
-            )}
-          </Panel>
-
           <Panel className="p-5">
             <h2 className="text-base font-semibold">Descripción</h2>
             <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink-600">{d.description}</p>

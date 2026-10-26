@@ -35,12 +35,9 @@ export type Capacidad =
   | 'ejercicios'
   | 'partidos'
   | 'calendario'
-  | 'pizarra'
   | 'analiticas'
   | 'valoraciones'
   /* De Pro en adelante */
-  | 'pizarra-avanzada'
-  | 'exportar-video'
   /* De Max en adelante */
   | 'cuerpo-tecnico'
   | 'analiticas-avanzadas'
@@ -75,7 +72,6 @@ export const CAPACIDADES: Record<Capacidad, Ficha> = {
   ejercicios: { nombre: 'Biblioteca de ejercicios', desde: 'free', lista: true },
   partidos: { nombre: 'Partidos y convocatorias', desde: 'free', lista: true },
   calendario: { nombre: 'Calendario', desde: 'free', lista: true },
-  pizarra: { nombre: 'Pizarra táctica', desde: 'free', lista: true },
   analiticas: { nombre: 'Analíticas', desde: 'free', lista: true },
 
   /* LA TABLA EXISTE Y LA PANTALLA NO. `session_player_ratings` está creada,
@@ -86,9 +82,17 @@ export const CAPACIDADES: Record<Capacidad, Ficha> = {
      pondrá a `true` el día que haya dónde meter la nota, no antes. */
   valoraciones: { nombre: 'Evaluaciones de jugadoras (1–10)', desde: 'free', lista: false },
 
-  /* Ya construidas: trayectorias a mano alzada y exportación de vídeo. */
-  'pizarra-avanzada': { nombre: 'Trayectorias a mano alzada', desde: 'pro', lista: true },
-  'exportar-video': { nombre: 'Exportar jugadas en vídeo', desde: 'pro', lista: true },
+  /* ── LO QUE SE QUITÓ AL DEJAR DE SER UNA HERRAMIENTA DE ENTRENOS ───────
+     Aquí vivían «Pizarra táctica», «Trayectorias a mano alzada» y «Exportar
+     jugadas en vídeo». Las tres estaban construidas y funcionaban; se
+     retiran porque el producto pasa a ser gestión de club, no diseño de
+     jugadas.
+
+     NO SE DEJAN EN `lista: false`. Esa marca es para lo que está a medias y
+     va a llegar; esto es lo contrario, algo que existió y se ha ido. Dejarlo
+     ahí lo anunciaría como «próximamente» a quien compara planes, que es lo
+     contrario de la verdad. La tabla `plays` y sus datos siguen intactos en
+     la base por si algún día vuelve. */
 
   /* ── De Max en adelante ────────────────────────────────────────────────
      Encuadre comercial de octubre de 2026: Pro es un entrenador con su

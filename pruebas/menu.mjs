@@ -50,7 +50,8 @@ const SECCIONES = [
   {
     label: 'Ejercicios',
     to: '/app/ejercicios',
-    paginas: [['Biblioteca', '/app/ejercicios'], ['Pizarra', '/app/pizarra']],
+    /* Una sola pantalla desde que se fue la pizarra: sin pestañas. */
+    paginas: [],
   },
 ];
 

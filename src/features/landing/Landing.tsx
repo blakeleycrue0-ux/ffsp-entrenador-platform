@@ -63,7 +63,7 @@ import { ArrowRight, Check, Menu, Minus, Plus, X } from 'lucide-react';
 import { Wordmark } from '@/components/ui/Brand';
 import { billing, importe, type Plan } from '@/services/billing';
 import { loQueFalta, todoLoQueTrae } from '@/services/entitlements';
-import { MaquetaAsistencia, MaquetaJugadora, MaquetaPanel, MaquetaPizarra } from './maquetas';
+import { MaquetaAsistencia, MaquetaJugadora, MaquetaPanel } from './maquetas';
 import { cn } from '@/lib/utils';
 
 /* ─────────────────────────── Aparecer al llegar ──────────────────────────── */
@@ -443,7 +443,6 @@ export default function Landing() {
         <Tira />
         <Declaracion />
         <Historias />
-        <Pizarra />
         <Clubes />
         <Precios planes={planes} />
         <Preguntas />
@@ -566,15 +565,18 @@ function Portada() {
                     de un teléfono deja medio móvil en negro alrededor, y la
                     primera imagen de la portada no puede ser una pantalla
                     medio vacía. La plantilla llena: dieciséis nombres, sus
-                    posiciones y su asistencia. La pizarra se ve más abajo,
-                    moviéndose de verdad, que es como mejor se vende. */}
+                    posiciones y su asistencia.
+
+                    AQUÍ HABÍA LA PIZARRA, y ya no existe en el producto. La
+                    sustituye el panel, que es la pantalla con la que se
+                    empieza el día. */}
                 <div className="flota-a">
                   <Pantalla
-                    escritorio="/producto/pizarra.png"
+                    escritorio="/producto/calendario.png"
                     movil="/producto/plantilla-movil.png"
-                    alt="La pizarra táctica de Playoff360, con una salida desde atrás dibujada sobre el campo en perspectiva."
+                    alt="El calendario de Playoff360: entrenamientos, partidos y convocatorias de todos los equipos en una sola agenda."
                     altMovil="La plantilla del equipo en el móvil: dieciséis jugadoras con su posición y su asistencia."
-                    titulo="Pizarra táctica · Salida desde atrás"
+                    titulo="Calendario del club"
                     prioridad
                   />
                 </div>
@@ -829,79 +831,6 @@ function Historias() {
         </div>
       </section>
     </>
-  );
-}
-
-/* ══════════════════════════════ 5 · La pizarra ════════════════════════════ */
-
-/**
- * La franja oscura. Es el punto de inflexión de la página y la única sección
- * a sangre completa.
- *
- * Y AQUÍ NO HAY CAPTURA: hay pizarra. `MaquetaPizarra` envuelve `BoardDemo`,
- * que es el mismo motor que está dentro de la aplicación, con la misma cámara
- * y las mismas piezas. Es la mejor demostración que tiene este producto, y
- * enseñarla quieta en un PNG cuando se puede enseñar moviéndose sería tirarla.
- *
- * El azul del fondo no es el negro de la aplicación: `abismo` lleva azul
- * dentro, para que la pizarra puesta encima se lea COMO UNA PANTALLA y no
- * como un agujero del mismo color que el fondo.
- */
-function Pizarra() {
-  return (
-    <section className="corte-arriba corte-abajo relative overflow-hidden bg-abismo">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-[10%] top-[6%] h-[46vw] w-[46vw] rounded-full opacity-40 blur-[110px]"
-        style={{ background: 'radial-gradient(circle, rgba(8,104,249,0.9) 0%, rgba(8,104,249,0) 70%)' }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-[8%] bottom-[0%] h-[40vw] w-[40vw] rounded-full opacity-30 blur-[110px]"
-        style={{ background: 'radial-gradient(circle, rgba(54,200,255,0.9) 0%, rgba(54,200,255,0) 70%)' }}
-      />
-
-      <div className="cauce relative pb-[clamp(90px,11vw,150px)] pt-[clamp(110px,13vw,170px)]">
-        <div className="grid items-end gap-8 lg:grid-cols-12">
-          <Revelar className="lg:col-span-7">
-            <Rotulo tono="lima">Pizarra táctica</Rotulo>
-            <h2 className="t-l mt-5 text-white">
-              De la idea al campo,
-              <br />
-              en movimiento.
-            </h2>
-          </Revelar>
-          <Revelar delay={110} className="lg:col-span-5">
-            <p className="entradilla text-white/60">
-              Dibuja la jugada, dale a reproducir y mírala salir. Después la exportas en
-              vídeo y la mandas al grupo del equipo.
-            </p>
-          </Revelar>
-        </div>
-
-        {/* A 1240 px de ancho el campo salía de 800 px de alto y se comía la
-            pantalla entera: dejaba de ser una demostración y pasaba a ser una
-            pared verde. Acotado a 60rem respira, y el azul que queda a los
-            lados es lo que hace que se lea como una pantalla encendida en una
-            habitación a oscuras. */}
-        <Revelar delay={180}>
-          <div className="relative mx-auto mt-10 max-w-[60rem] lg:mt-14">
-            <MaquetaPizarra />
-            <span className="absolute -top-3 left-5 flex items-center gap-2 rounded-full border border-white/15 bg-abismo2 px-3 py-1.5 text-[11.5px] font-medium text-white/75">
-              <i className="pulso block h-1.5 w-1.5 shrink-0 rounded-full bg-lima" aria-hidden />
-              En directo
-            </span>
-          </div>
-        </Revelar>
-
-        <Revelar delay={240}>
-          <p className="mx-auto mt-7 max-w-[46ch] text-center text-[13.5px] leading-relaxed text-white/50">
-            No es un vídeo ni una captura: es el mismo componente que hay dentro de la
-            aplicación, moviéndose aquí.
-          </p>
-        </Revelar>
-      </div>
-    </section>
   );
 }
 
