@@ -1,42 +1,52 @@
 /**
- * Los primeros cinco minutos.
- * ---------------------------------------------------------------------------
- * UNA COSA POR PANTALLA. Antes esto eran cuatro pasos con tres o cuatro
- * preguntas metidas en cada uno: nombre y cargo juntos, equipo y horarios
- * juntos. Un formulario largo cortado en trozos sigue siendo un formulario
- * largo, y con el móvil en la mano cada pantalla llena obliga a decidir varias
- * cosas a la vez antes de poder seguir.
+ * EL ALTA, CON LA CARA DE LA PORTADA.
+ * ═══════════════════════════════════════════════════════════════════════════
  *
- * Ahora cada pantalla pregunta UNA cosa y cabe entera sin desplazarse:
+ * Una pregunta por pantalla. Nada más. Ni dos campos, ni una columna al lado,
+ * ni un resumen de lo que viene: quien está dando de alta un club no quiere
+ * leer, quiere contestar y seguir.
  *
- *   1. Bienvenida        6. Tu club
- *   2. Código de acceso  7. Tu equipo
- *   3. Tu nombre         8. Cuándo entrenáis
- *   4. Tu cargo          9. Tu plan
- *   5. —                10. Listo
+ * POR QUÉ SE PARECE A LA PÁGINA PÚBLICA, Y NO A LA PLATAFORMA. El alta es el
+ * último trozo de la portada, no el primero de la aplicación: se llega desde
+ * un anuncio, se contesta seis veces y se entra. Si la portada es azul y
+ * clara y aquí aparece de golpe una pantalla gris de herramienta, la sensación
+ * es la de haber caído en otro producto.
  *
- * (Crear la cuenta es el paso previo y vive en `/entrar`; aquí ya hay sesión.)
+ * Por eso usa SUS MISMAS PIEZAS, no una imitación: `.cielo`, `.t-l`,
+ * `.entradilla`, `.rotulo` y los botones `.btn` salen de `index.css` y son
+ * literalmente los de la portada. El día que allí se cambie el azul, esto
+ * cambia solo.
  *
- * Reglas que se respetan:
- *  · Cada paso GUARDA DE VERDAD al pasar al siguiente. Nada espera a un
- *    «terminar» final que, si se cierra la pestaña, perdería lo escrito.
- *  · Se puede saltar lo que no es imprescindible: el código y el equipo.
- *    Quien entra a mirar no tiene por qué inventarse un equipo.
- *  · No se promete nada que la plataforma no haga.
+ * ── LO QUE SE ARREGLÓ POR EL CAMINO ────────────────────────────────────────
+ *
+ * NADA SE CORTA. Cada paso cabe en una pantalla de iPhone SE sin desplazar, y
+ * los dos pasos largos —el horario y el plan— se desplazan por dentro de su
+ * tarjeta, no por debajo del botón.
+ *
+ * NADA SALTA. La barra de progreso y el botón están SIEMPRE en el mismo
+ * sitio, pase lo que pase en medio. Antes el botón subía y bajaba según
+ * cuántas líneas tuviera el paso, y al avanzar había que volver a buscarlo.
+ *
+ * ── LO QUE NO SE HA TOCADO ────────────────────────────────────────────────
+ *
+ * TODA la lógica del alta. Cada paso guarda de verdad al pasar al siguiente,
+ * se puede saltar lo que no es imprescindible, y el espacio de trabajo se
+ * recarga UNA sola vez, al final: recargarlo antes haría que la aplicación
+ * diera el alta por terminada y se llevara por delante los pasos que faltan.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, Plus, X } from 'lucide-react';
 import { useClub } from '@/store/store';
-import { nombreReal } from '@/store/selectors';
 import { clubs } from '@/services/clubs';
 import { db } from '@/services/db';
 import { humanError } from '@/services/supabase';
 import { ASSIGNABLE_ROLES, ROLE_LABEL } from '@/services/auth';
-import { Button, Field, Input, Select } from '@/components/ui';
-import { Marca, Wordmark } from '@/components/ui/Brand';
+import { Input, Select } from '@/components/ui';
+import { Wordmark } from '@/components/ui/Brand';
 import { ConfigurarCodigo } from '@/features/passcode/ConfigurarCodigo';
 import { PasoPlan } from './PasoPlan';
+import { deportes, apuntaDeporte, FUTBOL, type Deporte } from '@/services/deportes';
 import { cn, dayName, toISODate } from '@/lib/utils';
 import { citasDelHorario } from '@/lib/horario';
 import type { Staff, TrainingSlot } from '@/types';
@@ -49,41 +59,43 @@ const temporadaActual = () => {
   return `${inicio}/${String((inicio + 1) % 100).padStart(2, '0')}`;
 };
 
-/* El orden es el del trabajo real: primero quién eres, luego qué diriges. */
+/* El orden es el del trabajo real: primero quién eres, luego qué diriges.
+   `deporte` entra después del club y antes del equipo, que es cuando ya hay
+   dónde apuntarlo y todavía no se ha creado nada que dependa de él. */
 const ORDEN = [
-  'bienvenida', 'codigo', 'nombre', 'cargo', 'club', 'equipo', 'horarios', 'plan', 'listo',
+  'bienvenida', 'codigo', 'nombre', 'cargo', 'club', 'deporte', 'equipo', 'horarios', 'plan', 'listo',
 ] as const;
 type Paso = (typeof ORDEN)[number];
 
 /** La bienvenida y el final no son trabajo: no cuentan como paso numerado. */
 const NUMERADOS = ORDEN.filter((p) => p !== 'bienvenida' && p !== 'listo');
 
-/* Los cargos salen de la lista que ya usa el resto de la plataforma, no de
-   una copia escrita aquí: si mañana se añade uno, aparece solo. Se quita
-   «Administración del club», que no se elige — lo da crear el club. */
 const CARGOS = ASSIGNABLE_ROLES.filter((r) => r !== 'admin-club');
 
 export default function Onboarding() {
-  const { data, userId, actions, signOut } = useClub();
+  const { userId, actions, signOut } = useClub();
   const [paso, setPaso] = useState<Paso>('bienvenida');
   const [error, setError] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
 
-  /* Nunca se precarga el correo: `profile.name` cae en él cuando no hay
-     nombre, y entonces bastaba con pulsar «Continuar» para guardar la
-     dirección como nombre real. */
-  const [nombre, setNombre] = useState(nombreReal(data.profile) ?? '');
-  const [cargo, setCargo] = useState<Staff['role']>(data.profile?.role ?? 'entrenador');
+  const [nombre, setNombre] = useState('');
+  const [cargo, setCargo] = useState<Staff['role']>(CARGOS[0]);
   const [club, setClub] = useState('');
   const [clubCorto, setClubCorto] = useState('');
-  /** El club recién creado, hasta que se recarga todo al terminar. */
   const [clubId, setClubId] = useState<string | null>(null);
+  const [deporte, setDeporte] = useState<string>(FUTBOL);
+  const [losDeportes, setLosDeportes] = useState<Deporte[]>([]);
   const [equipo, setEquipo] = useState('');
   const [categoria, setCategoria] = useState('');
   const [horarios, setHorarios] = useState<TrainingSlot[]>([]);
-  /** Si el equipo llegó a crearse: la pantalla final lo dice sin adornar. */
   const [equipoCreado, setEquipoCreado] = useState(false);
   const [conCodigo, setConCodigo] = useState(false);
+
+  /* Los deportes se piden una vez y pronto: cuando se llegue a ese paso ya
+     están, así que no hay un parpadeo de lista vacía a mitad del alta. */
+  useEffect(() => { void deportes().then(setLosDeportes); }, []);
+
+  const elegido = losDeportes.find((d) => d.code === deporte);
 
   const ir = (p: Paso) => { setError(null); setPaso(p); };
   const atras = () => {
@@ -109,10 +121,7 @@ export default function Onboarding() {
         setError('Escribe tu nombre para que la plataforma no te llame por tu correo.');
         return;
       }
-      if (!userId) {
-        setError('Tu sesión ha caducado. Vuelve a entrar.');
-        return;
-      }
+      if (!userId) { setError('Tu sesión ha caducado. Vuelve a entrar.'); return; }
       // Se guarda YA: si se cierra la pestaña ahora, el nombre no se pierde.
       await db.updateProfile(userId, { full_name: nombre.trim() });
       ir('cargo');
@@ -120,33 +129,21 @@ export default function Onboarding() {
 
   const guardarCargo = () =>
     avanzar(async () => {
-      if (!userId) {
-        setError('Tu sesión ha caducado. Vuelve a entrar.');
-        return;
-      }
+      if (!userId) { setError('Tu sesión ha caducado. Vuelve a entrar.'); return; }
       await db.updateProfile(userId, { role: cargo });
       ir('club');
     });
 
   const crearClub = () =>
     avanzar(async () => {
-      if (club.trim().length < 2) {
-        setError('El club necesita un nombre.');
-        return;
-      }
+      if (club.trim().length < 2) { setError('El club necesita un nombre.'); return; }
       const res = await clubs.create(club, clubCorto);
-      if (!res.ok) {
-        setError(res.error);
-        return;
-      }
-      /* AQUÍ NO SE RECARGA EL ESPACIO DE TRABAJO, y es a propósito.
-         Esta pantalla se enseña justamente porque no hay club; en cuanto la
-         recarga trajera uno, la aplicación daría el alta por terminada y
-         desmontaría el onboarding con los pasos que faltan sin enseñar. Así
-         que el club recién creado se guarda aquí y se recarga una sola vez,
-         al final, cuando de verdad se ha acabado. */
+      if (!res.ok) { setError(res.error); return; }
+      /* AQUÍ NO SE RECARGA EL ESPACIO DE TRABAJO, y es a propósito: esta
+         pantalla se enseña porque no hay club, y en cuanto la recarga trajera
+         uno, la aplicación daría el alta por terminada. */
       setClubId(res.club.id);
-      ir('equipo');
+      ir('deporte');
     });
 
   const crearEquipo = () =>
@@ -157,37 +154,21 @@ export default function Onboarding() {
       }
       const creado = await db.saveTeam(
         {
-          id: '',
-          clubId,
-          name: equipo.trim(),
-          category: categoria.trim(),
-          season: temporadaActual(),
-          competition: '',
-          venue: '',
-          trainingSlots: horarios,
+          id: '', clubId, name: equipo.trim(), category: categoria.trim(),
+          season: temporadaActual(), competition: '', venue: '', trainingSlots: horarios,
         },
         userId,
       );
 
-      /* ── Y LOS ENTRENAMIENTOS, DE VERDAD ───────────────────────────────────
-         Esta pantalla decía «los horarios que pongas aquí aparecen solos en el
-         calendario, semana tras semana» y debajo ponía «Ya están en el
-         calendario». No era cierto: el horario se guardaba en la ficha del
-         equipo y ahí se quedaba. Quien terminaba el alta abría el calendario y
-         lo encontraba vacío, después de que la propia aplicación le hubiera
-         dicho dos veces que estaba lleno.
+      /* El deporte, en el club y en el equipo. No lanza si falla: ya están
+         creados y en fútbol, que es el valor por defecto, y se cambia desde
+         ajustes. Tumbar un alta terminada por una preferencia sería
+         desproporcionado. */
+      await apuntaDeporte(clubId, creado.id, deporte);
 
-         Ahora se crean. Tres meses por delante, que es el mismo tramo que
-         propone «Añadir varios» y lo que dura un trimestre: suficiente para
-         que el calendario tenga sentido desde el primer día, y no tanto como
-         para llenar la base de sesiones de una temporada que igual cambia en
-         noviembre.
-
-         SI ESTO FALLA, EL ALTA SIGUE. El equipo ya está creado y el horario
-         guardado; las sesiones se pueden volver a repartir cuando se quiera
-         desde «Añadir varios». Parar el alta entera porque no se han podido
-         escribir unas fechas sería cambiar un problema pequeño por uno
-         grande. */
+      /* Los entrenamientos del horario, de verdad, tres meses por delante.
+         SI ESTO FALLA, EL ALTA SIGUE: el equipo ya está y el horario
+         guardado; se pueden repartir luego desde «Añadir varios». */
       if (horarios.length > 0) {
         try {
           const hasta = new Date();
@@ -196,17 +177,10 @@ export default function Onboarding() {
           if (citas.length > 0) {
             await db.saveSessions(
               citas.map((c) => ({
-                id: '',
-                teamId: creado.id,
+                id: '', teamId: creado.id,
                 title: `Entrenamiento del ${dayName(c.fecha).toLowerCase()}`,
-                date: c.fecha,
-                start: c.inicio,
-                duration: c.minutos,
-                venue: c.lugar,
-                objective: '',
-                expectedPlayers: 0,
-                material: [],
-                blocks: [],
+                date: c.fecha, start: c.inicio, duration: c.minutos, venue: c.lugar,
+                objective: '', expectedPlayers: 0, material: [], blocks: [],
                 status: 'planificado' as const,
               })),
               userId,
@@ -218,85 +192,73 @@ export default function Onboarding() {
       }
 
       setEquipoCreado(true);
-      /* No se recarga todavía: falta elegir plan. Recargar aquí haría que la
-         aplicación diera el alta por terminada y se llevara por delante los
-         últimos pasos, igual que pasaba al crear el club. */
       ir('plan');
     });
 
-  /* En la bienvenida la barra está a cero; en la última pantalla, llena. */
   const numero = paso === 'listo'
     ? NUMERADOS.length
     : NUMERADOS.indexOf(paso as (typeof NUMERADOS)[number]) + 1;
+  const avance = paso === 'bienvenida' ? 0 : (numero / NUMERADOS.length) * 100;
+
+  /* Qué hace el botón de abajo en cada paso, en un solo sitio. Repartido por
+     el JSX era imposible saber si alguno se había quedado sin acción. */
+  const siguiente: Partial<Record<Paso, { texto: string; puede: boolean; hacer: () => void }>> = {
+    bienvenida: { texto: 'Empezar', puede: true, hacer: () => ir('codigo') },
+    nombre:     { texto: 'Continuar', puede: nombre.trim().length >= 2, hacer: () => void guardarNombre() },
+    cargo:      { texto: 'Continuar', puede: true, hacer: () => void guardarCargo() },
+    club:       { texto: 'Crear el club', puede: club.trim().length >= 2, hacer: () => void crearClub() },
+    deporte:    { texto: 'Continuar', puede: true, hacer: () => ir('equipo') },
+    equipo:     { texto: 'Continuar', puede: equipo.trim().length > 0, hacer: () => ir('horarios') },
+    horarios:   { texto: 'Crear el equipo', puede: true, hacer: () => void crearEquipo() },
+  };
+  const boton = siguiente[paso];
 
   return (
-    /* EN CLARO, Y SIN FONDO DE AMBIENTE. Aquí había un «cielo» azul con
-       partículas: es el ambiente de la página pública, y montar el club ya es
-       estar dentro del producto.
-       Y TAMPOCO LLEVA EL FONDO NEGRO DE LA PLATAFORMA, aunque sea la misma
-       paleta. En el móvil los pasos van sin caja —la pantalla ES la
-       interfaz—, así que su texto es oscuro y se escribe directamente sobre
-       la página: una banda negra arriba se tragaría el «Hola» y el título de
-       cada paso. Gris claro de arriba abajo, que es lo que esta pantalla
-       necesita. */
-    <div className="plataforma relative flex min-h-[100svh] flex-col bg-surface">
-      <header className="relative mx-auto flex w-full max-w-[460px] items-center justify-between px-5 pb-1 pt-[max(20px,var(--safe-top))]">
-        <Wordmark />
-        <button
-          onClick={() => void signOut()}
-          className="text-sm text-ink-500 underline underline-offset-2 transition-colors hover:text-ink-900"
-        >
-          Cerrar sesión
-        </button>
-      </header>
+    /* `.portada` trae la tipografía y el aire de la página pública; `.cielo`,
+       su azul. Son las clases de verdad, no una copia. */
+    <div className="portada cielo relative flex min-h-dvh flex-col overflow-hidden text-white">
+      <div aria-hidden className="nubes nubes-mueve pointer-events-none absolute inset-0 opacity-60" />
 
-      {/* Sin caja: la PANTALLA es la interfaz. Un rectángulo gigante alrededor
-          de todo es lo que hace que una aplicación parezca una página web. */}
-      {/* `justify-center`: en una pantalla de escritorio el paso quedaba
-          pegado arriba con medio lienzo negro debajo. Centrado, la pantalla
-          entera es el paso. */}
-      {/* ARRIBA EN EL MÓVIL, CENTRADO EN EL ESCRITORIO. Con todo centrado,
-          cada paso empezaba a una altura distinta —«¿Cómo te llamas?» a 500
-          px y la lista de cargos a 180— y el formulario parecía saltar de una
-          pantalla a otra. En el móvil, además, el teclado se come la mitad de
-          abajo: lo que está centrado en los 844 px acaba centrado en los 400
-          que quedan, o sea, tapado. */}
-      <main className="relative mx-auto flex w-full max-w-[460px] flex-1 flex-col px-5 pb-[max(40px,var(--safe-bottom))] pt-6 lg:max-w-[520px] lg:justify-center">
-        {/* EN EL ESCRITORIO, UNA FICHA; EN EL MÓVIL, LA PANTALLA.
-            Sin caja, en un monitor de 1.280 px esto era una columna de 460
-            flotando en medio de un fondo enorme: no parecía una pantalla de
-            montaje, parecía la versión de móvil estirada. Una superficie con
-            su borde la convierte en un objeto, que es lo que hace que un alta
-            se sienta acompañada. En el móvil la caja sobra —la pantalla YA es
-            la caja— y por eso sólo aparece a partir de `lg`. */}
-        <div className="lg:rounded-3xl lg:border lg:border-line lg:bg-panel lg:p-10 lg:shadow-pop">
-        <Progreso actual={numero} total={NUMERADOS.length} />
+      {/* ── LA BARRA DE PROGRESO, PEGADA ARRIBA DEL TODO ──────────────────
+          Debajo de la isla, no detrás: el relleno lo pone el área segura. */}
+      <div className="relative z-10 px-5 pt-[max(14px,var(--safe-top))]">
+        <div className="flex items-center justify-between gap-3">
+          <button
+            onClick={paso === 'bienvenida' ? () => void signOut() : atras}
+            aria-label={paso === 'bienvenida' ? 'Salir' : 'Atrás'}
+            className="-ml-1.5 grid h-9 w-9 shrink-0 place-items-center rounded-full text-white/70 transition-colors active:bg-white/15 active:text-white"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <Wordmark tone="light" size="sm" className="shrink-0 opacity-90" />
+          <span className="w-9 shrink-0 text-right text-[12px] font-medium tabular-nums text-white/60">
+            {paso === 'bienvenida' ? '' : `${numero}/${NUMERADOS.length}`}
+          </span>
+        </div>
 
-        <div className="mt-7">
+        <div className="mt-3 h-[3px] w-full overflow-hidden rounded-full bg-white/20">
+          <div
+            className="h-full rounded-full bg-white transition-[width] duration-500 ease-out"
+            style={{ width: `${avance}%` }}
+          />
+        </div>
+      </div>
+
+      {/* ── EL PASO ───────────────────────────────────────────────────────
+          `key` por paso: al avanzar, el contenido ENTRA en vez de cambiar de
+          golpe, que es lo que convierte seis pantallas sueltas en un camino. */}
+      <main className="relative z-10 flex min-h-0 flex-1 flex-col justify-center px-5 py-7">
+        <div key={paso} className="animate-paso mx-auto w-full max-w-[30rem]">
           {paso === 'bienvenida' && (
-            <Bloque clave="bienvenida">
-              <div className="pt-6 text-center">
-                <Marca size={44} className="mx-auto text-ink-900" />
-                <h1 className="cifra mt-6 text-3xl">
-                  Hola{nombre ? `, ${nombre.split(' ')[0]}` : ''}
-                </h1>
-                <p className="mx-auto mt-3 max-w-[300px] text-md leading-relaxed text-ink-500">
-                  Vamos a dejar tu club montado. Son unos minutos y puedes cambiarlo todo después.
-                </p>
-                <div className="mt-9">
-                  <Button size="lg" block onClick={() => ir('codigo')}>
-                    Empezar
-                  </Button>
-                </div>
-              </div>
-            </Bloque>
+            <Pregunta
+              rotulo="Bienvenido"
+              titulo="Vamos a montar tu club."
+              ayuda="Seis preguntas cortas. Se guarda sobre la marcha, así que puedes parar cuando quieras y seguir luego."
+            />
           )}
 
-          {/* `centrado`: esta pantalla la compone `ConfigurarCodigo` con todo
-              al eje —título, puntos y teclado—, así que el «Paso 1 de 7»
-              pegado a la izquierda se quedaba descolgado de lo demás. */}
           {paso === 'codigo' && (
-            <Bloque clave="codigo" numero={numero} total={NUMERADOS.length} centrado>
+            <Tarjeta>
               <ConfigurarCodigo
                 yaTiene={false}
                 tituloNuevo="Protege tu espacio"
@@ -305,337 +267,334 @@ export default function Onboarding() {
                 onCancelar={() => ir('nombre')}
                 onHecho={() => { setConCodigo(true); ir('nombre'); }}
               />
-            </Bloque>
+            </Tarjeta>
           )}
 
           {paso === 'nombre' && (
-            <Bloque clave="nombre" numero={numero} total={NUMERADOS.length} titulo="¿Cómo te llamas?">
-              <Field label="Nombre y apellidos" required>
-                <Input
-                  className="field-grande"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Ej.: Marta Vives"
-                  autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && void guardarNombre()}
-                />
-              </Field>
-              <p className="text-sm leading-relaxed text-ink-500">
-                Es el nombre que verá tu cuerpo técnico en la plataforma.
-              </p>
-            </Bloque>
+            <Pregunta rotulo={`Paso ${numero}`} titulo="¿Cómo te llamas?"
+              ayuda="Para que la plataforma no te llame por tu correo, y para que tu equipo sepa quién eres.">
+              <CampoClaro
+                etiqueta="Nombre y apellidos" autoFocus value={nombre} onChange={setNombre}
+                placeholder="Tu nombre y apellidos" autoComplete="name"
+                onEnter={() => boton?.puede && boton.hacer()}
+              />
+            </Pregunta>
           )}
 
           {paso === 'cargo' && (
-            <Bloque clave="cargo" numero={numero} total={NUMERADOS.length} titulo="¿Qué haces en el club?">
+            <Pregunta rotulo={`Paso ${numero}`} titulo="¿Qué haces en el club?"
+              ayuda="Decide lo que ves al entrar. Se puede cambiar cuando quieras.">
               <div className="space-y-2">
-                {CARGOS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setCargo(c)}
-                    aria-pressed={cargo === c}
-                    className={cn(
-                      'flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left transition-all',
-                      cargo === c
-                        ? 'border-line-fuerte bg-raised text-ink-900'
-                        : 'border-line-sutil bg-panel text-ink-700 hover:bg-raised',
-                    )}
-                  >
-                    <span className="text-base font-medium">{ROLE_LABEL[c]}</span>
-                    {cargo === c && <Check size={16} className="text-ink-900" />}
-                  </button>
+                {CARGOS.map((r) => (
+                  <Opcion key={r} activa={cargo === r} onClick={() => setCargo(r)} titulo={ROLE_LABEL[r]} />
                 ))}
               </div>
-              <p className="text-sm leading-relaxed text-ink-500">
-                Puedes cambiarlo más adelante en tu perfil.
-              </p>
-            </Bloque>
+            </Pregunta>
           )}
 
           {paso === 'club' && (
-            <Bloque clave="club" numero={numero} total={NUMERADOS.length} titulo="Tu club">
-              <Field label="Nombre del club" required hint="Como aparece oficialmente.">
-                <Input
-                  className="field-grande"
-                  value={club}
-                  onChange={(e) => setClub(e.target.value)}
-                  placeholder="Ej.: Club Deportivo Ejemplo"
-                  autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && void crearClub()}
-                />
-              </Field>
-              <Field
-                label="Nombre corto"
-                hint="El que cabe en un marcador. Si lo dejas vacío usamos el nombre completo."
-              >
-                <Input
-                  className="field-grande"
-                  value={clubCorto}
-                  onChange={(e) => setClubCorto(e.target.value)}
-                  placeholder="Ej.: CD Ejemplo"
-                  maxLength={28}
-                />
-              </Field>
-              {/* Cristal NO: esto no flota sobre nada, está en la columna con
-                  todo lo demás. El cristal es para lo que se pone encima. */}
-              <div className="rounded-2xl border border-line bg-panel px-4 py-3">
-                <p className="text-sm font-semibold text-ink-900">¿Te han invitado?</p>
-                <p className="mt-0.5 text-sm leading-relaxed text-ink-500">
-                  Usa el enlace que te envió tu club, no crees uno nuevo.
-                </p>
-              </div>
-            </Bloque>
+            <Pregunta rotulo={`Paso ${numero}`} titulo="¿Cómo se llama tu club?"
+              ayuda="El nombre con el que lo conoce todo el mundo.">
+              <CampoClaro
+                etiqueta="Nombre del club" autoFocus value={club} onChange={setClub}
+                placeholder="Club Deportivo Ejemplo" autoComplete="organization"
+                onEnter={() => boton?.puede && boton.hacer()}
+              />
+              <CampoClaro
+                etiqueta="Abreviatura del club" value={clubCorto} onChange={setClubCorto}
+                placeholder="Abreviatura (opcional)" className="mt-2.5"
+              />
+            </Pregunta>
           )}
 
-          {paso === 'equipo' && (
-            <Bloque clave="equipo" numero={numero} total={NUMERADOS.length} titulo="Tu primer equipo">
-              <Field label="Nombre del equipo" required>
-                <Input
-                  className="field-grande"
-                  value={equipo}
-                  onChange={(e) => setEquipo(e.target.value)}
-                  placeholder="Ej.: Cadete A"
-                  autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && equipo.trim() && ir('horarios')}
-                />
-              </Field>
-              <Field label="Categoría" hint="Opcional. Sirve para ordenar los equipos del club.">
-                <Input
-                  className="field-grande"
-                  value={categoria}
-                  onChange={(e) => setCategoria(e.target.value)}
-                  placeholder="Ej.: Cadete"
-                />
-              </Field>
-            </Bloque>
-          )}
-
-          {paso === 'horarios' && (
-            <Bloque clave="horarios" numero={numero} total={NUMERADOS.length} titulo="¿Cuándo entrenáis?">
-              <p className="text-base leading-relaxed text-ink-500">
-                Los horarios que pongas aquí aparecen solos en el calendario, semana tras semana.
-              </p>
-
-              {horarios.length > 0 && (
-                <div className="space-y-2">
-                  {horarios.map((h, i) => (
-                    <div key={i} className="flex flex-wrap items-center gap-2 rounded-2xl bg-raised p-2">
-                      <Select
-                        className="w-auto flex-1"
-                        value={h.weekday}
-                        onChange={(e) =>
-                          setHorarios((xs) =>
-                            xs.map((x, k) => (k === i ? { ...x, weekday: Number(e.target.value) } : x)),
-                          )
-                        }
-                      >
-                        {WEEKDAYS.map((d, k) => (
-                          <option key={d} value={k}>{d}</option>
-                        ))}
-                      </Select>
-                      <Input
-                        type="time"
-                        className="w-auto"
-                        value={h.start}
-                        onChange={(e) =>
-                          setHorarios((xs) => xs.map((x, k) => (k === i ? { ...x, start: e.target.value } : x)))
-                        }
-                      />
-                      <Input
-                        type="time"
-                        className="w-auto"
-                        value={h.end}
-                        onChange={(e) =>
-                          setHorarios((xs) => xs.map((x, k) => (k === i ? { ...x, end: e.target.value } : x)))
-                        }
-                      />
-                      <button
-                        onClick={() => setHorarios((xs) => xs.filter((_, k) => k !== i))}
-                        className="rounded-full p-1.5 text-ink-400 transition-colors hover:bg-raised hover:text-bad"
-                        aria-label={`Quitar el horario de ${WEEKDAYS[h.weekday]}`}
-                      >
-                        <X size={15} />
-                      </button>
-                    </div>
+          {paso === 'deporte' && (
+            <Pregunta rotulo={`Paso ${numero}`} titulo="¿A qué jugáis?"
+              ayuda="Cambia cómo se llaman las cosas y qué posiciones se pueden elegir.">
+              {losDeportes.length === 0 ? (
+                <p className="text-[15px] text-white/70">Cargando deportes…</p>
+              ) : (
+                <div className="-mx-1 grid max-h-[46vh] grid-cols-2 gap-2 overflow-y-auto px-1 py-1">
+                  {losDeportes.map((d) => (
+                    <Opcion
+                      key={d.code} activa={deporte === d.code} onClick={() => setDeporte(d.code)}
+                      titulo={d.name}
+                      pie={d.posiciones.length > 0 ? `${d.posiciones.length} posiciones` : 'Sin posiciones'}
+                    />
                   ))}
                 </div>
               )}
+            </Pregunta>
+          )}
 
-              <Button
-                variant="quiet"
-                block
-                icon={<Plus size={15} />}
-                onClick={() =>
-                  setHorarios((h) => [...h, { weekday: 2, start: '18:00', end: '19:30', venue: '' }])
-                }
+          {paso === 'equipo' && (
+            <Pregunta rotulo={`Paso ${numero}`} titulo="¿Y tu primer equipo?"
+              ayuda={elegido ? `Donde van ${elegido.jugadores}, ${elegido.partidos} y asistencia.` : undefined}>
+              <CampoClaro
+                etiqueta="Nombre del equipo" autoFocus value={equipo} onChange={setEquipo}
+                placeholder="Cadete A" onEnter={() => boton?.puede && boton.hacer()}
+              />
+              <CampoClaro
+                etiqueta="Categoría" value={categoria} onChange={setCategoria}
+                placeholder="Categoría (opcional)" className="mt-2.5"
+              />
+            </Pregunta>
+          )}
+
+          {paso === 'horarios' && (
+            <Pregunta rotulo={`Paso ${numero}`} titulo="¿Cuándo entrenáis?"
+              ayuda="Lo que pongas aquí se reparte solo en el calendario, tres meses por delante.">
+              <div className="max-h-[42vh] space-y-2 overflow-y-auto py-1">
+                {horarios.map((h, i) => (
+                  <div key={i} className="flex flex-wrap items-center gap-2 rounded-2xl bg-white/12 p-2">
+                    <Select
+                      className="w-auto flex-1"
+                      value={h.weekday}
+                      onChange={(e) => setHorarios((xs) => xs.map((x, k) => (k === i ? { ...x, weekday: Number(e.target.value) } : x)))}
+                    >
+                      {WEEKDAYS.map((d, k) => <option key={k} value={k}>{d}</option>)}
+                    </Select>
+                    {/* LAS DOS HORAS, no sólo la de empezar: la de acabar es
+                        la que da la duración, y sin ella todos los
+                        entrenamientos del calendario durarían lo mismo. */}
+                    <Input
+                      type="time" aria-label="Empieza" className="w-[106px]" value={h.start}
+                      onChange={(e) => setHorarios((xs) => xs.map((x, k) => (k === i ? { ...x, start: e.target.value } : x)))}
+                    />
+                    <Input
+                      type="time" aria-label="Acaba" className="w-[106px]" value={h.end}
+                      onChange={(e) => setHorarios((xs) => xs.map((x, k) => (k === i ? { ...x, end: e.target.value } : x)))}
+                    />
+                    <button
+                      onClick={() => setHorarios((xs) => xs.filter((_, k) => k !== i))}
+                      aria-label="Quitar este horario"
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white/70 active:bg-white/15"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => setHorarios((xs) => [...xs, { weekday: 2, start: '18:00', end: '19:30', venue: '' }])}
+                className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3.5 py-2 text-[14px] font-medium text-white transition-colors active:bg-white/20"
               >
-                Añadir un horario
-              </Button>
-            </Bloque>
+                <Plus size={15} /> Añadir un día
+              </button>
+            </Pregunta>
           )}
 
           {paso === 'plan' && (
-            <Bloque clave="plan">
+            <Tarjeta>
               <PasoPlan
                 numero={numero}
                 total={NUMERADOS.length}
                 clubId={clubId}
-                onError={setError}
                 onTerminar={async () => ir('listo')}
+                onError={setError}
               />
-            </Bloque>
+            </Tarjeta>
           )}
 
           {paso === 'listo' && (
-            <Bloque clave="listo">
-              <div className="pt-4 text-center">
-                <Marca size={40} className="mx-auto animate-pop-in text-ink-900" />
-                <h1 className="cifra mt-6 text-3xl">Todo listo</h1>
-                <p className="mx-auto mt-3 max-w-[320px] text-md leading-relaxed text-ink-500">
-                  Tu espacio está montado. Esto es lo que hay dentro ahora mismo.
-                </p>
+            <div className="text-center">
+              <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white/20">
+                <Check size={26} strokeWidth={2.4} />
+              </span>
+              <h1 className="t-l mt-6 text-white">Todo listo.</h1>
+              <p className="entradilla mx-auto mt-3 text-white/70">
+                Tu espacio está montado. Esto es lo que hay dentro ahora mismo.
+              </p>
 
-                {/* Lo que hay DE VERDAD. Ni una línea de más: si el equipo se
-                    saltó, aquí no aparece ningún equipo. */}
-                <div className="mt-7 divide-y divide-line text-left">
-                  <Hecho titulo={club.trim() || 'Tu club'} pie="Club creado" />
-                  {equipoCreado && <Hecho titulo={equipo.trim()} pie={categoria.trim() || 'Equipo creado'} />}
-                  {horarios.length > 0 && (
-                    <Hecho
-                      titulo={`${horarios.length} ${horarios.length === 1 ? 'horario' : 'horarios'}`}
-                      pie={horarios.length === 1 ? 'Ya está en el calendario' : 'Ya están en el calendario'}
-                    />
-                  )}
-                  {conCodigo && <Hecho titulo="Código de acceso" pie="Puesto" />}
-                </div>
-
-                <div className="mt-9">
-                  <Button size="lg" block loading={ocupado} onClick={() => void avanzar(() => actions.refresh())}>
-                    Entrar en Playoff360
-                  </Button>
-                </div>
+              {/* Lo que hay DE VERDAD. Si el equipo se saltó, aquí no sale. */}
+              <div className="mt-7 space-y-px overflow-hidden rounded-2xl text-left">
+                <Hecho titulo={club.trim() || 'Tu club'} pie="Club creado" />
+                {elegido && elegido.code !== FUTBOL && <Hecho titulo={elegido.name} pie="Deporte del club" />}
+                {equipoCreado && <Hecho titulo={equipo.trim()} pie={categoria.trim() || 'Equipo creado'} />}
+                {horarios.length > 0 && (
+                  <Hecho
+                    titulo={`${horarios.length} ${horarios.length === 1 ? 'horario' : 'horarios'}`}
+                    pie={horarios.length === 1 ? 'Ya está en el calendario' : 'Ya están en el calendario'}
+                  />
+                )}
+                {conCodigo && <Hecho titulo="Código de acceso" pie="Puesto" />}
               </div>
-            </Bloque>
+            </div>
           )}
+        </div>
+      </main>
 
+      {/* ── EL BOTÓN, SIEMPRE EN EL MISMO SITIO ───────────────────────────
+          Fuera del paso y pegado abajo. Antes vivía dentro de cada paso y
+          subía o bajaba según cuántas líneas tuviera: al avanzar había que
+          volver a buscarlo con la vista. */}
+      <footer className="relative z-10 px-5 pb-[max(20px,var(--safe-bottom))] pt-2">
+        <div className="mx-auto w-full max-w-[30rem]">
           {error && (
-            <p className="mt-4 rounded-2xl bg-bad/12 px-4 py-2.5 text-base leading-relaxed text-bad">
+            <p role="alert" className="mb-3 rounded-2xl bg-white/15 px-4 py-2.5 text-[14px] leading-snug text-white">
               {error}
             </p>
           )}
 
-          {/* La bienvenida, el código, el plan y el final llevan sus propios
-              botones: poner además esta barra dejaría dos maneras de seguir. */}
-          {!['bienvenida', 'codigo', 'plan', 'listo'].includes(paso) && (
-            <div className="mt-7 flex flex-wrap items-center gap-2">
-              <Button variant="ghost" icon={<ArrowLeft size={15} />} onClick={atras}>
-                Atrás
-              </Button>
-              <div className="flex-1" />
-              {paso === 'equipo' && (
-                <Button variant="ghost" onClick={() => ir('plan')} disabled={ocupado}>
-                  Lo creo más tarde
-                </Button>
+          {paso === 'listo' ? (
+            <BotonGrande
+              cargando={ocupado}
+              onClick={() => void avanzar(() => actions.refresh())}
+            >
+              Entrar en Playoff360
+            </BotonGrande>
+          ) : boton ? (
+            <>
+              <BotonGrande cargando={ocupado} puede={boton.puede} onClick={boton.hacer}>
+                {boton.texto}
+                <ArrowRight size={17} />
+              </BotonGrande>
+              {/* Lo que se puede saltar, se dice. */}
+              {(paso === 'equipo' || paso === 'horarios') && (
+                <button
+                  onClick={() => (paso === 'equipo' ? ir('plan') : void crearEquipo())}
+                  className="mt-3 block w-full py-2 text-center text-[14px] font-medium text-white/65 transition-colors active:text-white"
+                >
+                  {paso === 'equipo' ? 'Lo hago luego' : 'Sin horario fijo'}
+                </button>
               )}
-              <Button
-                size="lg"
-                loading={ocupado}
-                disabled={paso === 'equipo' && equipo.trim().length === 0}
-                icon={paso === 'horarios' ? <Check size={16} /> : <ArrowRight size={16} />}
-                onClick={() => {
-                  if (paso === 'nombre') return void guardarNombre();
-                  if (paso === 'cargo') return void guardarCargo();
-                  if (paso === 'club') return void crearClub();
-                  if (paso === 'equipo') return ir('horarios');
-                  return void crearEquipo();
-                }}
-              >
-                {paso === 'club'
-                  ? 'Crear el club'
-                  : paso === 'horarios'
-                    ? 'Crear el equipo'
-                    : 'Continuar'}
-              </Button>
-            </div>
-          )}
+            </>
+          ) : null}
         </div>
-
-        {/* En la bienvenida esta frase ya está en el subtítulo: repetirla dos
-            veces en la misma pantalla no tranquiliza más, sólo canta. */}
-        {paso !== 'listo' && paso !== 'bienvenida' && (
-          <p className={cn('mt-6 text-sm text-ink-500', paso === 'codigo' && 'text-center')}>
-            Puedes cambiarlo todo después.
-          </p>
-        )}
-        </div>
-      </main>
+      </footer>
     </div>
   );
 }
 
-/** Una línea de lo que se ha creado. Sin iconos: lo que importa es el nombre. */
-function Hecho({ titulo, pie }: { titulo: string; pie: string }) {
+/* ═══════════════════════════ Las piezas ══════════════════════════════════ */
+
+/** Una pregunta: rótulo, titular, entradilla y lo que haya que contestar. */
+function Pregunta({
+  rotulo, titulo, ayuda, children,
+}: { rotulo: string; titulo: string; ayuda?: string; children?: React.ReactNode }) {
   return (
-    <div className="py-3.5">
-      <p className="text-base font-semibold text-ink-900">{titulo}</p>
-      <p className="mt-0.5 text-sm text-ink-500">{pie}</p>
+    <div>
+      <p className="rotulo text-white/55">{rotulo}</p>
+      <h1 className="t-l mt-3 text-white">{titulo}</h1>
+      {ayuda && <p className="entradilla mt-3 text-white/70">{ayuda}</p>}
+      {children && <div className="mt-7">{children}</div>}
     </div>
   );
 }
 
 /**
- * Una pregunta por pantalla. El rótulo dice dónde estás, el titular pregunta
- * UNA cosa y debajo va sólo lo que hay que rellenar. Ni párrafos ni promesas:
- * lo que hace falta explicar se explica donde hace falta, no de entrada.
+ * Un campo sobre el cielo.
+ *
+ * NO ES EL `Input` DE LA PLATAFORMA, a propósito: aquél es tinta sobre blanco
+ * y aquí el fondo es azul. Mismo tamaño de toque y mismo radio, otro color.
  */
-function Bloque({
-  clave, numero, total, titulo, centrado, children,
+function CampoClaro({
+  etiqueta, value, onChange, placeholder, autoFocus, autoComplete, className, onEnter,
 }: {
-  clave: string;
-  numero?: number;
-  total?: number;
-  titulo?: string;
-  /** Cuando el paso compone su contenido al eje. */
-  centrado?: boolean;
-  children: React.ReactNode;
+  /* OBLIGATORIA. Un campo cuyo único nombre es el texto de dentro deja de
+     tener nombre en cuanto se escribe algo: quien use un lector de pantalla
+     oye «cuadro de edición» y nada más. */
+  etiqueta: string;
+  value: string; onChange: (v: string) => void; placeholder?: string;
+  autoFocus?: boolean; autoComplete?: string; className?: string; onEnter?: () => void;
 }) {
   return (
-    /* `key` por paso: al cambiar, React monta un nodo nuevo y la animación de
-       entrada se dispara sola. Sin esto el contenido cambiaría de golpe. */
-    <div key={clave} className="animate-paso">
-      {numero && total && (
-        <p className={cn('rotulo', centrado && 'text-center')}>Paso {numero} de {total}</p>
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onEnter?.(); } }}
+      aria-label={etiqueta}
+      placeholder={placeholder}
+      autoFocus={autoFocus}
+      autoComplete={autoComplete ?? 'off'}
+      /* EL ESQUEMA DE COLOR, EN CLARO Y A MANO. La portada declara
+         `color-scheme: dark` para sus controles nativos, y esta pantalla
+         lleva su misma clase: el navegador pintaba el campo con su fondo
+         oscuro por debajo del blanco al 12 %, y salía una caja gris en mitad
+         del cielo. Con el esquema en claro, el fondo lo decide la clase. */
+      /* EL FONDO, EN LÍNEA Y NO POR CLASE. Un campo sin `autocomplete`
+         declarado lo rellena el navegador por su cuenta, y al hacerlo pinta
+         un fondo sólido que gana a cualquier clase: salía una caja blanca
+         opaca en mitad del cielo. Con `autocomplete` explícito en todos y el
+         color en línea, el fondo lo decide esta pantalla y nadie más. */
+      style={{ backgroundColor: 'rgba(255,255,255,0.14)', colorScheme: 'light' }}
+      className={cn(
+        'h-[52px] w-full rounded-2xl border border-white/25 px-4 text-[17px] text-white',
+        'placeholder:text-white/45 outline-none transition-colors',
+        'focus:border-white/60',
+        className,
       )}
-      {titulo && <h1 className="cifra mt-1.5 text-3xl">{titulo}</h1>}
-      <div className={cn(titulo ? 'mt-6 space-y-4' : 'space-y-4')}>{children}</div>
+    />
+  );
+}
+
+/** Una opción que se toca. Cuarenta y ocho píxeles de alto, mínimo. */
+function Opcion({
+  activa, onClick, titulo, pie,
+}: { activa: boolean; onClick: () => void; titulo: string; pie?: string }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={activa}
+      className={cn(
+        'flex min-h-[52px] w-full items-center justify-between gap-2 rounded-2xl border px-4 py-2.5 text-left transition-all duration-150 active:scale-[0.985]',
+        activa
+          ? 'border-white bg-white text-marca-700'
+          : 'border-white/22 bg-white/10 text-white active:bg-white/[0.16]',
+      )}
+    >
+      <span className="min-w-0">
+        <span className="block truncate text-[15.5px] font-semibold">{titulo}</span>
+        {pie && (
+          <span className={cn('block truncate text-[12.5px]', activa ? 'text-marca-700/65' : 'text-white/55')}>
+            {pie}
+          </span>
+        )}
+      </span>
+      {activa && <Check size={17} strokeWidth={2.6} className="shrink-0" />}
+    </button>
+  );
+}
+
+/** Para los dos pasos que traen una pantalla entera de la plataforma dentro. */
+function Tarjeta({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="max-h-[66vh] overflow-y-auto rounded-[26px] bg-white p-5 text-tinta shadow-[0_30px_70px_-30px_rgba(6,12,27,0.55)] sm:p-6">
+      {children}
     </div>
   );
 }
 
-/**
- * Cuánto queda, en una barra.
- * Antes eran cuatro círculos con iconos y sus etiquetas. Ocupaban un tercio
- * de la pantalla para decir algo que cabe en tres píxeles de alto, y los
- * iconos ahí arriba no ayudaban a nadie a rellenar el formulario de abajo.
- */
-function Progreso({ actual, total }: { actual: number; total: number }) {
-  /* En la bienvenida y en el final no hay paso: la barra se queda a cero y
-     llena, que es justo lo que ha pasado. */
-  const parte = actual <= 0 ? 0 : actual / total;
+function Hecho({ titulo, pie }: { titulo: string; pie: string }) {
   return (
-    <div
-      role="progressbar"
-      aria-valuemin={0}
-      aria-valuemax={total}
-      aria-valuenow={Math.max(0, actual)}
-      aria-label={actual > 0 ? `Paso ${actual} de ${total}` : 'Sin empezar'}
-      className="h-[3px] w-full overflow-hidden rounded-full bg-white/10"
-    >
-      <div
-        className="h-full rounded-full bg-ink-900 transition-[width] duration-[450ms] ease-suave"
-        style={{ width: `${parte * 100}%` }}
-      />
+    <div className="flex items-center gap-3 bg-white/12 px-4 py-3">
+      <Check size={16} className="shrink-0 text-white/70" />
+      <span className="min-w-0">
+        <span className="block truncate text-[15px] font-semibold text-white">{titulo}</span>
+        <span className="block truncate text-[12.5px] text-white/60">{pie}</span>
+      </span>
     </div>
+  );
+}
+
+/** El botón de la portada, a lo ancho. */
+function BotonGrande({
+  children, onClick, cargando, puede = true,
+}: { children: React.ReactNode; onClick: () => void; cargando?: boolean; puede?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={!puede || cargando}
+      className={cn(
+        /* INACTIVO SE VE, no se desvanece. Al 45 % sobre el azul parecía un
+           fallo de pintado; así se lee que el botón está ahí y que espera a
+           que se conteste la pregunta. */
+        'btn h-[54px] w-full text-[16px]',
+        puede && !cargando
+          ? 'btn-claro'
+          : 'pointer-events-none border border-white/25 bg-white/15 text-white/60',
+      )}
+    >
+      {cargando ? 'Un momento…' : children}
+    </button>
   );
 }
