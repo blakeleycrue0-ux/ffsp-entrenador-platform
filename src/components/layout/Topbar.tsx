@@ -146,7 +146,7 @@ export function Topbar({
            sobre azul noche —una mancha más clara sobre oscuro—; ahora es una
            superficie clara de verdad sobre el negro, que es lo que la hace
            legible y lo que la convierte en un objeto y no en un hueco. */
-        className="flex h-[38px] min-w-0 flex-1 items-center gap-2 rounded-full bg-white/80 px-3.5 text-left text-base text-ink-600 backdrop-blur-sm transition-colors active:bg-white sm:max-w-[420px] lg:ml-0 lg:mr-auto lg:h-8 lg:max-w-[300px] lg:flex-none lg:gap-2 lg:rounded-md lg:border lg:border-line lg:bg-panel lg:px-2.5 lg:text-sm lg:text-ink-500 lg:backdrop-blur-none lg:hover:border-line-fuerte"
+        className="flex h-[38px] min-w-0 flex-1 items-center gap-2 rounded-full bg-raised/80 px-3.5 text-left text-base text-ink-600 backdrop-blur-sm transition-colors active:bg-white sm:max-w-[420px] lg:ml-0 lg:mr-auto lg:h-8 lg:max-w-[300px] lg:flex-none lg:gap-2 lg:rounded-md lg:border lg:border-line lg:bg-panel lg:px-2.5 lg:text-sm lg:text-ink-500 lg:backdrop-blur-none lg:hover:border-line-fuerte"
       >
         <Search size={17} className="shrink-0 lg:hidden" />
         <Search size={15} className="hidden shrink-0 lg:block" />
@@ -175,12 +175,12 @@ export function Topbar({
           className="w-[340px] max-w-[calc(100vw-2rem)] p-0"
           trigger={
             <button
-              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/80 text-ink-800 backdrop-blur-sm transition-colors active:bg-white lg:h-8 lg:w-8 lg:rounded-md lg:bg-transparent lg:text-ink-500 lg:backdrop-blur-none lg:hover:bg-raised lg:hover:text-ink-900"
+              className="relative grid h-10 w-10 place-items-center rounded-full bg-raised/80 text-ink-800 backdrop-blur-sm transition-colors active:bg-white lg:h-8 lg:w-8 lg:rounded-md lg:bg-transparent lg:text-ink-500 lg:backdrop-blur-none lg:hover:bg-raised lg:hover:text-ink-900"
               aria-label={unread > 0 ? `Notificaciones, ${unread} sin leer` : 'Notificaciones'}
             >
               <Bell size={18} />
               {unread > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-[16px] place-items-center rounded-full bg-ink-900 px-1 text-[9px] font-bold tabular-nums text-white ring-2 ring-white lg:ring-surface">
+                <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-[16px] place-items-center rounded-full bg-ink-900 px-1 text-[9px] font-bold tabular-nums text-ink-0 ring-2 ring-white lg:ring-surface">
                   {unread}
                 </span>
               )}

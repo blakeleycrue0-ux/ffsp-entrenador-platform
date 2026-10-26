@@ -36,7 +36,7 @@ type ButtonSize = 'sm' | 'md' | 'lg';
  */
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'metal-claro text-white ' +
+    'metal-claro text-ink-0 ' +
     'disabled:[background-image:none] disabled:bg-[rgba(13,13,15,0.10)] disabled:text-ink-500 disabled:shadow-none',
   secondary: 'metal text-ink-800',
   ghost: 'bg-transparent text-ink-600 hover:bg-panel hover:text-ink-900',
@@ -210,13 +210,20 @@ export function Dot({ tone = 'neutral', className }: { tone?: Tone; className?: 
    sobre una tarjeta gris clara es la mancha de color que este rediseño viene
    a quitar—. Seis escalones que se distinguen entre sí sin competir con el
    estado de disponibilidad, que sí usa color porque significa algo. */
+/* DE LA ESCALA, NO ESCRITOS A MANO. Eran seis parejas de hexadecimales
+   claros, elegidos cuando la plataforma era clara y punto. Con el tema del
+   teléfono mandando se quedaban igual de claros en oscuro: seis círculos
+   blanquecinos flotando en una pantalla negra.
+   Ahora salen de la escala y se dan la vuelta solos. El disco usa los
+   escalones bajos —cerca del fondo— y las iniciales los altos, así que el
+   contraste se mantiene en los dos temas sin tener que elegirlo dos veces. */
 const COLORES_DE_AVATAR = [
-  'bg-[#D7D7DC] text-[#2A2A30]',
-  'bg-[#C8C8CE] text-[#1F1F24]',
-  'bg-[#E0E0E4] text-[#35353B]',
-  'bg-[#BFBFC6] text-[#1A1A1F]',
-  'bg-[#D0D0D6] text-[#26262C]',
-  'bg-[#E6E6EA] text-[#3B3B41]',
+  'bg-ink-200 text-ink-800',
+  'bg-ink-300 text-ink-900',
+  'bg-ink-100 text-ink-700',
+  'bg-ink-300/70 text-ink-900',
+  'bg-ink-200/80 text-ink-800',
+  'bg-ink-100/90 text-ink-700',
 ];
 
 const colorDe = (name: string) => {
@@ -373,7 +380,7 @@ export function Select({
  * extiende hasta el final de la palabra.
  */
 export function Checkbox({
-  checked, onChange, label, disabled, className, sobreFoto = false,
+  checked, onChange, label, disabled, className,
 }: {
   checked: boolean;
   onChange: (v: boolean) => void;
@@ -381,7 +388,6 @@ export function Checkbox({
   disabled?: boolean;
   className?: string;
   /** Sobre la imagen de fondo de Inicio: el cuadrado va en blanco. */
-  sobreFoto?: boolean;
 }) {
   return (
     <button
@@ -402,12 +408,8 @@ export function Checkbox({
         className={cn(
           'grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[5px] border transition-colors',
           checked
-            ? sobreFoto
-              ? 'border-white bg-white text-ink-900'
-              : 'border-ink-900 bg-ink-900 text-white'
-            : sobreFoto
-              ? 'border-white/45 bg-white/10'
-              : 'border-line-fuerte bg-sunken group-hover:border-ink-500',
+            ? 'border-ink-900 bg-ink-900 text-ink-0'
+            : 'border-line-fuerte bg-sunken group-hover:border-ink-500',
         )}
       >
         {checked && <Check size={12} strokeWidth={3} />}
@@ -416,7 +418,7 @@ export function Checkbox({
           reparta el sitio como cualquier fila; en una etiqueta corta, el
           botón mide lo que mide su texto y no cambia nada. */}
       {label && (
-        <span className={cn('min-w-0 flex-1 text-base', sobreFoto ? 'text-white/90' : 'text-ink-800')}>
+        <span className={cn('min-w-0 flex-1 text-base', 'text-ink-800')}>
           {label}
         </span>
       )}
@@ -472,7 +474,7 @@ export function ScoreInput({
             className={cn(
               'h-7 w-7 rounded border text-sm font-medium tabular-nums transition-colors',
               active
-                ? 'border-ink-900 bg-ink-900 text-white'
+                ? 'border-ink-900 bg-ink-900 text-ink-0'
                 : 'border-line bg-panel text-ink-600 hover:border-ink-400',
             )}
           >
@@ -561,7 +563,7 @@ export function Segmented<T extends string>({
           className={cn(
             'rounded-[4px] font-medium transition-colors',
             size === 'sm' ? 'px-2 py-1 text-xs' : 'px-2.5 py-1 text-sm',
-            value === o.id ? 'bg-ink-900 text-white' : 'text-ink-600 hover:text-ink-900',
+            value === o.id ? 'bg-ink-900 text-ink-0' : 'text-ink-600 hover:text-ink-900',
           )}
         >
           {o.label}
