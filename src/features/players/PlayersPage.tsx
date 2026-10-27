@@ -7,18 +7,20 @@ import {
   Avatar, Button, EmptyState, Input, LinkButton, PageHeader, Panel, Segmented, Select, Tag,
 } from '@/components/ui';
 import { ImportPlayers } from './ImportPlayers';
-import { AVAILABILITY, AvailabilityDot, disponibilidad, LINEA, lineaDe } from '@/components/domain/StatusBits';
+import { AVAILABILITY, AvailabilityDot, disponibilidad, colorDeLinea } from '@/components/domain/StatusBits';
+import { useDeporte } from '@/services/useDeporte';
+import { lineaDePosicion, type Deporte } from '@/services/deportes';
 import { cn, age, normalize } from '@/lib/utils';
-import type { AvailabilityStatus, PlayerPosition } from '@/types';
+import type { AvailabilityStatus } from '@/types';
 import { useAnchura } from '@/components/layout/AppShell';
 
-const POSITION_GROUPS: { id: string; label: string; positions: PlayerPosition[] }[] = [
-  { id: 'todas', label: 'Todas', positions: [] },
-  { id: 'por', label: 'Porteras', positions: ['Portero'] },
-  { id: 'def', label: 'Defensas', positions: ['Central', 'Lateral derecho', 'Lateral izquierdo'] },
-  { id: 'med', label: 'Medios', positions: ['Pivote', 'Interior', 'Mediapunta'] },
-  { id: 'del', label: 'Delanteras', positions: ['Extremo derecho', 'Extremo izquierdo', 'Delantero'] },
-];
+/* LOS FILTROS SALEN DEL DEPORTE. Aquí había una tercera copia de las
+   posiciones de fútbol, repartidas en cuatro grupos a mano y con las
+   etiquetas en femenino —«Porteras», «Delanteras»— mientras las posiciones
+   que comparaba estaban en masculino: el filtro de porteras no devolvía
+   ninguna. Ahora las líneas son las de `sports`, así que un club de
+   baloncesto filtra por exterior, alero e interior, y uno de natación no ve
+   el desplegable porque allí no hay puestos. */
 
 export default function PlayersPage() {
   /* El ancho lo decide la tarea, no la pantalla. */
@@ -27,6 +29,7 @@ export default function PlayersPage() {
   const teams = visibleTeams(data);
 
   const [query, setQuery] = useState('');
+  const deporte = useDeporte();
   const [group, setGroup] = useState('todas');
   const [status, setStatus] = useState<'todas' | AvailabilityStatus>('todas');
   const [view, setView] = useState<'lista' | 'fichas'>('lista');
@@ -35,14 +38,16 @@ export default function PlayersPage() {
   const attendance = useMemo(() => playerAttendance(data, teamId), [data, teamId]);
 
   const players = useMemo(() => {
-    const positions = POSITION_GROUPS.find((g) => g.id === group)?.positions ?? [];
+    const positions = deporte.lineas.find((l) => l.id === group)?.posiciones ?? [];
     return data.players
       .filter((p) => p.teamId === teamId)
-      .filter((p) => (positions.length ? positions.includes(p.position as PlayerPosition) : true))
+      /* Por la línea de la posición y no por la lista a secas: así un puesto
+         con la grafía vieja sigue entrando en su filtro. */
+      .filter((p) => (positions.length ? lineaDePosicion(deporte, p.position)?.linea.id === group : true))
       .filter((p) => (status === 'todas' ? true : p.availability.status === status))
       .filter((p) => (query.trim() ? normalize(p.name).includes(normalize(query)) : true))
       .sort((a, b) => a.number - b.number);
-  }, [data.players, teamId, group, status, query]);
+  }, [data.players, teamId, group, status, query, deporte]);
 
   const rate = (id: string) => attendance.find((r) => r.player.id === id)?.rate ?? 0;
   const team = teams.find((t) => t.id === teamId);
@@ -112,13 +117,14 @@ export default function PlayersPage() {
                 ))}
               </Select>
             )}
-            <Select variante="filtro" value={group} onChange={(e) => setGroup(e.target.value)}>
-              {POSITION_GROUPS.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.id === 'todas' ? 'Cualquier puesto' : g.label}
-                </option>
-              ))}
-            </Select>
+            {deporte.lineas.length > 0 && (
+              <Select variante="filtro" value={group} onChange={(e) => setGroup(e.target.value)}>
+                <option value="todas">Cualquier puesto</option>
+                {deporte.lineas.map((l) => (
+                  <option key={l.id} value={l.id}>{l.label}</option>
+                ))}
+              </Select>
+            )}
             <Select variante="filtro" value={status} onChange={(e) => setStatus(e.target.value as typeof status)}>
               <option value="todas">Cualquier estado</option>
               {(Object.keys(AVAILABILITY) as AvailabilityStatus[]).map((s) => (
@@ -193,7 +199,7 @@ export default function PlayersPage() {
                   </p>
                 </div>
                 <div className="hidden w-40 sm:block">
-                  <PosicionEtiqueta position={p.position} />
+                  <PosicionEtiqueta position={p.position} deporte={deporte} />
                   {p.secondaryPosition && <p className="mt-0.5 truncate text-xs text-ink-500">{p.secondaryPosition}</p>}
                 </div>
                 <div className="hidden w-24 text-right sm:block">
@@ -267,18 +273,22 @@ export default function PlayersPage() {
  * El color nunca va solo: siempre acompaña a la palabra, porque una etiqueta
  * que sólo es un color no la puede usar quien no distingue esos tonos.
  */
-function PosicionEtiqueta({ position }: { position: string }) {
-  const linea = lineaDe(position);
+function PosicionEtiqueta({ position, deporte }: { position: string; deporte: Deporte }) {
+  const encontrada = lineaDePosicion(deporte, position);
   if (!position) return <p className="truncate text-sm text-ink-500">Sin posición</p>;
-  if (!linea) return <p className="truncate text-sm text-ink-700">{position}</p>;
+  /* Una posición que el deporte no reconoce se enseña igual, en texto y sin
+     color: puede venir de una importación o de un club que cambió de
+     deporte. Esconderla sería perderla de vista teniéndola guardada. */
+  if (!encontrada) return <p className="truncate text-sm text-ink-700">{position}</p>;
+  const color = colorDeLinea(encontrada.indice);
   return (
     <span
       className={cn(
         'inline-flex max-w-full items-center gap-1.5 truncate rounded-full border px-2 py-0.5 text-xs font-medium',
-        LINEA[linea].chip,
+        color.chip,
       )}
     >
-      <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', LINEA[linea].dot)} aria-hidden />
+      <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', color.dot)} aria-hidden />
       <span className="truncate">{position}</span>
     </span>
   );

@@ -68,6 +68,27 @@ export const PLANES = [
   { tier:'club', name:'Club', max_teams:12, currency:'eur', trial_days:7, price_monthly:5900, price_yearly:59000, stripe_price_monthly:null, stripe_price_yearly:null },
 ];
 
+/* EL CATÁLOGO DE DEPORTES, con sólo lo que la interfaz lee. Es el fútbol de
+   la tabla de verdad —comprobado contra ella—, porque las pantallas del
+   simulacro son de un club de fútbol: si aquí hubiera otras posiciones, las
+   etiquetas de color y los filtros de la plantilla saldrían vacíos y las
+   pruebas de maquetación medirían una pantalla que nadie ve.
+
+   `pruebas/deportes.mjs` es quien comprueba el catálogo ENTERO contra la
+   base; esto es sólo lo que hace falta para pintar. */
+export const DEPORTES = [
+  { code:'futbol', name:'Fútbol', player_noun:'jugador', player_noun_pl:'jugadores',
+    match_noun:'partido', match_noun_pl:'partidos',
+    positions:['Portero','Central','Lateral derecho','Lateral izquierdo','Pivote','Interior','Mediapunta','Extremo derecho','Extremo izquierdo','Delantero'],
+    lines:[
+      { id:'porteria', label:'Portería', positions:['Portero'] },
+      { id:'defensa', label:'Defensa', positions:['Central','Lateral derecho','Lateral izquierdo'] },
+      { id:'medio', label:'Medio', positions:['Pivote','Interior','Mediapunta'] },
+      { id:'ataque', label:'Ataque', positions:['Extremo derecho','Extremo izquierdo','Delantero'] },
+    ],
+    squad_size:18, on_field:11, match_minutes:90, orden:10 },
+];
+
 export async function mock(page, o = {}) {
   const {
     equipos = TEAMS, sub = null, planes = PLANES, club = CLUB_ROW, players = PLAYERS,
@@ -85,6 +106,9 @@ export async function mock(page, o = {}) {
        aviso de cookies no salga en las demás pruebas y no tape nada; quien lo
        quiera probar pasa `null` y lo encuentra sin responder. */
     medicion = 'no',
+    /* El catálogo de deportes. Se puede sustituir para comprobar que la
+       plantilla de un club que no es de fútbol enseña SUS puestos. */
+    deportesDelClub = DEPORTES,
   } = o;
   await page.route(`${SUPA}/**`, async route => {
     const u = new URL(route.request().url()); const p = u.pathname;
@@ -100,6 +124,7 @@ export async function mock(page, o = {}) {
     if (p === '/rest/v1/matches') return route.fulfill(j(matches));
     if (p === '/rest/v1/attendance') return route.fulfill(j(attendance));
     if (p === '/rest/v1/drills') return route.fulfill(j(DRILLS));
+    if (p === '/rest/v1/sports') return route.fulfill(j(deportesDelClub));
     if (p === '/rest/v1/team_staff') return route.fulfill(j([{ team_id:'t1', profile_id:USER, role:'coordinadora' }]));
     return route.fulfill(j([]));
   });

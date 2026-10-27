@@ -72,40 +72,39 @@ export const AvailabilityDot = ({ status, className }: { status: AvailabilitySta
 /* ─────────────────────────────── Posiciones ──────────────────────────────── */
 
 /**
- * La línea del campo a la que pertenece cada posición, con su color.
+ * El color de una línea, por su sitio en la lista del deporte.
  * ---------------------------------------------------------------------------
  * Una plantilla de veinte nombres con la posición escrita en gris se lee
- * nombre a nombre. Agrupada por color, se ve de un vistazo cuántas porteras
- * hay y si falta gente atrás. Es color CON SIGNIFICADO, que es el único que
+ * nombre a nombre. Agrupada por color, se ve de un vistazo cuánta gente hay
+ * atrás y si falta portería. Es color CON SIGNIFICADO, que es el único que
  * merece la pena: nunca sustituye a la palabra, la acompaña.
+ *
+ * AQUÍ YA NO HAY NINGUNA POSICIÓN ESCRITA. Había una tabla
+ * `{ Portera: 'porteria', Central: 'defensa', … }` con las diez de fútbol, y
+ * dos cosas iban mal con ella:
+ *
+ *   · un club de baloncesto no entraba en ninguna casilla, así que sus cinco
+ *     puestos salían todos sin color;
+ *   · y después del repaso de lenguaje, las claves se quedaron en femenino
+ *     —«Portera», «Delantera»— mientras el formulario guardaba «Portero» y
+ *     «Delantero». Resultado medido en la base: cinco de las ocho posiciones
+ *     guardadas en clubes reales no casaban con ninguna línea y aparecían
+ *     sin etiqueta. Una lista de palabras repetida en dos sitios se
+ *     desincroniza; es cuestión de cuándo.
+ *
+ * Ahora la agrupación es de la tabla `sports` y aquí sólo quedan los cuatro
+ * colores, en orden. El deporte que tenga tres líneas usa los tres primeros;
+ * ninguno tiene más de cuatro, por eso mismo.
  */
-export type Linea = 'porteria' | 'defensa' | 'medio' | 'ataque';
+export const COLOR_DE_LINEA = [
+  { chip: 'bg-pos-portera/15 text-pos-portera border-transparent', dot: 'bg-pos-portera' },
+  { chip: 'bg-pos-defensa/15 text-pos-defensa border-transparent', dot: 'bg-pos-defensa' },
+  { chip: 'bg-pos-medio/15 text-pos-medio border-transparent', dot: 'bg-pos-medio' },
+  { chip: 'bg-pos-delantera/15 text-pos-delantera border-transparent', dot: 'bg-pos-delantera' },
+] as const;
 
-const LINEA_DE: Record<string, Linea> = {
-  Portera: 'porteria',
-  Central: 'defensa',
-  'Lateral derecho': 'defensa',
-  'Lateral izquierdo': 'defensa',
-  Pivote: 'medio',
-  Interior: 'medio',
-  Mediapunta: 'medio',
-  'Extremo derecho': 'ataque',
-  'Extremo izquierdo': 'ataque',
-  Delantera: 'ataque',
-};
-
-/* Sobre negro el mismo tono no vale: hace falta un fondo tintado oscuro y el
-   texto claro, o la etiqueta se convierte en una mancha pálida. */
-export const LINEA: Record<Linea, { label: string; chip: string; dot: string }> = {
-  porteria: { label: 'Portería', chip: 'bg-pos-portera/15 text-pos-portera border-transparent', dot: 'bg-pos-portera' },
-  defensa: { label: 'Defensa', chip: 'bg-pos-defensa/15 text-pos-defensa border-transparent', dot: 'bg-pos-defensa' },
-  medio: { label: 'Medio', chip: 'bg-pos-medio/15 text-pos-medio border-transparent', dot: 'bg-pos-medio' },
-  ataque: { label: 'Ataque', chip: 'bg-pos-delantera/15 text-pos-delantera border-transparent', dot: 'bg-pos-delantera' },
-};
-
-/** Sin posición asignada no se inventa ninguna línea: se dice que no la hay. */
-export const lineaDe = (position: string | undefined | null): Linea | null =>
-  (position && LINEA_DE[position]) || null;
+/** El color que le toca a la línea número `i`, sin salirse de la paleta. */
+export const colorDeLinea = (i: number) => COLOR_DE_LINEA[i % COLOR_DE_LINEA.length];
 
 /* ─────────────────────────────── Asistencia ──────────────────────────────── */
 

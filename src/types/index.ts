@@ -74,6 +74,12 @@ export interface Club {
   city?: string;
   season?: string;
   crestUrl?: string;
+  /**
+   * El código del deporte, de la tabla `sports`. Decide cómo se llama a
+   * quien juega, qué posiciones hay y en qué líneas se agrupan. Si falta, la
+   * columna de la base tiene su valor por defecto.
+   */
+  sport?: string;
   /** Rol de quien ha iniciado sesión dentro de este club. */
   role?: ClubRole;
 }
@@ -112,20 +118,25 @@ export interface TeamStaffLink {
 
 /* ───────────────────────────────── Jugadores ──────────────────────────────── */
 
-export const POSITIONS = [
-  'Portero',
-  'Central',
-  'Lateral derecho',
-  'Lateral izquierdo',
-  'Pivote',
-  'Interior',
-  'Mediapunta',
-  'Extremo derecho',
-  'Extremo izquierdo',
-  'Delantero',
-] as const;
-
-export type PlayerPosition = (typeof POSITIONS)[number];
+/**
+ * LAS POSICIONES YA NO VIVEN AQUÍ.
+ * ---------------------------------------------------------------------------
+ * Eran estas diez, de fútbol, escritas a mano:
+ *
+ *     Portero · Central · Lateral derecho · Lateral izquierdo · Pivote ·
+ *     Interior · Mediapunta · Extremo derecho · Extremo izquierdo · Delantero
+ *
+ * Con un producto que dice ser de cualquier deporte, esa lista le ofrecía
+ * puestos de fútbol a un club de baloncesto. Ahora salen de `sports.positions`
+ * y las reparte `useDeporte()`, de modo que cada club ve las suyas.
+ *
+ * Y EL TIPO ES `string`, no una unión de diez literales. No puede ser otra
+ * cosa: la lista la decide una fila de la base, que esta versión del programa
+ * no conoce al compilar. La columna de la base también es `text` y nunca tuvo
+ * restricción, así que esto no afloja ninguna garantía que existiera; sólo
+ * deja de prometer una que era mentira en cuanto el deporte no era fútbol.
+ */
+export type PlayerPosition = string;
 
 export type AvailabilityStatus =
   | 'disponible'

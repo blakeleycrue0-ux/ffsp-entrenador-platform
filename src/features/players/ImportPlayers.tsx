@@ -19,7 +19,8 @@ import { squadOf } from '@/store/selectors';
 import { humanError } from '@/services/supabase';
 import { parseCsv } from '@/lib/csv';
 import { normalize } from '@/lib/utils';
-import { POSITIONS, type Player, type PlayerPosition } from '@/types';
+import type { Player, PlayerPosition } from '@/types';
+import { useDeporte } from '@/services/useDeporte';
 
 /** Campos que sabemos rellenar. El nombre es el único obligatorio. */
 interface Campo {
@@ -69,9 +70,24 @@ function fecha(v: string): string {
   return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
 }
 
-function posicion(v: string): PlayerPosition | '' {
+/**
+ * Reconoce una posición escrita en el archivo, contra las del DEPORTE.
+ *
+ * Recibe el catálogo en vez de tenerlo dentro porque las posiciones son las
+ * del club: antes miraba contra las diez de fútbol, así que importar la
+ * plantilla de un club de baloncesto daba «no reconocemos la posición» en
+ * todas las filas y las dejaba a todas sin puesto.
+ */
+function posicion(v: string, posiciones: string[]): PlayerPosition | '' {
   const n = normalize(v);
-  return POSITIONS.find((p) => normalize(p) === n) ?? '';
+  return posiciones.find((p) => normalize(p) === n) ?? '';
+}
+
+/** Dos filas de muestra con las posiciones que de verdad se aceptan. */
+function ejemploCsv(posiciones: string[]): string {
+  if (posiciones.length === 0) return 'Nombre,Dorsal\nMarta Ribas,1\nClara Vidal,4';
+  const [a, b] = [posiciones[0], posiciones[1] ?? posiciones[0]];
+  return `Nombre,Dorsal,Posición\nMarta Ribas,1,${a}\nClara Vidal,4,${b}`;
 }
 
 export function ImportPlayers({
@@ -79,6 +95,7 @@ export function ImportPlayers({
 }: { open: boolean; onClose: () => void; teamId: string }) {
   const toast = useToast();
   const { data, actions } = useClub();
+  const deporte = useDeporte();
   const squad = useMemo(() => squadOf(data, teamId), [data, teamId]);
 
   const [texto, setTexto] = useState('');
@@ -147,7 +164,7 @@ export function ImportPlayers({
       if (number !== null && (number < 1 || number > 99)) avisos.push('Dorsal fuera de 1–99');
 
       const posRaw = get('position');
-      const position = posicion(posRaw);
+      const position = posicion(posRaw, deporte.posiciones);
       if (posRaw && !position) avisos.push(`No reconocemos la posición «${posRaw}»`);
 
       const birthRaw = get('birthDate');
@@ -322,7 +339,12 @@ export function ImportPlayers({
             <Textarea
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
-              placeholder={'Nombre,Dorsal,Posición\nMarta Ribas,1,Portera\nClara Vidal,4,Central'}
+              /* El ejemplo usa posiciones DEL DEPORTE del club: con «Portera»
+                 y «Central» escritos a mano, un club de baloncesto leía un
+                 ejemplo que su propia importación habría rechazado. Si el
+                 deporte no tiene puestos —natación—, la columna no se
+                 sugiere, porque allí no la hay. */
+              placeholder={ejemploCsv(deporte.posiciones)}
               className="min-h-[160px] font-mono text-sm"
             />
           </Field>
