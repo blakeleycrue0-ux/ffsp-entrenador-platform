@@ -117,9 +117,24 @@ export const SECCIONES: Seccion[] = [
   },
 ];
 
-/** La cuenta: detrás del avatar, no en la navegación. */
+/**
+ * La cuenta: detrás del avatar, no en la navegación.
+ *
+ * CUOTAS VIVE AQUÍ Y NO EN UNA PESTAÑA DE EQUIPO, y se probaron las dos.
+ * Como quinta pestaña de Equipo se salía de la pantalla: a 393 px entran
+ * cuatro —«Plantilla, Disponibilidad, Datos, Equipos»— y la quinta quedaba
+ * detrás del borde, así que la función que más se ha pedido era la única
+ * que no se veía.
+ *
+ * Y de paso encaja mejor. Las cuatro secciones contestan preguntas de
+ * entrenador: qué toca ahora, qué hay esta semana, con quién cuento, qué
+ * hacemos en el campo. «¿Quién me falta por cobrar?» no es ninguna de esas:
+ * es administración del club, igual que el plan y los datos fiscales, y eso
+ * es exactamente lo que hay detrás del avatar.
+ */
 export const CUENTA: Pagina[] = [
   { to: '/app/perfil', label: 'Mi perfil' },
+  { to: '/app/cuotas', label: 'Cuotas del club' },
   { to: '/app/ajustes', label: 'Ajustes y ayuda' },
   { to: '/app/ajustes/plan', label: 'Plan del club' },
 ];
