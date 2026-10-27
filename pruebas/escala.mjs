@@ -140,8 +140,43 @@ for (const abs of archivos.sort()) {
   });
 }
 
+/* ── Y LA PALETA DE LA PLATAFORMA, EN EL CONFIG ────────────────────────────
+   El barrido de arriba mira los componentes, y se le escapó el sitio donde
+   más daño hace: `tailwind.config.js`. Allí, `line-sutil` y `line-fuerte`
+   eran `rgba(13,13,15,…)` escrito a mano. Una clase que parece de la escala
+   —`border-line-sutil`— y que por debajo es negra fija: ni se busca ni se
+   ve, porque el componente está bien escrito. Con el teléfono en oscuro,
+   todo lo que se apoyaba en esa línea se quedaba sin contorno.
+
+   La portada tiene su propia paleta en el mismo archivo —`marca`, `lima`,
+   `abismo`, `cielo`— y ésa SÍ es fija a propósito, así que no se mira todo:
+   se mira esta lista, que son los nombres que la plataforma usa. */
+const DE_LA_PLATAFORMA = [
+  'surface', 'panel', 'raised', 'sunken',
+  'line', 'line-sutil', 'line-fuerte',
+  'muted', 'ok', 'warn', 'bad',
+];
+
+{
+  const config = readFileSync(join(RAIZ, 'tailwind.config.js'), 'utf8');
+  for (const nombre of DE_LA_PLATAFORMA) {
+    const m = config.match(new RegExp(`^\\s*'?${nombre.replace('-', '\\-')}'?:\\s*(.+?),\\s*(?://.*)?$`, 'm'));
+    if (!m) {
+      fallos++;
+      console.log(`  ✗ tailwind.config.js  falta el color «${nombre}»`);
+      continue;
+    }
+    if (!m[1].includes('var(--')) {
+      fallos++;
+      console.log(`  ✗ tailwind.config.js  «${nombre}» es fijo: ${m[1]}`);
+      console.log('      La plataforma tiene dos temas; esto no se da la vuelta.');
+    }
+  }
+}
+
 console.log('');
-console.log(`  ${revisados} archivos revisados, ${exentos} exentos con motivo.`);
+console.log(`  ${revisados} archivos revisados, ${exentos} exentos con motivo,`);
+console.log(`  y los ${DE_LA_PLATAFORMA.length} colores de la paleta.`);
 
 if (fallos > 0) {
   console.log('');
