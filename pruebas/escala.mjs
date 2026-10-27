@@ -86,13 +86,19 @@ const PERMITIDO = {
   'features/auth/Login.tsx': { todo: true, por: 'acceso, sobre el cielo azul' },
   'features/onboarding/Onboarding.tsx': { todo: true, por: 'alta, sobre el cielo azul' },
   'features/onboarding/PasoPlan.tsx': { todo: true, por: 'alta, sobre el cielo azul' },
-  'features/billing/Comparativa.tsx': { todo: true, por: 'la tabla de planes de la página pública' },
 
   /* ── 2. EL LOGOTIPO EN TONO CLARO ───────────────────────────────────────
      `tone` se pide a mano, y se pide «claro» justo donde el fondo es el azul
      de la portada. El tercer tono, `tinta`, es el de la presentación
      impresa, que no tiene tema oscuro porque es papel. */
   'components/ui/Brand.tsx': { todo: true, por: 'tonos que se piden a mano para el azul y para el papel' },
+
+  /* `Comparativa.tsx` ESTUVO AQUÍ Y FUE UN ERROR. Se eximió por «tabla de
+     planes de la página pública», y lo es, pero NO sólo: la misma tabla se
+     pinta dentro de la aplicación, en Ajustes › Plan. Con el archivo entero
+     exento, una insignia en blanco al 15 % sobre la tarjeta destacada pasó
+     la prueba y se quedaba invisible con el teléfono en oscuro. Un archivo
+     se exime por dónde se pinta, no por de dónde viene. */
 
   /* Los velos de los diálogos y la rama de portada de `Medicion` van con la
      marca `escala-ok` en su línea, no aquí: son líneas sueltas dentro de

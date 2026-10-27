@@ -49,21 +49,23 @@ export const DRILLS = [
 ];
 export const PERFIL = { id:USER, full_name:'Marta Vives', role:'coordinadora', email:'e@e.test', licence:'UEFA B', phone:null };
 export const CLUB_ROW = { role:'admin', clubs:{ id:CLUB, name:'Club Esportiu Exemple', short_name:'CE Exemple', city:'Palma', season:'2026/27', crest_url:null } };
-/* Los planes tal y como están en la base después de la migración 0016: con
+/* Los planes tal y como están en la base después de la migración 0021: con
    precio puesto y SIN precio de Stripe, que es lo que hace que todavía no se
    pueda contratar nada. Los importes van en céntimos.
 
    PRO SON DOS EQUIPOS, no uno. Lo fue durante un tiempo, y era el motivo de
-   que pagar 5,99 € no diera nada que no diera el plan gratuito: la migración
-   0016 lo arregló en la base y esta copia va detrás, que para eso existe. */
+   que pagar por Pro no diera nada que no diera el plan gratuito: la migración
+   0016 lo arregló en la base y esta copia va detrás, que para eso existe.
+
+   EL ANUAL SON DIEZ MENSUALIDADES en los tres planes de pago. Y el Club ya
+   tiene el suyo: lo tuvo vacío desde la 0019 hasta la 0021. El caso de «plan
+   con mensual y sin anual» dejó de estar cubierto por casualidad aquí y pasó
+   a tener su propio bloque en `precios.mjs`, que es donde debía estar. */
 export const PLANES = [
   { tier:'free', name:'Gratis', max_teams:1, currency:'eur', trial_days:0, price_monthly:0, price_yearly:0, stripe_price_monthly:null, stripe_price_yearly:null },
-  { tier:'pro', name:'Pro', max_teams:2, currency:'eur', trial_days:7, price_monthly:599, price_yearly:5999, stripe_price_monthly:null, stripe_price_yearly:null },
-  { tier:'max', name:'Max', max_teams:5, currency:'eur', trial_days:7, price_monthly:1299, price_yearly:12999, stripe_price_monthly:null, stripe_price_yearly:null },
-  /* Club va SIN precio anual, igual que en producción: es el caso raro que
-     hay que tener cubierto —un plan con mensual y sin anual— y si el
-     simulacro le inventara uno, las pruebas nunca pasarían por ese camino. */
-  { tier:'club', name:'Club', max_teams:12, currency:'eur', trial_days:7, price_monthly:2499, price_yearly:null, stripe_price_monthly:null, stripe_price_yearly:null },
+  { tier:'pro', name:'Pro', max_teams:2, currency:'eur', trial_days:7, price_monthly:900, price_yearly:9000, stripe_price_monthly:null, stripe_price_yearly:null },
+  { tier:'max', name:'Max', max_teams:5, currency:'eur', trial_days:7, price_monthly:2900, price_yearly:29000, stripe_price_monthly:null, stripe_price_yearly:null },
+  { tier:'club', name:'Club', max_teams:12, currency:'eur', trial_days:7, price_monthly:5900, price_yearly:59000, stripe_price_monthly:null, stripe_price_yearly:null },
 ];
 
 export async function mock(page, o = {}) {
