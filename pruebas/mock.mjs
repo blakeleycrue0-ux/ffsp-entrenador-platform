@@ -109,6 +109,11 @@ export async function mock(page, o = {}) {
     /* El catálogo de deportes. Se puede sustituir para comprobar que la
        plantilla de un club que no es de fútbol enseña SUS puestos. */
     deportesDelClub = DEPORTES,
+    /* Cuotas y recibos. Vacíos por defecto, que es lo que tiene un club que
+       todavía no ha creado ninguna: así las demás pruebas ven el estado
+       vacío de verdad y no uno inventado. */
+    cuotas = [],
+    recibos = [],
   } = o;
   await page.route(`${SUPA}/**`, async route => {
     const u = new URL(route.request().url()); const p = u.pathname;
@@ -125,6 +130,8 @@ export async function mock(page, o = {}) {
     if (p === '/rest/v1/attendance') return route.fulfill(j(attendance));
     if (p === '/rest/v1/drills') return route.fulfill(j(DRILLS));
     if (p === '/rest/v1/sports') return route.fulfill(j(deportesDelClub));
+    if (p === '/rest/v1/fee_plans') return route.fulfill(j(cuotas));
+    if (p === '/rest/v1/fee_charges') return route.fulfill(j(recibos));
     if (p === '/rest/v1/team_staff') return route.fulfill(j([{ team_id:'t1', profile_id:USER, role:'coordinadora' }]));
     return route.fulfill(j([]));
   });

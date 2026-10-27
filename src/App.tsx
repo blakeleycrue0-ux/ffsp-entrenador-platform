@@ -35,6 +35,7 @@ const MatchDetail = lazy(cargaDiferida(() => import('@/features/matches/MatchDet
 const MatchEditor = lazy(cargaDiferida(() => import('@/features/matches/MatchEditor')));
 const AttendancePage = lazy(cargaDiferida(() => import('@/features/attendance/AttendancePage')));
 const StatsPage = lazy(cargaDiferida(() => import('@/features/stats/StatsPage')));
+const CuotasPage = lazy(cargaDiferida(() => import('@/features/cuotas/CuotasPage')));
 const SettingsPage = lazy(cargaDiferida(() => import('@/features/settings/SettingsPage')));
 const BillingPage = lazy(cargaDiferida(() => import('@/features/billing/BillingPage')));
 const ProfilePage = lazy(cargaDiferida(() => import('@/features/settings/ProfilePage')));
@@ -155,6 +156,7 @@ export default function App() {
           <Route path="partidos/:matchId/editar" element={<MatchEditor />} />
 
           <Route path="analiticas" element={<StatsPage />} />
+          <Route path="cuotas" element={<CuotasPage />} />
           <Route path="entrenador" element={<EntrenadorPage />} />
 
           {/* Quien administra el club ve la gestión; el resto, sus equipos. */}
