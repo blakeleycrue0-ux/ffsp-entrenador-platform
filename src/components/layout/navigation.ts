@@ -43,7 +43,7 @@
  * lo que hace falta es volver.
  */
 
-import { CalendarDays, Dumbbell, Home, Users } from 'lucide-react';
+import { CalendarDays, Home, LayoutGrid, UsersRound } from 'lucide-react';
 
 export interface Pagina {
   to: string;
@@ -90,7 +90,7 @@ export const SECCIONES: Seccion[] = [
   {
     to: '/app/plantilla',
     label: 'Equipo',
-    icono: Users,
+    icono: UsersRound,
     paginas: [
       { to: '/app/plantilla', label: 'Plantilla' },
       { to: '/app/disponibilidad', label: 'Disponibilidad' },
@@ -101,7 +101,13 @@ export const SECCIONES: Seccion[] = [
   {
     to: '/app/ejercicios',
     label: 'Ejercicios',
-    icono: Dumbbell,
+    /* NO ES UNA MANCUERNA, Y ES A PROPÓSITO. Lo era, y a 19 px en la barra
+       de abajo no se reconocía: las dos bolas y la barra se juntaban y
+       salía un garabato. Esto es una rejilla, que es literalmente lo que
+       hay en la pantalla —una cuadrícula de ejercicios— y se lee entero a
+       cualquier tamaño. Además, una mancuerna habla de gimnasio; la
+       biblioteca de ejercicios es de cualquier deporte. */
+    icono: LayoutGrid,
     /* UNA SOLA PANTALLA, así que sin pestañas: aquí había «Biblioteca» y
        «Pizarra», y al irse la pizarra una pestaña suelta no es una elección.
        `PestañasDeSeccion` ya no pinta nada con menos de dos, y dejar la lista

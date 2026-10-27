@@ -41,13 +41,21 @@ import { cn } from '@/lib/utils';
    y entre márgenes quedan 288. Se le quitan dos píxeles al relleno lateral
    del propio destino y cuadra sin apretar nada. */
 const DESTINO =
-  'flex h-[52px] w-[68px] flex-col items-center justify-center gap-1 rounded-[17px]'
+  'flex h-[54px] w-[68px] flex-col items-center justify-center gap-[3px] rounded-[18px]'
   + ' transition-colors duration-150';
-/* LO SELECCIONADO SE DISTINGUE POR CONTRASTE, NO POR COLOR: un fondo algo
-   más oscuro dentro de una cápsula clara. Antes era blanco al 10 % sobre
-   azul noche. */
-const ACTIVO = 'bg-ink-900/[0.09] text-ink-900';
-const REPOSO = 'text-ink-600 active:bg-ink-900/[0.05]';
+
+/* ── LO SELECCIONADO, EN NEGRO SÓLIDO ────────────────────────────────────
+   Era un gris al 9 % dentro de una cápsula casi blanca, y pasaban dos
+   cosas. Una: apenas se veía, así que la barra no decía dónde estabas. Y
+   otra peor: en la MISMA pantalla, la fila de pestañas de arriba marca lo
+   activo con una píldora negra de texto blanco. Dos maneras distintas de
+   decir «estás aquí» a quince centímetros una de otra, y la de abajo era
+   la floja. Ahora las dos hablan igual.
+
+   `ink-900` sobre `ink-0`, así que con el teléfono en oscuro se da la
+   vuelta sola: píldora casi blanca con letra casi negra. */
+const ACTIVO = 'bg-ink-900 text-ink-0';
+const REPOSO = 'text-ink-500 active:bg-ink-900/[0.06]';
 
 export function NavFlotante() {
   const { pathname } = useLocation();
@@ -76,7 +84,11 @@ export function NavFlotante() {
         aria-hidden
         className="absolute inset-x-0 bottom-0 -z-10"
         style={{
-          height: 'calc(var(--nav-h) + var(--nav-gap) + var(--safe-bottom) + 28px)',
+          /* MÁS ALTO QUE ANTES (28 → 56). Con el velo corto, la línea que
+             pasaba justo por encima de la cápsula se cortaba a cuchillo y
+             parecía un fallo de pintado: media palabra legible y media no.
+             Con el doble de recorrido, el texto se apaga antes de llegar. */
+          height: 'calc(var(--nav-h) + var(--nav-gap) + var(--safe-bottom) + 56px)',
           /* UN SOLO VELO, DEL COLOR DEL TEMA. Había dos escritos a mano: uno
              negro para Inicio —del marco oscuro de antes— y otro gris claro
              fijo para el resto. El negro era la «franja de abajo» y el gris
@@ -84,7 +96,8 @@ export function NavFlotante() {
              sitio: un color escrito en vez de heredado. */
           background:
             'linear-gradient(to top, rgb(var(--surface)) 0%,'
-            + ' rgb(var(--surface) / 0.92) 42%, rgb(var(--surface) / 0) 100%)',
+            + ' rgb(var(--surface)) 34%, rgb(var(--surface) / 0.86) 62%,'
+            + ' rgb(var(--surface) / 0) 100%)',
         }}
       />
       <nav
@@ -93,7 +106,13 @@ export function NavFlotante() {
            `backdrop-filter` que antes se evitaba aquí por caro vuelve, pero
            sólo el desenfoque corto: la cápsula mide 68 px de alto y se
            compone sobre un gris casi liso, no sobre la lista entera. */
-        className="pointer-events-auto flex items-center gap-0.5 rounded-full border border-line-sutil bg-raised/80 p-1.5 shadow-[0_10px_30px_rgb(var(--ink-900)/0.14)] backdrop-blur-md"
+        /* OPACA, NO TRANSLÚCIDA. Al 80 % con desenfoque, la cápsula cogía el
+           gris de la página y se quedaba a medio camino entre objeto y
+           fondo: no acababa de flotar. Sólida, con su borde y su sombra, se
+           lee como una pieza por encima de la pantalla, que es lo que es. Y
+           de paso se ahorra un `backdrop-filter` justo encima de una lista
+           que se desplaza, que es el sitio más caro para pedirlo. */
+        className="pointer-events-auto flex items-center gap-0.5 rounded-[26px] border border-line-sutil bg-raised p-1.5 shadow-[0_12px_34px_rgb(var(--ink-900)/0.16)]"
       >
         {SECCIONES.map((s) => {
           const Icono = s.icono;
@@ -105,8 +124,16 @@ export function NavFlotante() {
               aria-current={aqui ? 'page' : undefined}
               className={cn(DESTINO, aqui ? ACTIVO : REPOSO)}
             >
-              <Icono size={19} strokeWidth={aqui ? 2.2 : 1.8} aria-hidden />
-              <span className={cn('text-2xs leading-none', aqui ? 'font-semibold' : 'font-medium')}>
+              {/* EL ICONO MANDA, LA PALABRA ACOMPAÑA. Iba al revés: icono de
+                  19 y etiqueta de 11, y con «Ejercicios» midiendo 60 px en
+                  una celda de 68 la barra se leía como cuatro palabras
+                  apretadas con un dibujito encima. Dos más de icono y uno
+                  menos de letra, y vuelve a ser una navegación. */}
+              <Icono size={21} strokeWidth={aqui ? 2.1 : 1.7} aria-hidden />
+              <span
+                className={cn('leading-none', aqui ? 'font-semibold' : 'font-medium')}
+                style={{ fontSize: '10px', letterSpacing: '-0.01em' }}
+              >
                 {s.label}
               </span>
             </Link>

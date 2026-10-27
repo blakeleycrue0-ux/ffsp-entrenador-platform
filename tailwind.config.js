@@ -90,11 +90,19 @@ export default {
         raised: 'rgb(var(--raised) / <alpha-value>)',    // nivel 2 · algo por encima: menús, hover
         sunken: 'rgb(var(--sunken) / <alpha-value>)',    // nivel 3 · un hueco donde se escribe
 
-        /* Tres bordes, en negro translúcido. El sutil agrupa, el normal
-           separa, el fuerte marca lo que está seleccionado. */
+        /* Tres bordes. El sutil agrupa, el normal separa, el fuerte marca lo
+           que está seleccionado.
+
+           LOS TRES EN CANALES. Dos de ellos eran `rgba(13,13,15,…)` escrito
+           a mano, es decir NEGRO en los dos temas: con el teléfono en
+           oscuro, un negro al 7 % sobre un panel casi negro no existe, y
+           las piezas que se apoyan en esa línea —los discos de Inicio, la
+           cápsula de la navegación— se quedaban sin contorno. Pedidos a la
+           escala, la línea es negra de día y blanca de noche, que es lo
+           mismo dicho bien: «un siete por ciento de lo que más contraste». */
         line: 'rgb(var(--line-rgb) / var(--line-a))',
-        'line-sutil': 'rgba(13,13,15,0.07)',
-        'line-fuerte': 'rgba(13,13,15,0.26)',
+        'line-sutil': 'rgb(var(--line-rgb) / 0.07)',
+        'line-fuerte': 'rgb(var(--line-rgb) / 0.26)',
 
         muted: 'rgb(var(--ink-600) / <alpha-value>)',
         night: '#000000',

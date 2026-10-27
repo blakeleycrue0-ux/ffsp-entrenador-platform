@@ -304,7 +304,13 @@ function Disco({
 }) {
   const dentro = (
     <>
-      <span className="grid h-[58px] w-[58px] place-items-center rounded-full bg-ink-900/[0.06] text-ink-900 transition-[transform,background-color] duration-120 group-active:scale-95 group-active:bg-ink-900/[0.10]">
+      {/* UNA SUPERFICIE, NO UNA VELADURA. El disco era `ink-900` al 6 %, y un
+          6 % sobre el gris de la página da un círculo que casi no está: en
+          una captura del móvil se veían cuatro manchas pálidas con un
+          dibujo dentro. Con `raised` es la misma superficie que las
+          tarjetas, se despega del fondo y se da la vuelta sola con el tema.
+          El borde es la línea de siempre, para que no flote sin apoyo. */}
+      <span className="grid h-[58px] w-[58px] place-items-center rounded-full border border-line-sutil bg-raised text-ink-900 shadow-[0_2px_8px_rgb(var(--ink-900)/0.06)] transition-[transform,background-color] duration-120 group-active:scale-95 group-active:bg-panel">
         {icono}
       </span>
       <span className="text-xs font-medium leading-none text-ink-900">{children}</span>
