@@ -63,6 +63,7 @@ import { ArrowRight, Check, Menu, Minus, Plus, X } from 'lucide-react';
 import { Wordmark } from '@/components/ui/Brand';
 import { billing, importe, type Plan } from '@/services/billing';
 import { loQueFalta, todoLoQueTrae } from '@/services/entitlements';
+import { PARA_QUIEN } from '@/features/billing/SelectorDePlanes';
 import { MaquetaAsistencia, MaquetaJugador, MaquetaPanel } from './maquetas';
 import { cn } from '@/lib/utils';
 
@@ -936,17 +937,32 @@ function Clubes() {
  */
 function Precios({ planes }: { planes: Plan[] | null }) {
   const NOMBRES: Record<string, string> = { free: 'Gratis', pro: 'Pro', max: 'Max', club: 'Club' };
-  /* PARA QUIÉN ES CADA UNO, en una línea.
-     No es relleno: las columnas de Pro y Max añaden una o dos funciones, así
-     que sin esto quedaban medio vacías y el hueco se leía como «aquí falta
-     algo». Y responde a la pregunta que de verdad se hace quien mira una
-     tabla de precios, que no es «qué trae» sino «cuál es el mío». */
-  const PARA_QUIEN: Record<string, string> = {
-    free: 'Para empezar con un equipo y ver si esto te sirve.',
-    pro: 'Para el entrenador que lleva su equipo y quiere más de uno.',
-    max: 'Para el club con varios equipos y varias personas en el cuerpo técnico.',
-  };
+  /* PARA QUIÉN ES CADA UNO, en una línea. No es relleno: las columnas de los
+     planes de pago añaden una función o ninguna, así que sin esto quedaban
+     medio vacías y el hueco se leía como «aquí falta algo». Y responde a la
+     pregunta que de verdad se hace quien mira una tabla de precios, que no es
+     «qué trae» sino «cuál es el mío».
+
+     SE IMPORTA, NO SE COPIA. Aquí había una copia de la tabla, y se quedó sin
+     la fila del Club cuando se añadió el cuarto plan: en la portada, esa
+     columna salía sin su línea y más corta que las otras tres, mientras que
+     dentro de la aplicación sí la tenía. Dos copias de la misma frase es una
+     que se queda vieja. */
   const niveles = ['free', 'pro', 'max', 'club'] as const;
+
+  /* EL PLAN DE JUSTO DEBAJO, por índice y no escrito a mano. Aquí ponía
+     `tier === 'pro' ? 'Gratis' : 'Pro'`, de cuando la tabla tenía tres
+     columnas: al añadir la cuarta, la de Club se quedó diciendo «Todo lo de
+     Pro, y» y saltándose a Max. Quien la lea entiende que pagando el plan
+     más caro no entra lo del de en medio, que es lo contrario de lo que
+     hace. Con el índice, la frase sale del mismo orden que coloca las
+     columnas y una quinta no vuelve a romperla. */
+  const anteriorA = (t: string) => {
+    const i = niveles.indexOf(t as typeof niveles[number]);
+    if (i <= 0) return null;
+    const previo = niveles[i - 1];
+    return buscar(previo)?.name ?? NOMBRES[previo];
+  };
   const seVende = (planes ?? []).some((p) => p.contratable);
   const buscar = (t: string) => (planes ?? []).find((p) => p.tier === t);
 
@@ -1061,7 +1077,7 @@ function Precios({ planes }: { planes: Plan[] | null }) {
                   )}
 
                   <p className={cn('mt-6 rotulo', destacado ? 'text-white/45' : 'text-grisis')}>
-                    {tier === 'free' ? 'Incluye' : `Todo lo de ${tier === 'pro' ? 'Gratis' : 'Pro'}, y`}
+                    {anteriorA(tier) ? `Todo lo de ${anteriorA(tier)}, y` : 'Incluye'}
                   </p>
 
                   {lista.length > 0 ? (

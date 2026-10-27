@@ -231,15 +231,15 @@
      últimas líneas de la columna de Gratis. Con esto, si no cabe, se desborda
      —y entonces lo canta la comprobación de `construir.mjs` en vez de salir
      recortado en el PDF. */
-  .planes { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 34px; border: 1px solid var(--linea); border-radius: 24px; overflow: hidden; background: #fff; flex-shrink: 0; }
-  .planes > div { padding: 36px 38px 36px; border-left: 1px solid var(--linea); display: flex; flex-direction: column; }
+  .planes { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 34px; border: 1px solid var(--linea); border-radius: 24px; overflow: hidden; background: #fff; flex-shrink: 0; }
+  .planes > div { padding: 32px 26px 32px; border-left: 1px solid var(--linea); display: flex; flex-direction: column; }
   .planes > div:first-child { border-left: 0; }
   .planes .destacado { background: var(--abismo); color: #fff; }
   .planes .nombre { font-family: 'Space Grotesk', sans-serif; font-size: 25px; font-weight: 600; letter-spacing: -0.02em; }
   .planes .sello { display: inline-block; margin-left: 12px; background: var(--lima); color: var(--abismo); border-radius: 99px; padding: 4px 12px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; vertical-align: 3px; }
-  .planes .para { font-size: 19px; line-height: 1.45; color: var(--grisis); margin-top: 12px; min-height: 2.9em; }
+  .planes .para { font-size: 17px; line-height: 1.45; color: var(--grisis); margin-top: 12px; min-height: 2.9em; }
   .planes .destacado .para { color: rgba(255,255,255,0.58); }
-  .planes .precio { font-family: 'Space Grotesk', sans-serif; font-size: 54px; font-weight: 500; letter-spacing: -0.045em; margin-top: 22px; line-height: 1; }
+  .planes .precio { font-family: 'Space Grotesk', sans-serif; font-size: 46px; font-weight: 500; letter-spacing: -0.045em; margin-top: 22px; line-height: 1; }
   .planes .mes { font-size: 22px; color: var(--grisis); font-weight: 400; letter-spacing: -0.01em; }
   .planes .destacado .mes { color: rgba(255,255,255,0.58); }
   .planes .anual { font-size: 18px; color: var(--grisis); margin-top: 11px; }
@@ -566,7 +566,18 @@
      LAS CIFRAS SON LAS DE LA TABLA `plans`, no un redondeo bonito. Si mañana
      cambian allí, hay que cambiarlas aquí: es el único sitio de todo el
      proyecto donde un precio está escrito a mano, y es porque un PDF no puede
-     consultar una base de datos. -->
+     consultar una base de datos.
+
+     AL DÍA CON LA 0021: 0 / 9 / 29 / 59 € al mes, el anual a diez
+     mensualidades y el Club, que antes no salía en esta lámina. Lo que NO
+     se puede hacer todavía es cobrarlos: la 0021 vació los identificadores
+     de Stripe porque apuntaban a los precios viejos, así que los tres planes
+     de pago se enseñan y no se contratan hasta que alguien cree los precios
+     nuevos en Stripe. Quien use esta lámina para vender tiene que saberlo.
+
+     Y LAS LISTAS DICEN LO QUE HAY. Pro no añade ninguna función sobre
+     Gratis: añade un equipo más, y así está escrito. Poner ahí una función
+     inventada para que la columna no quede corta sería vender humo. -->
 <section class="lamina" style="padding:56px 132px 94px;">
   <p class="rotulo">Precios</p>
   <h2 style="margin-top:24px; font-size:60px;">Gratis de verdad. Y barato en serio.</h2>
@@ -586,32 +597,42 @@
         <li><span>+</span><span>Biblioteca de ejercicios</span></li>
         <li><span>+</span><span>Partidos y convocatorias</span></li>
         <li><span>+</span><span>Calendario</span></li>
-        <li><span>+</span><span>Pizarra táctica</span></li>
         <li><span>+</span><span>Analíticas</span></li>
       </ul>
     </div>
     <div class="destacado">
       <p><span class="nombre">Pro</span><span class="sello">Recomendado</span></p>
-      <p class="para">Para el entrenador que lleva su equipo y quiere la pizarra entera.</p>
-      <p class="precio">5,99 €<span class="mes"> /mes</span></p>
-      <p class="anual">o 59,99 € al año — ahorras 11,89 €</p>
+      <p class="para">Para quien lleva dos categorías a la vez.</p>
+      <p class="precio">9 €<span class="mes"> /mes</span></p>
+      <p class="anual">o 90 € al año — ahorras 18 €</p>
       <p class="equipos">Hasta 2 equipos</p>
-      <p class="cab">Todo lo de Gratis, y</p>
+      <p class="cab">Todo lo de Gratis, con</p>
       <ul>
-        <li><span>+</span><span>Trayectorias a mano alzada</span></li>
-        <li><span>+</span><span>Exportar jugadas en vídeo</span></li>
+        <li><span>+</span><span>El doble de equipos</span></li>
       </ul>
       <p class="prueba">7 días de prueba antes del primer cobro</p>
     </div>
     <div>
       <p><span class="nombre">Max</span></p>
-      <p class="para">Para el club con varios equipos y varias personas en el cuerpo técnico.</p>
-      <p class="precio">12,99 €<span class="mes"> /mes</span></p>
-      <p class="anual">o 129,99 € al año — ahorras 25,89 €</p>
+      <p class="para">Para el club pequeño con varias personas en el cuerpo técnico.</p>
+      <p class="precio">29 €<span class="mes"> /mes</span></p>
+      <p class="anual">o 290 € al año — ahorras 58 €</p>
       <p class="equipos">Hasta 5 equipos</p>
       <p class="cab">Todo lo de Pro, y</p>
       <ul>
         <li><span>+</span><span>Acceso para varios entrenadores</span></li>
+      </ul>
+      <p class="prueba">7 días de prueba antes del primer cobro</p>
+    </div>
+    <div>
+      <p><span class="nombre">Club</span></p>
+      <p class="para">Para el club entero, con todas sus categorías dentro.</p>
+      <p class="precio">59 €<span class="mes"> /mes</span></p>
+      <p class="anual">o 590 € al año — ahorras 118 €</p>
+      <p class="equipos">Hasta 12 equipos</p>
+      <p class="cab">Todo lo de Max, con</p>
+      <ul>
+        <li><span>+</span><span>Doce equipos en vez de cinco</span></li>
       </ul>
       <p class="prueba">7 días de prueba antes del primer cobro</p>
     </div>

@@ -125,10 +125,92 @@ async function conPlanes(planes, caja = false) {
   }
   comprueba('Pro: los equipos que permite', t.includes('Hasta 2 equipos'), 'max_teams 2');
   comprueba('Max: los equipos que permite', t.includes('Hasta 9 equipos'), 'max_teams 9');
-  /* Y que no se cuele ninguna de las cifras de verdad escrita a mano. */
+  /* Y que no se cuele ninguna de las cifras de verdad escrita a mano. Son
+     las de producción después de la 0021; ninguna de ellas puede salir de
+     los datos inventados de arriba —7,50, 72,00, 20,00 y 200,00—, así que si
+     aparece una es que está escrita en el componente. */
+  const DE_PRODUCCION = ['9,00 €', '29,00 €', '59,00 €', '90,00 €', '290,00 €', '590,00 €'];
+  const coladas = DE_PRODUCCION.filter((c) => t.includes(c));
   comprueba('no hay precios escritos en el componente',
-    !t.includes('5,99') && !t.includes('12,99') && !t.includes('59,99') && !t.includes('129,99'),
-    'aparece una cifra que no venía en los datos');
+    coladas.length === 0,
+    coladas.length ? `aparecen ${coladas.join(', ')}` : 'ninguna cifra real');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   1b · Un plan con mensual y SIN anual
+   ══════════════════════════════════════════════════════════════════════════
+   Existió de verdad: el Club nació así en la 0019 y estuvo meses sin precio
+   anual, porque nadie lo había decidido. Mientras duró, el caso lo cubría por
+   casualidad el simulacro compartido; en cuanto el Club tuvo su anual en la
+   0021, esa cobertura habría desaparecido sin que nadie se diera cuenta.
+   Vive aquí porque es una forma legítima de los datos, no una anécdota de un
+   plan concreto: la tabla deja el anual vacío y la página tiene que
+   apañárselas sin inventarse uno. */
+{
+  console.log('\n  un plan con mensual y sin anual');
+  const { texto } = await conPlanes([
+    { tier: 'free', name: 'Gratis', max_teams: 1, currency: 'eur', trial_days: 0, price_monthly: 0, price_yearly: 0, stripe_price_monthly: null, stripe_price_yearly: null },
+    { tier: 'pro', name: 'Pro', max_teams: 2, currency: 'eur', trial_days: 7, price_monthly: 750, price_yearly: null, stripe_price_monthly: null, stripe_price_yearly: null },
+  ]);
+  const t = limpia(texto);
+
+  comprueba('el mensual se enseña igual', t.includes(euros(750)), euros(750));
+  /* Lo que NO puede pasar: que se calcule un anual a partir del mensual, o
+     que salga un «0,00 €», o un «NaN», o un hueco con el signo del euro
+     suelto. Un precio que nadie ha decidido no se deduce. */
+  comprueba('no se inventa un anual', !/al a[ñn]o/i.test(t), 'aparece una línea anual');
+  comprueba('ni un ahorro deducido', !/ahorra/i.test(t), 'aparece un ahorro');
+  comprueba('ni un cero ni un NaN', !t.includes('0,00 €') && !/NaN/.test(t));
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   1c · Cada tarjeta nombra el plan de JUSTO debajo
+   ══════════════════════════════════════════════════════════════════════════
+   «Todo lo de X, y» es una promesa de herencia: dice que lo de abajo viene
+   incluido. Si nombra el plan equivocado, la promesa es falsa en una
+   dirección concreta y cara —la tarjeta de Club decía «Todo lo de Pro», que
+   se lee como que Max, el de en medio, NO entra—.
+
+   Se comprueba con CUATRO planes a propósito. Con tres, un «el anterior es
+   Pro salvo para Pro» pasa igual que la versión correcta: el fallo sólo
+   aparece a partir de la cuarta columna, que es justo cuando apareció. */
+{
+  console.log('\n  cada tarjeta nombra el plan de debajo');
+  const CUATRO = [
+    { tier: 'free', name: 'Gratis', max_teams: 1, currency: 'eur', trial_days: 0, price_monthly: 0, price_yearly: 0, stripe_price_monthly: null, stripe_price_yearly: null },
+    { tier: 'pro', name: 'Pro', max_teams: 2, currency: 'eur', trial_days: 7, price_monthly: 750, price_yearly: 7500, stripe_price_monthly: null, stripe_price_yearly: null },
+    { tier: 'max', name: 'Max', max_teams: 5, currency: 'eur', trial_days: 7, price_monthly: 1500, price_yearly: 15000, stripe_price_monthly: null, stripe_price_yearly: null },
+    { tier: 'club', name: 'Club', max_teams: 12, currency: 'eur', trial_days: 7, price_monthly: 3000, price_yearly: 30000, stripe_price_monthly: null, stripe_price_yearly: null },
+  ];
+  const { tarjetas } = await conPlanes(CUATRO);
+
+  /* Por posición, que es como lo ve quien lee: la de más a la derecha tiene
+     que nombrar a su vecina, no a una de más abajo. */
+  const esperado = { Pro: 'Gratis', Max: 'Pro', Club: 'Max' };
+  for (const [plan, debajo] of Object.entries(esperado)) {
+    /* SIN DISTINGUIR MAYÚSCULAS: el rótulo lleva `text-transform: uppercase`,
+       así que `innerText` devuelve «TODO LO DE MAX, Y». Comparar tal cual
+       daba rojo con la página bien, que es la peor clase de prueba. */
+    const t = tarjetas.map((c) => limpia(c.texto)).find((x) => x.toLowerCase().startsWith(plan.toLowerCase()));
+    const dice = t?.match(/todo lo de [^,\n]+/i)?.[0];
+    comprueba(`${plan} hereda de ${debajo}`,
+      dice?.toLowerCase() === `todo lo de ${debajo.toLowerCase()}`,
+      dice ?? (t ? 'no dice de quién hereda' : 'no hay tarjeta'));
+  }
+  const gratis = tarjetas.map((c) => limpia(c.texto)).find((x) => x.toLowerCase().startsWith('gratis'));
+  comprueba('y Gratis no hereda de nadie',
+    Boolean(gratis) && !/todo lo de/i.test(gratis), 'dice heredar de alguien');
+
+  /* Y las cuatro columnas dicen para quién son. La del Club no lo decía: la
+     portada tenía su propia copia de la tabla y se quedó sin esa fila. */
+  for (const plan of ['Gratis', 'Pro', 'Max', 'Club']) {
+    /* Sobre el texto SIN aplanar: `limpia` junta los saltos de línea, así
+       que buscar la frase por líneas allí no encuentra nunca nada y el
+       detalle salía «no lo dice» hasta en verde. */
+    const bruto = tarjetas.map((c) => c.texto).find((x) => x.trim().toLowerCase().startsWith(plan.toLowerCase()));
+    const frase = bruto?.split('\n').map((l) => l.trim()).find((l) => /^Para /.test(l));
+    comprueba(`${plan} dice para quién es`, Boolean(frase), frase ?? 'no lo dice');
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

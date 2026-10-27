@@ -62,7 +62,16 @@ export function Comparativa({
      tiene todo el mundo, y así se lista. Es la misma regla que aplica
      `puede()`, preguntada al mismo sitio. */
   const seVende = ordenados.some((p) => p.contratable);
-  const nombreDe = (t: PlanTier) => ordenados.find((p) => p.tier === t)?.name ?? t;
+  /* EL PLAN DE JUSTO DEBAJO, sacado del orden real y no escrito a mano.
+     Esto decía `plan.tier === 'pro' ? 'Gratis' : 'Pro'`, de cuando había tres
+     columnas. Al añadir la cuarta, la tarjeta de Club se quedó diciendo «Todo
+     lo de Pro, y», saltándose Max: quien la leyera entendía que pagando 59 €
+     no entraba lo de 29 €. Con el índice, la frase la decide el mismo orden
+     que coloca las columnas, así que un quinto plan no vuelve a romperla. */
+  const anteriorA = (t: PlanTier) => {
+    const i = ordenados.findIndex((p) => p.tier === t);
+    return i > 0 ? ordenados[i - 1].name : null;
+  };
 
   return (
     <div className="grid grid-cols-1 divide-y divide-line lg:grid-cols-3 lg:divide-x lg:divide-y-0">
@@ -81,7 +90,7 @@ export function Comparativa({
            Repetir las nueve líneas en las tres columnas obliga a leerlas tres
            veces para descubrir que son las mismas. */
         const lista = plan.tier === 'free' ? todoLoQueTrae('free', seVende) : loQueFalta(plan.tier, seVende);
-        const anterior = plan.tier === 'pro' ? nombreDe('free') : nombreDe('pro');
+        const anterior = anteriorA(plan.tier);
 
         return (
           <article
@@ -97,7 +106,7 @@ export function Comparativa({
                 <span
                   className={cn(
                     'rounded-full px-2 py-0.5 text-xs font-semibold',
-                    destacado ? 'bg-white/15 text-ink-0' : 'bg-ink-900 text-ink-0',
+                    destacado ? 'bg-ink-0/15 text-ink-0' : 'bg-ink-900 text-ink-0',
                   )}
                 >
                   El tuyo
@@ -131,7 +140,7 @@ export function Comparativa({
             </p>
 
             <p className={cn('mt-5 rotulo', destacado ? 'text-ink-0/60' : 'text-ink-500')}>
-              {plan.tier === 'free' ? 'Incluye' : `Todo lo de ${anterior}, y`}
+              {anterior ? `Todo lo de ${anterior}, y` : 'Incluye'}
             </p>
 
             {lista.length > 0 ? (
