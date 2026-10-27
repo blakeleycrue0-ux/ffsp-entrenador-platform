@@ -482,7 +482,7 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
       // El club de quien entra. RLS ya limita la consulta a los suyos.
       supabase
         .from('club_members')
-        .select('role, clubs(id, name, short_name, city, season, crest_url)')
+        .select('role, clubs(id, name, short_name, city, season, crest_url, sport)')
         .eq('profile_id', userId)
         .order('created_at')
         .limit(1)
@@ -507,6 +507,7 @@ export async function loadWorkspace(userId: string): Promise<ClubData> {
         city: (clubData.city as string) ?? undefined,
         season: (clubData.season as string) ?? undefined,
         crestUrl: (clubData.crest_url as string) ?? undefined,
+        sport: (clubData.sport as string) ?? undefined,
         role: (clubRow?.role as Club['role']) ?? undefined,
       }
     : null;

@@ -15,7 +15,8 @@ import { Button, Desplegable, Panel, Field, Input, Modal, PageHeader, Select, Te
 import { useToast } from '@/components/ui/Toast';
 import { AVAILABILITY, AVAILABILITY_ORDER } from '@/components/domain/StatusBits';
 import { cn } from '@/lib/utils';
-import { POSITIONS, type Guardian, type Player, type PlayerPosition } from '@/types';
+import type { Guardian, Player, PlayerPosition } from '@/types';
+import { useDeporte } from '@/services/useDeporte';
 import { useAnchura } from '@/components/layout/AppShell';
 
 const blank = (teamId: string, number: number): Player => ({
@@ -39,6 +40,8 @@ export default function PlayerEditor() {
   const navigate = useNavigate();
   const toast = useToast();
   const { data, teamId, actions } = useClub();
+  /* Las posiciones son las del deporte del club, no una lista de fútbol. */
+  const deporte = useDeporte();
   const teams = visibleTeams(data);
 
   const existing = playerId ? data.players.find((p) => p.id === playerId) : undefined;
@@ -211,9 +214,7 @@ export default function PlayerEditor() {
                   onChange={(e) => patch({ position: e.target.value as PlayerPosition })}
                 >
                   <option value="">Sin definir</option>
-                  {POSITIONS.map((p) => (
-                    <option key={p}>{p}</option>
-                  ))}
+                  <OpcionesDePosicion deporte={deporte} elegida={form.position} />
                 </Select>
               </Field>
               {/* El equipo sólo se pregunta cuando hay algo que elegir. */}
@@ -251,9 +252,7 @@ export default function PlayerEditor() {
                   }
                 >
                   <option value="">Ninguna</option>
-                  {POSITIONS.map((p) => (
-                    <option key={p}>{p}</option>
-                  ))}
+                  <OpcionesDePosicion deporte={deporte} elegida={form.secondaryPosition} />
                 </Select>
               </Field>
               <Field label="Pie dominante">
@@ -422,6 +421,31 @@ export default function PlayerEditor() {
           así conservas su historial.
         </p>
       </Modal>
+    </>
+  );
+}
+
+/**
+ * Las posiciones del deporte, y la que ya tiene puesta aunque no esté.
+ *
+ * LO SEGUNDO ES LO IMPORTANTE. Un `<select>` al que se le da un `value` que
+ * no está entre sus opciones no avisa: se queda enseñando la primera, y quien
+ * guarde sin tocarlo pierde el dato sin enterarse. Pasó de verdad —la base
+ * guardaba «Lateral derecha» y la lista decía «Lateral derecho»—, así que si
+ * el valor guardado no está en el catálogo se añade al final, marcado, en vez
+ * de desaparecer. Cambiar de deporte un club con plantilla hecha lleva al
+ * mismo sitio, y ahí no hay grafía que arreglar: son puestos de otro juego.
+ */
+function OpcionesDePosicion({
+  deporte, elegida,
+}: { deporte: ReturnType<typeof useDeporte>; elegida?: string }) {
+  const fuera = elegida && !deporte.posiciones.includes(elegida) ? elegida : null;
+  return (
+    <>
+      {deporte.posiciones.map((p) => (
+        <option key={p}>{p}</option>
+      ))}
+      {fuera && <option key={fuera} value={fuera}>{fuera} (de otro deporte)</option>}
     </>
   );
 }

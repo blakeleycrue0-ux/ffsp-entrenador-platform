@@ -32,6 +32,8 @@
     "app:planes": "node pruebas/planes-iguales.mjs",
     "app:escala": "node pruebas/escala.mjs",
     "app:contraste": "node pruebas/contraste.mjs",
+    "app:multideporte": "node pruebas/multideporte.mjs",
+    "app:deportes": "node pruebas/deportes.mjs",
     "app:correo": "node pruebas/correo.mjs",
     "app:guia-al-entrar": "node pruebas/guia-al-entrar.mjs",
     "guia": "node presentacion/guia-pdf.mjs",
