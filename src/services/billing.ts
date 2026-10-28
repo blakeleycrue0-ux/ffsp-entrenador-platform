@@ -237,3 +237,43 @@ async function llamar(ruta: string, cuerpo: Record<string, unknown>): Promise<st
   }
   return json.url;
 }
+
+/**
+ * ¿HUBO UNA PRUEBA QUE YA SE ACABÓ?
+ * ---------------------------------------------------------------------------
+ * Esto existe por un caso real: un club empezó una prueba, se le acabó siete
+ * días después y la aplicación no dijo nada en ningún momento. Dos cosas lo
+ * provocaban a la vez. Una, que el webhook escribía `tier: 'free'` al
+ * cancelar, así que la fila olvidaba de qué plan era la prueba. Y otra, que
+ * el único aviso que había —«tu suscripción a X no está activa»— se dispara
+ * comparando el nivel contratado con el efectivo, y con los dos en «free» no
+ * saltaba nunca.
+ *
+ * SE MIRA LA FECHA, NO SÓLO EL ESTADO. «Cancelada» también le pasa a una
+ * suscripción de pago que nunca tuvo prueba, y dar la baja de un plan pagado
+ * por una prueba agotada sería contar otra historia.
+ *
+ * VIVE AQUÍ Y NO EN UNA PANTALLA porque lo enseñan dos —el resumen de Ajustes
+ * y la de facturación— y la primera versión sólo lo tenía en una: el aviso
+ * salía en un sitio y en el otro no.
+ */
+export function pruebaCaducada(sub: Subscription | null): { fin: string } | null {
+  if (!sub || !sub.trialEndsAt) return null;
+  if (new Date(sub.trialEndsAt) > new Date()) return null;
+  if (sub.status !== 'canceled' && sub.status !== 'unpaid') return null;
+  if (planEfectivo(sub) !== 'free') return null;
+  return { fin: sub.trialEndsAt };
+}
+
+/**
+ * El nombre del plan que se contrató, o `null` si no consta.
+ *
+ * Las filas escritas antes de guardar el nivel real se quedaron en «free», y
+ * ahí no hay plan que nombrar. Se devuelve nulo y quien lo use dice lo que
+ * sabe: rellenar el hueco con una suposición sería inventarle al club un
+ * plan que a lo mejor no probó.
+ */
+export function planContratado(sub: Subscription | null, planes: Plan[]): string | null {
+  if (!sub || sub.tier === 'free') return null;
+  return planes.find((p) => p.tier === sub.tier)?.name ?? null;
+}

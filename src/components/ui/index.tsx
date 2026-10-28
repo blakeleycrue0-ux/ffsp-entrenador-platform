@@ -36,7 +36,10 @@ type ButtonSize = 'sm' | 'md' | 'lg';
  */
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'metal-claro text-ink-0 ' +
+    /* El color del texto lo pone `.metal-claro`: encima del azul va blanco
+       en los dos temas, no `ink-0`, que de noche sería casi negro sobre
+       azul. Ver `index.css`. */
+    'metal-claro ' +
     'disabled:[background-image:none] disabled:bg-[rgba(13,13,15,0.10)] disabled:text-ink-500 disabled:shadow-none',
   secondary: 'metal text-ink-800',
   ghost: 'bg-transparent text-ink-600 hover:bg-panel hover:text-ink-900',
@@ -568,7 +571,21 @@ export function Segmented<T extends string>({
           className={cn(
             'rounded-[4px] font-medium transition-colors',
             size === 'sm' ? 'px-2 py-1 text-xs' : 'px-2.5 py-1 text-sm',
-            value === o.id ? 'bg-ink-900 text-ink-0' : 'text-ink-600 hover:text-ink-900',
+            /* ── NI AZUL NI NEGRO: UNA PASTILLA LEVANTADA ─────────────────
+               Era `bg-ink-900` con texto invertido, y al pasar las pestañas
+               y la navegación al azul de marca quedaban dos maneras de
+               decir «esto está activo» en la misma pantalla y a dos dedos
+               una de otra: la pestaña «Plantilla» en azul y «Lista» en
+               negro, como si fueran cosas de distinta naturaleza.
+
+               Y tampoco se pone azul, que sería la tercera mancha de color
+               en la misma fila. Esto no es navegación: es un interruptor
+               de vista —la misma lista, en lista o en fichas— y merece una
+               señal más callada. Una pastilla levantada sobre el surco,
+               que es como se marca un segmento en cualquier teléfono. */
+            value === o.id
+              ? 'bg-raised text-ink-900 shadow-[0_1px_2px_rgb(var(--ink-900)/0.12)]'
+              : 'text-ink-600 hover:text-ink-900',
           )}
         >
           {o.label}

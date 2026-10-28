@@ -419,7 +419,10 @@ function EventModal({ event, onClose }: { event: CalendarEvent | null; onClose: 
           <Link
             to={link}
             onClick={onClose}
-            className="inline-flex h-10 items-center rounded-xl bg-ink-900 px-4 text-sm font-medium text-ink-0 shadow-raised transition-colors hover:bg-ink-900"
+            /* Acción principal: la clase compartida, no un negro a mano.
+               `hover:bg-ink-900` encima de `bg-ink-900` además no hacía
+               nada: el botón no se movía al pasar por encima. */
+            className="metal-claro inline-flex h-10 items-center rounded-xl px-4 text-sm font-medium shadow-raised transition-colors"
           >
             Abrir {EVENT_KIND[event.kind].label.toLowerCase()}
           </Link>

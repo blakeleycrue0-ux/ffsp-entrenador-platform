@@ -25,7 +25,17 @@
  *
  * ── LO QUE SÍ PUEDE LLEVAR COLOR FIJO ──────────────────────────────────────
  *
- * Tres cosas, y están todas en la lista de abajo con su motivo:
+ * Cuatro cosas, y están todas con su motivo:
+ *
+ *   0. LO QUE VA ENCIMA DEL AZUL DE MARCA. `marca-solido` y `marca-fondo`
+ *      NO se dan la vuelta con el tema —el mismo azul de día y de noche,
+ *      porque aguanta en los dos—, así que lo que se pinta encima tampoco
+ *      debe darse la vuelta: ahí va blanco, y `ink-0` sería casi negro
+ *      sobre azul en cuanto el teléfono se pusiera en oscuro. Estas líneas
+ *      llevan su marca `escala-ok` y su contraste lo mide `contraste.mjs`,
+ *      que es quien de verdad comprueba que se leen.
+ *
+ * Y las otras tres:
  *
  *   1. LA PÁGINA PÚBLICA y las pantallas de antes de entrar. Son azul marino
  *      a propósito, en los dos temas, y tienen su propia paleta.

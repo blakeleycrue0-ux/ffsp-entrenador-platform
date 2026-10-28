@@ -166,12 +166,32 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
       className="relative -mx-[var(--pagina-x)]"
       style={{ paddingTop: 'var(--pagina-top)' }}
     >
-      <div className="heroe relative px-[var(--pagina-x)] pb-2 text-center">
+      {/* ── LA TARJETA DE LA MARCA ──────────────────────────────────────
+          La pantalla de entrada era gris sobre gris: el primer sitio donde
+          se mira un producto y no tenía cara. Primero se probó un
+          resplandor azul al 7 % detrás de la hora y era invisible; esto es
+          lo que se pedía de verdad, una tarjeta del color de la marca con
+          el dato principal encima, como la del saldo de un banco.
+
+          COLOR PLANO Y NO DEGRADADO, a propósito. `contraste.mjs` compone
+          los fondos para medir lo que se lee, y ante una imagen o un
+          degradado se rinde y no lo mide —no inventa un número—. Con un
+          color plano, todo lo que va encima se sigue comprobando: la hora
+          da 4,8:1 en blanco sobre este azul.
+
+          ES UNA TARJETA, NO UNA FRANJA. Con márgenes y esquinas se lee como
+          un objeto dentro de la página; a sangre, pegada a la barra de
+          búsqueda, parecería una cabecera de la aplicación y entonces el
+          azul dejaría de ser de la tarjeta para ser de todo. */}
+      <div className="px-[var(--pagina-x)]">
+        {/* escala-ok: todo lo de dentro va en blanco sobre el azul de marca */}
+        <div className="heroe relative overflow-hidden rounded-[26px] bg-marca-fondo px-5 pb-7 text-center text-white">
         {/* EL RÓTULO DE LA PORTADA, no un párrafo pequeño. Mayúsculas
             cortas muy separadas: la señal de «empieza algo» que allí abre
             cada sección, y que aquí hace que la hora de debajo se lea como
             el dato principal y no como un número suelto. */}
-        <p className="rotulo text-ink-500">{rotulo}</p>
+        {/* escala-ok: sobre el azul de marca */}
+        <p className="rotulo text-white/80">{rotulo}</p>
 
         {s ? (
           <>
@@ -185,11 +205,13 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
                 datos: uno importante y otro apagado. Son la misma hora. Los
                 minutos siguen siendo algo menores, que es lo que hace que
                 «18» se lea primero, pero del mismo color: una unidad. */}
-            <p className="cifra mt-4 flex items-baseline justify-center text-[68px] tracking-[-0.04em] text-ink-900">
+            {/* escala-ok: sobre el azul de marca */}
+            <p className="cifra mt-4 flex items-baseline justify-center text-[68px] tracking-[-0.04em] text-white">
               <span>{horas}</span>
               <span className="text-[42px] tracking-[-0.03em]">:{minutos}</span>
             </p>
-            <p className="mt-3.5 text-base text-ink-600">
+            {/* escala-ok: sobre el azul de marca */}
+            <p className="mt-3.5 text-base text-white/80">
               {relativeDay(s.dato.date)}
               {d.teams.length === 1 && d.equipo ? ` · ${d.equipo.name}` : ''}
             </p>
@@ -202,10 +224,12 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
                 dos, la segunda línea se montaba encima de la primera.
                 Esto no es una cifra, es una frase, así que lleva el interlineado
                 de una frase. */}
-            <p className="t-m mx-auto mt-4 max-w-[18ch] text-ink-900">
+            {/* escala-ok: sobre el azul de marca */}
+            <p className="t-m mx-auto mt-4 max-w-[18ch] text-white">
               {d.teams.length === 0 ? 'Monta tu equipo' : 'Tu semana está vacía'}
             </p>
-            <p className="mt-3 text-base text-ink-600">{longDate(toISODate(today()))}</p>
+            {/* escala-ok: sobre el azul de marca */}
+            <p className="mt-3 text-base text-white/80">{longDate(toISODate(today()))}</p>
           </>
         )}
 
@@ -221,9 +245,17 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
               className="w-[220px] max-w-[calc(100vw-2rem)]"
               align="left"
               trigger={
-                <button className="flex h-9 max-w-[70vw] items-center gap-1.5 rounded-full bg-ink-900/[0.06] px-4 text-sm font-medium text-ink-900 transition-colors active:bg-ink-900/[0.10]">
+                /* LA CHAPA, EN NEGRO Y NO EN BLANCO. Al 20 % de blanco
+                   aclaraba el azul de debajo y el texto se quedaba en
+                   4,48:1, justo por debajo del listón: medido, no
+                   estimado. En negro al 18 % el azul se oscurece y el
+                   mismo texto sube a 8,8:1, y la chapa se sigue viendo
+                   igual de bien.
+                   escala-ok: sobre el azul de marca */
+                <button className="flex h-9 max-w-[70vw] items-center gap-1.5 rounded-full bg-black/[0.18] px-4 text-sm font-medium text-white transition-colors active:bg-black/[0.26]">
                   <span className="truncate">{d.equipo?.name ?? 'Equipos'}</span>
-                  <ChevronsUpDown size={13} className="shrink-0 text-ink-600" />
+                  {/* escala-ok: sobre el azul de marca */}
+                  <ChevronsUpDown size={13} className="shrink-0 text-white/80" />
                 </button>
               }
             >
@@ -249,6 +281,7 @@ function Heroe({ d, onCrear }: { d: DatosDeInicio; onCrear: () => void }) {
             </Dropdown>
           </div>
         )}
+        </div>
       </div>
 
       {/* Los cuatro discos. En rejilla de cuatro columnas y no en fila con
@@ -340,9 +373,14 @@ function Disco({
  * regla es la misma en los dos sitios: la acción principal es la que más
  * contrasta con lo que tiene debajo.
  */
+/* LA MISMA CLASE QUE EL BOTÓN PRINCIPAL DE TODA LA APLICACIÓN, no una copia.
+   Esto era `bg-ink-900 text-ink-0` escrito a mano, es decir, un segundo botón
+   principal con su propio color: cuando el de verdad pasó a azul de marca,
+   éste se quedó negro en la pantalla de entrada, que es la primera que se
+   ve. Con `.metal-claro` hay un solo botón principal y cambia de un sitio. */
 const PRINCIPAL =
-  'flex h-11 w-full items-center justify-center rounded-xl bg-ink-900 text-base font-semibold'
-  + ' text-ink-0 transition-colors active:bg-ink-800';
+  'metal-claro flex h-11 w-full items-center justify-center rounded-xl text-base font-semibold'
+  + ' transition-colors';
 const SECUNDARIO =
   'flex h-11 w-full items-center justify-center rounded-xl border border-line bg-ink-900/[0.05]'
   + ' text-base font-medium text-ink-900 transition-colors active:bg-ink-900/[0.10]';

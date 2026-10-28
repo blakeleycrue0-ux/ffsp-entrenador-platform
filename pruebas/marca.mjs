@@ -1,31 +1,39 @@
 /**
- * NI UNA GOTA DE AZUL DENTRO DE LA PLATAFORMA.
+ * EL AZUL DE LA MARCA: QUE ESTÉ, Y QUE ESTÉ SÓLO DONDE DEBE.
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * El encargo lo dice así: «No lo des por terminado si sigue predominando el
- * azul marino». Eso no se comprueba mirando capturas una por una —el azul se
- * esconde en el borde de un campo enfocado, en el punto de un gráfico, en el
- * aro del foco del teclado, en un desplegable que sólo sale al tocarlo—, y
- * cada pantalla nueva puede volver a meterlo sin que nadie se entere.
+ * ESTA PRUEBA DECÍA LO CONTRARIO. Se llamaba `sin-azul.mjs` y prohibía el
+ * azul dentro de la plataforma: la herramienta era blanco y negro entera
+ * mientras la portada era azul de arriba abajo, y parecían dos productos.
+ * Dicho por quien la usa: «no hay color».
  *
- * Así que se cuenta. Esta prueba recorre las pantallas de la plataforma y
- * mira el color CALCULADO de cada elemento: su fondo, su texto, su borde y,
- * en los dibujos, su trazo y su relleno. Un color es azul cuando su
- * componente azul se separa de las otras dos —`b − max(r, g) > 10`— y se ve
- * de verdad, es decir, no es transparente.
+ * Lo llamativo es que el propio `tailwind.config.js` llevaba meses diciendo
+ * la versión buena —«dentro de la aplicación el azul es SEÑAL, no decorado:
+ * marca la sección abierta, la acción principal y el foco del teclado»— y
+ * esta prueba imponía justo lo opuesto. Había una intención escrita y un
+ * guardián que la impedía.
  *
- * LA PORTADA NO ENTRA, Y ES EL OTRO MOTIVO DE QUE ESTO EXISTA. La página
- * pública es azul a propósito y tiene que seguir siéndolo. Esta prueba
- * comprueba las dos mitades del trato: que dentro no quede azul, y que fuera
- * NO SE HAYA IDO. Si alguien «limpia» el azul tocando un color compartido, la
- * portada se queda en gris y aquí se ve.
+ * Así que ahora comprueba las dos mitades del mismo trato:
  *
- * Y SE MIRA A DOS TAMAÑOS. El menú lateral, su sección activa y la cabecera
- * con línea sólo existen a partir de 1024 px: medir únicamente el teléfono
- * dejaría sin mirar justo la parte donde vive la navegación del escritorio.
+ *   1. QUE EL AZUL ESTÉ. En Inicio tiene que haber azul: la tarjeta de la
+ *      hora, la acción principal y el destino abierto de la navegación. Una
+ *      «limpieza de color» que lo borre vuelve a dejar la aplicación en gris
+ *      y aquí salta.
+ *   2. QUE NO SE DESPARRAME. Cada azul que aparezca tiene que estar DENTRO
+ *      de uno de los sitios donde significa algo. Un azul en el borde de
+ *      una tarjeta cualquiera, en un icono suelto o en el texto de una
+ *      lista no es señal: es decoración, y entonces el azul deja de querer
+ *      decir «esto es lo que hay que pulsar».
+ *   3. QUE LA PORTADA SIGA SIENDO AZUL, que es de donde sale el color.
+ *
+ * Y EL ACCESO TAMBIÉN. `/entrar` se pinta sobre el cielo de la portada, con
+ * sus mismas clases, porque es el último paso de la página pública y no el
+ * primero de la herramienta: se llega desde un anuncio, se contesta y se
+ * entra. Un corte a gris en mitad de ese camino se lee como haber
+ * aterrizado en otro sitio.
  *
  *   npm run build && npm run preview
- *   node pruebas/sin-azul.mjs
+ *   node pruebas/marca.mjs
  */
 import { chromium } from 'playwright';
 import { mock, USER } from './mock.mjs';
@@ -42,14 +50,6 @@ const RUTAS = [
   '/app/equipo-tecnico', '/app/equipo-tecnico/club',
   '/app/ajustes', '/app/ajustes/plan', '/app/perfil',
 ];
-
-/* LA PIZARRA NO ENTRA, Y NO ES UN OLVIDO. Sus fichas son de colores a
-   propósito —la jugadora, la rival, la portera, el comodín, el cono, la
-   zona—: el color ES el dato, igual que el azul de la portada es la marca.
-   Dejarlas todas en gris no simplificaría nada; quitaría la única manera de
-   distinguir una pieza de otra sobre un campo verde. El marco de la pizarra
-   —su barra de herramientas, sus botones— sí se repintó, y eso se ve en el
-   resto de las pruebas de la pizarra. */
 
 /* ── `/entrar` CAMBIÓ DE BANDO, Y ESTO ES LO QUE HAY QUE SABER ────────────
    Aquí ponía que el acceso «también tiene que estar en blanco y negro»,
@@ -71,8 +71,22 @@ const comprueba = (nombre, bien, detalle) => {
   if (!bien) fallos++;
 };
 
-/** Lo que se ejecuta dentro de la página: devuelve los colores azules que ve. */
-const BUSCAR_AZUL = `(() => {
+/**
+ * Los azules que se ven, y si están donde deben.
+ * ---------------------------------------------------------------------------
+ * «Donde deben» son los sitios en los que el color SIGNIFICA algo, y están
+ * escritos aquí en forma de selector:
+ *
+ *   `.metal-claro`          la acción principal de cada pantalla.
+ *   `[aria-current="page"]` lo abierto: el destino de la barra de abajo y la
+ *                           pestaña de la sección.
+ *   `.heroe`                la tarjeta del dato principal de Inicio.
+ *
+ * Se mira con `closest`, así que lo de dentro de esos sitios también vale:
+ * la letra blanca y el icono que van encima del azul son parte de la pieza.
+ */
+const MIRAR_AZUL = `(() => {
+  const PERMITIDO = '.metal-claro, [aria-current="page"], .heroe';
   const azul = (c) => {
     const m = /rgba?\\(([^)]+)\\)/.exec(c || '');
     if (!m) return null;
@@ -81,7 +95,8 @@ const BUSCAR_AZUL = `(() => {
     if (b - Math.max(r, g) > 10) return c;           // tira a azul
     return null;
   };
-  const visto = new Map();
+  const fuera = new Map();
+  let dentro = 0;
   for (const el of document.querySelectorAll('*')) {
     const r = el.getBoundingClientRect();
     if (r.width < 2 || r.height < 2) continue;
@@ -96,19 +111,19 @@ const BUSCAR_AZUL = `(() => {
       ['relleno', s.fill],
       ['sombra', s.boxShadow],
     ]) {
-      /* En la sombra puede haber varios colores; se miran todos. */
       const trozos = prop === 'sombra' ? (valor || '').match(/rgba?\\([^)]+\\)/g) ?? [] : [valor];
       for (const t of trozos) {
-        const malo = azul(t);
-        if (!malo) continue;
+        const color = azul(t);
+        if (!color) continue;
+        if (el.closest(PERMITIDO)) { dentro++; continue; }
         const quien = el.tagName.toLowerCase()
           + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\\s+/).slice(0, 2).join('.') : '');
-        const clave = prop + '|' + malo + '|' + quien;
-        if (!visto.has(clave)) visto.set(clave, { prop, color: malo, quien });
+        const clave = prop + '|' + color + '|' + quien;
+        if (!fuera.has(clave)) fuera.set(clave, { prop, color, quien });
       }
     }
   }
-  return [...visto.values()].slice(0, 8);
+  return { dentro, fuera: [...fuera.values()].slice(0, 6) };
 })()`;
 
 const navegador = await chromium.launch({ executablePath: process.env.CHROMIUM ?? undefined });
@@ -123,8 +138,9 @@ const TAMANOS = [
   { nombre: 'escritorio 1280', viewport: { width: 1280, height: 900 } },
 ];
 
-/** Mira una lista de direcciones y canta las que tengan azul. */
+/** Recorre unas direcciones y canta el azul que se haya salido de su sitio. */
 async function recorre(page, rutas) {
+  let azulVistoEnTotal = 0;
   for (const ruta of rutas) {
     try {
       await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
@@ -137,25 +153,36 @@ async function recorre(page, rutas) {
        manda a otra parte, lo que se ha medido es la otra: decirlo evita dar
        por buena una pantalla que no se ha mirado. */
     const donde = new URL(page.url()).pathname;
-    const azules = await page.evaluate(BUSCAR_AZUL);
+    const { dentro, fuera } = await page.evaluate(MIRAR_AZUL);
+    azulVistoEnTotal += dentro;
     comprueba(
       ruta + (donde === ruta ? '' : ` → ${donde}`),
-      azules.length === 0,
-      azules.map((a) => `${a.prop} ${a.color} en ${a.quien}`).join(' · '),
+      fuera.length === 0,
+      fuera.length === 0
+        ? (dentro > 0 ? `${dentro} en su sitio` : 'sin azul')
+        : fuera.map((a) => `${a.prop} ${a.color} en ${a.quien}`).join(' · '),
     );
   }
+  return azulVistoEnTotal;
 }
 
 for (const { nombre, ...opciones } of TAMANOS) {
-  console.log(`\n  dentro de la plataforma, ni una gota de azul · ${nombre}\n`);
+  console.log(`\n  el azul, sólo donde significa algo · ${nombre}\n`);
 
   const ctx = await navegador.newContext(opciones);
   const page = await ctx.newPage();
   await mock(page);
   await page.addInitScript(([u]) => sessionStorage.setItem('p360.desbloqueado', u), [USER]);
-  await recorre(page, RUTAS);
-  await ctx.close();
+  const total = await recorre(page, RUTAS);
 
+  /* Y QUE EXISTA. Lo de arriba sólo dice que no se ha desparramado, y una
+     aplicación en gris entero pasaría ese examen con nota. Esto es la otra
+     mitad: en algún sitio tiene que haber azul, porque si no volvemos a
+     tener una herramienta sin cara. */
+  comprueba('hay azul de marca en la plataforma', total > 0,
+    total > 0 ? `${total} elementos` : 'NI UNO: la aplicación ha vuelto al gris');
+
+  await ctx.close();
 }
 
 /* ── Y lo contrario: lo que es azul SIGUE siéndolo ────────────────────────
@@ -169,11 +196,14 @@ console.log('\n  y lo que es azul sigue siendo azul\n');
   for (const ruta of AZULES_A_PROPOSITO) {
     await p2.goto(BASE + ruta, { waitUntil: 'networkidle' });
     await p2.waitForTimeout(900);
-    const azules = await p2.evaluate(BUSCAR_AZUL);
+    /* Aquí no hay «sitios permitidos» que valgan: la portada es azul
+       entera, así que cuenta todo lo que vea, dentro y fuera. */
+    const { dentro, fuera } = await p2.evaluate(MIRAR_AZUL);
+    const cuantos = dentro + fuera.length;
     comprueba(
       ruta === '/' ? 'la página pública conserva su azul' : 'el acceso conserva el azul de la portada',
-      azules.length > 0,
-      azules.length > 0 ? `${azules.length} sitios, p. ej. ${azules[0].color}` : 'NO QUEDA NINGUNO',
+      cuantos > 0,
+      cuantos > 0 ? `${cuantos} sitios` : 'NO QUEDA NINGUNO',
     );
   }
   await limpio.close();
@@ -182,7 +212,7 @@ console.log('\n  y lo que es azul sigue siendo azul\n');
 await navegador.close();
 console.log(
   fallos === 0
-    ? '\n  Negro, blanco y grises dentro. Azul fuera, donde tiene que estar.\n'
-    : `\n  ${fallos} ${fallos === 1 ? 'pantalla' : 'pantallas'} con azul.\n`,
+    ? '\n  El azul está, y sólo donde quiere decir algo.\n'
+    : `\n  ${fallos} ${fallos === 1 ? 'problema' : 'problemas'} con el azul.\n`,
 );
 process.exit(fallos === 0 ? 0 : 1);

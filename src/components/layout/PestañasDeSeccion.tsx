@@ -50,7 +50,12 @@ export function PestañasDeSeccion() {
                   /* 40 px de alto: es una navegación y se toca con el pulgar. */
                   'flex h-10 items-center rounded-full px-4 text-base transition-colors',
                   aqui
-                    ? 'bg-ink-900 font-semibold text-ink-0'
+                    /* Azul de marca y texto blanco: lo mismo que la barra
+                       de abajo y que el botón principal, que son los tres
+                       sitios donde el color dice algo. Blanco fijo y no
+                       `ink-0` porque el relleno no se da la vuelta. */
+                    /* escala-ok: blanco sobre el azul de marca */
+                    ? 'bg-marca-solido font-semibold text-white'
                     : 'bg-panel font-medium text-ink-600 active:bg-raised sm:hover:bg-raised sm:hover:text-ink-900',
                 )}
               >
