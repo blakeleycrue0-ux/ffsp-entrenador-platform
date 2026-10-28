@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, CheckCheck, LogOut, PanelLeftOpen, Plus, Search } from 'lucide-react';
 import { Avatar, Button, Dot, Dropdown, MenuItem } from '@/components/ui';
-import { CUENTA } from './navigation';
+import { ASISTENTE, CUENTA } from './navigation';
 import { useClub } from '@/store/store';
 import { currentStaff } from '@/store/selectors';
+import { asistenteConfigurado } from '@/services/entrenador';
 import { cn, relativeTime } from '@/lib/utils';
 import type { Notification } from '@/types';
 
@@ -36,6 +38,11 @@ export function Topbar({
   const navigate = useNavigate();
   const staff = currentStaff(data);
   const unread = data.notifications.filter((n) => !n.read).length;
+
+  /* Se pregunta una vez por pestaña y se guarda; mientras no conteste vale
+     `false`, que es el lado que no promete nada. */
+  const [hayAsistente, setHayAsistente] = useState(false);
+  useEffect(() => { void asistenteConfigurado().then(setHayAsistente); }, []);
 
   const openNotification = (n: Notification, close: () => void) => {
     void actions.readNotification(n.id);
@@ -123,6 +130,12 @@ export function Topbar({
                 {p.label}
               </MenuItem>
             ))}
+            {/* Sólo si el servidor dice que puede contestar. Ver `ASISTENTE`
+                en `navigation.ts`: sin clave, cada intento acabaría en «no
+                está configurado». */}
+            {hayAsistente && (
+              <MenuItem to={ASISTENTE.to} onClick={close}>{ASISTENTE.label}</MenuItem>
+            )}
             <div className="my-1 hairline" />
             <MenuItem icon={<LogOut size={15} />} tone="danger" onClick={signOut}>
               Cerrar sesión

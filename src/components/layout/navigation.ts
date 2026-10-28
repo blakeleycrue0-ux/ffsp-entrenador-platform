@@ -139,6 +139,20 @@ export const CUENTA: Pagina[] = [
   { to: '/app/ajustes/plan', label: 'Plan del club' },
 ];
 
+/**
+ * EL ASISTENTE, APARTE Y CONDICIONADO.
+ *
+ * No está en `CUENTA` porque esa lista se pinta entera siempre, y ésta sólo
+ * se enseña cuando el servidor confirma que el asistente puede contestar
+ * —es decir, cuando hay `ANTHROPIC_API_KEY` puesta—.
+ *
+ * La función estaba escrita desde hace semanas y la ruta mandaba a Inicio:
+ * no había forma de llegar. Lo que NO se puede hacer es lo contrario,
+ * ponerla en el menú sin más: sin clave, cada intento acaba en «todavía no
+ * está configurado», y una entrada que siempre falla es peor que ninguna.
+ */
+export const ASISTENTE: Pagina = { to: '/app/asistente', label: 'Entrenador IA' };
+
 /** Todas las pantallas con nombre, para la búsqueda y para las pruebas. */
 export const TODAS_LAS_PAGINAS: Pagina[] = [
   ...SECCIONES.flatMap((s) => (s.paginas.length > 0 ? s.paginas : [{ to: s.to, label: s.label }])),

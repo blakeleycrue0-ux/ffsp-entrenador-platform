@@ -111,6 +111,22 @@
   status = 404
   force = false
 
+# LA PIZARRA SE RETIRÓ DEL PRODUCTO, y su dirección pública estuvo indexada.
+# Un 404 ahí le dice a Google y a quien tenga el enlace «esto no existe»; un
+# 301 dice la verdad, que es «esto se ha movido». Va ANTES del comodín, o se
+# lo come él y nunca se llega aquí.
+[[redirects]]
+  from = "/pizarra"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/pizarra/*"
+  to = "/"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
