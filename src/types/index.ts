@@ -415,7 +415,12 @@ export interface MessageThread {
 
 export interface Notification {
   id: string;
-  icon: 'alerta' | 'calendario' | 'mensaje' | 'tarea' | 'partido';
+  /* `plan` lo escribe el webhook de Stripe cuando empieza una prueba, cuando
+     se paga y cuando se acaba. La columna de la base es `text` libre, así que
+     esta lista es lo que esta versión SABE pintar, no lo que puede llegar:
+     por eso quien la usa tolera un valor desconocido en vez de quedarse en
+     blanco. */
+  icon: 'alerta' | 'calendario' | 'mensaje' | 'tarea' | 'partido' | 'plan';
   title: string;
   detail?: string;
   createdAt: string;

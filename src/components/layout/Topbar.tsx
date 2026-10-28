@@ -7,13 +7,21 @@ import { currentStaff } from '@/store/selectors';
 import { cn, relativeTime } from '@/lib/utils';
 import type { Notification } from '@/types';
 
-const NOTIF_TONE: Record<Notification['icon'], 'bad' | 'info' | 'neutral' | 'warn'> = {
+type Tono = 'bad' | 'info' | 'neutral' | 'warn';
+
+const NOTIF_TONE: Record<Notification['icon'], Tono> = {
   alerta: 'bad',
   calendario: 'info',
   mensaje: 'neutral',
   tarea: 'neutral',
   partido: 'warn',
+  plan: 'info',
 };
+
+/* La columna de la base es texto libre y la escribe también el webhook de
+   Stripe. Un valor que esta versión no conozca no puede dejar el punto sin
+   color: el aviso se vería a medias y parecería un fallo de pintado. */
+const tonoDe = (icon: string): Tono => NOTIF_TONE[icon as Notification['icon']] ?? 'neutral';
 
 export function Topbar({
   onSearch, onCreate, menu, onMenu,
@@ -213,7 +221,7 @@ export function Topbar({
                         !n.read && 'bg-surface',
                       )}
                     >
-                      <Dot tone={NOTIF_TONE[n.icon]} className="mt-1.5" />
+                      <Dot tone={tonoDe(n.icon)} className="mt-1.5" />
                       <span className="min-w-0 flex-1">
                         <span className={cn('block text-sm leading-snug', n.read ? 'text-ink-700' : 'font-medium text-ink-900')}>
                           {n.title}

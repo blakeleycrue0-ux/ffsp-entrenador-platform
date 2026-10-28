@@ -247,13 +247,35 @@ export async function guardarSuscripcion(
   const pedido = sub.metadata?.nivel;
   const nivel = (NIVELES_DE_PAGO as readonly string[]).includes(pedido ?? '') ? pedido! : 'pro';
 
+  /* Cómo estaba antes, para saber QUÉ HA CAMBIADO. Sin esto no se puede
+     distinguir «acaba de empezar la prueba» de «la prueba sigue», y los dos
+     llegan aquí con el mismo `trialing`. De esa diferencia salen los avisos
+     de abajo, que son lo único que le cuenta a nadie lo que ha pasado. */
+  const { data: antes } = await admin()
+    .from('subscriptions')
+    .select('tier, status, trial_ends_at')
+    .eq('club_id', clubId)
+    .maybeSingle();
+
   const { error: e } = await admin()
     .from('subscriptions')
     .upsert(
       {
         club_id: clubId,
-        // El plan lo decide que la suscripción exista, no lo que diga nadie.
-        tier: estado === 'canceled' || estado === 'unpaid' ? 'free' : nivel,
+        /* EL NIVEL CONTRATADO, TAMBIÉN SI ESTÁ CANCELADA.
+           Aquí se escribía `'free'` en cuanto la suscripción se cancelaba, y
+           con eso la fila OLVIDABA de qué plan era: quedaba «free /
+           canceled» y ya no había manera de decirle a nadie «tu prueba de
+           Pro terminó el 19», porque no quedaba constancia de que fuera Pro.
+           Pasó de verdad, y el club se quedó sin enterarse de nada.
+
+           Guardar el nivel real no regala nada, y eso es comprobable: el
+           plan que se APLICA no sale de esta columna. Lo calcula
+           `club_tier()` en la base —activa o en prueba sin caducar, su
+           nivel; cualquier otra cosa, gratis— y `planEfectivo()` hace lo
+           mismo en el cliente. Las dos funciones ya estaban escritas así
+           antes de este cambio. */
+        tier: nivel,
         status: estado,
         trial_ends_at: enSegundos(sub.trial_end),
         current_period_end: enSegundos(item?.current_period_end),
@@ -269,5 +291,139 @@ export async function guardarSuscripcion(
     console.error('No se ha podido guardar la suscripción', clubId, e.message);
     throw new Error(`No se ha podido guardar la suscripción: ${e.message}`);
   }
+
+  await avisarDelPlan(clubId, {
+    tierAntes: (antes?.tier as string | undefined) ?? null,
+    estadoAntes: (antes?.status as string | undefined) ?? null,
+    tier: nivel,
+    estado,
+    finDePrueba: enSegundos(sub.trial_end),
+  });
+
   return clubId;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CONTARLE AL CLUB LO QUE LE HA PASADO A SU PLAN
+   ══════════════════════════════════════════════════════════════════════════
+
+   Un club empezó una prueba, se le acabó siete días después y NADIE se lo
+   dijo: ni al empezar, ni dos días antes, ni al terminar. Desde dentro de la
+   aplicación no se notaba nada —todo seguía funcionando— y desde fuera
+   tampoco. Lo único que quedó fue una fila en la base.
+
+   Un cobro, o el final de una prueba, son de las pocas cosas que una
+   aplicación DEBE contar sin que se las pregunten.
+
+   SE AVISA A LOS ADMINISTRADORES, no a todo el club: son quienes pueden
+   hacer algo —pagar, cambiar la tarjeta, cancelar— y el resto del cuerpo
+   técnico no necesita saber el estado de la cuenta.
+
+   Y NO SE AVISA DE LO QUE NO HA CAMBIADO. Stripe reintenta avisos y manda
+   `updated` por cosas que no son nada; si cada uno dejara una notificación,
+   la campana sería ruido y dejaría de mirarse. Por eso todo esto va contra
+   el estado ANTERIOR y no contra el actual a secas. */
+
+const NOMBRE_DEL_PLAN: Record<string, string> = {
+  free: 'Gratis', pro: 'Pro', max: 'Max', club: 'Club',
+};
+
+const enCastellano = (iso: string | null): string => {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('es-ES', {
+    day: 'numeric', month: 'long', timeZone: 'Europe/Madrid',
+  });
+};
+
+interface Cambio {
+  tierAntes: string | null;
+  estadoAntes: string | null;
+  tier: string;
+  estado: string;
+  finDePrueba: string | null;
+}
+
+/** El aviso que toca, o `null` si no ha pasado nada que contar. */
+function quePasa(c: Cambio): { icon: string; title: string; detail: string } | null {
+  const plan = NOMBRE_DEL_PLAN[c.tier] ?? c.tier;
+  const igual = c.estadoAntes === c.estado && c.tierAntes === c.tier;
+
+  /* Empieza una prueba. */
+  if (c.estado === 'trialing' && c.estadoAntes !== 'trialing') {
+    return {
+      icon: 'plan',
+      title: `Prueba de ${plan} empezada`,
+      detail: c.finDePrueba
+        ? `Tienes ${plan} hasta el ${enCastellano(c.finDePrueba)}. No se cobra nada antes de esa fecha.`
+        : `Ya puedes usar todo lo de ${plan}.`,
+    };
+  }
+
+  /* Empieza a pagarse de verdad: viniendo de prueba o de nada. */
+  if (c.estado === 'active' && c.estadoAntes !== 'active') {
+    return {
+      icon: 'plan',
+      title: `Ya estás en ${plan}`,
+      detail: c.estadoAntes === 'trialing'
+        ? `La prueba ha terminado y el plan sigue: el club se queda con todo lo de ${plan}.`
+        : `El pago ha salido bien. El club ya tiene todo lo de ${plan}.`,
+    };
+  }
+
+  /* Se acaba. Se distingue si venía de una prueba, porque no es lo mismo
+     «no has llegado a pagar» que «se ha dado de baja una suscripción». */
+  if ((c.estado === 'canceled' || c.estado === 'unpaid') && c.estadoAntes && c.estadoAntes !== c.estado) {
+    const dePrueba = c.estadoAntes === 'trialing';
+    return {
+      icon: 'plan',
+      title: dePrueba ? `La prueba de ${plan} ha terminado` : `${plan} ha terminado`,
+      detail: 'El club vuelve al plan Gratis. Lo que hay guardado no se toca: '
+        + 'siguen los equipos, la plantilla y el histórico.',
+    };
+  }
+
+  /* Un cobro que no sale. Es el único que conviene repetir si se repite. */
+  if (c.estado === 'past_due' && c.estadoAntes !== 'past_due') {
+    return {
+      icon: 'alerta',
+      title: 'No hemos podido cobrar',
+      detail: 'El último cobro no ha salido bien. Revisa la tarjeta en Plan y facturación; '
+        + 'hasta entonces el club sigue como está.',
+    };
+  }
+
+  if (igual) return null;
+  return null;
+}
+
+async function avisarDelPlan(clubId: string, c: Cambio): Promise<void> {
+  const aviso = quePasa(c);
+  if (!aviso) return;
+
+  try {
+    const db = admin();
+    const { data: admins } = await db
+      .from('club_members')
+      .select('profile_id')
+      .eq('club_id', clubId)
+      .eq('role', 'admin');
+
+    if (!admins || admins.length === 0) return;
+
+    await db.from('notifications').insert(
+      admins.map((m) => ({
+        profile_id: (m as { profile_id: string }).profile_id,
+        icon: aviso.icon,
+        title: aviso.title,
+        detail: aviso.detail,
+        link: '/app/ajustes/plan',
+      })),
+    );
+  } catch (err) {
+    /* UN AVISO QUE NO SE PUEDE ESCRIBIR NO TUMBA EL COBRO. Si esto lanzara,
+       el webhook devolvería error, Stripe lo reintentaría y el club podría
+       acabar con el plan sin guardar por no haber podido escribir una
+       notificación. El plan es lo importante; el aviso, lo deseable. */
+    console.error('No se ha podido avisar del plan', clubId, (err as Error).message);
+  }
 }

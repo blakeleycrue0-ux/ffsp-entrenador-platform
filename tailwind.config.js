@@ -105,6 +105,14 @@ export default {
         'line-fuerte': 'rgb(var(--line-rgb) / 0.26)',
 
         muted: 'rgb(var(--ink-600) / <alpha-value>)',
+
+        /* El azul DE DENTRO, en dos piezas y en canales. `marca-*` de abajo
+           es la paleta fija de la portada y se queda como está; esto es lo
+           que usa la plataforma, y `marca-texto` se da la vuelta con el
+           tema porque una letra azul oscura no se lee de noche. */
+        'marca-solido': 'rgb(var(--marca-solido) / <alpha-value>)',
+        'marca-texto': 'rgb(var(--marca-texto) / <alpha-value>)',
+        'marca-fondo': 'rgb(var(--marca-fondo) / <alpha-value>)',
         night: '#000000',
 
 

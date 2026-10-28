@@ -169,6 +169,36 @@
     --ok:    49  97  74;
     --warn: 110  84  28;
     --bad:  149  57  49;
+
+    /* ── EL AZUL DE LA MARCA, DENTRO DE LA APLICACIÓN ─────────────────────
+       La plataforma era blanco y negro entera. No por falta de paleta: el
+       config lleva escrito desde hace meses que el azul «marca la sección
+       abierta, la acción principal y el foco del teclado», y además había
+       una prueba que PROHIBÍA el azul dentro, así que la intención escrita
+       y el código decían lo contrario. Resultado: una herramienta sin un
+       solo punto de color y una portada azul, como dos productos.
+
+       Vuelve, y sólo donde significa algo.
+
+       TRES VARIABLES, PORQUE UN AZUL NO HACE LOS TRES TRABAJOS:
+
+         · `marca-solido` (#0868F9) es RELLENO pequeño —el botón principal,
+           el destino abierto— y sólo admite texto blanco entero: da 4,82:1,
+           que pasa justo, y cualquier transparencia encima se cae.
+         · `marca-fondo` (#0A52CC) es para SUPERFICIES GRANDES, como la
+           tarjeta de Inicio. Más oscuro a propósito: ahí dentro hay un
+           rótulo y una fecha que tienen que pesar menos que la hora, y eso
+           se hace con transparencia. Sobre este, el blanco al 80 % se lee a
+           4,9:1; sobre el otro se quedaría en 3,6:1.
+         · `marca-texto` es LETRA sobre el fondo de la página, y ahí sí hace
+           falta uno por tema: el #0A52CC da 5,55:1 de día y 2,91:1 de
+           noche, que es ilegible. De noche sube a #5F98FF, que da 6,99:1.
+
+       Los dos rellenos NO se dan la vuelta con el tema, y por eso lo que va
+       encima va en blanco fijo y no en `ink-0`. */
+    --marca-solido: 8 104 249;
+    --marca-fondo: 10 82 204;
+    --marca-texto: 10 82 204;
   }
 
   /* EL TEMA LO MANDA EL MÓVIL, no un interruptor dentro de la aplicación.
@@ -211,6 +241,10 @@
       --ok:    91 173 134;
       --warn: 197 151  50;
       --bad:  214 138 131;
+
+      /* Los rellenos no cambian: el mismo azul aguanta en los dos temas. Lo
+         que cambia es la letra, que de noche tiene que aclararse. */
+      --marca-texto: 95 152 255;
     }
   }
 
@@ -391,8 +425,11 @@
   /* En canales: el aro de dentro es el color del fondo y el de fuera el que
      más contrasta, así que con el teléfono en oscuro se dan la vuelta los dos
      y el foco sigue siendo un aro claro sobre uno oscuro, no al revés. */
+  /* El aro de dentro sigue siendo el color del fondo, para despegar el foco
+     de lo que tiene debajo; el de fuera pasa a ser el azul de la marca, que
+     es uno de los sitios donde el color significa algo. */
   .plataforma :focus-visible {
-    box-shadow: 0 0 0 2px rgb(var(--ink-0)), 0 0 0 4px rgb(var(--ink-900) / 0.85);
+    box-shadow: 0 0 0 2px rgb(var(--ink-0)), 0 0 0 4px rgb(var(--marca-solido));
   }
 
   /* Los campos nativos heredan la tipografía de la interfaz */
@@ -585,13 +622,32 @@
      cambio no mueve un píxel de día y devuelve el botón de noche.
 
      La portada no se toca: usa `.btn-azul`, que conserva el suyo. */
+  /* ── Y AHORA ES AZUL, NO NEGRO ──────────────────────────────────────────
+     Era el extremo de la escala: negro de día, blanco de noche. Funcionaba,
+     pero dejaba la aplicación entera sin un punto de color mientras la
+     portada es azul de arriba abajo. Dos productos.
+
+     El azul es el mismo de la portada y aguanta en los dos temas sin
+     cambiar: 4,82:1 con el texto blanco encima y 4,11:1 contra el fondo
+     oscuro. Por eso el relleno NO se da la vuelta y el texto de dentro va
+     blanco siempre, no `ink-0`, que de noche sería casi negro sobre azul.
+
+     Y SIGUE SIENDO SEÑAL, NO DECORADO: hay un botón principal por
+     formulario, por tarjeta y por estado vacío. Si el azul se extendiera al
+     resto, dejaría de querer decir «esto es lo que hay que pulsar». Lo
+     vigila `marca.mjs`, que canta cualquier azul fuera de su sitio. */
   .metal-claro {
-    background-color: rgb(var(--ink-900));
-    border: 1px solid rgb(var(--ink-900));
+    background-color: rgb(var(--marca-solido));
+    border: 1px solid rgb(var(--marca-solido));
+    color: #FFFFFF;
     transition: background-color .2s ease;
   }
-  .metal-claro:hover { background-color: rgb(var(--ink-800)); }
-  .metal-claro:disabled { background-color: rgb(var(--ink-900) / 0.14); border-color: transparent; }
+  .metal-claro:hover { background-color: rgb(var(--marca-solido) / 0.88); }
+  .metal-claro:disabled {
+    background-color: rgb(var(--ink-900) / 0.14);
+    border-color: transparent;
+    color: rgb(var(--ink-500));
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .metal, .metal-claro { transition: none; }

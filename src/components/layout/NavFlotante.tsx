@@ -52,9 +52,14 @@ const DESTINO =
    decir «estás aquí» a quince centímetros una de otra, y la de abajo era
    la floja. Ahora las dos hablan igual.
 
-   `ink-900` sobre `ink-0`, así que con el teléfono en oscuro se da la
-   vuelta sola: píldora casi blanca con letra casi negra. */
-const ACTIVO = 'bg-ink-900 text-ink-0';
+   Y ES AZUL, no negro. La aplicación entera estaba en blanco y negro
+   mientras la portada es azul: parecían dos productos. El azul vuelve a
+   los tres sitios donde significa algo —la sección abierta, la acción
+   principal y el foco— y a ninguno más. El relleno es el mismo en los dos
+   temas y el texto va blanco fijo: #0868F9 con blanco encima da 4,82:1, y
+   `ink-0` de noche sería casi negro sobre azul. */
+// escala-ok: blanco sobre el azul de marca, que no se da la vuelta
+const ACTIVO = 'bg-marca-solido text-white';
 const REPOSO = 'text-ink-500 active:bg-ink-900/[0.06]';
 
 export function NavFlotante() {

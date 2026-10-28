@@ -11,7 +11,7 @@
 import { LinkButton, Panel, PanelHeader, Tag } from '@/components/ui';
 import { useClub } from '@/store/store';
 import { permisos } from '@/store/selectors';
-import { diasDePrueba, NIVELES, type Plan } from '@/services/billing';
+import { diasDePrueba, NIVELES, planContratado, pruebaCaducada, type Plan } from '@/services/billing';
 import { cn } from '@/lib/utils';
 
 export function PlanPanel({ plano = false }: { plano?: boolean } = {}) {
@@ -21,6 +21,11 @@ export function PlanPanel({ plano = false }: { plano?: boolean } = {}) {
   const prueba = diasDePrueba(sub);
   const planes = NIVELES.map((n) => data.plans.find((p) => p.tier === n)).filter((p): p is Plan => Boolean(p));
   const actual = planes.find((p) => p.tier === per.nivel);
+
+  /* Los dos del servicio, no una copia: esto se enseña aquí y en la pantalla
+     de facturación, y la primera versión sólo lo tenía en una. */
+  const caducada = pruebaCaducada(sub);
+  const contratado = planContratado(sub, planes);
 
   if (!data.club) return null;
 
@@ -57,7 +62,23 @@ export function PlanPanel({ plano = false }: { plano?: boolean } = {}) {
         {sub?.status === 'past_due' && (
           <Aviso tono="bad">El último cobro no ha salido bien. Actualiza la tarjeta.</Aviso>
         )}
-        {sub && sub.tier !== per.nivel && sub.status !== 'none' && (
+        {/* ── LO QUE SE ACABÓ, DICHO ──────────────────────────────────────
+            Un club empezó una prueba, se le acabó siete días después y aquí
+            no aparecía NADA. Dos motivos a la vez: el webhook escribía
+            `tier: 'free'` al cancelar —así que la fila olvidaba de qué plan
+            era la prueba— y, con el nivel contratado igual al efectivo,
+            este aviso no se disparaba. Arreglado lo primero, esto ya puede
+            decir qué terminó; y aun sin saberlo, si hay fecha de fin de
+            prueba pasada, se dice que la hubo y cuándo acabó. */}
+        {caducada && (
+          <Aviso>
+            {contratado
+              ? <>Tu prueba de <strong className="font-semibold">{contratado}</strong> terminó el {fecha(caducada.fin)}.</>
+              : <>Tu prueba terminó el {fecha(caducada.fin)}.</>}
+            {' '}El club está en Gratis. Lo que había guardado sigue ahí.
+          </Aviso>
+        )}
+        {!caducada && sub && sub.tier !== per.nivel && sub.status !== 'none' && (
           <Aviso>
             Tu suscripción a {planes.find((p) => p.tier === sub.tier)?.name ?? sub.tier} no está activa
             ahora mismo; mientras tanto se aplican los límites de Gratis.
@@ -79,6 +100,9 @@ export function PlanPanel({ plano = false }: { plano?: boolean } = {}) {
 
   return plano ? <section>{cuerpo}</section> : <Panel>{cuerpo}</Panel>;
 }
+
+const fecha = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
 
 function Aviso({ children, tono }: { children: React.ReactNode; tono?: 'warn' | 'bad' }) {
   return (

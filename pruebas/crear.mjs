@@ -148,13 +148,29 @@ async function abre(ruta, ancho = 1280, { ejercicios = true, sesiones } = {}) {
   const filas = await hoja.locator('li').count();
   comprueba('sale la lista de lo que entraría', filas > 10, `${filas} filas`);
 
+  /* LAS MARCADAS, NO TODAS, Y LA DIFERENCIA ES UN FALLO QUE ESTA PRUEBA
+     TUVO. Comparaba el botón contra el total de filas, dando por hecho que
+     al abrir estaban todas marcadas. No siempre: la pantalla desmarca sola
+     las que chocan con un entrenamiento que ya existe —las que salen con
+     «Ya está»— y eso es lo correcto. El día que el calendario del
+     simulacro hizo coincidir una, la prueba se puso roja con la pantalla
+     bien, y encima el clic de debajo cayó sobre una fila desmarcada y la
+     MARCÓ, así que la cuenta subía en vez de bajar.
+     Contando las marcadas, la prueba deja de depender de qué día se
+     ejecute. */
+  const marcadas = await hoja.locator('li button[role="checkbox"][aria-checked="true"]').count();
+  const repetidas = filas - marcadas;
+  comprueba('las que ya existen vienen desmarcadas',
+    repetidas >= 0, repetidas === 0 ? 'ninguna coincide hoy' : `${repetidas} con «Ya está»`);
+
   const crear = hoja.getByRole('button', { name: /crear \d+ entrenamiento/i });
   const etiqueta = await crear.textContent();
   const cuantos = Number(etiqueta.match(/\d+/)[0]);
-  comprueba('el botón dice cuántos va a crear', cuantos === filas, `${etiqueta} vs ${filas} filas`);
+  comprueba('el botón dice cuántas va a crear', cuantos === marcadas,
+    `${etiqueta} vs ${marcadas} marcadas de ${filas}`);
 
-  /* Se quita uno de la lista: tiene que bajar la cuenta. */
-  await hoja.locator('li').first().locator('button[role="checkbox"]').click();
+  /* Se quita una de las MARCADAS: tiene que bajar la cuenta. */
+  await hoja.locator('li button[role="checkbox"][aria-checked="true"]').first().click();
   await page.waitForTimeout(150);
   comprueba(
     'quitar uno baja la cuenta',

@@ -25,7 +25,10 @@ import { Button, PageHeader, Panel, PanelHeader, Tag } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { useClub } from '@/store/store';
 import { isClubAdmin, permisos } from '@/store/selectors';
-import { billing, diasDePrueba, importe, NIVELES, type Plan, type PlanTier } from '@/services/billing';
+import {
+  billing, diasDePrueba, importe, NIVELES, planContratado, pruebaCaducada,
+  type Plan, type PlanTier,
+} from '@/services/billing';
 import { todoLoQueTrae } from '@/services/entitlements';
 import { humanError } from '@/services/supabase';
 import { useConfirmacion } from '@/features/passcode/Confirmar';
@@ -50,7 +53,9 @@ export default function BillingPage() {
   const per = permisos(data);
   const admin = isClubAdmin(data);
   const prueba = diasDePrueba(sub);
+  const caducada = pruebaCaducada(sub);
   const planes = NIVELES.map((n) => data.plans.find((p) => p.tier === n)).filter((p): p is Plan => Boolean(p));
+  const contratado = planContratado(sub, planes);
   const actual = planes.find((p) => p.tier === per.nivel);
   /* Un club puede estar en Gratis y tener cuenta en Stripe a la vez: pasa con
      un impago o con una prueba caducada. Ahí el portal tiene que seguir a la
@@ -204,9 +209,23 @@ export default function BillingPage() {
             {sub?.status === 'past_due' && (
               <Aviso tono="bad">El último cobro no ha salido bien. Actualiza la tarjeta.</Aviso>
             )}
+            {/* UNA PRUEBA QUE SE ACABÓ TAMBIÉN SE CUENTA. Aquí no aparecía
+                nada: el aviso de abajo compara el nivel contratado con el
+                efectivo, y con una prueba caducada los dos valían «free»,
+                así que un club que probó y perdió el plan no veía ni una
+                línea. Pasó de verdad. */}
+            {caducada && (
+              <Aviso>
+                {contratado
+                  ? <>Tu prueba de <strong className="font-semibold">{contratado}</strong> terminó el {fechaCorta(caducada.fin)}.</>
+                  : <>Tu prueba terminó el {fechaCorta(caducada.fin)}.</>}
+                {' '}El club está en Gratis. Lo que había guardado sigue ahí: los equipos,
+                la plantilla y el histórico.
+              </Aviso>
+            )}
             {/* Sin esta línea, alguien con un impago ve «Gratis» y «0 €» y cree
                 que le han bajado el plan a propósito. Se dice por qué. */}
-            {sub && sub.tier !== per.nivel && sub.status !== 'none' && (
+            {!caducada && sub && sub.tier !== per.nivel && sub.status !== 'none' && (
               <Aviso>
                 Tu suscripción a {planes.find((p) => p.tier === sub.tier)?.name ?? sub.tier} no está
                 activa ahora mismo, así que mientras tanto se aplican los límites de Gratis. No se
@@ -362,6 +381,9 @@ function Dato({ cifra, pie }: { cifra: string; pie: string }) {
     </div>
   );
 }
+
+const fechaCorta = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
 
 function Aviso({ children, tono }: { children: React.ReactNode; tono?: 'warn' | 'bad' }) {
   return (
