@@ -313,8 +313,8 @@
   <p class="rotulo">Qué es</p>
   <h1 style="margin-top:46px; max-width:24ch;">El sistema de trabajo del cuerpo técnico.</h1>
   <p class="entradilla" style="margin-top:48px; max-width:44ch;">
-    Un sitio para la plantilla, la semana de entrenamientos, la convocatoria del sábado y la
-    jugada que quieres que salga. Lo mismo para un equipo que para todo un club.
+    Un sitio para la plantilla, la semana de entrenamientos, la convocatoria del sábado y las
+    cuotas del mes. Lo mismo para un equipo que para todo un club.
   </p>
   <p style="margin-top:auto; margin-bottom:56px; max-width:60ch; font-size:23px;">
     Se abre en el navegador, en el móvil igual que en el ordenador.
@@ -333,7 +333,7 @@
     <div>
       <p class="entradilla" style="max-width:38ch;">
         La plantilla en una hoja de cálculo. La asistencia en una libreta. La convocatoria en un
-        grupo de mensajería. Las jugadas en fotos del móvil. Y lo que pasó en marzo, en la
+        grupo de mensajería. Las cuotas en una hoja de cálculo. Y lo que pasó en marzo, en la
         memoria de alguien.
       </p>
       <ul class="puntos">
@@ -363,7 +363,7 @@
     <div><p class="n">05</p><h3>Biblioteca de ejercicios</h3><p>Lo que funciona, guardado, con material y número de jugadoras.</p></div>
     <div><p class="n">06</p><h3>Partidos y convocatorias</h3><p>El rival, la hora, quién va y quién se queda.</p></div>
     <div><p class="n">07</p><h3>Calendario</h3><p>La semana entera: entrenamientos y partidos en el mismo sitio.</p></div>
-    <div><p class="n">08</p><h3>Pizarra táctica</h3><p>Las jugadas, con movimiento y con tiempo. Se exportan en vídeo.</p></div>
+    <div><p class="n">08</p><h3>Cuotas</h3><p>Quién ha pagado y quién no, con lo cobrado y lo pendiente del mes.</p></div>
     <div><p class="n">09</p><h3>Analíticas</h3><p>Asistencia, minutos y resultados a partir de lo que ya se apuntó.</p></div>
     <div><p class="n">10</p><h3>Cuerpo técnico</h3><p>Varias personas en el mismo equipo, cada una con su cuenta.</p></div>
     <div style="background:var(--abismo); color:#fff; display:flex; flex-direction:column; justify-content:center;">
@@ -472,26 +472,35 @@
   <div class="pie"><span>Playoff360</span><span class="num">08</span></div>
 </section>
 
-<!-- ════════════ 9 · PIZARRA ══════════════════════════════════════════════ -->
+<!-- ════════════ 9 · CUOTAS ═══════════════════════════════════════════════
+     AQUÍ ESTABA LA PIZARRA TÁCTICA, y se ha ido del producto: esta lámina
+     seguía vendiéndola, con su captura y sus tres promesas. Una presentación
+     que enseña una pantalla que ya no existe es peor que una lámina de
+     menos, porque alguien la pide en la demostración.
+     La sustituye lo que de verdad llegó después y es lo que un club
+     pregunta primero. La captura está hecha de la aplicación de hoy con
+     `pruebas/capturas.mjs`, con datos del simulador: ni un nombre real. -->
 <section class="lamina oscura">
   <div class="dos estrecha">
     <div>
-      <p class="rotulo lima">Pizarra táctica</p>
-      <h2 style="margin-top:34px; font-size:66px;">La jugada,<br />en movimiento.</h2>
+      <p class="rotulo lima">Cuotas</p>
+      <h2 style="margin-top:34px; font-size:66px;">Quién ha pagado,<br />sin la hoja de cálculo.</h2>
       <p style="margin-top:34px; max-width:32ch;">
-        No es un dibujo con flechas: las fichas se mueven en el tiempo. Se le da al play y la
-        jugada ocurre, con la duración que tiene de verdad.
+        Se pone la cuota una vez, se emiten los recibos del mes y se va marcando. Lo
+        cobrado, lo pendiente y lo que lleva retraso, en tres cifras.
       </p>
       <ul class="puntos">
-        <li><i class="tic"></i><div><p>El balón va pegado a quien lo conduce.</p></div></li>
-        <li><i class="tic"></i><div><p>Cada jugadora sale cuando le toca, no todas en el segundo cero.</p>
-          <p class="nota">Que es lo que hace falta para montar un circuito: una llega al cono y entonces sale la siguiente.</p></div></li>
-        <li><i class="tic"></i><div><p>Se exporta en vídeo, tal y como se reproduce.</p></div></li>
+        <li><i class="tic"></i><div><p>Playoff360 no cobra ni mueve dinero.</p>
+          <p class="nota">El club cobra como cobre —efectivo, transferencia, Bizum— y aquí se apunta. No hay pasarela ni banco de por medio.</p></div></li>
+        <li><i class="tic"></i><div><p>Queda constancia de quién marcó cada cobro.</p>
+          <p class="nota">Lo escribe la base de datos, no la pantalla, y ese registro no se puede modificar ni borrar. Tampoco por quien administra el club.</p></div></li>
+        <li><i class="tic"></i><div><p>Sólo lo ve la dirección del club.</p>
+          <p class="nota">Son datos económicos de familias con menores. Lo impone la base de datos, no un botón escondido.</p></div></li>
       </ul>
     </div>
     <div class="marco">
-      <div class="barra"><i></i><i></i><i></i><span>Pizarra · salida de balón</span></div>
-      <img src="img/pizarra.png" alt="La pizarra táctica con las fichas colocadas sobre el campo y sus recorridos." />
+      <div class="barra"><i></i><i></i><i></i><span>Cuotas · octubre</span></div>
+      <img src="img/cuotas.png" alt="La pantalla de cuotas: lo cobrado, lo pendiente y lo vencido, y debajo la lista de jugadores con su recibo." />
     </div>
   </div>
   <div class="pie"><span>Playoff360</span><span class="num">09</span></div>
@@ -538,7 +547,7 @@
     </div>
     <div style="background:#fff;">
       <h3>No analiza vídeo de partidos</h3>
-      <p>La pizarra es para dibujar jugadas, no para leer un partido grabado.</p>
+      <p>Registra lo que pasó —convocatoria, resultado, asistencia—, no lo que se ve en una grabación.</p>
     </div>
   </div>
   <div class="preguntas">
@@ -654,9 +663,8 @@
     <div><dt>Entrar</dt><dd>Supabase Auth: correo y contraseña, con recuperación por enlace.</dd></div>
     <div><dt>Permisos</dt><dd>Políticas de acceso en la propia base de datos. Esconder un botón no es autorización.</dd></div>
     <div><dt>Servidor</dt><dd>Funciones sueltas en Netlify. Sólo para lo que no puede vivir en el navegador: el cobro.</dd></div>
-    <div><dt>Cobro</dt><dd>Stripe. La tarjeta nunca pasa por aquí ni se guarda aquí.</dd></div>
-    <div><dt>Vídeo</dt><dd>La jugada se graba en el propio navegador, tal y como se reproduce.</dd></div>
-    <div><dt>Pruebas</dt><dd>Veinticuatro, que abren la aplicación de verdad y miden lo que sale en pantalla.</dd></div>
+    <div><dt>Cobro</dt><dd>Stripe, para la suscripción a Playoff360. La tarjeta nunca pasa por aquí ni se guarda aquí. Las cuotas del club NO van por ahí: ésas las cobra el club y aquí se apuntan.</dd></div>
+    <div><dt>Pruebas</dt><dd>Treinta y una, que abren la aplicación de verdad y miden lo que sale en pantalla.</dd></div>
     <div><dt>Idioma</dt><dd>Todo en castellano, de los botones a los mensajes de error.</dd></div>
     <div><dt>Dónde vive</dt><dd>playoff360.site. Cada cambio se publica solo al entrar en el repositorio.</dd></div>
   </div>
@@ -714,8 +722,8 @@
         <li><span>✓</span><span>Las diez herramientas de la página anterior</span></li>
         <li><span>✓</span><span>Alta de club y de equipos, con invitaciones</span></li>
         <li><span>✓</span><span>El calendario se llena solo al crear el equipo</span></li>
-        <li><span>✓</span><span>Pizarra con movimiento, circuitos y exportación a vídeo</span></li>
-        <li><span>✓</span><span>Cobro por Stripe, con prueba de 7 días y cancelación</span></li>
+        <li><span>✓</span><span>Cuotas: recibos del mes, cobros y registro de quién los marcó</span></li>
+        <li><span>✓</span><span>Multideporte: diez deportes, cada uno con sus puestos</span></li>
         <li><span>✓</span><span>Entrar, recuperar la contraseña y cambiarla</span></li>
       </ul>
     </div>
@@ -745,8 +753,8 @@
   <div class="raya"></div>
   <h2 style="max-width:18ch;">Beyond the game</h2>
   <p style="margin-top:34px; max-width:40ch; font-size:26px;">
-    El trabajo que no se ve desde la grada: la semana, la plantilla, la jugada y lo que pasó en
-    marzo.
+    El trabajo que no se ve desde la grada: la semana, la plantilla, las cuentas y lo que pasó
+    en marzo.
   </p>
   <p class="url">playoff360.site</p>
 </section>
