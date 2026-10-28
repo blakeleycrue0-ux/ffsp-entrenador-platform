@@ -16,7 +16,7 @@
  */
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
-import { mock, SUPA, USER, CLUB, j } from './mock.mjs';
+import { mock, USER, CLUB } from './mock.mjs';
 
 const BASE = 'http://localhost:4173';
 /* Por omisión, las de la portada. La presentación en PDF pide las suyas
@@ -44,7 +44,36 @@ const TOMAS = [
   ['entrenamientos-movil.png', '/app/entrenamientos', 390, 780, 2],
   ['analiticas-movil.png', '/app/analiticas', 390, 780, 2],
   ['calendario-movil.png', '/app/calendario', 390, 780, 2],
+  /* Cuotas entra en las capturas porque entra en lo que se enseña: la
+     presentación tenía una lámina de la pizarra, que ya no existe, y hacía
+     falta una foto de verdad de lo que la sustituye. */
+  ['cuotas.png', '/app/cuotas', 1280, 810, 1.6],
+  ['cuotas-movil.png', '/app/cuotas', 390, 780, 2],
 ];
+
+/* Cuotas y recibos de ejemplo. Son del simulador, como todo lo demás: un
+   club inventado y nombres inventados. Hace falta darlos porque por omisión
+   el simulacro no tiene ninguna cuota —que es lo correcto para las otras
+   pruebas, donde interesa el estado vacío— y aquí lo que se quiere enseñar
+   es la pantalla llena. */
+const CUOTA = {
+  id: 'c1', club_id: CLUB, team_id: null, name: 'Cuota mensual 2026/27',
+  amount_cents: 3500, period: 'mensual', due_day: 5, season: null,
+  active: true, notes: null, created_at: '2026-09-01T00:00:00Z',
+};
+const PERIODO = (() => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+})();
+const RECIBOS = ['pagado', 'pagado', 'pendiente', 'pagado', 'pendiente', 'exento', 'pagado', 'pendiente']
+  .map((status, i) => ({
+    id: `r${i}`, club_id: CLUB, fee_plan_id: 'c1', player_id: `p${i}`,
+    concept: 'Cuota mensual 2026/27', amount_cents: 3500, period_label: PERIODO,
+    due_date: `${PERIODO}-05`, paid_cents: status === 'pagado' ? 3500 : 0,
+    status, paid_at: status === 'pagado' ? '2026-10-03T10:00:00Z' : null,
+    method: status === 'pagado' ? 'efectivo' : null, note: '',
+    created_at: `2026-10-01T00:00:0${i}Z`,
+  }));
 
 mkdirSync(DESTINO, { recursive: true });
 
@@ -58,28 +87,15 @@ for (const [archivo, ruta, ancho, alto, escala] of TOMAS) {
     hasTouch: ancho < 500,
   });
   const page = await ctx.newPage();
-  await mock(page);
+  await mock(page, { cuotas: [CUOTA], recibos: RECIBOS });
   await page.addInitScript(([u]) => sessionStorage.setItem('p360.desbloqueado', u), [USER]);
-  await page.route(`${SUPA}/rest/v1/plays**`, (route) => {
-    const fila = {
-      updated_at: new Date().toISOString(), created_at: new Date().toISOString(), created_by: USER,
-    };
-    const u = new URL(route.request().url());
-    return route.fulfill(j(u.searchParams.has('id') ? fila : [fila]));
-  });
 
   await page.goto(BASE + ruta, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1800);
 
-  /* EL PANEL DE LA PIZARRA, CERRADO. Se abre solo al seleccionar algo, y en
-     la captura se quedaba abierto ocupando un tercio del ancho: el campo
-     —que es lo que hay que enseñar— salía pequeño y a un lado. Esto es una
-     foto de producto, y lo que tiene que verse es el campo. */
-  const cerrar = page.getByRole('button', { name: 'Cerrar el panel' });
-  if (await cerrar.count() > 0) {
-    await cerrar.first().click();
-    await page.waitForTimeout(500);
-  }
+  /* AQUÍ HABÍA UN APAÑO DE LA PIZARRA: cerrar su panel lateral antes de la
+     foto, porque si no tapaba el campo. La pizarra ya no existe, y el
+     servicio de jugadas que se simulaba para ella tampoco hacía falta. */
   /* Sin animaciones: una captura a medio camino de una transición se ve
      borrosa y no hay forma de saber por qué. */
   await page.screenshot({ path: `${DESTINO}/${archivo}`, animations: 'disabled' });
@@ -91,7 +107,7 @@ for (const [archivo, ruta, ancho, alto, escala] of TOMAS) {
 {
   const ctx = await navegador.newContext({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
   const page = await ctx.newPage();
-  await mock(page);
+  await mock(page, { cuotas: [CUOTA], recibos: RECIBOS });
   await page.addInitScript(([u]) => sessionStorage.setItem('p360.desbloqueado', u), [USER]);
   await page.goto(`${BASE}/app`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1600);
