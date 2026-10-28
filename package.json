@@ -28,6 +28,7 @@
     "app:partido": "node pruebas/partido.mjs",
     "app:complejidad": "node pruebas/complejidad.mjs",
     "app:marca": "node pruebas/marca.mjs",
+    "app:honesto": "node pruebas/honesto.mjs",
     "app:alta": "node pruebas/alta.mjs",
     "app:planes": "node pruebas/planes-iguales.mjs",
     "app:escala": "node pruebas/escala.mjs",

@@ -157,6 +157,10 @@ export default function App() {
 
           <Route path="analiticas" element={<StatsPage />} />
           <Route path="cuotas" element={<CuotasPage />} />
+          {/* EL ASISTENTE TENÍA SERVIDOR Y NO TENÍA PUERTA. La función, el
+              contexto y esta pantalla estaban escritos desde hace semanas, y
+              la ruta mandaba a Inicio: no había manera de llegar. */}
+          <Route path="asistente" element={<EntrenadorPage />} />
           <Route path="entrenador" element={<EntrenadorPage />} />
 
           {/* Quien administra el club ve la gestión; el resto, sus equipos. */}
@@ -192,7 +196,8 @@ export default function App() {
           <Route path="perfil" element={<ProfilePage />} />
 
           {/* Direcciones anteriores */}
-          <Route path="jugadores/*" element={<Navigate to="/app/plantilla" replace />} />
+          {/* Estaba dos veces, literalmente la misma línea repetida. La
+              segunda no se alcanzaba nunca. */}
           <Route path="jugadores/*" element={<Navigate to="/app/plantilla" replace />} />
           <Route path="planificaciones/*" element={<Navigate to="/app/entrenamientos" replace />} />
           <Route path="equipos/*" element={<Navigate to="/app/equipo-tecnico" replace />} />
@@ -201,7 +206,13 @@ export default function App() {
           <Route path="estadisticas" element={<Navigate to="/app/analiticas" replace />} />
           <Route path="configuracion" element={<Navigate to="/app/ajustes" replace />} />
           <Route path="mensajes/*" element={<Navigate to="/app" replace />} />
-          <Route path="asistente" element={<Navigate to="/app" replace />} />
+          {/* LA PIZARRA SE FUE DEL PRODUCTO, pero sus direcciones siguen
+              existiendo en marcadores, en enlaces de hace meses y en el
+              índice de Google. Sin esto caían en el 404, que para una
+              pantalla retirada es la respuesta equivocada: no es que no
+              exista nada, es que eso ahora se hace en otro sitio. */}
+          <Route path="pizarra/*" element={<Navigate to="/app/ejercicios" replace />} />
+          <Route path="jugadas/*" element={<Navigate to="/app/ejercicios" replace />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

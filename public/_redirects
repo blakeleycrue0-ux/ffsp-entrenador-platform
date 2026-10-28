@@ -14,5 +14,10 @@
 # puede recargar para traerse los nombres nuevos.
 /assets/*  /404.html  404
 
+# La pizarra se retiró y su dirección estuvo indexada: 301, no 404. Antes
+# del comodín, o no se llega.
+/pizarra    /  301!
+/pizarra/*  /  301!
+
 # Todo lo demás, a la aplicación: las rutas las resuelve el navegador.
 /*  /index.html  200

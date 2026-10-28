@@ -141,7 +141,7 @@ const CLUB: [string, string, string][] = [
   ['01', 'Cada club, en su sitio', 'Lo tuyo no lo ve nadie de fuera. Y dentro, cada entrenador ve los equipos que le tocan.'],
   ['02', 'Varios equipos, una cuenta', 'Cadete, juvenil, femenino. Cambias de equipo desde arriba y sigues donde estabas.'],
   ['03', 'Se entra por invitación', 'Un enlace a un correo, con fecha de caducidad. Sin contraseñas compartidas por el grupo.'],
-  ['04', 'En el campo, desde el móvil', 'Se abre en el navegador. No hay nada que instalar ni que actualizar.'],
+  ['04', 'A pie de pista, desde el móvil', 'Se abre en el navegador. No hay nada que instalar ni que actualizar.'],
 ];
 
 const NO_HACE: [string, string][] = [
@@ -499,13 +499,20 @@ function Portada() {
           <Revelar>
             <span className="sello">
               <i className="block h-1.5 w-1.5 rounded-full bg-lima" aria-hidden />
-              Para cuerpos técnicos de fútbol base
+              Para clubes de cualquier deporte
             </span>
           </Revelar>
 
           <Revelar delay={90}>
+            {/* EL TITULAR, SIN NOMBRAR UN DEPORTE. Decía «Todo tu fútbol»,
+                y el producto dejó de ser de fútbol: el alta ofrece diez
+                deportes y la plantilla enseña los puestos de cada uno. Un
+                club de baloncesto que entre por aquí lee que esto no es
+                para él antes de ver nada.
+                El tamaño y el ritmo no se tocan —dos líneas, la segunda
+                más apagada—, que es lo que hace la portada. */}
             <h1 className="t-xl mt-6 text-white">
-              Todo tu fútbol.
+              Todo tu club.
               <br />
               <span className="text-white/70">Un solo sistema.</span>
             </h1>
@@ -513,8 +520,8 @@ function Portada() {
 
           <Revelar delay={170}>
             <p className="mx-auto mt-6 max-w-[34rem] text-[16.5px] leading-[1.55] text-white/80 sm:text-[18px]">
-              Plantilla, asistencia, entrenamientos, partidos y convocatorias.
-              Menos gestión. Más fútbol.
+              Plantilla, asistencia, entrenamientos, partidos, convocatorias y
+              cuotas. Menos papeleo. Más deporte.
             </p>
           </Revelar>
 
@@ -712,7 +719,7 @@ function Declaracion() {
           {([
             ['Diez módulos', 'Plantilla, asistencia, entrenamientos, ejercicios, partidos, convocatorias, calendario, disponibilidad, analíticas y cuerpo técnico.'],
             ['Un solo sitio', 'Nada de una hoja de cálculo para la asistencia y un grupo de mensajería para todo lo demás.'],
-            ['Cero instalación', 'Se abre en el navegador. En el campo, desde el móvil; en casa, desde el ordenador.'],
+            ['Cero instalación', 'Se abre en el navegador. En el entrenamiento, desde el móvil; en casa, desde el ordenador.'],
           ] as [string, string][]).map(([t, d], i) => (
             <Revelar key={t} delay={i * 80} className="bg-white p-6 sm:p-7">
               <h3 className="t-m">{t}</h3>
@@ -792,7 +799,7 @@ function Historias() {
                 empieza el martes.
               </h2>
               <p className="entradilla mt-5">
-                Convocatoria, alineación y resultado. Y después, lo que de verdad dice la
+                Convocatoria, quién juega y resultado. Y después, lo que de verdad dice la
                 temporada: quién viene a entrenar, quién se lo está ganando y a quién hay
                 que preguntarle qué le pasa.
               </p>
@@ -983,7 +990,7 @@ function Precios({ planes }: { planes: Plan[] | null }) {
           </Revelar>
           <Revelar delay={100} className="lg:col-span-5">
             <p className="entradilla lg:ml-auto">
-              Pensado para un entrenador de fútbol base y para clubes pequeños. Gratis no es
+              Pensado para clubes de base y para clubes pequeños, del deporte que sean. Gratis no es
               una prueba de quince días: es un plan, con un equipo, para siempre.
             </p>
           </Revelar>

@@ -40,3 +40,29 @@ export async function pregunta(teamId: string, mensajes: Turno[]): Promise<Respu
   }
   return { texto: cuerpo.texto, miro: cuerpo.miro ?? { jugadores: 0, sesiones: 0, partidos: 0 } };
 }
+
+/**
+ * ¿ESTÁ EL ASISTENTE CONFIGURADO EN EL SERVIDOR?
+ * ---------------------------------------------------------------------------
+ * El asistente está escrito entero y aun así no puede contestar si falta
+ * `ANTHROPIC_API_KEY`, que la pone una persona en el panel de Netlify. La
+ * entrada del menú se enseña sólo cuando el servidor dice que sí.
+ *
+ * SE PREGUNTA UNA VEZ POR PESTAÑA. La respuesta cambia como mucho una vez en
+ * la vida del proyecto; pedirla cada vez que se abre el menú sería una ida y
+ * vuelta al servidor por nada.
+ *
+ * Y UN FALLO CUENTA COMO «NO». Si la petición no contesta —sin red, la
+ * función caída—, lo prudente es no ofrecer algo que puede acabar en un
+ * error: equivocarse hacia «todavía no» no rompe nada; hacia «sí» deja a
+ * alguien escribiendo una pregunta para encontrarse un fallo.
+ */
+let configurado: Promise<boolean> | null = null;
+
+export function asistenteConfigurado(): Promise<boolean> {
+  configurado ??= fetch('/.netlify/functions/estado-ia')
+    .then((r) => (r.ok ? (r.json() as Promise<{ listo?: boolean }>) : { listo: false }))
+    .then((j) => j.listo === true)
+    .catch(() => false);
+  return configurado;
+}

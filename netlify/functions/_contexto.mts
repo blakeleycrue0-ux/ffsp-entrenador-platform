@@ -65,7 +65,7 @@ export async function contextoDelEquipo(teamId: string): Promise<Contexto> {
   const hoy = new Date().toISOString().slice(0, 10);
 
   const [equipo, jugadores, sesiones, asistencias, partidos] = await Promise.all([
-    db.from('teams').select('name, category, season, competition, modality').eq('id', teamId).maybeSingle(),
+    db.from('teams').select('name, category, season, competition, modality, sport, club_id').eq('id', teamId).maybeSingle(),
     db.from('players').select('id, name, short_name, number, position, availability_status')
       .eq('team_id', teamId).is('archived_at', null),
     db.from('sessions').select('id, title, date, start_time, objective, status')
@@ -81,7 +81,43 @@ export async function contextoDelEquipo(teamId: string): Promise<Contexto> {
   const asis = asistencias.data ?? [];
   const par = partidos.data ?? [];
 
+  /* ── EL DEPORTE, Y CÓMO SE LLAMA ALLÍ CADA COSA ─────────────────────────
+     Sin esto el modelo daba por hecho que todo era fútbol —se lo decían sus
+     instrucciones, que empezaban por «fútbol base»— y a un club de
+     baloncesto le hablaba de bandas y de delanteros. El deporte está en la
+     tabla desde la 0020 y aquí no se leía.
+
+     SI NO SE SABE, NO SE INVENTA: se omite la línea y el modelo tiene
+     prohibido suponerlo. Mejor un asistente que no nombra el deporte que uno
+     que nombra el equivocado. */
+  interface Deporte {
+    name: string;
+    player_noun_pl: string;
+    match_noun_pl: string;
+    positions: string[] | null;
+  }
+  let deporte: Deporte | null = null;
+  const codigo = (eq as { sport?: string } | null)?.sport;
+  if (codigo) {
+    const { data } = await db.from('sports')
+      .select('name, player_noun_pl, match_noun_pl, positions')
+      .eq('code', codigo).maybeSingle();
+    deporte = (data as Deporte | null) ?? null;
+  }
+
   const lineas: string[] = [];
+
+  if (deporte) {
+    lineas.push(
+      `DEPORTE: ${deporte.name}.`
+      + ` A quienes juegan se les llama «${deporte.player_noun_pl}»`
+      + ` y a los encuentros, «${deporte.match_noun_pl}».`
+      + (deporte.positions && deporte.positions.length > 0
+        ? ` Los puestos son: ${deporte.positions.join(', ')}.`
+        : ' Este deporte no tiene puestos.'),
+    );
+    lineas.push('');
+  }
 
   lineas.push(
     `EQUIPO: ${eq?.name ?? 'sin nombre'}`

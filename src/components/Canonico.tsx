@@ -108,15 +108,22 @@ const FICHA = {
   applicationCategory: 'SportsApplication',
   operatingSystem: 'Navegador web',
   inLanguage: 'es',
+  /* SIN NOMBRAR UN DEPORTE. Decía «un club de fútbol», y esto es lo que
+     Google enseña debajo del título: la única frase que lee un club de
+     baloncesto antes de decidir si entra. El producto dejó de ser de
+     fútbol hace dos versiones; esta línea no se había enterado.
+     Y el título de la portada, dos párrafos más arriba, ya estaba bien
+     —«para cualquier deporte»—, así que además se contradecían. */
   description:
-    'Herramienta para el cuerpo técnico de un club de fútbol: plantilla, entrenamientos, '
-    + 'partidos, control de asistencia, disponibilidad y calendario.',
+    'Gestión de club deportivo, para cualquier deporte: plantilla, entrenamientos, '
+    + 'partidos, asistencia, disponibilidad, calendario y cuotas.',
   featureList: [
     'Plantilla y fichas de jugadores',
     'Control de asistencia a entrenamientos',
     'Calendario de entrenamientos y partidos',
     'Disponibilidad y bajas',
     'Biblioteca de ejercicios',
+    'Cuotas y control de cobros',
     'Analíticas de asistencia',
   ],
 };
