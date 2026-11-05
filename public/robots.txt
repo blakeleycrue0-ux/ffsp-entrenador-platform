@@ -29,6 +29,11 @@ Disallow: /entrar
 # Detrás de la sesión. Un buscador sólo vería la pantalla de acceso.
 Disallow: /app
 
+# El formulario que rellena una familia. Sin el enlace del club no hay nada
+# que ver —sólo «este enlace no existe»— y con él lo que hay dentro es la
+# ficha de un menor. No pinta nada en un índice.
+Disallow: /inscripcion
+
 # Las funciones del servidor contestan JSON a la aplicación, no a personas.
 Disallow: /.netlify/
 

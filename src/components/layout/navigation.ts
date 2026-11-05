@@ -135,6 +135,7 @@ export const SECCIONES: Seccion[] = [
 export const CUENTA: Pagina[] = [
   { to: '/app/perfil', label: 'Mi perfil' },
   { to: '/app/cuotas', label: 'Cuotas del club' },
+  { to: '/app/inscripciones', label: 'Inscripciones' },
   { to: '/app/ajustes', label: 'Ajustes y ayuda' },
   { to: '/app/ajustes/plan', label: 'Plan del club' },
 ];

@@ -65,6 +65,16 @@ for prueba in "$AQUI"/[0-9][0-9]_*.sql; do
   if echo "$salida" | grep -q "✗\|ERROR"; then fallos=$((fallos+1)); fi
 done
 
+# ── EL CATÁLOGO DE DEPORTES, PARA LA PRUEBA QUE NO TIENE RED ────────────────
+# `pruebas/deportes.mjs` lee la tabla `sports` de verdad, y donde no hay salida
+# a Supabase —este contenedor, por política de red— se queda sin poder correr.
+# Como aquí las migraciones ya están aplicadas, la tabla existe: se vuelca y la
+# prueba puede usarla con SPORTS_JSON. No se guarda en el repositorio; un
+# catálogo copiado sería otra lista escrita a mano que se desincroniza.
+VOLCADO=${SPORTS_OUT:-/tmp/sports.json}
+$PSQL -d p360 -tAc "select coalesce(json_agg(row_to_json(s)), '[]'::json) from sports s" > "$VOLCADO" 2>/dev/null \
+  && echo "  · catálogo de deportes volcado en $VOLCADO (SPORTS_JSON=$VOLCADO node pruebas/deportes.mjs)"
+
 echo ""
 if [ $fallos -gt 0 ]; then echo "  ✗ $fallos prueba(s) con algo que no cuadra"; exit 1; fi
 echo "  Todo en orden: el esquema aplica y nadie ve lo que no es suyo."

@@ -42,9 +42,19 @@ const canonico = lee('src/components/Canonico.tsx');
 
 /* ── 1 · LAS RUTAS PÚBLICAS DE VERDAD ──────────────────────────────────────
    Las que están al nivel de arriba (empiezan por «/») y no cuelgan de /app.
-   De ellas se descarta /entrar: es un formulario de acceso y no se indexa a
-   propósito, así que el mapa tiene que NO tenerla. */
-const NO_SE_INDEXAN = ['/entrar'];
+   De ellas se descartan las que no se indexan A PROPÓSITO, y el mapa tiene
+   que NO tenerlas:
+
+     /entrar             es un formulario de acceso.
+     /inscripcion/:token es el formulario que rellena una familia. No se
+                         indexa por dos motivos y el segundo es el que manda:
+                         no hay nada que indexar —sin un token válido la
+                         página sólo dice «este enlace no existe»— y, con
+                         token, lo que hay dentro es la ficha de un menor. Una
+                         dirección así no entra en un mapa que se le entrega a
+                         Google. Se sirve a quien tiene el enlace y a nadie
+                         más. */
+const NO_SE_INDEXAN = ['/entrar', '/inscripcion/:token'];
 
 const enElCodigo = [...app.matchAll(/<Route\s+path="(\/[^"]*)"/g)]
   .map((m) => m[1])

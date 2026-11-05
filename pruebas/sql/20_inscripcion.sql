@@ -132,7 +132,7 @@ begin;
       'address', 'Carrer Gran, 1', 'postal_code', '07001', 'city', 'Palma',
       'respuestas', jsonb_build_object('alergias', 'ninguna', 'talla', '10'),
       'consentimientos', jsonb_build_object('datos', now()::text, 'imagen', now()::text)
-    ), 'huella-de-prueba');
+    ));
 commit;
 select '    el correo se guarda en minusculas: ' || guardian_email from enrollments;
 select '    avisos al club: ' || count(*)::text from notifications where title = 'Nueva inscripción';
@@ -209,5 +209,50 @@ begin;
     raise notice '    ✗ LO ACEPTO, y no debia';
   exception when others then
     raise notice '    ✓ rechazado: %', sqlerrm;
+  end $$;
+commit;
+
+\echo ''
+\echo '  10 · cerrar un BORRADOR sin haberlo publicado nunca'
+begin;
+  set local role authenticated;
+  set local request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+  do $$
+  declare otro uuid;
+  begin
+    insert into enrollment_forms (club_id, title)
+    values ('33333333-3333-3333-3333-333333333333', 'Borrador que se descarta')
+    returning id into otro;
+    update enrollment_forms set status = 'cerrada' where id = otro;
+    raise notice '    ✓ se cierra sin reventar el check';
+  exception when others then
+    raise notice '    ✗ no deja cerrarlo: %', sqlerrm;
+  end $$;
+commit;
+
+\echo ''
+\echo '  11 · un visitante ANONIMO intenta aprobar y rechazar'
+-- POR QUE ESTA PRUEBA EXISTE. La migracion solo concede `aprobar_inscripcion`
+-- a `authenticated`, pero Supabase concede por omision EXECUTE sobre las
+-- funciones de `public` a `anon` tambien, y el arnes de pruebas hace lo mismo
+-- para parecerse. O sea: la concesion NO es la defensa. La defensa es el
+-- `is_club_admin()` de la primera linea de la funcion, que con `auth.uid()`
+-- nulo no puede dar verdadero. Eso es lo que se comprueba aqui.
+begin;
+  set local role anon;
+  do $$
+  begin
+    perform aprobar_inscripcion('77777777-7777-7777-7777-777777777777',
+                                '44444444-4444-4444-4444-444444444444');
+    raise notice '    ✗ UN ANONIMO HA APROBADO UNA INSCRIPCION';
+  exception when others then
+    raise notice '    ✓ no puede aprobar: %', sqlerrm;
+  end $$;
+  do $$
+  begin
+    perform rechazar_inscripcion('77777777-7777-7777-7777-777777777777', 'porque quiero');
+    raise notice '    ✗ UN ANONIMO HA RECHAZADO UNA INSCRIPCION';
+  exception when others then
+    raise notice '    ✓ no puede rechazar: %', sqlerrm;
   end $$;
 commit;

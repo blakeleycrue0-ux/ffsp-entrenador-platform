@@ -37,6 +37,8 @@ export type Capacidad =
   | 'calendario'
   | 'analiticas'
   | 'valoraciones'
+  | 'cuotas'
+  | 'inscripciones'
   /* De Pro en adelante */
   /* De Max en adelante */
   | 'cuerpo-tecnico'
@@ -73,6 +75,23 @@ export const CAPACIDADES: Record<Capacidad, Ficha> = {
   partidos: { nombre: 'Partidos y convocatorias', desde: 'free', lista: true },
   calendario: { nombre: 'Calendario', desde: 'free', lista: true },
   analiticas: { nombre: 'Analíticas', desde: 'free', lista: true },
+
+  /* ── LAS DOS QUE FALTABAN EN ESTA TABLA, Y ERA UN AGUJERO ───────────────
+     Cuotas e Inscripciones son, con diferencia, lo más grande que hay
+     construido —una lleva el dinero del club y la otra el alta de las
+     familias con sus documentos—, y NINGUNA de las dos estaba aquí. La
+     consecuencia no era un detalle: la comparativa de planes se construye
+     leyendo esta tabla, así que la pantalla donde alguien decide pagar no
+     mencionaba ni una ni otra. Se vendía el producto sin sus dos mejores
+     piezas.
+
+     LAS DOS EN GRATIS, Y ES UNA DECISIÓN QUE NO ME TOCA A MÍ. Van en `free`
+     porque es la verdad de hoy: cualquier club las tiene. Si Cuotas o
+     Inscripciones deben ser de un plan de pago, se cambia esa palabra y no
+     hay nada más que tocar —ni una pantalla, ni esta tabla dos veces—. Lo
+     que no voy a hacer es decidir por mi cuenta a cuánto se cobra qué. */
+  cuotas: { nombre: 'Cuotas y recibos del club', desde: 'free', lista: true },
+  inscripciones: { nombre: 'Inscripciones con enlace y documentos', desde: 'free', lista: true },
 
   /* LA TABLA EXISTE Y LA PANTALLA NO. `session_player_ratings` está creada,
      con su clave única por sesión y jugador y su `check (rating between 1

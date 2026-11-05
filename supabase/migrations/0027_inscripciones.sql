@@ -40,10 +40,23 @@
 --      abierta. Si la subida fuera directa, cualquiera con el enlace podría
 --      llenar el cubo del club de lo que quisiera.
 --
---   C. NO SE GUARDA LA IP, SE GUARDA SU HUELLA. Para frenar a quien envíe mil
---      inscripciones falsas hace falta distinguir de dónde vienen, no saber
---      quién es nadie. `ip_hash` es un hash con sal del propio formulario:
---      sirve para contar y no para identificar.
+--   C. NO SE GUARDA LA IP, SE GUARDA SU HUELLA, Y LA CALCULA EL SERVIDOR. Para
+--      frenar a quien envíe mil inscripciones falsas hace falta distinguir de
+--      dónde vienen, no saber quién es nadie, así que se guarda un hash con
+--      sal y no la IP.
+--
+--      LA PRIMERA VERSIÓN LA RECIBÍA COMO PARÁMETRO, y eso no servía para
+--      nada: el que quisiera saltarse el límite mandaba una huella distinta
+--      cada vez, o ninguna. Un límite que depende de que el cliente diga la
+--      verdad sobre sí mismo no es un límite. Ahora sale de la cabecera
+--      `x-forwarded-for` que pone la propia infraestructura, donde el cliente
+--      no escribe.
+--
+--      Y QUÉ NO GARANTIZA, porque conviene no venderlo de más: el hash evita
+--      guardar la IP en claro y que sirva para cruzar datos, pero con acceso
+--      a la base y sabiendo la sal —que es el id del formulario— las
+--      direcciones IPv4 se pueden recorrer enteras por fuerza bruta. Esto es
+--      una medida contra el abuso automático, no un anonimato fuerte.
 --
 -- LO QUE ESTA MIGRACIÓN NO HACE, y conviene leerlo antes de prometer nada: no
 -- cobra. Las columnas de Stripe se crean al final, vacías y apagadas, y están
@@ -202,7 +215,7 @@ comment on table enrollments is
 comment on column enrollments.codigo is
   'Justificante para la familia. Sin 0/O ni 1/I porque se dice por teléfono.';
 comment on column enrollments.ip_hash is
-  'Hash con sal para contar envíos del mismo sitio. No permite recuperar la IP.';
+  'Hash con sal de la IP, calculado en el servidor, para contar envíos del mismo sitio. Evita guardarla en claro; con acceso a la base no es anonimato fuerte.';
 
 create index if not exists enrollments_form_idx on enrollments (form_id, created_at desc);
 create index if not exists enrollments_club_idx on enrollments (club_id, status, created_at desc);
@@ -291,7 +304,11 @@ begin
 
   /* Pasar de borrador a abierta se firma aquí y no en el cliente: así no hay
      manera de publicar un formulario sin que conste quién lo hizo. */
-  if new.status = 'abierta' and coalesce(old.status, 'borrador') <> 'abierta' then
+  /* CUALQUIER SALIDA DE BORRADOR SE FIRMA, no sólo publicar. El `check` de la
+     tabla exige `published_at` en cuanto el estado deja de ser borrador, así
+     que cerrar un borrador directamente —sin haberlo abierto nunca— reventaba
+     con un error de restricción que no explicaba nada. */
+  if new.status <> 'borrador' and coalesce(old.status, 'borrador') = 'borrador' then
     new.published_at := coalesce(new.published_at, now());
     new.published_by := coalesce(new.published_by, auth.uid());
   end if;
@@ -420,8 +437,7 @@ grant execute on function formulario_de_inscripcion(text) to anon, authenticated
  */
 create or replace function enviar_inscripcion(
   p_token text,
-  p_datos jsonb,
-  p_ip_hash text default null
+  p_datos jsonb
 )
 /* LOS NOMBRES DE SALIDA NO SE LLAMAN `id` NI `codigo` A PROPÓSITO. `returns
    table (...)` declara cada nombre como UNA VARIABLE dentro de la función, y
@@ -431,7 +447,9 @@ create or replace function enviar_inscripcion(
 returns table (inscripcion_id uuid, justificante text)
 language plpgsql
 security definer
-set search_path to 'public'
+/* `extensions` en el camino de búsqueda porque ahí vive `digest` en Supabase.
+   En un Postgres normal pgcrypto está en `public` y también se encuentra. */
+set search_path to 'public', 'extensions'
 as $$
 declare
   f record;
@@ -441,6 +459,9 @@ declare
   nuevo_codigo text;
   nuevo_id uuid;
   recientes integer;
+  cabeceras json;
+  ip text;
+  huella text;
 begin
   select * into f from enrollment_forms where token = p_token;
   if not found or f.status <> 'abierta' then
@@ -464,10 +485,18 @@ begin
   /* FRENO AL ENVÍO AUTOMÁTICO. Diez desde la misma huella en una hora es
      muchísimo para una familia y poquísimo para un script. No bloquea a un
      colegio entero detrás del mismo router: cuenta por formulario, no en
-     general. */
-  if p_ip_hash is not null then
+     general.
+
+     LA HUELLA SALE DE LA CABECERA, no de un parámetro: la pone la
+     infraestructura y el cliente no la escribe. Si no hubiera cabecera
+     —al llamar a la función desde el propio SQL, por ejemplo— se queda nula
+     y no se aplica el límite, que es lo correcto: no hay de dónde contar. */
+  cabeceras := nullif(current_setting('request.headers', true), '')::json;
+  ip := nullif(split_part(coalesce(cabeceras->>'x-forwarded-for', ''), ',', 1), '');
+  if ip is not null then
+    huella := encode(digest(ip || '|' || f.id::text, 'sha256'), 'hex');
     select count(*) into recientes from enrollments e
-      where e.form_id = f.id and e.ip_hash = p_ip_hash
+      where e.form_id = f.id and e.ip_hash = huella
         and e.created_at > now() - interval '1 hour';
     if recientes >= 10 then
       raise exception 'Demasiados envíos desde este dispositivo. Prueba más tarde.' using errcode = 'P0001';
@@ -529,7 +558,7 @@ begin
     nullif(trim(p_datos->>'city'), ''),
     coalesce(p_datos->'respuestas', '{}'::jsonb),
     coalesce(p_datos->'consentimientos', '{}'::jsonb),
-    p_ip_hash
+    huella
   )
   returning enrollments.id into nuevo_id;
 
@@ -552,8 +581,8 @@ begin
 end;
 $$;
 
-revoke all on function enviar_inscripcion(text, jsonb, text) from public;
-grant execute on function enviar_inscripcion(text, jsonb, text) to anon, authenticated;
+revoke all on function enviar_inscripcion(text, jsonb) from public;
+grant execute on function enviar_inscripcion(text, jsonb) to anon, authenticated;
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- 7 · APROBAR: AQUÍ NACE EL JUGADOR Y EL RECIBO
