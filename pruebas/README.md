@@ -196,27 +196,52 @@ compartido, la portada se queda en gris y aquí salta. Es la red que sujeta la
 única regla que no se negocia —**la portada no se toca**— mientras se repinta
 todo lo demás.
 
-## Qué comprueban `camara.mjs`, `pizarra.mjs` y `video.mjs`
-
-La pizarra se mira desde donde se quiera: la cámara gira y se inclina. Eso son
-cuentas, y las cuentas o cuadran o no:
+## Las migraciones, contra un Postgres de verdad
 
 ```sh
-npm run pizarra:camara   # sin navegador: proyectar, desproyectar, encuadre
-npm run pizarra          # las seis vistas en el navegador
-npm run pizarra:video    # que el vídeo encuadre igual que la pantalla
+sudo npm run base          # pruebas/sql/correr.sh
 ```
 
-Lo que más importa de `pizarra.mjs` no es que se vea bonito —eso hay que
-mirarlo— sino que **siga siendo usable**: que al tocar una ficha se seleccione
-esa ficha y no la de al lado, con el campo girado e inclinado. Si la cuenta de
-ida y la de vuelta no encajaran, arrastrar se iría de sitio y la pizarra no
-serviría para nada. Con `CAPTURAS=<carpeta>` deja además una imagen por vista.
+Levanta un PostgreSQL vacío en la propia máquina, le pone lo que Supabase trae
+de fábrica —el esquema `auth` con su `uid()`, los tres roles de PostgREST,
+`storage`— y aplica **las migraciones enteras desde la 0001**. Luego se hace
+pasar por un tutor y por un visitante anónimo con `set local role` y mira qué
+ve cada uno.
 
-Hay un detalle en el que se cayó esta prueba y conviene recordar: durante un
-rato **pasó mientras dibujaba siempre la vista cenital**, porque la escena
-perdía la cámara al cargarse. Una prueba que pasa no vale nada si no se ha
-comprobado que falla cuando tiene que fallar.
+Existe porque antes una migración se comprobaba de la única manera que había:
+aplicándola a producción y mirando si algo se rompía. Eso no es una prueba, es
+una apuesta, y con las políticas de Postgres es la peor de todas, porque **se
+suman**: una política mal escrita no recorta nada, amplía, y amplía en
+silencio.
+
+Lo que respondió el primer día: un tutor ve la ficha de su hijo, su recibo y el
+equipo, y **no** ve al otro niño, ni su recibo, ni una sola fila de
+`attendance` —donde el motivo de la ausencia del otro está escrito a mano en la
+misma fila—.
+
+Cuatro de las comprobaciones de la inscripción sólo pasaron después de arreglar
+**la prueba**, no el código, y las cuatro merecen recordarse:
+
+- `set local` fuera de una transacción no hace nada y avisa con un `WARNING`
+  fácil de ignorar: las consultas siguen corriendo como superusuario, que **se
+  salta RLS**. El primer intento «aprobó» enseñando los dos hijos.
+- `client_min_messages` en `warning` esconde los `raise notice`: cuatro pruebas
+  no imprimían nada, y eso se lee igual que haber pasado.
+- Una función puesta en un `where` contra una tabla vacía **no se ejecuta
+  nunca**: no hay filas que filtrar. La prueba pasaba sin aprobar nada.
+- Un bloque plpgsql con `exception` es una subtransacción: la fila que creaba
+  se deshacía con el error.
+
+No prueba PostgREST, ni el cliente de JavaScript, ni Storage de verdad. Prueba
+el esquema, las políticas y las funciones, que es donde está el riesgo de
+enseñar el dato de otro.
+
+De paso vuelca el catálogo de deportes, que es lo que necesita `deportes.mjs`
+donde no hay salida a Supabase:
+
+```sh
+SPORTS_JSON=/tmp/sports.json npm run app:deportes
+```
 
 ## Los datos son falsos
 

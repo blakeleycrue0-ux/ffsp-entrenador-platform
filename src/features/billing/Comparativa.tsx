@@ -29,10 +29,24 @@
  * en cualquiera de las dos, `pruebas/planes-iguales.mjs` abre las dos y
  * compara línea por línea.
  *
- * EN BLANCO Y NEGRO, QUE ES LA PALETA DE AQUÍ DENTRO. La portada destaca Pro
- * con su azul de marca; la herramienta no tiene azul en ninguna parte, así que
- * la columna destacada se separa por CONTRASTE —fondo negro— y no por color.
- * Es la misma jerarquía dicha en el idioma de cada sitio.
+ * LA COLUMNA DESTACADA SE SEPARA POR CONTRASTE, NO POR COLOR, y esto se
+ * intentó cambiar y se volvió atrás, que es la parte que merece quedar
+ * escrita.
+ *
+ * El intento: pintarla con el azul de la marca, ahora que el azul volvió a la
+ * aplicación. Compila, se lee bien —el blanco al 80 % sobre `--marca-fondo`
+ * da 4,9:1— y `contraste.mjs` lo aprobó.
+ *
+ * LO PARÓ `marca.mjs`, Y TENÍA RAZÓN. Dentro de la herramienta el azul está
+ * reservado a tres sitios y significa UNA cosa: la acción principal y dónde
+ * estás. `.metal-claro`, `[aria-current="page"]` y `.heroe`, y nada más. Una
+ * columna entera de azul añade un segundo significado —«este plan es el que
+ * te recomiendo»— y a partir de ahí el azul ya no dice dónde se pulsa: dice
+ * dos cosas, o sea ninguna. Un sistema con dos reglas no tiene ninguna.
+ *
+ * Así que la jerarquía se dice con el fondo más contrastado que hay y el azul
+ * se queda donde significa algo. Lo que sí hacía falta arreglar en esta
+ * pantalla no era el color: eran cuatro planes metidos en una rejilla de tres.
  */
 
 import { Check } from 'lucide-react';
@@ -74,7 +88,12 @@ export function Comparativa({
   };
 
   return (
-    <div className="grid grid-cols-1 divide-y divide-line lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+    /* CUATRO PLANES EN UNA REJILLA DE TRES. Esto decía `lg:grid-cols-3` de
+       cuando había tres columnas; al entrar Club, la cuarta caía sola a una
+       segunda fila, a lo ancho de la pantalla y sin línea que la separase, de
+       modo que el plan más caro parecía una nota al pie. En pantallas medianas
+       van de dos en dos, que es lo que cabe sin apretar el texto. */
+    <div className="grid grid-cols-1 divide-y divide-line sm:grid-cols-2 sm:divide-x lg:grid-cols-4 lg:divide-y-0">
       {ordenados.map((plan) => {
         const destacado = plan.tier === 'pro';
         const gratis = plan.priceMonthly === 0;
@@ -92,6 +111,21 @@ export function Comparativa({
         const lista = plan.tier === 'free' ? todoLoQueTrae('free', seVende) : loQueFalta(plan.tier, seVende);
         const anterior = anteriorA(plan.tier);
 
+        /* ── LOS COLORES DE LA COLUMNA, NOMBRADOS UNA VEZ ──────────────────
+           Estaban repartidos por doce `destacado ? … : …` dentro del JSX, uno
+           por cada texto. Nombrarlos aquí deja el JSX diciendo qué PAPEL tiene
+           cada cosa —titular, segundo, cuerpo— en vez de repetir doce veces la
+           misma condición, y cambiar la paleta de la columna vuelve a ser
+           tocar cuatro líneas y no doce.
+
+           Todo en la escala `ink`, que se da la vuelta con el tema: `ink-900`
+           es el fondo más contrastado que hay y `ink-0` lo que se lee encima,
+           en claro y en oscuro, sin una sola variante `dark:`. */
+        const titular = destacado ? 'text-ink-0' : 'text-ink-900';
+        const segundo = destacado ? 'text-ink-0/60' : 'text-ink-500';
+        const cuerpo = destacado ? 'text-ink-0/85' : 'text-ink-700';
+        const pastilla = destacado ? 'bg-ink-0/15 text-ink-0' : 'bg-ink-900 text-ink-0';
+
         return (
           <article
             key={plan.tier}
@@ -99,14 +133,13 @@ export function Comparativa({
             data-plan={plan.tier}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className={cn('font-titulo text-base font-semibold', destacado ? 'text-ink-0' : 'text-ink-900')}>
+              <h3 className={cn('font-titulo text-base font-semibold', titular)}>
                 {plan.name}
               </h3>
               {nivelActual === plan.tier && (
                 <span
                   className={cn(
-                    'rounded-full px-2 py-0.5 text-xs font-semibold',
-                    destacado ? 'bg-ink-0/15 text-ink-0' : 'bg-ink-900 text-ink-0',
+                    'rounded-full px-2 py-0.5 text-xs font-semibold', pastilla,
                   )}
                 >
                   El tuyo
@@ -114,20 +147,20 @@ export function Comparativa({
               )}
             </div>
 
-            <p className={cn('mt-2 min-h-[2.8em] text-sm leading-snug', destacado ? 'text-ink-0/60' : 'text-ink-500')}>
+            <p className={cn('mt-2 min-h-[2.8em] text-sm leading-snug', segundo)}>
               {PARA_QUIEN[plan.tier]}
             </p>
 
             <p className="mt-4 flex items-baseline gap-1.5">
-              <span className={cn('cifra text-4xl leading-none', destacado && 'text-ink-0')}>
+              <span className={cn('cifra text-4xl leading-none', titular)}>
                 {mensual ?? 'Sin precio'}
               </span>
               {mensual && !gratis && (
-                <span className={cn('text-sm font-medium', destacado ? 'text-ink-0/60' : 'text-ink-500')}>/mes</span>
+                <span className={cn('text-sm font-medium', segundo)}>/mes</span>
               )}
             </p>
 
-            <p className={cn('mt-1.5 min-h-[1.25rem] text-sm', destacado ? 'text-ink-0/60' : 'text-ink-500')}>
+            <p className={cn('mt-1.5 min-h-[1.25rem] text-sm', segundo)}>
               {gratis
                 ? 'Para siempre, sin tarjeta'
                 : anual
@@ -135,11 +168,11 @@ export function Comparativa({
                   : 'Sin precio anual'}
             </p>
 
-            <p className={cn('mt-5 font-titulo text-base font-semibold', destacado ? 'text-ink-0' : 'text-ink-900')}>
+            <p className={cn('mt-5 font-titulo text-base font-semibold', titular)}>
               {limiteDeEquipos(plan)}
             </p>
 
-            <p className={cn('mt-5 rotulo', destacado ? 'text-ink-0/60' : 'text-ink-500')}>
+            <p className={cn('mt-5 rotulo', segundo)}>
               {anterior ? `Todo lo de ${anterior}, y` : 'Incluye'}
             </p>
 
@@ -148,9 +181,9 @@ export function Comparativa({
                 {lista.map((t) => (
                   <li
                     key={t}
-                    className={cn('flex items-start gap-2 text-base leading-snug', destacado ? 'text-ink-0/85' : 'text-ink-700')}
+                    className={cn('flex items-start gap-2 text-base leading-snug', cuerpo)}
                   >
-                    <Check size={15} className={cn('mt-1 shrink-0', destacado ? 'text-ink-0/70' : 'text-ink-500')} />
+                    <Check size={15} className={cn('mt-1 shrink-0', segundo)} />
                     <span className="min-w-0">{t}</span>
                   </li>
                 ))}
@@ -159,7 +192,7 @@ export function Comparativa({
               /* Si un plan de pago no añade NINGUNA función construida, lo que
                  lo distingue es cuántos equipos caben. Decirlo es mejor que
                  rellenar la columna con promesas. */
-              <p className={cn('mt-3 flex-1 text-base leading-relaxed', destacado ? 'text-ink-0/70' : 'text-ink-600')}>
+              <p className={cn('mt-3 flex-1 text-base leading-relaxed', segundo)}>
                 Ninguna función nueva de momento: lo que cambia es cuántos equipos caben.
               </p>
             )}
@@ -167,7 +200,7 @@ export function Comparativa({
             {/* Los días de prueba salen de la tabla, y sólo se enseñan cuando
                 hay de verdad algo que contratar. */}
             {seVende && !gratis && plan.trialDays > 0 && (
-              <p className={cn('mt-4 text-sm', destacado ? 'text-ink-0/60' : 'text-ink-500')}>
+              <p className={cn('mt-4 text-sm', segundo)}>
                 {plan.trialDays} días de prueba antes del primer cobro
               </p>
             )}

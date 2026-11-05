@@ -164,9 +164,19 @@ export default function BillingPage() {
                 }
                 pie={per.nivel === 'free' ? 'para siempre' : 'al mes'}
               />
+              {/* ANTES DECÍA «3 / 1» CON EL PIE «equipos», Y SE LEÍA MAL.
+                  Pasó de verdad: un club con tres equipos en el plan de uno
+                  leyó ahí que tenía «3 equipos» de plan, cuando ninguno de los
+                  cuatro planes da tres. Una barra entre dos números no dice
+                  cuál es cuál. Ahora la cifra es lo que hay —que es el dato— y
+                  el límite se explica con palabras debajo. */}
               <Dato
-                cifra={`${per.equipos}${per.limiteDeEquipos === null ? '' : ` / ${per.limiteDeEquipos}`}`}
-                pie={per.limiteDeEquipos === null ? 'equipos, sin límite' : 'equipos'}
+                cifra={String(per.equipos)}
+                pie={
+                  per.limiteDeEquipos === null
+                    ? 'equipos, sin límite'
+                    : per.equipos === 1 ? 'equipo' : 'equipos'
+                }
               />
               {/* La fecha sólo se enseña cuando se sabe qué significa. En un
                   impago no se puede prometer ni renovación ni final. */}
@@ -179,18 +189,42 @@ export default function BillingPage() {
             </div>
 
             {per.limiteDeEquipos !== null && (
-              /* El carril, al 10 % de lo que más contraste. Iba en blanco al
-                 10 %, que sobre un panel casi blanco no se veía: en claro la
-                 barra no tenía por dónde avanzar. */
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-900/10">
-                <div
-                  className={cn(
-                    'h-full rounded-full transition-[width] duration-500',
-                    per.equipos >= per.limiteDeEquipos ? 'bg-warn' : 'bg-ink-800',
-                  )}
-                  style={{ width: `${Math.min(100, (per.equipos / per.limiteDeEquipos) * 100)}%` }}
-                />
-              </div>
+              <>
+                {/* El carril, al 10 % de lo que más contraste. Iba en blanco al
+                    10 %, que sobre un panel casi blanco no se veía: en claro la
+                    barra no tenía por dónde avanzar. */}
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink-900/10">
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-[width] duration-500',
+                      per.equipos >= per.limiteDeEquipos ? 'bg-warn' : 'bg-marca-solido',
+                    )}
+                    style={{ width: `${Math.min(100, (per.equipos / per.limiteDeEquipos) * 100)}%` }}
+                  />
+                </div>
+                {/* PASARSE DEL LÍMITE NO SE EXPLICABA EN NINGÚN SITIO. La barra
+                    se ponía ámbar y ahí acababa el aviso: quien tenía tres
+                    equipos en un plan de uno no sabía si le iban a borrar dos.
+                    No se borra nada —el límite lo aplica la política de RLS al
+                    INSERTAR, no al leer—, y eso es justo lo que hay que decir. */}
+                {per.equipos > per.limiteDeEquipos ? (
+                  <Aviso tono="warn">
+                    Tienes <strong className="font-semibold">{per.equipos} equipos</strong> y{' '}
+                    {actual?.name ?? 'tu plan'} incluye {per.limiteDeEquipos}. No se borra
+                    ninguno y todos siguen funcionando igual; lo único que no podrás es crear
+                    otro hasta bajar del límite o subir de plan.
+                  </Aviso>
+                ) : (
+                  <p className="text-sm leading-relaxed text-ink-500">
+                    {actual?.name ?? 'Tu plan'} incluye {per.limiteDeEquipos}{' '}
+                    {per.limiteDeEquipos === 1 ? 'equipo' : 'equipos'}.
+                    {per.equipos < per.limiteDeEquipos && (
+                      <> Te {per.limiteDeEquipos - per.equipos === 1 ? 'queda' : 'quedan'}{' '}
+                      {per.limiteDeEquipos - per.equipos} por crear.</>
+                    )}
+                  </p>
+                )}
+              </>
             )}
 
             {prueba !== null && (

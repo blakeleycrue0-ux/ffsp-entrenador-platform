@@ -36,6 +36,8 @@ const MatchEditor = lazy(cargaDiferida(() => import('@/features/matches/MatchEdi
 const AttendancePage = lazy(cargaDiferida(() => import('@/features/attendance/AttendancePage')));
 const StatsPage = lazy(cargaDiferida(() => import('@/features/stats/StatsPage')));
 const CuotasPage = lazy(cargaDiferida(() => import('@/features/cuotas/CuotasPage')));
+const InscripcionesPage = lazy(cargaDiferida(() => import('@/features/inscripciones/InscripcionesPage')));
+const FormularioDeInscripcion = lazy(cargaDiferida(() => import('@/features/inscripciones/FormularioDeInscripcion')));
 const SettingsPage = lazy(cargaDiferida(() => import('@/features/settings/SettingsPage')));
 const BillingPage = lazy(cargaDiferida(() => import('@/features/billing/BillingPage')));
 const ProfilePage = lazy(cargaDiferida(() => import('@/features/settings/ProfilePage')));
@@ -112,6 +114,15 @@ export default function App() {
         <Route path="/aviso-legal" element={<LegalPage />} />
         <Route path="/privacidad" element={<LegalPage />} />
 
+        {/* EL FORMULARIO DE INSCRIPCIÓN VA AQUÍ FUERA, Y ES LO IMPORTANTE DE
+            ESTA RUTA. Lo abre una familia que no tiene cuenta ni la va a
+            tener: si estuviera dentro de `/app` se encontraría con `RequireAuth`
+            y acabaría en la pantalla de entrar, que es el final del camino
+            para alguien a quien le han mandado un enlace por WhatsApp.
+            Tampoco lleva `AppShell`: ni menú, ni barra de abajo, ni buscador
+            —nada donde pulsar que le pida una contraseña que no tiene—. */}
+        <Route path="/inscripcion/:token" element={<FormularioDeInscripcion />} />
+
         <Route
           path="/app"
           element={
@@ -157,6 +168,7 @@ export default function App() {
 
           <Route path="analiticas" element={<StatsPage />} />
           <Route path="cuotas" element={<CuotasPage />} />
+          <Route path="inscripciones" element={<InscripcionesPage />} />
           {/* EL ASISTENTE TENÍA SERVIDOR Y NO TENÍA PUERTA. La función, el
               contexto y esta pantalla estaban escritos desde hace semanas, y
               la ruta mandaba a Inicio: no había manera de llegar. */}

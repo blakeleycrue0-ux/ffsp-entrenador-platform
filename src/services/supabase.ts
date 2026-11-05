@@ -88,6 +88,19 @@ export function humanError(error: unknown): string {
     return 'A la base de datos le falta alguna función. Ejecuta la migración 0003_aislamiento_por_club.sql en el editor SQL de Supabase.';
   }
   /**
+   * UNA FUNCIÓN QUE NO ESTÁ NO DA 42883 CUANDO SE PIDE POR PostgREST. Da
+   * `PGRST202`, con un texto en inglés que habla de «the schema cache» y que
+   * no le dice nada a nadie. Pasa en un caso muy concreto y muy probable: el
+   * programa se despliega con una pantalla nueva y la migración que crea sus
+   * funciones todavía no está aplicada. Sin esta línea, quien abre esa
+   * pantalla lee un error de caché y entiende que está roto; con ella, lee
+   * qué falta y quién lo arregla.
+   */
+  if (code === 'PGRST202' || /Could not find the function/i.test(raw)) {
+    return 'Esta pantalla necesita una actualización de la base de datos que todavía no está aplicada. '
+      + 'Ejecuta las migraciones que falten de supabase/migrations en el editor SQL de Supabase, por orden.';
+  }
+  /**
    * PostgreSQL responde lo mismo para «no puedes» que para «esta fila no
    * cumple la política», y son dos cosas muy distintas. Si el rechazo es al
    * ESCRIBIR una fila nueva, lo más probable es que le falte algún dato —el

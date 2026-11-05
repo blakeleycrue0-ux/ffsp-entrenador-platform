@@ -33,6 +33,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useClub } from '@/store/store';
 import { isClubAdmin, visibleTeams } from '@/store/selectors';
@@ -173,7 +174,18 @@ export default function CuotasPage() {
             {/* Dicho donde se ven los importes, no escondido en una ayuda. */}
             <p className="border-t border-line px-4 pb-4 pt-3 text-xs leading-relaxed text-ink-500 sm:px-5">
               Playoff360 no cobra ni mueve dinero. El club cobra como cobre y aquí se apunta:
-              «pagado» quiere decir que alguien lo ha marcado.
+              «pagado» quiere decir que alguien lo ha marcado.{' '}
+              {/* DÓNDE EMPIEZA DE VERDAD UNA CUOTA. Esta pantalla lleva la
+                  cobranza del mes, pero dar de alta a una familia a mano —
+                  nombre, tutor, teléfono, documentos— es el trabajo que se
+                  hace una vez por temporada y cien veces seguidas. Quien
+                  llega aquí buscando «cómo cobro la temporada» tiene que
+                  encontrar el camino corto. */}
+              <Link to="/app/inscripciones" className="underline underline-offset-2">
+                Las altas se hacen con un formulario de inscripción
+              </Link>
+              : el club reparte un enlace, cada familia rellena sus datos y sube sus documentos, y
+              al aprobarla se crea la ficha y su primer recibo.
             </p>
           </Panel>
 
