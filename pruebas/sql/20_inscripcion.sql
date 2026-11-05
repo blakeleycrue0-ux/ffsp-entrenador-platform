@@ -256,3 +256,54 @@ begin;
     raise notice '    ✓ no puede rechazar: %', sqlerrm;
   end $$;
 commit;
+
+\echo ''
+\echo '  12 · con cabecera de IP: se calcula la huella y se cuenta'
+-- POR QUE ESTA PRUEBA EXISTE. El `digest()` que calcula la huella SOLO se
+-- ejecuta cuando hay IP, y en todas las pruebas de arriba no hay cabeceras:
+-- o sea que ese camino no lo recorria nadie. Si `digest` no estuviera en el
+-- search_path —vive en el esquema `extensions` en Supabase y en `public` en un
+-- Postgres normal— esto reventaria en produccion en el primer envio real, y
+-- aqui habria salido todo verde. Se fuerza la cabecera y se recorre.
+begin;
+  set local role anon;
+  set local request.headers = '{"x-forwarded-for": "88.1.2.3, 10.0.0.1"}';
+  select '    justificante=' || justificante
+    from enviar_inscripcion('abcdef0123456789abcdef0123456789', jsonb_build_object(
+      'player_name', 'Nil Amengual', 'guardian_name', 'Pere Amengual',
+      'guardian_email', 'pere@ejemplo.test',
+      'respuestas', jsonb_build_object('alergias', 'ninguna'),
+      'consentimientos', jsonb_build_object('datos', now()::text)
+    ));
+commit;
+select '    huella guardada (64 hex): ' || case
+         when ip_hash ~ '^[0-9a-f]{64}$' then 'si, ' || left(ip_hash, 12) || '...'
+         else 'NO: ' || coalesce(ip_hash, 'nula') end
+  from enrollments where player_name = 'Nil Amengual';
+select '    y NO contiene la IP en claro: ' ||
+       case when ip_hash like '%88.1.2.3%' then 'LA CONTIENE' else 'correcto' end
+  from enrollments where player_name = 'Nil Amengual';
+
+\echo '    y al pasar de diez envios desde la misma IP, corta:'
+begin;
+  set local role anon;
+  set local request.headers = '{"x-forwarded-for": "88.1.2.3"}';
+  do $$
+  declare i int; cortado boolean := false;
+  begin
+    for i in 1..12 loop
+      begin
+        perform enviar_inscripcion('abcdef0123456789abcdef0123456789', jsonb_build_object(
+          'player_name', 'Prueba ' || i, 'guardian_name', 'Tutor',
+          'guardian_email', 't@ejemplo.test',
+          'respuestas', jsonb_build_object('alergias', 'no'),
+          'consentimientos', jsonb_build_object('datos', now()::text)));
+      exception when others then
+        raise notice '    ✓ cortado en el envio numero % : %', i, sqlerrm;
+        cortado := true;
+        exit;
+      end;
+    end loop;
+    if not cortado then raise notice '    ✗ NO ha cortado en doce envios'; end if;
+  end $$;
+commit;

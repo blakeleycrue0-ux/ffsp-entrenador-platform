@@ -491,17 +491,34 @@ begin
      infraestructura y el cliente no la escribe. Si no hubiera cabecera
      —al llamar a la función desde el propio SQL, por ejemplo— se queda nula
      y no se aplica el límite, que es lo correcto: no hay de dónde contar. */
-  cabeceras := nullif(current_setting('request.headers', true), '')::json;
-  ip := nullif(split_part(coalesce(cabeceras->>'x-forwarded-for', ''), ',', 1), '');
-  if ip is not null then
-    huella := encode(digest(ip || '|' || f.id::text, 'sha256'), 'hex');
-    select count(*) into recientes from enrollments e
-      where e.form_id = f.id and e.ip_hash = huella
-        and e.created_at > now() - interval '1 hour';
-    if recientes >= 10 then
-      raise exception 'Demasiados envíos desde este dispositivo. Prueba más tarde.' using errcode = 'P0001';
+  /* EL CÁLCULO VA EN SU PROPIO BLOQUE, Y FALLA ABIERTO. `digest` lo trae
+     pgcrypto, que en Supabase vive en el esquema `extensions` y en un
+     Postgres normal en `public`; los dos están en el `search_path` de arriba.
+     Si aun así no se encontrara, la excepción subiría y tiraría el envío
+     ENTERO: una familia no podría inscribirse por un problema del contador de
+     abusos. Eso es mucho peor que no contar, así que si algo de aquí falla se
+     anota el motivo y se sigue sin límite.
+
+     El `raise` del propio límite se vuelve a lanzar: ése sí tiene que cortar. */
+  begin
+    cabeceras := nullif(current_setting('request.headers', true), '')::json;
+    ip := nullif(split_part(coalesce(cabeceras->>'x-forwarded-for', ''), ',', 1), '');
+    if ip is not null then
+      huella := encode(digest(ip || '|' || f.id::text, 'sha256'), 'hex');
+      select count(*) into recientes from enrollments e
+        where e.form_id = f.id and e.ip_hash = huella
+          and e.created_at > now() - interval '1 hour';
+      if recientes >= 10 then
+        raise exception 'Demasiados envíos desde este dispositivo. Prueba más tarde.'
+          using errcode = 'P0001';
+      end if;
     end if;
-  end if;
+  exception
+    when sqlstate 'P0001' then raise;
+    when others then
+      raise warning 'No se ha podido aplicar el límite de envíos: %', sqlerrm;
+      huella := null;
+  end;
 
   /* Los obligatorios del propio club. Lo de arriba son los fijos, que ya los
      exige la tabla con sus `not null` y sus `check`. */
