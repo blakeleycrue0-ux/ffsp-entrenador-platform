@@ -90,8 +90,8 @@ export const CAPACIDADES: Record<Capacidad, Ficha> = {
      Inscripciones deben ser de un plan de pago, se cambia esa palabra y no
      hay nada más que tocar —ni una pantalla, ni esta tabla dos veces—. Lo
      que no voy a hacer es decidir por mi cuenta a cuánto se cobra qué. */
-  cuotas: { nombre: 'Cuotas y recibos del club', desde: 'free', lista: true },
-  inscripciones: { nombre: 'Inscripciones con enlace y documentos', desde: 'free', lista: true },
+  cuotas: { nombre: 'Cuotas y recibos', desde: 'free', lista: true },
+  inscripciones: { nombre: 'Inscripciones por enlace', desde: 'free', lista: true },
 
   /* LA TABLA EXISTE Y LA PANTALLA NO. `session_player_ratings` está creada,
      con su clave única por sesión y jugador y su `check (rating between 1
